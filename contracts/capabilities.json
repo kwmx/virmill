@@ -1,0 +1,172 @@
+[
+  {
+    "id": "F01",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Host onboarding: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F02",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Inventory: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F03",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Lifecycle: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F04",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Creation/import: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F05",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Configuration: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F06",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Networking: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F07",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "USB/sharing: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F08",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Storage: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F09",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Snapshots/restore: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F10",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Templates/clones: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F11",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Backups: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F12",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Labs: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F13",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Guest setup: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F14",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "CLI/TUI: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F15",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Jobs/recovery: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F16",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Plugins: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  },
+  {
+    "id": "F17",
+    "status": "not-implemented",
+    "reasonCode": "V1_FAMILY_INCOMPLETE",
+    "reason": "Release quality: complete mandatory workflow and acceptance evidence are outstanding",
+    "alternatives": [
+      "See docs/implementation-status.md for actual partial implementation and evidence"
+    ],
+    "evidenceClass": "implementation-tracker"
+  }
+]

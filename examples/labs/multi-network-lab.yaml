@@ -1,0 +1,79 @@
+# Requires pre-existing local templates linux-workstation@1 and linux-server@1.
+# Static example subnets must be checked against the real host/VPN routes.
+apiVersion: virmill/v1
+kind: Lab
+metadata:
+  name: development-lab
+  tags: [development]
+spec:
+  onFailure: preserve
+  networks:
+    - id: internet
+      spec:
+        type: nat
+        ipv4:
+          cidr: auto
+          dhcp: {enabled: true, advertiseDefaultRoute: true}
+        ipv6: {mode: disabled}
+        hostAccess: services-only
+        egress: any
+    - id: research
+      spec:
+        type: lab
+        ipv4:
+          cidr: 10.88.21.0/24
+          dhcp: {enabled: true, advertiseDefaultRoute: false}
+        ipv6: {mode: disabled}
+        hostAccess: services-only
+        egress: none
+    - id: targets
+      spec:
+        type: guest-only
+        ipv4:
+          cidr: 10.88.22.0/24
+          dhcp: {enabled: false, advertiseDefaultRoute: false}
+        ipv6: {mode: disabled}
+        hostAccess: deny
+        egress: none
+  machines:
+    - id: workstation
+      spec:
+        architecture: x86_64
+        source: {type: template, templateRef: "linux-workstation@1"}
+        resources: {vcpus: 4, memoryMiB: 4096}
+        firmware: {mode: uefi, secureBoot: false, tpm: false}
+        nics:
+          - id: internet
+            networkRef: internet
+            defaultRoute: true
+            ipv4: {mode: dhcp}
+          - id: research
+            networkRef: research
+            defaultRoute: false
+            ipv4: {mode: dhcp}
+          - id: targets
+            networkRef: targets
+            defaultRoute: false
+            ipv4: {mode: static, address: 10.88.22.10/24}
+    - id: research-server
+      spec:
+        architecture: x86_64
+        source: {type: template, templateRef: "linux-server@1"}
+        resources: {vcpus: 2, memoryMiB: 2048}
+        nics:
+          - id: research
+            networkRef: research
+            defaultRoute: false
+            ipv4: {mode: dhcp}
+    - id: target-server
+      dependsOn:
+        - {machine: workstation, ready: running, timeoutSeconds: 120}
+      spec:
+        architecture: x86_64
+        source: {type: template, templateRef: "linux-server@1"}
+        resources: {vcpus: 2, memoryMiB: 2048}
+        nics:
+          - id: targets
+            networkRef: targets
+            defaultRoute: false
+            ipv4: {mode: static, address: 10.88.22.20/24}

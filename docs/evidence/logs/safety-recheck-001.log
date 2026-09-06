@@ -1,0 +1,9 @@
+ok  	virmill.local/core/internal/app	1.031s
+ok  	virmill.local/core/internal/app/devices	1.010s
+ok  	virmill.local/core/internal/app/importer	1.018s
+?   	virmill.local/core/internal/app/lab	[no test files]
+ok  	virmill.local/core/internal/app/network	1.010s
+ok  	virmill.local/core/internal/app/protection	1.009s
+ok  	virmill.local/core/internal/app/storage	1.012s
+ok  	virmill.local/core/internal/backend/libvirt	1.020s
+ok  	virmill.local/core/internal/backend/xmlpatch	1.011s

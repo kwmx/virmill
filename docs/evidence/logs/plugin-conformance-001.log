@@ -1,0 +1,9 @@
+=== RUN   TestTwoLanguageConfinedConformance
+    runner_test.go:30: example.virmill.sdk-summary: [initialize identity and protocol describe unknown method rejected read-only plan and execute stale context rejected shutdown]
+    runner_test.go:30: example.virmill.python-summary: [initialize identity and protocol describe unknown method rejected read-only plan and execute stale context rejected shutdown]
+--- PASS: TestTwoLanguageConfinedConformance (0.05s)
+=== RUN   TestProviderCrashReconcileFixture
+    runner_test.go:82: simulated provider persisted partial fake effect, recovered after process restart, deduplicated and rejected backup; no actual VM or remote host
+--- PASS: TestProviderCrashReconcileFixture (0.02s)
+PASS
+ok  	virmill.local/core/internal/plugins	0.072s

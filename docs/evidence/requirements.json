@@ -1,0 +1,1628 @@
+{
+  "specificationRevision": "1.0-draft.2",
+  "requirements": [
+    {
+      "id": "CORE-01",
+      "acceptance": "Discover system/session inventories separately; no duplicate identity or silent adoption.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 3,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/backend/libvirt/provider_linux.go"
+      ],
+      "plannedImplementation": "internal/app/vm",
+      "plannedTest": "tests/integration/vm/CORE-01",
+      "tests": [
+        "internal/backend/libvirt/provider_linux_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Actual system/session inventories and event reconnection are not qualified; no adoption workflow."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "CORE-02",
+      "acceptance": "Start, graceful stop, force stop, reboot, pause/resume, autostart and delete preserve the promised disks and state.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 3,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/service.go",
+        "internal/backend/libvirt/provider_linux.go",
+        "internal/ui/registry.go"
+      ],
+      "plannedImplementation": "internal/app/vm",
+      "plannedTest": "tests/integration/vm/CORE-02",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Subset of lifecycle adapters only; reboot, safe removal and full real-backend state/disk preservation tests remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "CORE-03",
+      "acceptance": "CPU/RAM/boot edits correctly distinguish live and persistent state and required shutdown.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 3,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/backend/xmlpatch/patch.go",
+        "internal/app/service.go"
+      ],
+      "plannedImplementation": "internal/app/vm",
+      "plannedTest": "tests/integration/vm/CORE-03",
+      "tests": [
+        "internal/backend/xmlpatch/patch_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Only powered-off vCPU span patch; RAM/boot/live/next-boot/both adapters and guest tests remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "CORE-04",
+      "acceptance": "An adopted VM with unknown XML namespaces/device settings retains them after an unrelated edit.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 3,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/backend/xmlpatch/patch.go"
+      ],
+      "plannedImplementation": "internal/app/vm",
+      "plannedTest": "tests/integration/vm/CORE-04",
+      "tests": [
+        "internal/backend/xmlpatch/patch_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Byte-preservation unit tests pass; real adopted VM preservation remains unverified."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "CORE-05",
+      "acceptance": "An external concurrent edit invalidates the stale plan; no overwrite of newer unrelated settings.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 3,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/operations/engine.go",
+        "internal/app/service.go"
+      ],
+      "plannedImplementation": "internal/app/vm",
+      "plannedTest": "tests/integration/vm/CORE-05",
+      "tests": [
+        "internal/operations/engine_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Plan binding tests pass; actual concurrent external libvirt edits need qualification."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "CORE-06",
+      "acceptance": "Restricted session/backend capability is explained before mutation, not mislabeled as success.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 3,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/backend/libvirt/provider_linux.go"
+      ],
+      "plannedImplementation": "internal/app/vm",
+      "plannedTest": "tests/integration/vm/CORE-06",
+      "tests": [
+        "internal/backend/libvirt/provider_linux_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Connection allowlist implemented; full session capability probes and actual restrictions remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-01",
+      "acceptance": "ISO install, cloud image and existing disk creation each reach their declared verification level.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-01",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "ISO install, cloud image and existing disk creation each reach their declared verification level."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-02",
+      "acceptance": "VMware OVA with supported Linux guest, multiple disks and NICs imports with correct boot/disk order.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/importer/ova.go"
+      ],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-02",
+      "tests": [
+        "internal/app/importer/ova_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Multiple disks/NICs/controller order enumerated in synthetic OVA; no actual VMware conversion/boot path yet."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-03",
+      "acceptance": "Generic OVF/OVA fixture imports through the generic path, without pretending all appliances are supported.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/importer/ova.go"
+      ],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-03",
+      "tests": [
+        "internal/app/importer/ova_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Generic OVF package inspection only; end-to-end conversion and registration remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-04",
+      "acceptance": "Unsupported source/hardware, encrypted source and missing driver produce actionable preflight results.",
+      "minimumEvidence": "Unit + fixtures",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-04",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Unsupported source/hardware, encrypted source and missing driver produce actionable preflight results."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-05",
+      "acceptance": "Traversal, symlink, special file, XML entity, archive bomb and external backing references are rejected.",
+      "minimumEvidence": "Automated security",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/importer/ova.go",
+        "internal/wire/json.go"
+      ],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-05",
+      "tests": [
+        "internal/app/importer/ova_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Archive/descriptor attacks tested; disk-format/backing-chain parser confinement and complete malicious fixture matrix remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-06",
+      "acceptance": "Conversion failure, low space and canceled job preserve original source and safely reconcile staging.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-06",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Conversion failure, low space and canceled job preserve original source and safely reconcile staging."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-07",
+      "acceptance": "Registration/start/guest boot/guest reachability are reported as distinct success stages.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-07",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Registration/start/guest boot/guest reachability are reported as distinct success stages."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "IMP-08",
+      "acceptance": "Multi-system OVF selection, missing source digest and source mutation between plan/apply are handled explicitly.",
+      "minimumEvidence": "Fixtures + real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/importer/ova.go"
+      ],
+      "plannedImplementation": "internal/app/importer",
+      "plannedTest": "tests/integration/import/IMP-08",
+      "tests": [
+        "internal/app/importer/ova_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Multi-system enumeration and source hashing implemented; reviewed member selection and import apply drift handling remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-01",
+      "acceptance": "NAT guest has configured DNS/internet; a static target remains on its designated lab network.",
+      "minimumEvidence": "Real packet/guest tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-01",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "NAT guest has configured DNS/internet; a static target remains on its designated lab network."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-02",
+      "acceptance": "A guest with internet plus two lab NICs uses only the intended normal default route.",
+      "minimumEvidence": "Real guest tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/network/intent.go",
+        "internal/app/lab/validate.go"
+      ],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-02",
+      "tests": [
+        "internal/app/network/intent_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Normal IPv4 route intent validation only; no renderer or actual guest route verification."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-03",
+      "acceptance": "Services-only lab permits its declared DHCP/DNS but rejects other host services and external forwarding.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-03",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Services-only lab permits its declared DHCP/DNS but rejects other host services and external forwarding."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-04",
+      "acceptance": "Guest-only segment has no host L3/DHCP; approved guest static addressing works between guests.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-04",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Guest-only segment has no host L3/DHCP; approved guest static addressing works between guests."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-05",
+      "acceptance": "IPv6/link-local/RA paths match policy; no false isolation claim from IPv4-only tests.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-05",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "IPv6/link-local/RA paths match policy; no false isolation claim from IPv4-only tests."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-06",
+      "acceptance": "CIDR selection detects LAN/VPN/planned overlaps without treating the default route as universal overlap.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/network/intent.go"
+      ],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-06",
+      "tests": [
+        "internal/app/network/intent_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Allocator excludes default host routes and detects occupied prefixes; actual route/VPN/backend collection remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-07",
+      "acceptance": "Existing LAN bridge works; DHCP remains externally owned unless explicitly configured otherwise.",
+      "minimumEvidence": "Real Ethernet host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-07",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Existing LAN bridge works; DHCP remains externally owned unless explicitly configured otherwise."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-08",
+      "acceptance": "NetworkManager bridge creation commits on confirmation and restores connectivity on timeout/crash.",
+      "minimumEvidence": "Physical/disposable host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-08",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "NetworkManager bridge creation commits on confirmation and restores connectivity on timeout/crash."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-09",
+      "acceptance": "Certified Netplan/networkd bridge creation and independent rollback work, including process interruption.",
+      "minimumEvidence": "Physical/disposable host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-09",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Certified Netplan/networkd bridge creation and independent rollback work, including process interruption."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-10",
+      "acceptance": "Ordinary Wi-Fi bridging is declined with NAT alternative; Wi-Fi NAT succeeds.",
+      "minimumEvidence": "Physical Wi-Fi host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-10",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Ordinary Wi-Fi bridging is declined with NAT alternative; Wi-Fi NAT succeeds."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-11",
+      "acceptance": "Port forwards obey bind/exposure policy, maintain stable targets and survive firewall reload/reboot.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-11",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Port forwards obey bind/exposure policy, maintain stable targets and survive firewall reload/reboot."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "NET-12",
+      "acceptance": "Dual-homed paths are flagged; lab deletion blocks when external guests still reference its network.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 4,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/network/intent.go"
+      ],
+      "plannedImplementation": "internal/app/network",
+      "plannedTest": "tests/integration/network/NET-12",
+      "tests": [
+        "internal/app/network/intent_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Dual-homed intent detection exists; network mutation/ownership-safe teardown not implemented."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "STO-01",
+      "acceptance": "Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/storage",
+      "plannedTest": "tests/integration/storage/STO-01",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "STO-02",
+      "acceptance": "Full clone is independent; linked clone retains declared immutable base dependencies.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/storage",
+      "plannedTest": "tests/integration/storage/STO-02",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Full clone is independent; linked clone retains declared immutable base dependencies."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "STO-03",
+      "acceptance": "Base/template deletion and garbage collection refuse any referenced or uncertain object.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/storage/graph.go"
+      ],
+      "plannedImplementation": "internal/app/storage",
+      "plannedTest": "tests/integration/storage/STO-03",
+      "tests": [
+        "internal/app/storage/graph_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Graph guards tested; backend reconciliation, disk operations and actual base protection remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SNAP-01",
+      "acceptance": "Cold snapshot/revert preserves disk, configuration and required firmware/TPM identity; source branch remains safe.",
+      "minimumEvidence": "Real backend + guest",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/protection/manifest.go"
+      ],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/snapshot/SNAP-01",
+      "tests": [
+        "internal/app/protection/manifest_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Declared firmware/TPM completeness guards only; actual cold capture/revert not implemented."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SNAP-02",
+      "acceptance": "Supported live disk snapshot/revert uses safe graph transitions, including injected partial failure.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/snapshot/SNAP-02",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Supported live disk snapshot/revert uses safe graph transitions, including injected partial failure."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SNAP-03",
+      "acceptance": "Unsupported memory/TPM/live combinations fail before mutation or use explicitly approved cold capture.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/protection/manifest.go"
+      ],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/snapshot/SNAP-03",
+      "tests": [
+        "internal/app/protection/manifest_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Rejects unsupported live auxiliary claims in manifest model; actual backend preflight/capture integration remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "BAK-01",
+      "acceptance": "Encrypted backup includes all required artifacts; restore succeeds with original VM files and app database unavailable.",
+      "minimumEvidence": "Independent real restore",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/protection/manifest.go"
+      ],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/backup/BAK-01",
+      "tests": [
+        "internal/app/protection/manifest_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Manifest member checking only; restic capture/repository/independent guest restore not implemented."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "BAK-02",
+      "acceptance": "Supported live backup respects consistency; shutdown/interruption produces partial status, never a valid incomplete backup.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/backup/BAK-02",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Supported live backup respects consistency; shutdown/interruption produces partial status, never a valid incomplete backup."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "BAK-03",
+      "acceptance": "Failed quiesce cannot leave the guest frozen; independent guardian meets the documented bound under daemon crash.",
+      "minimumEvidence": "Real guest fault injection",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/backup/BAK-03",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Failed quiesce cannot leave the guest frozen; independent guardian meets the documented bound under daemon crash."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "BAK-04",
+      "acceptance": "Retention/pruning honors pins, repository locks and active jobs; verification detects corrupted/missing data.",
+      "minimumEvidence": "Real repository",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/backup/BAK-04",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Retention/pruning honors pins, repository locks and active jobs; verification detects corrupted/missing data."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "BAK-05",
+      "acceptance": "Scheduled capture obeys timezone, missed-run and credential-unavailable policy; no silent consistency downgrade.",
+      "minimumEvidence": "Service/reboot tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/backup/BAK-05",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Scheduled capture obeys timezone, missed-run and credential-unavailable policy; no silent consistency downgrade."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "BAK-06",
+      "acceptance": "Isolated test restore catches identity/address conflicts and reports the exact readiness verified.",
+      "minimumEvidence": "Independent real restore",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/protection",
+      "plannedTest": "tests/integration/backup/BAK-06",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Isolated test restore catches identity/address conflicts and reports the exact readiness verified."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "DEV-01",
+      "acceptance": "USB attach/detach works live and persistently where supported, with serial and port identity behavior verified.",
+      "minimumEvidence": "Physical USB host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/integration/devices/DEV-01",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "USB attach/detach works live and persistently where supported, with serial and port identity behavior verified."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "DEV-02",
+      "acceptance": "Identical devices, missing device, disconnect/reconnect and host-use conflict never attach the wrong device silently.",
+      "minimumEvidence": "Physical USB host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/devices/usb.go"
+      ],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/integration/devices/DEV-02",
+      "tests": [
+        "internal/app/devices/usb_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Synthetic USB selector tests only; actual inventory/conflict detection, attach, reconnect and physical tests remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "DEV-03",
+      "acceptance": "PCI/IOMMU discovery is read-only; unsupported passthrough never changes bootloader or host drivers.",
+      "minimumEvidence": "Physical host",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/integration/devices/DEV-03",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "PCI/IOMMU discovery is read-only; unsupported passthrough never changes bootloader or host drivers."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "DEV-04",
+      "acceptance": "Serial/SSH/viewer access and supported shares/clipboard honor opt-in and endpoint exposure rules.",
+      "minimumEvidence": "Real guests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 5,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/integration/devices/DEV-04",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Serial/SSH/viewer access and supported shares/clipboard honor opt-in and endpoint exposure rules."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "GUEST-01",
+      "acceptance": "Cloud-init and supported guest transports establish a non-root user/keys and report readiness truthfully.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/guest",
+      "plannedTest": "tests/integration/guest/GUEST-01",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Cloud-init and supported guest transports establish a non-root user/keys and report readiness truthfully."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "GUEST-02",
+      "acceptance": "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/guest",
+      "plannedTest": "tests/integration/guest/GUEST-02",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "GUEST-03",
+      "acceptance": "Missing guest agent/network/SSH credentials produce guidance, not guessed IPs or insecure host-key bypass.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/guest",
+      "plannedTest": "tests/integration/guest/GUEST-03",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Missing guest agent/network/SSH credentials produce guidance, not guessed IPs or insecure host-key bypass."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "LAB-01",
+      "acceptance": "Multi-VM DAG applies successfully; second unchanged apply is a no-op with stable identities.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/lab",
+      "plannedTest": "tests/integration/lab/LAB-01",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Multi-VM DAG applies successfully; second unchanged apply is a no-op with stable identities."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "LAB-02",
+      "acceptance": "Cycle, duplicate identity, unknown template and address conflict fail during validation/preflight.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/lab/validate.go",
+        "internal/validation/validate.go"
+      ],
+      "plannedImplementation": "internal/app/lab",
+      "plannedTest": "tests/integration/lab/LAB-02",
+      "tests": [
+        "internal/validation/validate_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Schema/DAG/network validation available in both interfaces; actual template resolution and backend preflight remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "LAB-03",
+      "acceptance": "Mid-DAG failure can resume safely; destruction preserves external networks, retained disks and backups.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/lab",
+      "plannedTest": "tests/integration/lab/LAB-03",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Mid-DAG failure can resume safely; destruction preserves external networks, retained disks and backups."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "LAB-04",
+      "acceptance": "Template capture generalizes only a copy; clones receive intended identity and remain bound to immutable version.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/lab",
+      "plannedTest": "tests/integration/lab/LAB-04",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Template capture generalizes only a copy; clones receive intended identity and remain bound to immutable version."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "LAB-05",
+      "acceptance": "Coordinated cold capture restores into a new namespace with correct dependencies and disclosed consistency window.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 6,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/app/lab",
+      "plannedTest": "tests/integration/lab/LAB-05",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Coordinated cold capture restores into a new namespace with correct dependencies and disclosed consistency window."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "JOB-01",
+      "acceptance": "Closing either client leaves the job running; reconnect shows coherent status and ordered events.",
+      "minimumEvidence": "Service integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/operations/engine.go",
+        "internal/transport/local/socket_linux.go"
+      ],
+      "plannedImplementation": "internal/operations",
+      "plannedTest": "tests/integration/recovery/JOB-01",
+      "tests": [
+        "internal/transport/local/socket_linux_test.go"
+      ],
+      "evidence": [
+        "ipc-tests-001"
+      ],
+      "outstanding": [
+        "Coordinator separation implemented; long-running actual VM job client-detach/reconnect drill remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "JOB-02",
+      "acceptance": "Crash/reboot reconciles uncertain effects rather than blindly rerunning destructive steps.",
+      "minimumEvidence": "Fault injection",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/operations/engine.go",
+        "internal/store/store.go"
+      ],
+      "plannedImplementation": "internal/operations",
+      "plannedTest": "tests/integration/recovery/JOB-02",
+      "tests": [
+        "internal/operations/engine_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Subprocess crash after fsynced fixture effect reconciles without replay; actual backend/reboot fault matrix remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "JOB-03",
+      "acceptance": "Idempotency key retries yield the same operation; changed input with reused key is rejected.",
+      "minimumEvidence": "Unit + integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/operations/engine.go",
+        "internal/store/store.go"
+      ],
+      "plannedImplementation": "internal/operations",
+      "plannedTest": "tests/integration/recovery/JOB-03",
+      "tests": [
+        "internal/operations/engine_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "JOB-04",
+      "acceptance": "Multiple clients and external changes are serialized/rechecked correctly, including resource busy conditions.",
+      "minimumEvidence": "Integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/store/store.go",
+        "internal/operations/engine.go"
+      ],
+      "plannedImplementation": "internal/operations",
+      "plannedTest": "tests/integration/recovery/JOB-04",
+      "tests": [
+        "internal/transport/local/socket_linux_test.go"
+      ],
+      "evidence": [
+        "ipc-tests-001"
+      ],
+      "outstanding": [
+        "Database/socket singleton and persisted locks exist; multi-client resource contention/backend drift matrix remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SEC-01",
+      "acceptance": "Wrong UID/socket clients and unauthorized helper actions are rejected; no generic root execution primitive exists.",
+      "minimumEvidence": "Security integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/transport/local/socket_linux.go",
+        "internal/helper/authorization.go"
+      ],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/security/SEC-01",
+      "tests": [
+        "internal/transport/local/socket_linux_test.go",
+        "internal/helper/authorization_test.go"
+      ],
+      "evidence": [
+        "ipc-tests-001",
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Peer/socket/grant unit checks pass; cross-UID and actual privileged helper integration remain unexecuted."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SEC-02",
+      "acceptance": "Secrets and guest sensitive artifacts remain absent from default logs, telemetry and diagnostics.",
+      "minimumEvidence": "Automated security",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "not-implemented",
+      "implementationPaths": [],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/security/SEC-02",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Secrets and guest sensitive artifacts remain absent from default logs, telemetry and diagnostics."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SEC-03",
+      "acceptance": "Malicious paths, filenames, terminal control sequences and subprocess inputs cannot escape or inject commands.",
+      "minimumEvidence": "Fuzz + security tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/wire/json.go",
+        "internal/validation/validate.go",
+        "internal/app/importer/ova.go"
+      ],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/security/SEC-03",
+      "tests": [
+        "internal/wire/json_test.go",
+        "internal/app/importer/ova_test.go",
+        "internal/validation/validate_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SEC-04",
+      "acceptance": "Plugin confinement blocks undeclared files/sockets/network; sandbox unavailable fails closed.",
+      "minimumEvidence": "Linux sandbox tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/platform/linux/sandbox.go",
+        "internal/plugins/runner.go"
+      ],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/security/SEC-04",
+      "tests": [
+        "internal/platform/linux/sandbox_test.go"
+      ],
+      "evidence": [
+        "sandbox-tests-001"
+      ],
+      "outstanding": [
+        "Successful namespace checks and unavailable-sandbox refusal; full file-grant/network/FD/security-framework matrix remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "SEC-05",
+      "acceptance": "Plan/hash/expiry/package substitution invalidates grants; a plugin cannot turn read permission into mutation.",
+      "minimumEvidence": "Security integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 2,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/operations/canonical.go",
+        "internal/operations/engine.go",
+        "internal/helper/authorization.go",
+        "internal/plugins/package.go"
+      ],
+      "plannedImplementation": "internal/platform/linux",
+      "plannedTest": "tests/security/SEC-05",
+      "tests": [
+        "internal/operations/engine_test.go",
+        "internal/helper/authorization_test.go",
+        "internal/plugins/package_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "EXT-01",
+      "acceptance": "Reference action and a second-language fixture pass handshake/schema/plan/execute/error contracts.",
+      "minimumEvidence": "Simulated contract",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 7,
+      "status": "in-progress",
+      "implementationPaths": [
+        "sdk/go/server.go",
+        "sdk/go/example/summary.go",
+        "internal/plugins/runner.go"
+      ],
+      "plannedImplementation": "internal/plugins",
+      "plannedTest": "tests/integration/plugins/EXT-01",
+      "tests": [
+        "sdk/go/server_test.go",
+        "internal/plugins/runner_test.go"
+      ],
+      "evidence": [
+        "plugin-conformance-001",
+        "sdk-tests-001"
+      ],
+      "outstanding": [
+        "Go and Python confined summary contracts pass; complete manifest/schema/action-output conformance matrix remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "EXT-02",
+      "acceptance": "Simulated provider supports lifecycle/reconcile and reports unsupported capabilities without modifying core.",
+      "minimumEvidence": "Simulated contract",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 7,
+      "status": "in-progress",
+      "implementationPaths": [
+        "tests/fixtures/plugins/provider/main.go",
+        "internal/plugins/runner.go"
+      ],
+      "plannedImplementation": "internal/plugins",
+      "plannedTest": "tests/integration/plugins/EXT-02",
+      "tests": [
+        "internal/plugins/runner_test.go"
+      ],
+      "evidence": [
+        "plugin-conformance-001"
+      ],
+      "outstanding": [
+        "Simulated create/partial/restart/reconcile/dedup fixture passes; complete provider pagination/lifecycle fixture matrix remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "EXT-03",
+      "acceptance": "Malformed/duplicate-key/oversized frames, timeouts, crash and cancellation are handled safely.",
+      "minimumEvidence": "Fuzz + contract",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 7,
+      "status": "in-progress",
+      "implementationPaths": [
+        "sdk/go/server.go",
+        "internal/wire/json.go",
+        "internal/plugins/runner.go"
+      ],
+      "plannedImplementation": "internal/plugins",
+      "plannedTest": "tests/integration/plugins/EXT-03",
+      "tests": [
+        "sdk/go/server_test.go",
+        "internal/wire/json_test.go"
+      ],
+      "evidence": [
+        "core-tests-001",
+        "sdk-tests-001"
+      ],
+      "outstanding": [
+        "Concurrent cancellation and strict frame tests pass; heartbeat failure/deadline/provider quarantine adversarial matrix remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "EXT-04",
+      "acceptance": "Package signature/digest/path checks, upgrade/rollback and grant revocation behave as documented.",
+      "minimumEvidence": "Security integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 7,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/plugins/package.go"
+      ],
+      "plannedImplementation": "internal/plugins",
+      "plannedTest": "tests/integration/plugins/EXT-04",
+      "tests": [
+        "internal/plugins/package_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Signing/hashes/path and permission intersection tested; installed version activation, rollback and persistent revocation remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "EXT-05",
+      "acceptance": "Plugin-added structured action is reachable from both CLI and TUI with the same approved operation.",
+      "minimumEvidence": "Interface integration",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 7,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/plugins/register_linux.go",
+        "internal/ui/registry.go"
+      ],
+      "plannedImplementation": "internal/plugins",
+      "plannedTest": "tests/integration/plugins/EXT-05",
+      "tests": [
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Plugin validate/test developer tools are shared; normal approved plugin action contributions not implemented."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "UX-01",
+      "acceptance": "Every mandatory operation has equivalent CLI/TUI behavior, validation, permission and recovery paths.",
+      "minimumEvidence": "Registry + interaction tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 8,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/ui/registry.go",
+        "internal/ui/cli/root.go",
+        "internal/ui/tui/model.go"
+      ],
+      "plannedImplementation": "internal/ui",
+      "plannedTest": "tests/integration/ui/UX-01",
+      "tests": [
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "UX-02",
+      "acceptance": "Resize, navigation, focus, cancellation and errors work in supported terminals without color-only meaning.",
+      "minimumEvidence": "Automated + manual",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 8,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/ui/tui/model.go"
+      ],
+      "plannedImplementation": "internal/ui",
+      "plannedTest": "tests/integration/ui/UX-02",
+      "tests": [
+        "internal/ui/tui/model_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "UX-03",
+      "acceptance": "JSON/NDJSON are stable and clean; noninteractive commands never hang for hidden prompts.",
+      "minimumEvidence": "Golden/contract tests",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 8,
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/ui/cli/root.go",
+        "internal/transport/local/socket_linux.go"
+      ],
+      "plannedImplementation": "internal/ui",
+      "plannedTest": "tests/integration/ui/UX-03",
+      "tests": [
+        "internal/ui/cli/root_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Clean JSON/noninteractive basic contracts pass; streaming NDJSON, complete exit matrix and wait recovery remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "REL-01",
+      "acceptance": "RPM/DEB fresh install, upgrade, migrations and uninstall preserve user VMs/data and follow approved host setup.",
+      "minimumEvidence": "Clean host matrix",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 9,
+      "status": "in-progress",
+      "implementationPaths": [
+        "scripts/package.py",
+        "packaging/install.py",
+        "internal/store/store.go"
+      ],
+      "plannedImplementation": "packaging",
+      "plannedTest": "tests/integration/release/REL-01",
+      "tests": [
+        "tests/integration/artifacts_test.py",
+        "internal/store/store_test.go"
+      ],
+      "evidence": [
+        "artifact-tests-001",
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Development packages and staged preservation tested; clean Fedora/Ubuntu/Debian install/upgrade/uninstall and actual migration matrix remain."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "REL-02",
+      "acceptance": "Dependency-free core/protocol packages and sample plugin build on declared OS/architecture test targets.",
+      "minimumEvidence": "Cross-build CI",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 9,
+      "status": "in-progress",
+      "implementationPaths": [
+        "scripts/cross-build.sh",
+        "sdk/go/server.go"
+      ],
+      "plannedImplementation": "packaging",
+      "plannedTest": "tests/integration/release/REL-02",
+      "tests": [],
+      "evidence": [
+        "cross-build-001"
+      ],
+      "outstanding": [
+        "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "REL-03",
+      "acceptance": "User/admin/plugin docs and examples pass validation and correspond to actual command help.",
+      "minimumEvidence": "Documentation CI",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 9,
+      "status": "in-progress",
+      "implementationPaths": [
+        "docs/cli-reference.md",
+        "docs/getting-started.md",
+        "docs/operator-workflows.md",
+        "docs/plugin-author-guide.md",
+        "scripts/traceability.py"
+      ],
+      "plannedImplementation": "packaging",
+      "plannedTest": "tests/integration/release/REL-03",
+      "tests": [
+        "internal/validation/validate_test.go"
+      ],
+      "evidence": [
+        "core-tests-001"
+      ],
+      "outstanding": [
+        "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    },
+    {
+      "id": "REL-04",
+      "acceptance": "Entire mandatory suite passes on the frozen support matrix; remaining issues and exclusions are explicit.",
+      "minimumEvidence": "Release evidence review",
+      "v1Required": true,
+      "owner": "core-integration",
+      "gate": 9,
+      "status": "in-progress",
+      "implementationPaths": [
+        "SHIP-CHECKLIST.md",
+        "scripts/traceability.py",
+        "docs/evidence/requirements.json"
+      ],
+      "plannedImplementation": "packaging",
+      "plannedTest": "tests/integration/release/REL-04",
+      "tests": [],
+      "evidence": [],
+      "outstanding": [
+        "Full release blocked: incomplete mandatory code, no authorized disposable VM target, and missing required host/guest/hardware/restore evidence."
+      ],
+      "hardwareVerified": false,
+      "released": false
+    }
+  ]
+}

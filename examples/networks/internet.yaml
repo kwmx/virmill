@@ -1,0 +1,12 @@
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: internet
+spec:
+  type: nat
+  ipv4:
+    cidr: auto
+    dhcp: {enabled: true, advertiseDefaultRoute: true}
+  ipv6: {mode: disabled}
+  hostAccess: services-only
+  egress: any

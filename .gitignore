@@ -1,0 +1,7 @@
+.tools/
+build/
+dist/
+*.test
+__pycache__/
+.pytest_cache/
+

@@ -1,0 +1,12 @@
+[Unit]
+Description=Virmill bounded privileged helper socket
+
+[Socket]
+ListenStream=/run/virmill-host-helper/control.sock
+SocketMode=0660
+SocketUser=root
+SocketGroup=root
+DirectoryMode=0700
+
+[Install]
+WantedBy=sockets.target

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/lab.schema.json",
+  "title": "Virmill lab",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "kind": {
+      "const": "Lab"
+    },
+    "metadata": {
+      "$ref": "https://virmill.example/schemas/v1/common.schema.json#/$defs/metadata"
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,62}$"
+              },
+              "spec": {
+                "$ref": "https://virmill.example/schemas/v1/common.schema.json#/$defs/networkSpec"
+              },
+              "externalRef": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false,
+            "oneOf": [
+              {
+                "required": [
+                  "spec"
+                ],
+                "not": {
+                  "required": [
+                    "externalRef"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "externalRef"
+                ],
+                "not": {
+                  "required": [
+                    "spec"
+                  ]
+                }
+              }
+            ]
+          },
+          "minItems": 1
+        },
+        "machines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,62}$"
+              },
+              "spec": {
+                "$ref": "https://virmill.example/schemas/v1/common.schema.json#/$defs/vmSpec"
+              },
+              "dependsOn": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "machine": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,62}$"
+                    },
+                    "ready": {
+                      "enum": [
+                        "defined",
+                        "running",
+                        "guest-agent-ready",
+                        "ssh-ready"
+                      ]
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 86400
+                    }
+                  },
+                  "required": [
+                    "machine",
+                    "ready",
+                    "timeoutSeconds"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "spec"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "onFailure": {
+          "enum": [
+            "preserve",
+            "compensate-created"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "networks",
+        "machines",
+        "onFailure"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "additionalProperties": false
+}

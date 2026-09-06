@@ -1,0 +1,26 @@
+{
+  "manifestVersion": "1",
+  "id": "example.virmill.vm-summary",
+  "name": "VM Summary Example",
+  "version": "0.1.0",
+  "protocol": {
+    "minVersion": "1.0",
+    "maxVersion": "1.0",
+    "transport": "stdio-jsonrpc"
+  },
+  "entrypoints": {
+    "linux/amd64": {
+      "path": "vm-summary"
+    }
+  },
+  "extensionTypes": [
+    "action"
+  ],
+  "permissions": [
+    {
+      "name": "vm.read",
+      "scope": "selection"
+    }
+  ],
+  "network": "none"
+}

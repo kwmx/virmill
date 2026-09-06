@@ -1,0 +1,269 @@
+package cli
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/spf13/cobra"
+	"golang.org/x/term"
+	"io"
+	"os"
+	"sort"
+	"strings"
+	"time"
+	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/buildinfo"
+	"virmill.local/core/internal/domain"
+	"virmill.local/core/internal/operations"
+	"virmill.local/core/internal/ui"
+	"virmill.local/core/internal/ui/tui"
+	"virmill.local/core/internal/validation"
+	"virmill.local/core/internal/wire"
+)
+
+type Options struct {
+	Connection              string
+	Output                  string
+	NonInteractive          bool
+	Timeout                 time.Duration
+	Quiet, Verbose, NoColor bool
+	Config                  string
+}
+
+func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
+	o := &Options{}
+	root := &cobra.Command{Use: "virmill", Short: "Virmill local Linux virtualization suite (development build)", SilenceUsage: true, SilenceErrors: true}
+	root.SetOut(out)
+	root.SetErr(errOut)
+	f := root.PersistentFlags()
+	f.StringVar(&o.Connection, "connection", "qemu:///system", "Explicit local libvirt connection")
+	f.StringVar(&o.Output, "output", "table", "table, json or ndjson")
+	f.BoolVar(&o.NonInteractive, "non-interactive", false, "Never prompt")
+	f.DurationVar(&o.Timeout, "timeout", 30*time.Second, "Client wait timeout; jobs continue after detach")
+	f.BoolVar(&o.Quiet, "quiet", false, "Suppress human output")
+	f.BoolVar(&o.Verbose, "verbose", false, "Verbose diagnostics")
+	f.BoolVar(&o.NoColor, "no-color", false, "Disable color (output is plain by default)")
+	f.StringVar(&o.Config, "config", "", "Configuration path (reserved; nonempty input is rejected)")
+	root.PersistentPreRunE = func(c *cobra.Command, args []string) error {
+		if o.Config != "" {
+			return domain.Fail("NOT_IMPLEMENTED", "configuration file loading is not yet implemented")
+		}
+		if o.Output != "table" && o.Output != "json" && o.Output != "ndjson" {
+			return domain.Fail("INVALID_INPUT", "output must be table, json or ndjson")
+		}
+		if o.Timeout <= 0 {
+			return domain.Fail("INVALID_INPUT", "timeout must be positive")
+		}
+		return nil
+	}
+	root.RunE = func(c *cobra.Command, args []string) error {
+		if term.IsTerminal(int(os.Stdin.Fd())) && o.Output == "table" && !o.NonInteractive {
+			return tui.Run(client, o.Connection)
+		}
+		return c.Help()
+	}
+	emit := func(response app.Response) error {
+		if !(o.Quiet && o.Output == "table") {
+			var b []byte
+			var e error
+			if o.Output == "table" {
+				b, e = json.MarshalIndent(response, "", "  ")
+			} else {
+				b, e = json.Marshal(response)
+			}
+			if e != nil {
+				return e
+			}
+			if o.Output == "table" {
+				fmt.Fprintln(out, validation.SafeText(string(b)))
+			} else {
+				fmt.Fprintln(out, string(b))
+			}
+		}
+		if response.Error != nil {
+			return response.Error
+		}
+		return nil
+	}
+	call := func(c *cobra.Command, method string, r app.Request) error {
+		r.Connection = o.Connection
+		ctx, cancel := context.WithTimeout(c.Context(), o.Timeout)
+		defer cancel()
+		resp, e := client.Call(ctx, method, r)
+		if e != nil {
+			d, ok := e.(*domain.Error)
+			if !ok {
+				d = domain.Fail("OPERATION_FAILED", e.Error())
+			}
+			return emit(app.Response{APIVersion: domain.APIVersion, Warnings: []string{}, Error: d})
+		}
+		return emit(resp)
+	}
+	root.AddCommand(&cobra.Command{Use: "version", Short: "Show application and build contracts", RunE: func(c *cobra.Command, args []string) error {
+		return emit(app.Response{APIVersion: domain.APIVersion, Data: buildinfo.Info(), Warnings: []string{}})
+	}})
+	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Read-only prerequisites; never applies repairs", RunE: func(c *cobra.Command, args []string) error { return call(c, "host.doctor", app.Request{}) }})
+	root.AddCommand(&cobra.Command{Use: "tui", Short: "Open the keyboard interface", RunE: func(c *cobra.Command, args []string) error {
+		if o.NonInteractive {
+			return domain.Fail("INVALID_INPUT", "TUI requires an interactive terminal")
+		}
+		return tui.Run(client, o.Connection)
+	}})
+	parents := map[string]*cobra.Command{"": root}
+	add := func(path string, leaf *cobra.Command) {
+		parts := strings.Split(path, " ")
+		current := root
+		prefix := ""
+		for _, p := range parts[:len(parts)-1] {
+			if prefix != "" {
+				prefix += " "
+			}
+			prefix += p
+			if parents[prefix] == nil {
+				parent := &cobra.Command{Use: p, Short: "Manage " + prefix}
+				current.AddCommand(parent)
+				parents[prefix] = parent
+			}
+			current = parents[prefix]
+		}
+		current.AddCommand(leaf)
+	}
+	for _, item := range ui.Actions {
+		a := item
+		parts := strings.Split(a.Command, " ")
+		use := parts[len(parts)-1]
+		if a.Argument != "" {
+			use += " " + strings.ToUpper(a.Argument)
+		}
+		var input string
+		var after int64
+		var hard, planOnly bool
+		cmd := &cobra.Command{Use: use, Short: a.Summary, Long: a.Summary + ". Calls the shared coordinator service. Mutations return an immutable preview; apply it with plan apply and exact acknowledgements. No privilege is implied by --yes.", Args: cobra.NoArgs}
+		if a.Argument != "" {
+			cmd.Args = cobra.ExactArgs(1)
+		}
+		cmd.Flags().StringVar(&input, "input", "{}", "JSON parameters; secrets must be references")
+		cmd.Flags().Int64Var(&after, "after", 0, "Event cursor")
+		if a.Mutation != "" {
+			cmd.Flags().BoolVar(&planOnly, "plan", true, "Return preview (apply separately after review)")
+		}
+		if a.Command == "vm stop" {
+			cmd.Flags().BoolVar(&hard, "hard", false, "Plan abrupt power-off, requiring data-loss acknowledgement")
+		}
+		cmd.RunE = func(c *cobra.Command, args []string) error {
+			r := app.Request{Action: a.Mutation, After: after}
+			if a.Argument == "id" {
+				r.ID = args[0]
+			}
+			if a.Argument == "path" {
+				r.Path = args[0]
+			}
+			if hard {
+				r.Action = "hard-stop"
+			}
+			if e := wire.Decode([]byte(input), &r.Input); e != nil {
+				return domain.Fail("INVALID_INPUT", "invalid input JSON")
+			}
+			if a.Mutation != "" && !planOnly {
+				return domain.Fail("INVALID_INPUT", "review and apply the generated plan using plan apply")
+			}
+			return call(c, a.Method, r)
+		}
+		add(a.Command, cmd)
+	}
+	var digest, key string
+	var acks []string
+	var wait, detach bool
+	apply := &cobra.Command{Use: "apply PLAN_ID", Short: "Apply an immutable plan with explicit digest and acknowledgements", Args: cobra.ExactArgs(1)}
+	apply.Flags().StringVar(&digest, "digest", "", "Exact reviewed plan digest (required)")
+	apply.Flags().StringVar(&key, "idempotency-key", "", "Stable request key (required)")
+	apply.Flags().StringSliceVar(&acks, "ack", nil, "Explicit plan acknowledgement IDs")
+	apply.Flags().BoolVar(&wait, "wait", false, "Wait for terminal operation state")
+	apply.Flags().BoolVar(&detach, "detach", false, "Return after durable submission")
+	apply.RunE = func(c *cobra.Command, args []string) error {
+		if digest == "" || key == "" {
+			return domain.Fail("INVALID_INPUT", "--digest and --idempotency-key required")
+		}
+		if wait && detach {
+			return domain.Fail("INVALID_INPUT", "choose --wait or --detach")
+		}
+		ctx, cancel := context.WithTimeout(c.Context(), o.Timeout)
+		defer cancel()
+		resp, e := client.Call(ctx, "operation.apply", app.Request{Connection: o.Connection, Apply: &operations.ApplyRequest{PlanID: args[0], PlanDigest: digest, IdempotencyKey: key, Acknowledgements: acks}})
+		if e != nil {
+			return e
+		}
+		if resp.Error != nil || !wait {
+			return emit(resp)
+		}
+		b, _ := json.Marshal(resp.Data)
+		var job domain.Job
+		if e = json.Unmarshal(b, &job); e != nil {
+			return e
+		}
+		ticker := time.NewTicker(200 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return emit(app.Response{APIVersion: domain.APIVersion, Data: job, Warnings: []string{"Client detached; operation may still be running"}, Error: domain.Fail("WAIT_TIMEOUT", "wait timed out")})
+			case <-ticker.C:
+				resp, e = client.Call(ctx, "operation.get", app.Request{ID: job.ID})
+				if e != nil {
+					return e
+				}
+				if resp.Error != nil {
+					return emit(resp)
+				}
+				b, _ = json.Marshal(resp.Data)
+				if e = json.Unmarshal(b, &job); e != nil {
+					return e
+				}
+				if domain.Terminal(job.State) {
+					if job.Error != nil {
+						resp.Error = job.Error
+					}
+					return emit(resp)
+				}
+			}
+		}
+	}
+	add("plan apply", apply)
+	completion := &cobra.Command{Use: "completion SHELL", Short: "Generate shell completions", Args: cobra.ExactArgs(1), ValidArgs: []string{"bash", "zsh", "fish", "powershell"}, RunE: func(c *cobra.Command, args []string) error {
+		switch args[0] {
+		case "bash":
+			return root.GenBashCompletion(out)
+		case "zsh":
+			return root.GenZshCompletion(out)
+		case "fish":
+			return root.GenFishCompletion(out, true)
+		case "powershell":
+			return root.GenPowerShellCompletion(out)
+		default:
+			return domain.Fail("INVALID_INPUT", "unknown shell")
+		}
+	}}
+	root.AddCommand(completion)
+	ref := &cobra.Command{Use: "reference", Hidden: true, RunE: func(c *cobra.Command, args []string) error { return Reference(root, out) }}
+	root.AddCommand(ref)
+	return root
+}
+func Reference(root *cobra.Command, w io.Writer) error {
+	fmt.Fprint(w, "# Virmill generated CLI reference\n\nDevelopment build. Only implemented commands appear here; the full 1.0 contract remains mandatory.\n\n")
+	var visit func(*cobra.Command)
+	visit = func(c *cobra.Command) {
+		if c.Hidden {
+			return
+		}
+		if c.Runnable() {
+			fmt.Fprintf(w, "## `%s`\n\n%s\n\n```text\n%s```\n\n", c.CommandPath(), c.Short, c.UsageString())
+		}
+		children := c.Commands()
+		sort.Slice(children, func(i, j int) bool { return children[i].Name() < children[j].Name() })
+		for _, child := range children {
+			visit(child)
+		}
+	}
+	visit(root)
+	return nil
+}

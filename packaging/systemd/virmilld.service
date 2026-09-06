@@ -1,0 +1,15 @@
+[Unit]
+Description=Virmill local coordinator
+Documentation=man:virmill(1)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/virmilld
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

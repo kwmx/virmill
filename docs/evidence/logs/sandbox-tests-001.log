@@ -1,0 +1,5 @@
+=== RUN   TestSandboxPolicyAndFailClosed
+    sandbox_test.go:51: real namespace probe prevented access to undeclared temporary host file and libvirt socket; network attack still requires full qualification
+--- PASS: TestSandboxPolicyAndFailClosed (0.01s)
+PASS
+ok  	virmill.local/core/internal/platform/linux	0.013s

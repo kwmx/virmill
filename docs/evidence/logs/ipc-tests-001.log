@@ -1,0 +1,4 @@
+=== RUN   TestPrivateRPCAndSingleton
+--- PASS: TestPrivateRPCAndSingleton (0.00s)
+PASS
+ok  	virmill.local/core/internal/transport/local	0.007s

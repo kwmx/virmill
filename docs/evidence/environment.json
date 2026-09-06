@@ -1,0 +1,63 @@
+{
+  "recordedAt": "2026-09-06T18:14:10.406546+00:00",
+  "revision": "2008f30066496c7085a4589c5fde8f3a58aabd73",
+  "osRelease": "NAME=\"Fedora Linux\"\nVERSION=\"44 (Workstation Edition)\"\nRELEASE_TYPE=stable\nID=fedora\nVERSION_ID=44\nVERSION_CODENAME=\"\"\nPRETTY_NAME=\"Fedora Linux 44 (Workstation Edition)\"\nANSI_COLOR=\"0;38;2;60;110;180\"\nLOGO=fedora-logo-icon\nCPE_NAME=\"cpe:/o:fedoraproject:fedora:44\"\nDEFAULT_HOSTNAME=\"fedora\"\nHOME_URL=\"https://fedoraproject.org/\"\nDOCUMENTATION_URL=\"https://docs.fedoraproject.org/en-US/fedora/f44/\"\nSUPPORT_URL=\"https://ask.fedoraproject.org/\"\nBUG_REPORT_URL=\"https://bugzilla.redhat.com/\"\nREDHAT_BUGZILLA_PRODUCT=\"Fedora\"\nREDHAT_BUGZILLA_PRODUCT_VERSION=44\nREDHAT_SUPPORT_PRODUCT=\"Fedora\"\nREDHAT_SUPPORT_PRODUCT_VERSION=44\nSUPPORT_END=2027-05-19\nVARIANT=\"Workstation Edition\"\nVARIANT_ID=workstation\n",
+  "kvmVisible": false,
+  "disposableHostAuthorized": false,
+  "commands": [
+    {
+      "command": [
+        "uname",
+        "-srmo"
+      ],
+      "exitCode": 0,
+      "stdout": "Linux 7.1.13-200.fc44.x86_64 x86_64 GNU/Linux\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "rpm",
+        "-q",
+        "libvirt-libs",
+        "qemu-kvm",
+        "qemu-img",
+        "edk2-ovmf",
+        "swtpm",
+        "bubblewrap",
+        "NetworkManager",
+        "firewalld",
+        "systemd",
+        "polkit",
+        "gcc",
+        "python3",
+        "rpm-build",
+        "libvirt-devel",
+        "restic"
+      ],
+      "exitCode": 2,
+      "stdout": "libvirt-libs-12.0.0-3.fc44.x86_64\nqemu-kvm-10.2.2-1.fc44.x86_64\nqemu-img-10.2.2-1.fc44.x86_64\nedk2-ovmf-20260812-4.fc44.noarch\nswtpm-0.10.2-1.fc44.x86_64\nbubblewrap-0.12.0-1.fc44.x86_64\nNetworkManager-1.56.1-2.fc44.x86_64\nfirewalld-2.4.4-1.fc44.noarch\nsystemd-259.8-1.fc44.x86_64\npolkit-127-2.fc44.2.x86_64\ngcc-16.2.1-2.fc44.x86_64\npython3-3.14.7-1.fc44.x86_64\nrpm-build-6.0.2-1.fc44.x86_64\npackage libvirt-devel is not installed\npackage restic is not installed\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "sqlite3",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdout": "3.53.4 2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc (64-bit)\n",
+      "stderr": ""
+    }
+  ],
+  "outerHostReadOnlyProbe": {
+    "kvmExists": true,
+    "readWriteAccess": true,
+    "uid": 1000,
+    "hostMutation": false,
+    "disposableTargetAuthorized": false
+  },
+  "goVersion": "go1.27.1 linux/amd64",
+  "goArchiveSHA256": "63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445",
+  "bundledSQLiteVersion": "3.53.4",
+  "vendoredSourceDigest": "7f635d89092d3869cfa3e3dd71ccaad10dbb2296d317f1a7ec871172934fe529",
+  "vendoredFileCount": 1045
+}

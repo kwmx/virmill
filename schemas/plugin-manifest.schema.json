@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/plugin-manifest.schema.json",
+  "title": "Virmill plugin-manifest",
+  "type": "object",
+  "properties": {
+    "manifestVersion": {
+      "const": "1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[A-Za-z0-9.-]+)?$"
+    },
+    "protocol": {
+      "type": "object",
+      "properties": {
+        "minVersion": {
+          "const": "1.0"
+        },
+        "maxVersion": {
+          "const": "1.0"
+        },
+        "transport": {
+          "const": "stdio-jsonrpc"
+        }
+      },
+      "required": [
+        "minVersion",
+        "maxVersion",
+        "transport"
+      ],
+      "additionalProperties": false
+    },
+    "entrypoints": {
+      "type": "object",
+      "patternProperties": {
+        "^(linux|darwin|windows)/(amd64|arm64)$": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_./-]+$"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "extensionTypes": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "action",
+          "catalog-source",
+          "guest-recipe",
+          "repository-adapter",
+          "provider",
+          "presentation"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]+$"
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "scope"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "network": {
+      "enum": [
+        "none",
+        "brokered",
+        "unrestricted"
+      ]
+    },
+    "configSchema": {
+      "type": "object"
+    },
+    "extensions": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+      },
+      "additionalProperties": false
+    },
+    "ui": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "placement": {
+            "enum": [
+              "vm.detail",
+              "vm.selection",
+              "dashboard"
+            ]
+          },
+          "inputSchema": {
+            "type": "object"
+          },
+          "outputSchema": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "action",
+          "title",
+          "placement"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "manifestVersion",
+    "id",
+    "name",
+    "version",
+    "protocol",
+    "entrypoints",
+    "extensionTypes",
+    "permissions",
+    "network"
+  ],
+  "additionalProperties": false
+}

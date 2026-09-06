@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/operation-plan.schema.json",
+  "title": "Virmill approved operation plan",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "planID": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actorUID": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "connectionID": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resourceIDs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "inputDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "planDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "beforeFingerprints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "requiredGrants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string"
+          },
+          "resourceID": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "resourceID"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "acknowledgements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "preconditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "idempotency": {
+            "enum": [
+              "read-only",
+              "idempotent",
+              "reconcile-before-retry",
+              "non-repeatable"
+            ]
+          },
+          "compensation": {
+            "type": "string"
+          },
+          "reconciliation": {
+            "type": "string"
+          },
+          "completionPredicate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "preconditions",
+          "idempotency",
+          "compensation",
+          "reconciliation",
+          "completionPredicate"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "estimates": {
+      "type": "object",
+      "properties": {
+        "additionalBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requiresDowntime": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "additionalBytes",
+        "requiresDowntime"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "apiVersion",
+    "planID",
+    "createdAt",
+    "expiresAt",
+    "actorUID",
+    "connectionID",
+    "operation",
+    "resourceIDs",
+    "inputDigest",
+    "planDigest",
+    "beforeFingerprints",
+    "requiredGrants",
+    "acknowledgements",
+    "risks",
+    "steps",
+    "estimates"
+  ],
+  "additionalProperties": false
+}
