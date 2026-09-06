@@ -24,6 +24,12 @@ if not command:
     p.error('command required')
 if not all(c.isalnum() or c in '-_' for c in a.id):
     p.error('invalid evidence ID')
+logs = ROOT / 'docs/evidence/logs'
+log = logs / (a.id + '.log')
+ledger = ROOT / 'docs/evidence/ledger.jsonl'
+known = [json.loads(line)['id'] for line in ledger.read_text().splitlines()] if ledger.exists() else []
+if log.exists() or a.id in known:
+    sys.exit('Evidence ID already exists; command was not rerun. Choose a new ID to preserve history.')
 files = []
 for top in ('cmd', 'internal', 'sdk', 'schemas', 'contracts', 'scripts', 'tests', 'packaging'):
     for f in sorted((ROOT / top).rglob('*')):
@@ -37,10 +43,10 @@ try:
     result = subprocess.run(command, cwd=ROOT / a.cwd, capture_output=True, text=True, timeout=a.timeout)
     code, output = result.returncode, result.stdout + result.stderr
 except subprocess.TimeoutExpired as e:
-    code, output = 124, 'Check timed out; no passing evidence.\n'
-logs = ROOT / 'docs/evidence/logs'
+    def decoded(value):
+        return value.decode('utf-8', errors='replace') if isinstance(value, bytes) else (value or '')
+    code, output = 124, decoded(e.stdout) + decoded(e.stderr) + '\nCheck timed out; no passing evidence.\n'
 logs.mkdir(exist_ok=True)
-log = logs / (a.id + '.log')
 if log.exists():
     sys.exit('Evidence ID already exists; choose a new ID to preserve history.')
 log.write_text(output)
@@ -50,6 +56,7 @@ entry = dict(id=a.id, at=at, revision=subprocess.check_output(['git','rev-parse'
              requirements=[s for s in a.requirements.split(',') if s], environment='environment.json',
              log=log.relative_to(ROOT/'docs/evidence').as_posix(), logSHA256=hashlib.sha256(log.read_bytes()).hexdigest())
 entry['fixtureDigests'] = {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in a.fixtures.split(',') if name}
+entry['testEnvironment'] = {key: os.environ[key] for key in ('VIRMILL_TEST_CONFORMANCE', 'VIRMILL_TEST_REQUIRE_IPC', 'SOURCE_DATE_EPOCH', 'CGO_ENABLED', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'GOPROXY') if key in os.environ}
 if 'SKIP' in output or '[no test files]' in output or 'BLOCKED' in output:
     entry['limitations'] = 'Review log for skipped/unavailable paths; command success is not acceptance of those paths.'
 with (ROOT/'docs/evidence/ledger.jsonl').open('a') as f:

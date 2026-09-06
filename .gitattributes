@@ -1,0 +1,2 @@
+# Evidence logs preserve command output byte-for-byte, including diagnostic indentation.
+docs/evidence/logs/** -whitespace
