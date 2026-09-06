@@ -1,0 +1,26 @@
+=== RUN   TestInstalledActionPinnedPlanAndDurableResult
+    actions_test.go:120: Confined Python action executed on synthetic selected records; exact result persisted, stale VM and revoked-grant plans refused. No VM/hardware effects.
+--- PASS: TestInstalledActionPinnedPlanAndDurableResult (0.27s)
+=== RUN   TestDeveloperScaffoldBuildAndSignedPackPlans
+--- PASS: TestDeveloperScaffoldBuildAndSignedPackPlans (1.09s)
+=== RUN   TestInstallUpdateRollbackPermissionAndPreservation
+--- PASS: TestInstallUpdateRollbackPermissionAndPreservation (0.22s)
+=== RUN   TestChangedPackageStalePlanAndImmutableVersion
+--- PASS: TestChangedPackageStalePlanAndImmutableVersion (0.08s)
+=== RUN   TestLifecycleRecoveryObservesCommitWithoutRelaunch
+--- PASS: TestLifecycleRecoveryObservesCommitWithoutRelaunch (0.03s)
+=== RUN   TestDistributionRejectsTrailingArchiveAndParentCollisions
+--- PASS: TestDistributionRejectsTrailingArchiveAndParentCollisions (0.00s)
+=== RUN   TestLifecycleRequiresActiveInvocationDispositionAndSchemaGuard
+--- PASS: TestLifecycleRequiresActiveInvocationDispositionAndSchemaGuard (0.06s)
+=== RUN   TestSignedPackageAndScopeIntersection
+--- PASS: TestSignedPackageAndScopeIntersection (0.00s)
+=== RUN   TestTwoLanguageConfinedConformance
+    runner_test.go:30: example.virmill.sdk-summary: [initialize identity and protocol describe unknown method rejected read-only plan and execute stale context rejected shutdown]
+    runner_test.go:30: example.virmill.python-summary: [initialize identity and protocol describe unknown method rejected read-only plan and execute stale context rejected shutdown]
+--- PASS: TestTwoLanguageConfinedConformance (0.04s)
+=== RUN   TestProviderCrashReconcileFixture
+    runner_test.go:82: simulated provider persisted partial fake effect, recovered after process restart, deduplicated and rejected backup; no actual VM or remote host
+--- PASS: TestProviderCrashReconcileFixture (0.02s)
+PASS
+ok  	virmill.local/core/internal/plugins	2.851s

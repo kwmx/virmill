@@ -122,7 +122,7 @@ func Pack(root string, key ed25519.PrivateKey, keyID string, w io.Writer) (strin
 		if d.IsDir() {
 			return nil
 		}
-		if name == "package-index.json" || name == "package-index.sig" {
+		if name == "package-index.json" || name == "package-index.sig" || name == ".virmill-package.tar" {
 			return errors.New("packer generates the inventory/signature; remove stale ones")
 		}
 		st, e := d.Info()
@@ -136,7 +136,7 @@ func Pack(root string, key ed25519.PrivateKey, keyID string, w io.Writer) (strin
 			return errors.New("package exceeds bounds")
 		}
 		total += st.Size()
-		b, e := os.ReadFile(path)
+		b, e := readRegular(path, PackageLimit-total+st.Size())
 		if e != nil {
 			return e
 		}
@@ -161,6 +161,11 @@ func Pack(root string, key ed25519.PrivateKey, keyID string, w io.Writer) (strin
 		b, ok := files[entry.Path]
 		if !ok || entry.SHA256 == "" || entry.SHA256 != hashBytes(b) {
 			return "", errors.New("distribution entrypoint requires its actual SHA-256")
+		}
+		for _, f := range index.Files {
+			if f.Path == entry.Path && !f.Executable {
+				return "", errors.New("distribution entrypoint must be executable")
+			}
 		}
 	}
 	canonical, e := operations.Canonical(index)
@@ -199,7 +204,8 @@ func Pack(root string, key ed25519.PrivateKey, keyID string, w io.Writer) (strin
 func Verify(r io.Reader, trusted map[string]ed25519.PublicKey) (Verified, error) {
 	var v Verified
 	v.files = map[string][]byte{}
-	tr := tar.NewReader(io.LimitReader(r, PackageLimit+8<<20))
+	bounded := &io.LimitedReader{R: r, N: PackageLimit + (8 << 20) + 1}
+	tr := tar.NewReader(bounded)
 	total := int64(0)
 	seen := map[string]bool{}
 	for {
@@ -216,11 +222,24 @@ func Verify(r io.Reader, trusted map[string]ed25519.PublicKey) (Verified, error)
 		if e = packagePath(h.Name); e != nil {
 			return v, e
 		}
+		if h.Name == ".virmill-package.tar" {
+			return v, errors.New("reserved host package path")
+		}
 		fold := strings.ToLower(h.Name)
 		if seen[fold] {
 			return v, errors.New("duplicate normalized package path")
 		}
 		seen[fold] = true
+		for parent := filepath.ToSlash(filepath.Dir(fold)); parent != "."; parent = filepath.ToSlash(filepath.Dir(parent)) {
+			if seen[parent] {
+				return v, errors.New("package file/parent path collision")
+			}
+		}
+		for existing := range seen {
+			if strings.HasPrefix(existing, fold+"/") {
+				return v, errors.New("package file/parent path collision")
+			}
+		}
 		if len(seen) > 10000 || h.Size < 0 || h.Size > PackageLimit-total {
 			return v, errors.New("package size/member limit")
 		}
@@ -230,6 +249,19 @@ func Verify(r io.Reader, trusted map[string]ed25519.PublicKey) (Verified, error)
 			return v, e
 		}
 		v.files[h.Name] = b
+	}
+	// TAR's first end marker must not hide another archive or unsigned bytes.
+	padding, e := io.ReadAll(bounded)
+	if e != nil {
+		return v, e
+	}
+	if bounded.N == 0 {
+		return v, errors.New("package total source byte limit")
+	}
+	for _, b := range padding {
+		if b != 0 {
+			return v, errors.New("non-padding bytes after package end marker")
+		}
 	}
 	indexRaw := v.files["package-index.json"]
 	if e := wire.Decode(indexRaw, &v.Index); e != nil {
@@ -297,6 +329,12 @@ func (v Verified) Extract(parent string) (string, error) {
 	if e != nil {
 		return "", e
 	}
+	complete := false
+	defer func() {
+		if !complete {
+			os.RemoveAll(dir)
+		}
+	}()
 	if e = os.Chmod(dir, 0700); e != nil {
 		return "", e
 	}
@@ -329,6 +367,7 @@ func (v Verified) Extract(parent string) (string, error) {
 			return "", closeErr
 		}
 	}
+	complete = true
 	return dir, nil
 }
 

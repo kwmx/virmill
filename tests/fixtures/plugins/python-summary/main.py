@@ -26,7 +26,7 @@ def handle(method, params):
     if not ready:
         raise ValueError('initialize first')
     if method == 'describe':
-        return {'actions': [{'id': 'summary', 'readOnly': True}]}
+        return {'actions': [{'id': 'summary', 'title': 'Summarize selected VMs', 'readOnly': True, 'inputSchema': {'type': 'object'}, 'outputSchema': {'type': 'object'}}]}
     if method in ('shutdown', 'ping'):
         return {'ok': True}
     if method not in ('action.plan', 'action.execute'):

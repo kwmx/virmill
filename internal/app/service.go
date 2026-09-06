@@ -227,6 +227,20 @@ type vmHandler struct {
 	action string
 }
 
+func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[string]any, error) {
+	var input map[string]any
+	if err := json.Unmarshal(b, &input); err != nil {
+		return nil, err
+	}
+	requested := map[string]any{}
+	for _, key := range []string{"vcpus", "memoryMiB", "enabled"} {
+		if value, ok := input[key]; ok {
+			requested[key] = value
+		}
+	}
+	return map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "diskDeletion": false}, nil
+}
+
 func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error {
 	var input map[string]any
 	if e := json.Unmarshal(b, &input); e != nil {

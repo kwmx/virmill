@@ -17,6 +17,12 @@ type Handler interface {
 	Execute(context.Context, domain.Plan, []byte, domain.Step) error
 	Reconcile(context.Context, domain.Plan, []byte, domain.Step) (bool, error)
 }
+
+// PlanReviewer supplies explicit, non-secret effect details for human approval.
+// Those details are included in the same immutable digest as execution authority.
+type PlanReviewer interface {
+	Review(context.Context, domain.Plan, []byte) (map[string]any, error)
+}
 type ApplyRequest struct {
 	PlanID           string   `json:"planID"`
 	PlanDigest       string   `json:"planDigest"`
@@ -74,6 +80,12 @@ func (e *Engine) Plan(ctx context.Context, uid uint32, connection, operation str
 	}
 	if err = h.Validate(ctx, p, b); err != nil {
 		return p, err
+	}
+	if reviewer, ok := h.(PlanReviewer); ok {
+		p.Review, err = reviewer.Review(ctx, p, b)
+		if err != nil {
+			return p, err
+		}
 	}
 	p.Digest, err = PlanDigest(p)
 	if err != nil {
@@ -160,6 +172,7 @@ func (e *Engine) transition(j *domain.Job, state, message string, err error) err
 	return e.Store.Update(*j, message)
 }
 func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
+	ctx := context.WithValue(e.ctx, operationContextKey{}, j.ID)
 	for i, step := range p.Steps {
 		e.mu.Lock()
 		fresh, err := e.Store.Job(j.ID)
@@ -179,21 +192,21 @@ func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
 			return
 		}
 		e.mu.Unlock()
-		if err = h.Validate(e.ctx, p, input); err != nil {
+		if err = h.Validate(ctx, p, input); err != nil {
 			_ = e.transition(&j, "failed", "Preconditions failed; no new step effect", err)
 			return
 		}
 		if err = e.transition(&j, "running", "Intent persisted: "+step.Action, nil); err != nil {
 			return
 		}
-		if err = h.Execute(e.ctx, p, input, step); err != nil {
+		if err = h.Execute(ctx, p, input, step); err != nil {
 			_ = e.transition(&j, "recovery-required", "Step may have taken effect; reconcile before any retry", err)
 			return
 		}
 		if err = e.transition(&j, "verifying", "Effect returned; verifying observed state", nil); err != nil {
 			return
 		}
-		ok, err := h.Reconcile(e.ctx, p, input, step)
+		ok, err := h.Reconcile(ctx, p, input, step)
 		if err != nil || !ok {
 			if err == nil {
 				err = domain.Fail("RECOVERY_REQUIRED", "completion predicate not confirmed")
@@ -256,7 +269,7 @@ func (e *Engine) Reconcile(ctx context.Context, id string) (domain.Job, error) {
 
 // Recover never replays an uncertain effect. Resource locks remain held until resolved.
 func (e *Engine) Recover() error {
-	jobs, err := e.Store.Jobs()
+	jobs, err := e.Store.PendingJobs()
 	if err != nil {
 		return err
 	}

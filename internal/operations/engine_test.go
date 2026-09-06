@@ -177,3 +177,35 @@ func TestCanonicalRFC8785Vectors(t *testing.T) {
 		t.Fatalf("%s %v", got, err)
 	}
 }
+
+func TestRecoveryIncludesJobsOlderThanRecentList(t *testing.T) {
+	e, _ := openEngine(t, t.TempDir())
+	p := makePlan(t, e)
+	j, err := e.Store.Accept(p, "old-pending", "old-request")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err := e.Store.DB.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 1001; i++ {
+		body, _ := json.Marshal(domain.Job{ID: domain.ID(), PlanID: p.ID, State: "succeeded"})
+		var value domain.Job
+		json.Unmarshal(body, &value)
+		if _, err = tx.Exec("INSERT INTO jobs(id,plan_id,body) VALUES(?,?,?)", value.ID, p.ID, body); err != nil {
+			tx.Rollback()
+			t.Fatal(err)
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
+	if err = e.Recover(); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.Store.Job(j.ID)
+	if err != nil || got.State != "recovery-required" {
+		t.Fatal("old pending operation omitted from recovery", got, err)
+	}
+}

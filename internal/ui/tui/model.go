@@ -11,6 +11,7 @@ import (
 	"virmill.local/core/internal/operations"
 	"virmill.local/core/internal/ui"
 	"virmill.local/core/internal/validation"
+	"virmill.local/core/internal/wire"
 )
 
 var sections = []string{"Overview", "VMs", "Networks", "Storage", "Templates", "Labs", "Protection", "Devices", "Jobs", "Plugins", "Settings"}
@@ -113,16 +114,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Mutation == "set" || a.Mutation == "autostart" {
+				if a.Mutation == "set" || a.Mutation == "autostart" || (a.Mutation != "" && strings.HasPrefix(a.Command, "plugin ")) {
 					var form struct {
 						ID    string         `json:"id"`
+						Path  string         `json:"path"`
 						Input map[string]any `json:"input"`
 					}
-					if e := json.Unmarshal([]byte(m.Input), &form); e != nil {
-						m.Output = "Enter JSON: {\"id\":\"VM_UUID\",\"input\":{\"vcpus\":4}} or enabled:true"
+					if e := wire.Decode([]byte(m.Input), &form); e != nil {
+						m.Output = "Enter JSON with id or path, plus input parameters. See the selected command's generated reference."
 						break
 					}
 					r.ID = form.ID
+					r.Path = form.Path
 					r.Input = form.Input
 				}
 				m.Editing = false
@@ -190,7 +193,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 func (m Model) call(method string, r app.Request) tea.Cmd {
-	return func() tea.Msg { resp, e := m.Client.Call(context.Background(), method, r); return resultMsg{resp, e} }
+	return func() tea.Msg {
+		var e error
+		r, e = ui.NormalizeRequest(method, r)
+		if e != nil {
+			return resultMsg{err: e}
+		}
+		resp, e := m.Client.Call(context.Background(), method, r)
+		return resultMsg{resp, e}
+	}
 }
 func (m Model) View() string {
 	if m.Quit {
@@ -206,18 +217,30 @@ func (m Model) View() string {
 	if len(actions) == 0 {
 		b.WriteString("This section has no completed workflow yet; 1.0 release remains blocked.\n")
 	}
-	for i, a := range actions {
+	// Keep keyboard-selected actions visible without overflowing an 80x24 terminal.
+	menuRows := max(3, min(8, m.Height/3))
+	first := max(0, m.Selected-menuRows+1)
+	last := min(len(actions), first+menuRows)
+	for i := first; i < last; i++ {
+		a := actions[i]
 		prefix := "  "
 		if i == m.Selected {
 			prefix = "> "
 		}
-		fmt.Fprintf(&b, "%s%s — %s\n", prefix, a.Command, a.Summary)
+		line := prefix + a.Command + " — " + a.Summary
+		if len([]rune(line)) > max(20, m.Width) {
+			line = string([]rune(line)[:max(20, m.Width)-1]) + "…"
+		}
+		fmt.Fprintln(&b, line)
+	}
+	if len(actions) > menuRows {
+		fmt.Fprintf(&b, "Actions %d–%d of %d; Up/Down scrolls\n", first+1, last, len(actions))
 	}
 	if m.Busy {
 		b.WriteString("Request in progress; UI remains available.\n")
 	}
 	if m.Editing {
-		b.WriteString("Input (path/UUID; set/autostart use JSON id + input), Esc cancels:\n> " + validation.SafeText(m.Input) + "\n")
+		b.WriteString("Input: path/ID; VM edits and plugin plans use JSON {id/path,input}. Esc cancels:\n> " + validation.SafeText(m.Input) + "\n")
 	}
 	if m.Confirm {
 		fmt.Fprintf(&b, "Approve plan %s. Required acknowledgements: %s\nType the full plan digest to authorize these exact effects; Esc cancels:\n%s\n> %s\n", m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, validation.SafeText(m.Input))

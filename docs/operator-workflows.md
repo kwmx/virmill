@@ -72,10 +72,12 @@ FULL synchronization and a singleton lock. Database versions newer than the
 application are refused. A consistent SQLite backup test covers schema 1; production
 upgrade migrations and scheduled credential-store access are still incomplete.
 
-Application-specific runtime environment overrides have not been added. Standard
-XDG variables choose directories. `VIRMILL_TEST_CONFORMANCE` and
+Standard XDG variables choose directories. `VIRMILL_SDK_DIRECTORY` optionally
+selects reviewed SDK source for scaffolding (default `/usr/share/virmill/sdk/go`).
+Plugin signing uses an explicitly supplied private-key file reference; key bytes
+are not journaled or included in distribution payloads. `VIRMILL_TEST_CONFORMANCE` and
 `VIRMILL_TEST_REQUIRE_IPC` are test-only switches and never select a runtime fake.
-Repository passwords/private keys are not requested by current implemented workflows.
+Backup repository credentials are not requested by current implemented workflows.
 
 The development installer/uninstaller acts only on listed package files. It does
 not remove VMs, disks, backup repositories, bridges, user data or enable persistence.

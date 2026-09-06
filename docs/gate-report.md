@@ -13,7 +13,7 @@ matching; missing kickoff document recorded in ADR 0001. No scope was reduced.
 | 4 import/network | Bounded package inspection and semantic topology validation | Conversion/registration/all network mutation/policy/rollback/packet flows |
 | 5 protection/devices | Graph, manifest and USB selector safety libraries | Actual capture/restic/restore/templates/snapshots/USB/sharing integrations |
 | 6 labs/automation | Schema, reference and DAG validation | Actual DAG apply/reconcile/teardown, provisioning, scheduling and coordinated restore |
-| 7 plugins | SDK/scaffolder, signing verifier, sandbox, two-language and persistent simulated provider fixtures | Complete installed lifecycle/grants/broker/UI/provider contract matrix |
+| 7 plugins | SDK, shared scaffold/pack/install/version/grant plans, confined read-only actions, two-language and persistent simulated provider fixtures | Unsigned/development override, quarantine, brokers, structured forms and full extension/provider matrix |
 | 8 distribution/UI | Three named binaries, generated help/completions, unsigned development core/helper RPM/DEB | Full interface parity/accessibility, clean distro install/upgrade matrix and production installers |
 | 9 release | Evidence tooling and release blocker check present | Entire complete checklist remains unqualified |
 

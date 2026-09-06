@@ -1230,6 +1230,657 @@ _virmill_plan()
     noun_aliases=()
 }
 
+_virmill_plugin_call()
+{
+    last_command="virmill_plugin_call"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_disable()
+{
+    last_command="virmill_plugin_disable"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_enable()
+{
+    last_command="virmill_plugin_enable"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_install()
+{
+    last_command="virmill_plugin_install"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--key-id=")
+    two_word_flags+=("--key-id")
+    local_nonpersistent_flags+=("--key-id")
+    local_nonpersistent_flags+=("--key-id=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--public-key=")
+    two_word_flags+=("--public-key")
+    local_nonpersistent_flags+=("--public-key")
+    local_nonpersistent_flags+=("--public-key=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_list()
+{
+    last_command="virmill_plugin_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_new()
+{
+    last_command="virmill_plugin_new"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--id=")
+    two_word_flags+=("--id")
+    local_nonpersistent_flags+=("--id")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--language=")
+    two_word_flags+=("--language")
+    local_nonpersistent_flags+=("--language")
+    local_nonpersistent_flags+=("--language=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--sdk-directory=")
+    two_word_flags+=("--sdk-directory")
+    local_nonpersistent_flags+=("--sdk-directory")
+    local_nonpersistent_flags+=("--sdk-directory=")
+    flags+=("--type=")
+    two_word_flags+=("--type")
+    local_nonpersistent_flags+=("--type")
+    local_nonpersistent_flags+=("--type=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_pack()
+{
+    last_command="virmill_plugin_pack"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--destination=")
+    two_word_flags+=("--destination")
+    local_nonpersistent_flags+=("--destination")
+    local_nonpersistent_flags+=("--destination=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--key-id=")
+    two_word_flags+=("--key-id")
+    local_nonpersistent_flags+=("--key-id")
+    local_nonpersistent_flags+=("--key-id=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--signing-key-file=")
+    two_word_flags+=("--signing-key-file")
+    local_nonpersistent_flags+=("--signing-key-file")
+    local_nonpersistent_flags+=("--signing-key-file=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_permissions_grant()
+{
+    last_command="virmill_plugin_permissions_grant"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_permissions_revoke()
+{
+    last_command="virmill_plugin_permissions_revoke"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_permissions_show()
+{
+    last_command="virmill_plugin_permissions_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_permissions()
+{
+    last_command="virmill_plugin_permissions"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("grant")
+    commands+=("revoke")
+    commands+=("show")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_remove()
+{
+    last_command="virmill_plugin_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_result()
+{
+    last_command="virmill_plugin_result"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_rollback()
+{
+    last_command="virmill_plugin_rollback"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_show()
+{
+    last_command="virmill_plugin_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_plugin_test()
 {
     last_command="virmill_plugin_test"
@@ -1252,6 +1903,56 @@ _virmill_plugin_test()
     two_word_flags+=("--input")
     local_nonpersistent_flags+=("--input")
     local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_plugin_update()
+{
+    last_command="virmill_plugin_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--key-id=")
+    two_word_flags+=("--key-id")
+    local_nonpersistent_flags+=("--key-id")
+    local_nonpersistent_flags+=("--key-id=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--public-key=")
+    two_word_flags+=("--public-key")
+    local_nonpersistent_flags+=("--public-key")
+    local_nonpersistent_flags+=("--public-key=")
     flags+=("--config=")
     two_word_flags+=("--config")
     flags+=("--connection=")
@@ -1317,7 +2018,20 @@ _virmill_plugin()
     command_aliases=()
 
     commands=()
+    commands+=("call")
+    commands+=("disable")
+    commands+=("enable")
+    commands+=("install")
+    commands+=("list")
+    commands+=("new")
+    commands+=("pack")
+    commands+=("permissions")
+    commands+=("remove")
+    commands+=("result")
+    commands+=("rollback")
+    commands+=("show")
     commands+=("test")
+    commands+=("update")
     commands+=("validate")
 
     flags=()

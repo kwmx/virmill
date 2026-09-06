@@ -151,6 +151,10 @@
         "requiresDowntime"
       ],
       "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "description": "Non-secret human review details derived from the immutable input; included in planDigest."
     }
   },
   "required": [

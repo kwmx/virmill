@@ -87,6 +87,11 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 	}
 	call := func(c *cobra.Command, method string, r app.Request) error {
 		r.Connection = o.Connection
+		var err error
+		r, err = ui.NormalizeRequest(method, r)
+		if err != nil {
+			return err
+		}
 		ctx, cancel := context.WithTimeout(c.Context(), o.Timeout)
 		defer cancel()
 		resp, e := client.Call(ctx, method, r)
@@ -138,6 +143,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		var input string
 		var after int64
 		var hard, planOnly bool
+		pluginFlags := map[string]*string{}
 		cmd := &cobra.Command{Use: use, Short: a.Summary, Long: a.Summary + ". Calls the shared coordinator service. Mutations return an immutable preview; apply it with plan apply and exact acknowledgements. No privilege is implied by --yes.", Args: cobra.NoArgs}
 		if a.Argument != "" {
 			cmd.Args = cobra.ExactArgs(1)
@@ -150,12 +156,37 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		if a.Command == "vm stop" {
 			cmd.Flags().BoolVar(&hard, "hard", false, "Plan abrupt power-off, requiring data-loss acknowledgement")
 		}
+		if strings.HasPrefix(a.Command, "plugin ") {
+			for _, spec := range []struct{ flag, key, help string }{
+				{"id", "id", "Stable plugin ID for a new scaffold"},
+				{"language", "language", "Scaffold source language (go)"},
+				{"type", "type", "Scaffold extension type (action)"},
+				{"sdk-directory", "sdkDirectory", "Reviewed local SDK source directory"},
+				{"key-id", "keyID", "Signing-key identifier"},
+				{"public-key", "publicKey", "Reviewed hexadecimal Ed25519 public key"},
+				{"signing-key-file", "signingKeyPath", "Private signing-key file outside package source"},
+				{"destination", "output", "New output archive path for pack"},
+			} {
+				allowed := (a.Mutation == "new" && (spec.key == "id" || spec.key == "language" || spec.key == "type" || spec.key == "sdkDirectory")) || ((a.Mutation == "install" || a.Mutation == "update") && (spec.key == "keyID" || spec.key == "publicKey")) || (a.Mutation == "pack" && (spec.key == "keyID" || spec.key == "signingKeyPath" || spec.key == "output"))
+				if allowed {
+					pluginFlags[spec.key] = cmd.Flags().String(spec.flag, "", spec.help)
+				}
+			}
+		}
+		if a.Command == "plugin call" {
+			cmd.Use = "call PLUGIN_ID ACTION_ID"
+			cmd.Args = cobra.ExactArgs(2)
+		}
+		if a.Command == "plugin new" {
+			cmd.Use = "new [PATH]"
+			cmd.Args = cobra.MaximumNArgs(1)
+		}
 		cmd.RunE = func(c *cobra.Command, args []string) error {
 			r := app.Request{Action: a.Mutation, After: after}
 			if a.Argument == "id" {
 				r.ID = args[0]
 			}
-			if a.Argument == "path" {
+			if a.Argument == "path" && len(args) > 0 {
 				r.Path = args[0]
 			}
 			if hard {
@@ -163,6 +194,23 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			}
 			if e := wire.Decode([]byte(input), &r.Input); e != nil {
 				return domain.Fail("INVALID_INPUT", "invalid input JSON")
+			}
+			if r.Input == nil {
+				r.Input = map[string]any{}
+			}
+			for key, value := range pluginFlags {
+				if *value != "" {
+					if _, exists := r.Input[key]; exists {
+						return domain.Fail("INVALID_INPUT", "parameter supplied by both flag and JSON: "+key)
+					}
+					r.Input[key] = *value
+				}
+			}
+			if a.Command == "plugin call" {
+				if _, exists := r.Input["action"]; exists {
+					return domain.Fail("INVALID_INPUT", "action is provided as the second positional argument")
+				}
+				r.Input["action"] = args[1]
 			}
 			if a.Mutation != "" && !planOnly {
 				return domain.Fail("INVALID_INPUT", "review and apply the generated plan using plan apply")

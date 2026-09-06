@@ -27,8 +27,8 @@ grants no actors, roots or keys. No helper or system service was installed or ru
 Normal plugin conformance uses bubblewrap plus explicit seccomp and resource
 limits. `/usr` is a read-only runtime mount; home, `/run`, host devices, credentials
 and database paths are absent. Network/PID/IPC/mount namespaces are isolated and
-socket creation is denied by seccomp. Only the selected executable and a private
-per-invocation workspace are mapped. There is no unconfined fallback.
+socket creation is denied by seccomp. Only the selected executable (conformance) or verified package (installed actions)
+and a private per-invocation workspace are mapped. There is no unconfined fallback.
 
 Codex's nested sandbox prevented bubblewrap from creating its private network
 namespace. The same test was then executed with automatic approval outside that
@@ -38,6 +38,6 @@ behavior, successful namespace checks and synthetic plugin protocol behavior.
 
 The public SDK is a separate local module, with concurrent handler cancellation,
 serialized protocol writes, scoped host-call correlation and heartbeat emission.
-The normal plugin runner and SDK are not yet a complete extension lifecycle: update,
-rollback, persistent grants, brokered networking, provider reconciliation and full
-UI contributions remain mandatory implementation work.
+Installed version activation, rollback, persistent grants and confined read-only
+invocations are described in ADR 0004. Brokered networking, typed mutation mediation,
+quarantine, full provider contracts and structured UI contributions remain work.

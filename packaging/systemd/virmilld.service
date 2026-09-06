@@ -1,6 +1,5 @@
 [Unit]
 Description=Virmill local coordinator
-Documentation=man:virmill(1)
 
 [Service]
 Type=simple

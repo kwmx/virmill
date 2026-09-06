@@ -11,7 +11,7 @@ repository or temporary directories may be used; never mutate discovered VMs,
 host networks, services, block devices, firmware or USB without owner approval.
 
 Use `./scripts/go` for the pinned repository-local toolchain. Keep dependencies
-exact in go.mod/go.sum and build/dependencies.lock.json. Do not download at runtime.
+exact in go.mod/go.sum and contracts/dependencies.lock.json. Do not download at runtime.
 Use official Go libvirt bindings, Cobra, Bubble Tea, SQLite and the shared service.
 No shell command strings from user input. No success-returning placeholders.
 Update requirements.json, the evidence ledger and generated traceability after work.

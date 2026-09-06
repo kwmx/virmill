@@ -61,3 +61,30 @@ func TestEscDiscardsApprovalWithoutMutation(t *testing.T) {
 		t.Fatal("canceled dialog executed")
 	}
 }
+
+func TestPluginFormDispatchAndScrollableActionMenu(t *testing.T) {
+	r := &recorder{}
+	m := New(r, "qemu:///system")
+	m.Section = 9
+	for i, a := range m.actions() {
+		if a.Command == "plugin install" {
+			m.Selected = i
+		}
+	}
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = model.(Model)
+	m.Input = `{"path":"/tmp/signed.tar","input":{"keyID":"reviewed","publicKey":"fixture-public"}}`
+	model, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("plugin form did not dispatch")
+	}
+	m = model.(Model)
+	model, _ = m.Update(cmd())
+	m = model.(Model)
+	if r.method != "plugin.plan" || r.request.Action != "install" || r.request.Path != "/tmp/signed.tar" || r.request.Input["keyID"] != "reviewed" {
+		t.Fatal("TUI plugin form differs from CLI", r)
+	}
+	if strings.Count(m.View(), "\n") > 24 {
+		t.Fatal("plugin action menu overflowed 80x24 terminal")
+	}
+}

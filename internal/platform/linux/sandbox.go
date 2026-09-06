@@ -19,6 +19,22 @@ import (
 // ConfinedCommand mounts only runtime code, the chosen executable and a private
 // workspace. Sockets, home, credentials and host /dev are never exposed.
 func ConfinedCommand(ctx context.Context, executable, workspace string, args []string) (*exec.Cmd, func(), error) {
+	return confinedCommand(ctx, executable, workspace, args, "", "")
+}
+
+// ConfinedPackageCommand exposes only a previously verified private package tree.
+// The caller retains ownership of the tree for the entire process lifetime.
+func ConfinedPackageCommand(ctx context.Context, directory, entrypoint, workspace string) (*exec.Cmd, func(), error) {
+	if !filepath.IsAbs(directory) || !filepath.IsLocal(entrypoint) {
+		return nil, nil, errors.New("absolute package directory and local entrypoint required")
+	}
+	if e := PrivateDir(directory); e != nil {
+		return nil, nil, e
+	}
+	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint))
+}
+
+func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint string) (*exec.Cmd, func(), error) {
 	if os.Getuid() == 0 {
 		return nil, nil, errors.New("untrusted workers must never run as root")
 	}
@@ -66,7 +82,15 @@ func ConfinedCommand(ctx context.Context, executable, workspace string, args []s
 		cleanup()
 		return nil, nil, e
 	}
-	argv := []string{"--unshare-all", "--die-with-parent", "--new-session", "--cap-drop", "ALL", "--clearenv", "--ro-bind", "/usr", "/usr", "--symlink", "usr/bin", "/bin", "--symlink", "usr/lib64", "/lib64", "--symlink", "usr/lib", "/lib", "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp", "--dir", "/plugin", "--ro-bind", executable, "/plugin/executable", "--bind", workspace, "/work", "--chdir", "/work", "--setenv", "PATH", "/usr/bin", "--setenv", "LANG", "C.UTF-8", "--setenv", "GOMEMLIMIT", "256MiB", "--seccomp", "3", "--", limit, "--as=2147483648", "--nproc=256", "--cpu=60", "--fsize=67108864", "--nofile=64", "--", "/plugin/executable"}
+	argv := []string{"--unshare-all", "--die-with-parent", "--new-session", "--cap-drop", "ALL", "--clearenv", "--ro-bind", "/usr", "/usr", "--symlink", "usr/bin", "/bin", "--symlink", "usr/lib64", "/lib64", "--symlink", "usr/lib", "/lib", "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp", "--dir", "/plugin"}
+	command := "/plugin/executable"
+	if packageDirectory != "" {
+		argv = append(argv, "--ro-bind", packageDirectory, "/plugin")
+		command = "/plugin/" + entrypoint
+	} else {
+		argv = append(argv, "--ro-bind", executable, "/plugin/executable")
+	}
+	argv = append(argv, "--bind", workspace, "/work", "--chdir", "/work", "--setenv", "PATH", "/usr/bin", "--setenv", "LANG", "C.UTF-8", "--setenv", "GOMEMLIMIT", "256MiB", "--seccomp", "3", "--", limit, "--as=2147483648", "--nproc=256", "--cpu=60", "--fsize=67108864", "--nofile=64", "--", command)
 	argv = append(argv, args...)
 	cmd := exec.CommandContext(ctx, bwrap, argv...)
 	cmd.Env = []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8"}

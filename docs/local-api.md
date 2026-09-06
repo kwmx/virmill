@@ -27,6 +27,12 @@ JSON-RPC error codes. Successful submission is queued/accepted, not completed.
 | backup.verify-manifest | path, input.root (optional) | manifest-checked result |
 | plugin.validate | path | development manifest, distributionVerified=false |
 | plugin.test | path | confined synthetic conformance report |
+| plugin.develop | action=new/pack, path, input | immutable source/package creation plan |
+| plugin.list, plugin.show | none / id | installations / retained immutable versions |
+| plugin.plan | action, id/path, input | installation, enable, update, rollback, removal or scope plan |
+| plugin.permissions | id | declared and installed permission scopes |
+| plugin.call | connection, id, input.action/parameters/vmIDs | reviewed confined action plan |
+| plugin.result | id (operation ID) | durable result bound to plan/package/input |
 
 `vm.plan` currently supports start, stop, hard-stop, pause, resume, save,
 restore-saved, autostart (`input.enabled`) and powered-off vCPU set (`input.vcpus`).
@@ -34,6 +40,9 @@ Other public workflow methods remain unimplemented. The mutable input is stored
 separately from the immutable plan and checked against inputDigest. PlanDigest uses
 RFC 8785 canonical JSON after excluding only `planDigest`; actor, connection,
 resources, preconditions and acknowledgements remain in its digest.
+The optional `review` object exposes handler-selected effect details, paths and
+permissions; it is also included in the digest. Private signing-key bytes and
+opaque VM XML are not copied into this public review object.
 
 Plans expire after 15 minutes. Repeating the same apply request/key returns the
 same operation; changed input is rejected. Retention does not currently remove old

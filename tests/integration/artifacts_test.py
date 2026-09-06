@@ -40,7 +40,7 @@ class Artifacts(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='virmill-service-test-') as temp:
             root = Path(temp)
             env = dict(os.environ)
-            for variable,name in [('XDG_STATE_HOME','state'),('XDG_RUNTIME_DIR','runtime'),('XDG_CACHE_HOME','cache')]:
+            for variable,name in [('XDG_STATE_HOME','state'),('XDG_RUNTIME_DIR','runtime'),('XDG_CACHE_HOME','cache'),('XDG_DATA_HOME','data'),('XDG_CONFIG_HOME','config')]:
                 p = root/name
                 p.mkdir(mode=0o700)
                 env[variable] = str(p)
@@ -62,6 +62,23 @@ class Artifacts(unittest.TestCase):
                     self.assertEqual(response['apiVersion'],'virmill/v1')
                     self.assertIsNone(response['error'])
                 self.assertEqual(socket.stat().st_mode & 0o777,0o600)
+                # CLI paths originate in this temporary client directory, while
+                # the coordinator was started from the repository directory.
+                command = [str(ROOT/'build/bin/virmill')]
+                preview = subprocess.run(command+['plugin','new','./generated',
+                    '--id','example.virmill.integration','--sdk-directory',str(ROOT/'sdk/go'),
+                    '--output','json','--non-interactive'],cwd=root,env=env,check=True,capture_output=True,text=True)
+                plan = json.loads(preview.stdout)['data']
+                self.assertEqual(plan['review']['destination'],str(root/'generated'))
+                self.assertFalse((root/'generated').exists())
+                applied = subprocess.run(command+['plan','apply',plan['planID'],
+                    '--digest',plan['planDigest'],'--idempotency-key','scaffold-fixture',
+                    '--ack','write-plugin-artifact','--wait','--output','json','--non-interactive'],
+                    cwd=root,env=env,check=True,capture_output=True,text=True)
+                self.assertEqual(json.loads(applied.stdout)['data']['state'],'succeeded')
+                manifest = json.loads((root/'generated/manifest.json').read_text())
+                self.assertEqual(manifest['id'],'example.virmill.integration')
+                self.assertTrue((root/'generated/sdk/server.go').is_file())
             finally:
                 daemon.terminate()
                 daemon.wait(timeout=5)

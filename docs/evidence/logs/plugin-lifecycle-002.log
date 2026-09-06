@@ -1,0 +1,7 @@
+--- FAIL: TestDeveloperScaffoldBuildAndSignedPackPlans (0.25s)
+    developer_test.go:39: generated source does not build/test: error obtaining VCS status: exit status 128
+        	Use -buildvcs=false to disable VCS stamping.
+         exit status 1
+FAIL
+FAIL	virmill.local/core/internal/plugins	0.906s
+FAIL

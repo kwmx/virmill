@@ -19,6 +19,21 @@ type Action struct {
 }
 
 var Actions = []Action{
+	{"plugin call", "plugin.call", "Plugins", "Plan a confined read-only action on explicitly selected VMs", "id", "call"},
+	{"plugin result", "plugin.result", "Plugins", "Read a durable plugin result by operation ID", "id", ""},
+	{"plugin new", "plugin.develop", "Plugins", "Plan buildable Go action source at a new destination", "path", "new"},
+	{"plugin pack", "plugin.develop", "Plugins", "Plan a signed package; signing key stays outside the payload", "path", "pack"},
+	{"plugin list", "plugin.list", "Plugins", "List local installations and active immutable versions", "", ""},
+	{"plugin show", "plugin.show", "Plugins", "Inspect retained versions, trust and activation state", "id", ""},
+	{"plugin install", "plugin.plan", "Plugins", "Plan signed package installation with exact key and grants", "path", "install"},
+	{"plugin update", "plugin.plan", "Plugins", "Plan verified update; preserve the previous version and disable until reviewed", "path", "update"},
+	{"plugin enable", "plugin.plan", "Plugins", "Plan enabling supported confined actions after permission checks", "id", "enable"},
+	{"plugin disable", "plugin.plan", "Plugins", "Plan blocking new invocations while preserving resource metadata", "id", "disable"},
+	{"plugin remove", "plugin.plan", "Plugins", "Plan removal from active inventory; retain data and created resources", "id", "remove"},
+	{"plugin rollback", "plugin.plan", "Plugins", "Plan activation of the retained prior executable; no data migration", "id", "rollback"},
+	{"plugin permissions show", "plugin.permissions", "Plugins", "Inspect exact declared and installed permission scopes", "id", ""},
+	{"plugin permissions grant", "plugin.plan", "Plugins", "Plan explicit additional declared scopes and disable until reviewed", "id", "grant"},
+	{"plugin permissions revoke", "plugin.plan", "Plugins", "Plan scope revocation and stop new invocations", "id", "revoke"},
 	{"plugin validate", "plugin.validate", "Plugins", "Validate a development manifest; no trust or signature claim", "path", ""},
 	{"plugin test", "plugin.test", "Plugins", "Run confined summary conformance using synthetic selected VM records", "path", ""},
 	{"host inspect", "host.inspect", "Overview", "Inspect read-only local host prerequisites", "", ""},

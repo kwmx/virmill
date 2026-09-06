@@ -1,0 +1,28 @@
+?   	virmill.local/core/cmd/virmill	[no test files]
+?   	virmill.local/core/cmd/virmill-dev	[no test files]
+?   	virmill.local/core/cmd/virmill-host-helper	[no test files]
+?   	virmill.local/core/cmd/virmilld	[no test files]
+?   	virmill.local/core/contracts	[no test files]
+ok  	virmill.local/core/internal/app	1.041s
+ok  	virmill.local/core/internal/app/devices	1.014s
+ok  	virmill.local/core/internal/app/importer	1.021s
+?   	virmill.local/core/internal/app/lab	[no test files]
+ok  	virmill.local/core/internal/app/network	1.012s
+ok  	virmill.local/core/internal/app/protection	1.012s
+ok  	virmill.local/core/internal/app/storage	1.016s
+ok  	virmill.local/core/internal/backend/libvirt	1.029s
+ok  	virmill.local/core/internal/backend/xmlpatch	1.019s
+?   	virmill.local/core/internal/buildinfo	[no test files]
+?   	virmill.local/core/internal/domain	[no test files]
+ok  	virmill.local/core/internal/helper	1.022s
+ok  	virmill.local/core/internal/operations	1.054s
+ok  	virmill.local/core/internal/platform/linux	1.014s
+ok  	virmill.local/core/internal/plugins	1.075s
+ok  	virmill.local/core/internal/store	1.012s
+ok  	virmill.local/core/internal/transport/local	1.035s
+?   	virmill.local/core/internal/ui	[no test files]
+ok  	virmill.local/core/internal/ui/cli	1.034s
+ok  	virmill.local/core/internal/ui/tui	1.032s
+ok  	virmill.local/core/internal/validation	1.063s
+ok  	virmill.local/core/internal/wire	1.010s
+?   	virmill.local/core/schemas	[no test files]

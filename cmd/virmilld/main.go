@@ -38,7 +38,13 @@ func run() error {
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e
 	}
-	plugins.Register(service, p.Cache)
+	sdk := os.Getenv("VIRMILL_SDK_DIRECTORY")
+	if sdk == "" {
+		sdk = "/usr/share/virmill/sdk/go"
+	}
+	if e = plugins.Register(service, p.Cache, p.Data, sdk); e != nil {
+		return e
+	}
 	server, e := local.Listen(p.Socket, service)
 	if e != nil {
 		return e

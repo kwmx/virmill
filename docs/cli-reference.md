@@ -399,6 +399,347 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill plugin call`
+
+Plan a confined read-only action on explicitly selected VMs
+
+```text
+Usage:
+  virmill plugin call PLUGIN_ID ACTION_ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin disable`
+
+Plan blocking new invocations while preserving resource metadata
+
+```text
+Usage:
+  virmill plugin disable ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin enable`
+
+Plan enabling supported confined actions after permission checks
+
+```text
+Usage:
+  virmill plugin enable ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin install`
+
+Plan signed package installation with exact key and grants
+
+```text
+Usage:
+  virmill plugin install PATH [flags]
+
+Flags:
+      --after int           Event cursor
+      --input string        JSON parameters; secrets must be references (default "{}")
+      --key-id string       Signing-key identifier
+      --plan                Return preview (apply separately after review) (default true)
+      --public-key string   Reviewed hexadecimal Ed25519 public key
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin list`
+
+List local installations and active immutable versions
+
+```text
+Usage:
+  virmill plugin list [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin new`
+
+Plan buildable Go action source at a new destination
+
+```text
+Usage:
+  virmill plugin new [PATH] [flags]
+
+Flags:
+      --after int              Event cursor
+      --id string              Stable plugin ID for a new scaffold
+      --input string           JSON parameters; secrets must be references (default "{}")
+      --language string        Scaffold source language (go)
+      --plan                   Return preview (apply separately after review) (default true)
+      --sdk-directory string   Reviewed local SDK source directory
+      --type string            Scaffold extension type (action)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin pack`
+
+Plan a signed package; signing key stays outside the payload
+
+```text
+Usage:
+  virmill plugin pack PATH [flags]
+
+Flags:
+      --after int                 Event cursor
+      --destination string        New output archive path for pack
+      --input string              JSON parameters; secrets must be references (default "{}")
+      --key-id string             Signing-key identifier
+      --plan                      Return preview (apply separately after review) (default true)
+      --signing-key-file string   Private signing-key file outside package source
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin permissions grant`
+
+Plan explicit additional declared scopes and disable until reviewed
+
+```text
+Usage:
+  virmill plugin permissions grant ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin permissions revoke`
+
+Plan scope revocation and stop new invocations
+
+```text
+Usage:
+  virmill plugin permissions revoke ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin permissions show`
+
+Inspect exact declared and installed permission scopes
+
+```text
+Usage:
+  virmill plugin permissions show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin remove`
+
+Plan removal from active inventory; retain data and created resources
+
+```text
+Usage:
+  virmill plugin remove ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin result`
+
+Read a durable plugin result by operation ID
+
+```text
+Usage:
+  virmill plugin result ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin rollback`
+
+Plan activation of the retained prior executable; no data migration
+
+```text
+Usage:
+  virmill plugin rollback ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin show`
+
+Inspect retained versions, trust and activation state
+
+```text
+Usage:
+  virmill plugin show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill plugin test`
 
 Run confined summary conformance using synthetic selected VM records
@@ -410,6 +751,32 @@ Usage:
 Flags:
       --after int      Event cursor
       --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill plugin update`
+
+Plan verified update; preserve the previous version and disable until reviewed
+
+```text
+Usage:
+  virmill plugin update PATH [flags]
+
+Flags:
+      --after int           Event cursor
+      --input string        JSON parameters; secrets must be references (default "{}")
+      --key-id string       Signing-key identifier
+      --plan                Return preview (apply separately after review) (default true)
+      --public-key string   Reviewed hexadecimal Ed25519 public key
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

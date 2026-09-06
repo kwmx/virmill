@@ -53,3 +53,24 @@ func TestPlanApplyRequiresExplicitBinding(t *testing.T) {
 		t.Fatal("unbound mutation dispatched")
 	}
 }
+
+func TestPluginPlansUseSharedServiceAndExplicitInputs(t *testing.T) {
+	r := &recorder{}
+	var out bytes.Buffer
+	c := New(r, &out, &out)
+	c.SetArgs([]string{"plugin", "new", "/tmp/source", "--id", "example.virmill.source", "--language", "go", "--type", "action", "--plan", "--output", "json"})
+	if err := c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "plugin.develop" || r.request.Action != "new" || r.request.Input["id"] != "example.virmill.source" {
+		t.Fatal("scaffold bypassed service", r)
+	}
+	c = New(r, &out, &out)
+	c.SetArgs([]string{"plugin", "call", "example.virmill.source", "summary", "--input", `{"vmIDs":["fixture"],"parameters":{}}`, "--output", "json"})
+	if err := c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "plugin.call" || r.request.ID != "example.virmill.source" || r.request.Input["action"] != "summary" {
+		t.Fatal("invocation bypassed service", r)
+	}
+}

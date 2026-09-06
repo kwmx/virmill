@@ -125,6 +125,7 @@ type Plan struct {
 	Risks            []string          `json:"risks"`
 	Steps            []Step            `json:"steps"`
 	Estimates        Estimates         `json:"estimates"`
+	Review           map[string]any    `json:"review,omitempty"`
 }
 type Event struct {
 	APIVersion  string    `json:"apiVersion"`

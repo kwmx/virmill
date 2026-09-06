@@ -1104,7 +1104,8 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/operations/engine.go",
-        "internal/store/store.go"
+        "internal/store/store.go",
+        "internal/store/recovery.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1112,10 +1113,12 @@
         "internal/operations/engine_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "core-tests-002",
+        "core-tests-003"
       ],
       "outstanding": [
-        "Subprocess crash after fsynced fixture effect reconciles without replay; actual backend/reboot fault matrix remains."
+        "Synthetic crash/acknowledgement-loss recovery and jobs older than recent-list limit tested; actual backend/reboot fault matrix remains."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1315,20 +1318,25 @@
       "implementationPaths": [
         "sdk/go/server.go",
         "sdk/go/example/summary.go",
-        "internal/plugins/runner.go"
+        "internal/plugins/runner.go",
+        "internal/plugins/actions.go",
+        "internal/validation/dynamic.go"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-01",
       "tests": [
         "sdk/go/server_test.go",
-        "internal/plugins/runner_test.go"
+        "internal/plugins/runner_test.go",
+        "internal/plugins/actions_test.go"
       ],
       "evidence": [
         "plugin-conformance-001",
-        "sdk-tests-001"
+        "sdk-tests-001",
+        "plugin-lifecycle-003",
+        "plugin-lifecycle-004"
       ],
       "outstanding": [
-        "Go and Python confined summary contracts pass; complete manifest/schema/action-output conformance matrix remains."
+        "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1370,20 +1378,24 @@
       "implementationPaths": [
         "sdk/go/server.go",
         "internal/wire/json.go",
-        "internal/plugins/runner.go"
+        "internal/plugins/runner.go",
+        "internal/plugins/actions.go"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-03",
       "tests": [
         "sdk/go/server_test.go",
-        "internal/wire/json_test.go"
+        "internal/wire/json_test.go",
+        "internal/plugins/actions_test.go"
       ],
       "evidence": [
         "core-tests-001",
-        "sdk-tests-001"
+        "sdk-tests-001",
+        "plugin-lifecycle-003",
+        "plugin-lifecycle-004"
       ],
       "outstanding": [
-        "Concurrent cancellation and strict frame tests pass; heartbeat failure/deadline/provider quarantine adversarial matrix remains."
+        "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1397,18 +1409,26 @@
       "gate": 7,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/plugins/package.go"
+        "internal/plugins/package.go",
+        "internal/plugins/manager.go",
+        "internal/plugins/developer.go",
+        "internal/store/metadata.go"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-04",
       "tests": [
-        "internal/plugins/package_test.go"
+        "internal/plugins/package_test.go",
+        "internal/plugins/manager_test.go",
+        "internal/plugins/developer_test.go",
+        "internal/store/metadata_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "plugin-lifecycle-003",
+        "plugin-lifecycle-004"
       ],
       "outstanding": [
-        "Signing/hashes/path and permission intersection tested; installed version activation, rollback and persistent revocation remain."
+        "Signed install/update/rollback, exact grants, revocation, active-job disposition and acknowledgement-loss recovery tested; unsigned/development override, persistent plugin-data migration and full qualification remain."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1423,19 +1443,23 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/plugins/register_linux.go",
-        "internal/ui/registry.go"
+        "internal/ui/registry.go",
+        "internal/plugins/actions.go"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-05",
       "tests": [
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/plugins/actions_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "plugin-lifecycle-003",
+        "plugin-lifecycle-004"
       ],
       "outstanding": [
-        "Plugin validate/test developer tools are shared; normal approved plugin action contributions not implemented."
+        "Installed read-only action plans/results are shared through CLI/TUI; structured contributed forms and typed mutating action mediation remain."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1503,18 +1527,22 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/ui/cli/root.go",
-        "internal/transport/local/socket_linux.go"
+        "internal/transport/local/socket_linux.go",
+        "internal/ui/request.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
       "tests": [
-        "internal/ui/cli/root_test.go"
+        "internal/ui/cli/root_test.go",
+        "internal/ui/request_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "core-tests-002",
+        "core-tests-003"
       ],
       "outstanding": [
-        "Clean JSON/noninteractive basic contracts pass; streaming NDJSON, complete exit matrix and wait recovery remain."
+        "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain."
       ],
       "hardwareVerified": false,
       "released": false

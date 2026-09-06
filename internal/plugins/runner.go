@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 	platform "virmill.local/core/internal/platform/linux"
@@ -37,6 +38,9 @@ type frameResult struct {
 	data []byte
 	err  error
 }
+
+var workerSlots = make(chan struct{}, 4)
+
 type Session struct {
 	cmd      *exec.Cmd
 	input    io.WriteCloser
@@ -51,8 +55,34 @@ type Session struct {
 }
 
 func Start(ctx context.Context, exe, workspace string) (*Session, error) {
+	return startSession(ctx, exe, workspace, "", "")
+}
+
+func startPackage(ctx context.Context, directory, entrypoint, workspace string) (*Session, error) {
+	return startSession(ctx, "", workspace, directory, entrypoint)
+}
+
+func startSession(ctx context.Context, exe, workspace, directory, entrypoint string) (*Session, error) {
+	select {
+	case workerSlots <- struct{}{}:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	release := true
+	defer func() {
+		if release {
+			<-workerSlots
+		}
+	}()
 	ctx, cancel := context.WithCancel(ctx)
-	cmd, cleanup, e := platform.ConfinedCommand(ctx, exe, workspace, nil)
+	var cmd *exec.Cmd
+	var cleanup func()
+	var e error
+	if directory != "" {
+		cmd, cleanup, e = platform.ConfinedPackageCommand(ctx, directory, entrypoint, workspace)
+	} else {
+		cmd, cleanup, e = platform.ConfinedCommand(ctx, exe, workspace, nil)
+	}
 	if e != nil {
 		cancel()
 		return nil, e
@@ -76,8 +106,12 @@ func Start(ctx context.Context, exe, workspace string) (*Session, error) {
 		cancel()
 		return nil, e
 	}
-	s := &Session{cmd: cmd, input: input, frames: make(chan frameResult, 32), cleanup: cleanup, cancel: cancel, done: make(chan error, 1), log: log}
+	cleanupWorker := func() { cleanup(); <-workerSlots }
+	s := &Session{cmd: cmd, input: input, frames: make(chan frameResult, 2), cleanup: cleanupWorker, cancel: cancel, done: make(chan error, 1), log: log}
+	release = false
+	readerDone := make(chan struct{})
 	go func() {
+		defer close(readerDone)
 		r := bufio.NewReader(output)
 		for {
 			b, e := wire.ReadFrame(r)
@@ -91,7 +125,8 @@ func Start(ctx context.Context, exe, workspace string) (*Session, error) {
 			}
 		}
 	}()
-	go func() { s.done <- cmd.Wait() }()
+	// StdoutPipe must be drained before Wait closes its read descriptor.
+	go func() { <-readerDone; s.done <- cmd.Wait() }()
 	return s, nil
 }
 func (s *Session) Close() {
@@ -125,7 +160,7 @@ func (s *Session) Call(ctx context.Context, method string, params any) (json.Raw
 	if len(b) > wire.MaxFrame {
 		return nil, errors.New("request size limit")
 	}
-	if _, e = s.input.Write(append(b, '\n')); e != nil {
+	if e = s.write(ctx, append(b, '\n')); e != nil {
 		return nil, e
 	}
 	for {
@@ -158,9 +193,15 @@ func (s *Session) Call(ctx context.Context, method string, params any) (json.Raw
 				return nil, errors.New("wrong protocol envelope")
 			}
 			if response.Method != "" {
+				if len(response.Result) > 0 || len(response.Error) > 0 {
+					return nil, errors.New("plugin request/notification contains response fields")
+				}
 				if response.ID != nil { // Host mediation currently denies all plugin-origin API requests; no implicit grants.
+					if !strings.HasPrefix(*response.ID, "p-") {
+						return nil, errors.New("plugin-origin request ID must use p- prefix")
+					}
 					reply, _ := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": *response.ID, "error": map[string]any{"code": -32010, "message": "Host API unavailable in conformance invocation", "data": map[string]any{"code": "PERMISSION_DENIED"}}})
-					if _, e = s.input.Write(append(reply, '\n')); e != nil {
+					if e = s.write(ctx, append(reply, '\n')); e != nil {
 						return nil, e
 					}
 					continue
@@ -173,6 +214,9 @@ func (s *Session) Call(ctx context.Context, method string, params any) (json.Raw
 			if response.ID == nil || *response.ID != id {
 				return nil, errors.New("unsolicited or wrong plugin response ID")
 			}
+			if len(response.Result) > 0 && len(response.Error) > 0 && string(response.Error) != "null" {
+				return nil, errors.New("plugin response contains both result and error")
+			}
 			if len(response.Error) > 0 && string(response.Error) != "null" {
 				return nil, fmt.Errorf("plugin returned application error: %s", response.Error)
 			}
@@ -181,6 +225,21 @@ func (s *Session) Call(ctx context.Context, method string, params any) (json.Raw
 			}
 			return response.Result, nil
 		}
+	}
+}
+
+// A plugin that never reads stdin must not trap a coordinator goroutine in Write.
+// Cancellation terminates the supervised process group and closes the pipe.
+func (s *Session) write(ctx context.Context, b []byte) error {
+	done := make(chan error, 1)
+	go func() { _, err := s.input.Write(b); done <- err }()
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		s.cancel()
+		s.input.Close()
+		return ctx.Err()
 	}
 }
 
