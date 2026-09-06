@@ -1,0 +1,508 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/common.schema.json",
+  "title": "Virmill common",
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "uniqueItems": true
+        },
+        "extensions": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "networkSpec": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "nat",
+            "bridge",
+            "lab",
+            "guest-only"
+          ]
+        },
+        "bridgeRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ipv4": {
+          "type": "object",
+          "properties": {
+            "cidr": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "dhcp": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "advertiseDefaultRoute": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "enabled"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "cidr",
+            "dhcp"
+          ],
+          "additionalProperties": false
+        },
+        "ipv6": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "disabled",
+                "local-only"
+              ]
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "additionalProperties": false
+        },
+        "hostAccess": {
+          "enum": [
+            "services-only",
+            "allow",
+            "deny"
+          ]
+        },
+        "egress": {
+          "enum": [
+            "any",
+            "internet-only",
+            "none"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "hostAccess",
+        "egress"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "guest-only"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "hostAccess": {
+                "const": "deny"
+              },
+              "egress": {
+                "const": "none"
+              },
+              "ipv4": {
+                "properties": {
+                  "dhcp": {
+                    "properties": {
+                      "enabled": {
+                        "const": false
+                      },
+                      "advertiseDefaultRoute": {
+                        "const": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "bridge"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "bridgeRef"
+            ],
+            "properties": {
+              "hostAccess": {
+                "const": "allow"
+              },
+              "egress": {
+                "const": "any"
+              },
+              "ipv4": {
+                "properties": {
+                  "dhcp": {
+                    "properties": {
+                      "enabled": {
+                        "const": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "lab"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "egress": {
+                "const": "none"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "vmSpec": {
+      "type": "object",
+      "properties": {
+        "architecture": {
+          "enum": [
+            "x86_64"
+          ]
+        },
+        "source": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "template"
+                },
+                "templateRef": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "type",
+                "templateRef"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "disk",
+                    "iso",
+                    "cloud-image"
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "type",
+                "path"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "vcpus": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 512
+            },
+            "memoryMiB": {
+              "type": "integer",
+              "minimum": 128
+            }
+          },
+          "required": [
+            "vcpus",
+            "memoryMiB"
+          ],
+          "additionalProperties": false
+        },
+        "firmware": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "bios",
+                "uefi"
+              ]
+            },
+            "secureBoot": {
+              "type": "boolean"
+            },
+            "tpm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "additionalProperties": false
+        },
+        "disks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,62}$"
+              },
+              "sizeGiB": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "bus": {
+                "enum": [
+                  "virtio",
+                  "sata",
+                  "scsi"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "sizeGiB",
+              "bus"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "nics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,62}$"
+              },
+              "networkRef": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,62}$"
+              },
+              "model": {
+                "enum": [
+                  "virtio",
+                  "e1000e",
+                  "rtl8139"
+                ]
+              },
+              "defaultRoute": {
+                "type": "boolean"
+              },
+              "routeMetric": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "ipv4": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "enum": [
+                      "dhcp",
+                      "static",
+                      "none"
+                    ]
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "gateway": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "dns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "mode"
+                ],
+                "additionalProperties": false,
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "mode": {
+                          "const": "static"
+                        }
+                      }
+                    },
+                    "then": {
+                      "required": [
+                        "address"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "extensions": {
+                "type": "object",
+                "patternProperties": {
+                  "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "networkRef",
+              "defaultRoute",
+              "ipv4"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "setup": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,62}$"
+            },
+            "sshAuthorizedKeyFiles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "recipes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "recipeRef": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "runAs": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "approvalRequired": {
+                    "type": "boolean"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "string",
+                        "number",
+                        "boolean"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "recipeRef",
+                  "runAs",
+                  "approvalRequired"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "user"
+          ],
+          "additionalProperties": false
+        },
+        "extensions": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "architecture",
+        "source",
+        "resources",
+        "nics"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

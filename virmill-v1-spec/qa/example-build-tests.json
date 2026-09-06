@@ -1,0 +1,69 @@
+{
+  "product": "Virmill",
+  "specificationRevision": "1.0-draft.2",
+  "toolchain": "go version go1.23.2 linux/amd64",
+  "scope": "Synthetic read-only example, not the application",
+  "results": [
+    {
+      "command": "/usr/local/go/bin/go test -count=1 -v ./...",
+      "workingDirectory": "/mnt/data/virmill-v1-spec/examples/plugins/vm-summary",
+      "exitCode": 0,
+      "stdout": "=== RUN   TestDuplicateKeys\n--- PASS: TestDuplicateKeys (0.00s)\n=== RUN   TestInvalidUTF8\n--- PASS: TestInvalidUTF8 (0.00s)\n=== RUN   TestMalformedThenNotInitialized\n--- PASS: TestMalformedThenNotInitialized (0.00s)\n=== RUN   TestOversizedFrame\n--- PASS: TestOversizedFrame (0.07s)\nPASS\nok  \texample.invalid/virmill/vm-summary\t0.069s",
+      "stderr": "",
+      "target": "unit-tests",
+      "executionTested": true,
+      "elapsedSeconds": 5.499
+    },
+    {
+      "command": "/usr/local/go/bin/go vet ./...",
+      "workingDirectory": "/mnt/data/virmill-v1-spec/examples/plugins/vm-summary",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "target": "static-checks",
+      "executionTested": true,
+      "elapsedSeconds": 0.816
+    },
+    {
+      "command": "/usr/local/go/bin/go build -o /mnt/data/_virmill_build/bin/vm-summary .",
+      "workingDirectory": "/mnt/data/virmill-v1-spec/examples/plugins/vm-summary",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "target": "linux/amd64",
+      "executionTested": true,
+      "elapsedSeconds": 0.182
+    },
+    {
+      "command": "/opt/pyvenv/bin/python /mnt/data/virmill-v1-spec/examples/plugins/vm-summary/smoke_test.py /mnt/data/_virmill_build/bin/vm-summary",
+      "workingDirectory": "/mnt/data/virmill-v1-spec/examples/plugins/vm-summary",
+      "exitCode": 0,
+      "stdout": "{\"status\": \"passed\", \"smoke_checks\": 13, \"scope\": \"synthetic plugin only\"}",
+      "stderr": "",
+      "target": "protocol-smoke",
+      "executionTested": true,
+      "elapsedSeconds": 0.634
+    },
+    {
+      "command": "/usr/local/go/bin/go build -o /mnt/data/_virmill_build/bin/vm-summary-darwin-arm64 .",
+      "workingDirectory": "/mnt/data/virmill-v1-spec/examples/plugins/vm-summary",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "target": "darwin/arm64",
+      "executionTested": false,
+      "elapsedSeconds": 3.635
+    },
+    {
+      "command": "/usr/local/go/bin/go build -o /mnt/data/_virmill_build/bin/vm-summary-windows-amd64.exe .",
+      "workingDirectory": "/mnt/data/virmill-v1-spec/examples/plugins/vm-summary",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "target": "windows/amd64",
+      "executionTested": false,
+      "elapsedSeconds": 3.711
+    }
+  ],
+  "status": "passed"
+}

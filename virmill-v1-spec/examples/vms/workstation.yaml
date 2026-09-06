@@ -1,0 +1,21 @@
+apiVersion: virmill/v1
+kind: VM
+metadata:
+  name: workstation
+  tags: [development]
+spec:
+  architecture: x86_64
+  source: {type: template, templateRef: "linux-workstation@1"}
+  resources: {vcpus: 4, memoryMiB: 4096}
+  firmware: {mode: uefi, secureBoot: false, tpm: false}
+  nics:
+    - id: internet
+      networkRef: internet
+      model: virtio
+      defaultRoute: true
+      ipv4: {mode: dhcp}
+    - id: targets
+      networkRef: targets
+      model: virtio
+      defaultRoute: false
+      ipv4: {mode: static, address: 10.88.22.10/24}

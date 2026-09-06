@@ -1,0 +1,25 @@
+apiVersion: virmill/v1
+kind: BackupPolicy
+metadata:
+  name: development-nightly
+spec:
+  repositoryRef: local-encrypted-backup
+  selector:
+    tags: [development]
+  schedule:
+    cron: "0 2 * * *"
+    timezone: Asia/Riyadh
+    missedRun: run-once
+  capture:
+    mode: auto
+    consistency: filesystem-consistent
+    allowShutdown: false
+    onUnavailable: fail
+  retention:
+    keepDaily: 7
+    keepWeekly: 4
+    keepMonthly: 3
+    respectPins: true
+  verification:
+    afterCapture: true
+    testRestore: manual

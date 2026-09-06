@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "schema_count": 8,
+  "valid_examples": [
+    "examples/backup-policy.yaml",
+    "examples/labs/multi-network-lab.yaml",
+    "examples/networks/guest-only.yaml",
+    "examples/networks/internet.yaml",
+    "examples/vms/workstation.yaml",
+    "examples/plugins/vm-summary/manifest.json"
+  ],
+  "negative_checks": [
+    "unknown fields",
+    "multiple normal default routes",
+    "unresolved network",
+    "dependency cycle",
+    "duplicate machine identity",
+    "host DHCP on guest-only network",
+    "invalid CIDR",
+    "plugin entrypoint traversal",
+    "unimplemented protocol version",
+    "RPC both result and error",
+    "numeric RPC identifier"
+  ],
+  "internal_links_checked": 24,
+  "source_labels_resolved": 31,
+  "product_acceptance_scenarios_documented": 71,
+  "scope": "Specification aids only; no VM or hardware acceptance performed"
+}

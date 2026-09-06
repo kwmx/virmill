@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm.schema.json",
+  "title": "Virmill vm",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "kind": {
+      "const": "VM"
+    },
+    "metadata": {
+      "$ref": "https://virmill.example/schemas/v1/common.schema.json#/$defs/metadata"
+    },
+    "spec": {
+      "$ref": "https://virmill.example/schemas/v1/common.schema.json#/$defs/vmSpec"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,431 @@
+{
+  "specificationRevision": "1.0-draft.2",
+  "requirements": [
+    {
+      "id": "CORE-01",
+      "acceptance": "Discover system/session inventories separately; no duplicate identity or silent adoption.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "CORE-02",
+      "acceptance": "Start, graceful stop, force stop, reboot, pause/resume, autostart and delete preserve the promised disks and state.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "CORE-03",
+      "acceptance": "CPU/RAM/boot edits correctly distinguish live and persistent state and required shutdown.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "CORE-04",
+      "acceptance": "An adopted VM with unknown XML namespaces/device settings retains them after an unrelated edit.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true
+    },
+    {
+      "id": "CORE-05",
+      "acceptance": "An external concurrent edit invalidates the stale plan; no overwrite of newer unrelated settings.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "CORE-06",
+      "acceptance": "Restricted session/backend capability is explained before mutation, not mislabeled as success.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-01",
+      "acceptance": "ISO install, cloud image and existing disk creation each reach their declared verification level.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-02",
+      "acceptance": "VMware OVA with supported Linux guest, multiple disks and NICs imports with correct boot/disk order.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-03",
+      "acceptance": "Generic OVF/OVA fixture imports through the generic path, without pretending all appliances are supported.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-04",
+      "acceptance": "Unsupported source/hardware, encrypted source and missing driver produce actionable preflight results.",
+      "minimumEvidence": "Unit + fixtures",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-05",
+      "acceptance": "Traversal, symlink, special file, XML entity, archive bomb and external backing references are rejected.",
+      "minimumEvidence": "Automated security",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-06",
+      "acceptance": "Conversion failure, low space and canceled job preserve original source and safely reconcile staging.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-07",
+      "acceptance": "Registration/start/guest boot/guest reachability are reported as distinct success stages.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "IMP-08",
+      "acceptance": "Multi-system OVF selection, missing source digest and source mutation between plan/apply are handled explicitly.",
+      "minimumEvidence": "Fixtures + real backend",
+      "v1Required": true
+    },
+    {
+      "id": "NET-01",
+      "acceptance": "NAT guest has configured DNS/internet; a static target remains on its designated lab network.",
+      "minimumEvidence": "Real packet/guest tests",
+      "v1Required": true
+    },
+    {
+      "id": "NET-02",
+      "acceptance": "A guest with internet plus two lab NICs uses only the intended normal default route.",
+      "minimumEvidence": "Real guest tests",
+      "v1Required": true
+    },
+    {
+      "id": "NET-03",
+      "acceptance": "Services-only lab permits its declared DHCP/DNS but rejects other host services and external forwarding.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true
+    },
+    {
+      "id": "NET-04",
+      "acceptance": "Guest-only segment has no host L3/DHCP; approved guest static addressing works between guests.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true
+    },
+    {
+      "id": "NET-05",
+      "acceptance": "IPv6/link-local/RA paths match policy; no false isolation claim from IPv4-only tests.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true
+    },
+    {
+      "id": "NET-06",
+      "acceptance": "CIDR selection detects LAN/VPN/planned overlaps without treating the default route as universal overlap.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true
+    },
+    {
+      "id": "NET-07",
+      "acceptance": "Existing LAN bridge works; DHCP remains externally owned unless explicitly configured otherwise.",
+      "minimumEvidence": "Real Ethernet host",
+      "v1Required": true
+    },
+    {
+      "id": "NET-08",
+      "acceptance": "NetworkManager bridge creation commits on confirmation and restores connectivity on timeout/crash.",
+      "minimumEvidence": "Physical/disposable host",
+      "v1Required": true
+    },
+    {
+      "id": "NET-09",
+      "acceptance": "Certified Netplan/networkd bridge creation and independent rollback work, including process interruption.",
+      "minimumEvidence": "Physical/disposable host",
+      "v1Required": true
+    },
+    {
+      "id": "NET-10",
+      "acceptance": "Ordinary Wi-Fi bridging is declined with NAT alternative; Wi-Fi NAT succeeds.",
+      "minimumEvidence": "Physical Wi-Fi host",
+      "v1Required": true
+    },
+    {
+      "id": "NET-11",
+      "acceptance": "Port forwards obey bind/exposure policy, maintain stable targets and survive firewall reload/reboot.",
+      "minimumEvidence": "Real packet tests",
+      "v1Required": true
+    },
+    {
+      "id": "NET-12",
+      "acceptance": "Dual-homed paths are flagged; lab deletion blocks when external guests still reference its network.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "STO-01",
+      "acceptance": "Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "STO-02",
+      "acceptance": "Full clone is independent; linked clone retains declared immutable base dependencies.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "STO-03",
+      "acceptance": "Base/template deletion and garbage collection refuse any referenced or uncertain object.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true
+    },
+    {
+      "id": "SNAP-01",
+      "acceptance": "Cold snapshot/revert preserves disk, configuration and required firmware/TPM identity; source branch remains safe.",
+      "minimumEvidence": "Real backend + guest",
+      "v1Required": true
+    },
+    {
+      "id": "SNAP-02",
+      "acceptance": "Supported live disk snapshot/revert uses safe graph transitions, including injected partial failure.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "SNAP-03",
+      "acceptance": "Unsupported memory/TPM/live combinations fail before mutation or use explicitly approved cold capture.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "BAK-01",
+      "acceptance": "Encrypted backup includes all required artifacts; restore succeeds with original VM files and app database unavailable.",
+      "minimumEvidence": "Independent real restore",
+      "v1Required": true
+    },
+    {
+      "id": "BAK-02",
+      "acceptance": "Supported live backup respects consistency; shutdown/interruption produces partial status, never a valid incomplete backup.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "BAK-03",
+      "acceptance": "Failed quiesce cannot leave the guest frozen; independent guardian meets the documented bound under daemon crash.",
+      "minimumEvidence": "Real guest fault injection",
+      "v1Required": true
+    },
+    {
+      "id": "BAK-04",
+      "acceptance": "Retention/pruning honors pins, repository locks and active jobs; verification detects corrupted/missing data.",
+      "minimumEvidence": "Real repository",
+      "v1Required": true
+    },
+    {
+      "id": "BAK-05",
+      "acceptance": "Scheduled capture obeys timezone, missed-run and credential-unavailable policy; no silent consistency downgrade.",
+      "minimumEvidence": "Service/reboot tests",
+      "v1Required": true
+    },
+    {
+      "id": "BAK-06",
+      "acceptance": "Isolated test restore catches identity/address conflicts and reports the exact readiness verified.",
+      "minimumEvidence": "Independent real restore",
+      "v1Required": true
+    },
+    {
+      "id": "DEV-01",
+      "acceptance": "USB attach/detach works live and persistently where supported, with serial and port identity behavior verified.",
+      "minimumEvidence": "Physical USB host",
+      "v1Required": true
+    },
+    {
+      "id": "DEV-02",
+      "acceptance": "Identical devices, missing device, disconnect/reconnect and host-use conflict never attach the wrong device silently.",
+      "minimumEvidence": "Physical USB host",
+      "v1Required": true
+    },
+    {
+      "id": "DEV-03",
+      "acceptance": "PCI/IOMMU discovery is read-only; unsupported passthrough never changes bootloader or host drivers.",
+      "minimumEvidence": "Physical host",
+      "v1Required": true
+    },
+    {
+      "id": "DEV-04",
+      "acceptance": "Serial/SSH/viewer access and supported shares/clipboard honor opt-in and endpoint exposure rules.",
+      "minimumEvidence": "Real guests",
+      "v1Required": true
+    },
+    {
+      "id": "GUEST-01",
+      "acceptance": "Cloud-init and supported guest transports establish a non-root user/keys and report readiness truthfully.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true
+    },
+    {
+      "id": "GUEST-02",
+      "acceptance": "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true
+    },
+    {
+      "id": "GUEST-03",
+      "acceptance": "Missing guest agent/network/SSH credentials produce guidance, not guessed IPs or insecure host-key bypass.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true
+    },
+    {
+      "id": "LAB-01",
+      "acceptance": "Multi-VM DAG applies successfully; second unchanged apply is a no-op with stable identities.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "LAB-02",
+      "acceptance": "Cycle, duplicate identity, unknown template and address conflict fail during validation/preflight.",
+      "minimumEvidence": "Unit + real backend",
+      "v1Required": true
+    },
+    {
+      "id": "LAB-03",
+      "acceptance": "Mid-DAG failure can resume safely; destruction preserves external networks, retained disks and backups.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "LAB-04",
+      "acceptance": "Template capture generalizes only a copy; clones receive intended identity and remain bound to immutable version.",
+      "minimumEvidence": "Real guest",
+      "v1Required": true
+    },
+    {
+      "id": "LAB-05",
+      "acceptance": "Coordinated cold capture restores into a new namespace with correct dependencies and disclosed consistency window.",
+      "minimumEvidence": "Real backend",
+      "v1Required": true
+    },
+    {
+      "id": "JOB-01",
+      "acceptance": "Closing either client leaves the job running; reconnect shows coherent status and ordered events.",
+      "minimumEvidence": "Service integration",
+      "v1Required": true
+    },
+    {
+      "id": "JOB-02",
+      "acceptance": "Crash/reboot reconciles uncertain effects rather than blindly rerunning destructive steps.",
+      "minimumEvidence": "Fault injection",
+      "v1Required": true
+    },
+    {
+      "id": "JOB-03",
+      "acceptance": "Idempotency key retries yield the same operation; changed input with reused key is rejected.",
+      "minimumEvidence": "Unit + integration",
+      "v1Required": true
+    },
+    {
+      "id": "JOB-04",
+      "acceptance": "Multiple clients and external changes are serialized/rechecked correctly, including resource busy conditions.",
+      "minimumEvidence": "Integration",
+      "v1Required": true
+    },
+    {
+      "id": "SEC-01",
+      "acceptance": "Wrong UID/socket clients and unauthorized helper actions are rejected; no generic root execution primitive exists.",
+      "minimumEvidence": "Security integration",
+      "v1Required": true
+    },
+    {
+      "id": "SEC-02",
+      "acceptance": "Secrets and guest sensitive artifacts remain absent from default logs, telemetry and diagnostics.",
+      "minimumEvidence": "Automated security",
+      "v1Required": true
+    },
+    {
+      "id": "SEC-03",
+      "acceptance": "Malicious paths, filenames, terminal control sequences and subprocess inputs cannot escape or inject commands.",
+      "minimumEvidence": "Fuzz + security tests",
+      "v1Required": true
+    },
+    {
+      "id": "SEC-04",
+      "acceptance": "Plugin confinement blocks undeclared files/sockets/network; sandbox unavailable fails closed.",
+      "minimumEvidence": "Linux sandbox tests",
+      "v1Required": true
+    },
+    {
+      "id": "SEC-05",
+      "acceptance": "Plan/hash/expiry/package substitution invalidates grants; a plugin cannot turn read permission into mutation.",
+      "minimumEvidence": "Security integration",
+      "v1Required": true
+    },
+    {
+      "id": "EXT-01",
+      "acceptance": "Reference action and a second-language fixture pass handshake/schema/plan/execute/error contracts.",
+      "minimumEvidence": "Simulated contract",
+      "v1Required": true
+    },
+    {
+      "id": "EXT-02",
+      "acceptance": "Simulated provider supports lifecycle/reconcile and reports unsupported capabilities without modifying core.",
+      "minimumEvidence": "Simulated contract",
+      "v1Required": true
+    },
+    {
+      "id": "EXT-03",
+      "acceptance": "Malformed/duplicate-key/oversized frames, timeouts, crash and cancellation are handled safely.",
+      "minimumEvidence": "Fuzz + contract",
+      "v1Required": true
+    },
+    {
+      "id": "EXT-04",
+      "acceptance": "Package signature/digest/path checks, upgrade/rollback and grant revocation behave as documented.",
+      "minimumEvidence": "Security integration",
+      "v1Required": true
+    },
+    {
+      "id": "EXT-05",
+      "acceptance": "Plugin-added structured action is reachable from both CLI and TUI with the same approved operation.",
+      "minimumEvidence": "Interface integration",
+      "v1Required": true
+    },
+    {
+      "id": "UX-01",
+      "acceptance": "Every mandatory operation has equivalent CLI/TUI behavior, validation, permission and recovery paths.",
+      "minimumEvidence": "Registry + interaction tests",
+      "v1Required": true
+    },
+    {
+      "id": "UX-02",
+      "acceptance": "Resize, navigation, focus, cancellation and errors work in supported terminals without color-only meaning.",
+      "minimumEvidence": "Automated + manual",
+      "v1Required": true
+    },
+    {
+      "id": "UX-03",
+      "acceptance": "JSON/NDJSON are stable and clean; noninteractive commands never hang for hidden prompts.",
+      "minimumEvidence": "Golden/contract tests",
+      "v1Required": true
+    },
+    {
+      "id": "REL-01",
+      "acceptance": "RPM/DEB fresh install, upgrade, migrations and uninstall preserve user VMs/data and follow approved host setup.",
+      "minimumEvidence": "Clean host matrix",
+      "v1Required": true
+    },
+    {
+      "id": "REL-02",
+      "acceptance": "Dependency-free core/protocol packages and sample plugin build on declared OS/architecture test targets.",
+      "minimumEvidence": "Cross-build CI",
+      "v1Required": true
+    },
+    {
+      "id": "REL-03",
+      "acceptance": "User/admin/plugin docs and examples pass validation and correspond to actual command help.",
+      "minimumEvidence": "Documentation CI",
+      "v1Required": true
+    },
+    {
+      "id": "REL-04",
+      "acceptance": "Entire mandatory suite passes on the frozen support matrix; remaining issues and exclusions are explicit.",
+      "minimumEvidence": "Release evidence review",
+      "v1Required": true
+    }
+  ]
+}

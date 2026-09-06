@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "product": "Virmill",
+  "specificationRevision": "1.0-draft.2",
+  "publicExecutable": "virmill",
+  "localCoordinator": "virmilld",
+  "privilegedHelper": "virmill-host-helper",
+  "environmentVariablePrefix": "VIRMILL_",
+  "declarativeAPIVersion": "virmill/v1",
+  "schemaIdentifierBase": "https://virmill.example/schemas/v1/",
+  "referencePluginID": "example.virmill.vm-summary",
+  "checks": {
+    "original_package_files_retained": true,
+    "legacy_brand_or_command_references_remaining": 0,
+    "acceptance_requirements_unchanged": 71,
+    "schemas_semantically_unchanged_except_identity": 8,
+    "examples_unchanged_except_identity": 6,
+    "reference_plugin_behavior_unchanged_except_identity": true,
+    "plugin_manifest_source_tests_and_documented_handshake_agree": true,
+    "source_archive_digest_verified": "ca0634a1aea5aecba0e561547fe84a55ff5cf5a552f38dc387dd8744ad69f1b5"
+  },
+  "limits": "Identity and specification consistency checks only. No VM application or host-hardware workflows were implemented or tested."
+}

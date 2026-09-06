@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/backup-policy.schema.json",
+  "title": "Virmill backup-policy",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "kind": {
+      "const": "BackupPolicy"
+    },
+    "metadata": {
+      "$ref": "https://virmill.example/schemas/v1/common.schema.json#/$defs/metadata"
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "repositoryRef": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        },
+        "selector": {
+          "type": "object",
+          "properties": {
+            "vmIDs": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "vmIDs"
+              ]
+            },
+            {
+              "required": [
+                "tags"
+              ]
+            }
+          ]
+        },
+        "schedule": {
+          "type": "object",
+          "properties": {
+            "cron": {
+              "type": "string",
+              "minLength": 1
+            },
+            "timezone": {
+              "type": "string",
+              "minLength": 1
+            },
+            "missedRun": {
+              "enum": [
+                "skip",
+                "run-once"
+              ]
+            }
+          },
+          "required": [
+            "cron",
+            "timezone",
+            "missedRun"
+          ],
+          "additionalProperties": false
+        },
+        "capture": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "auto",
+                "live",
+                "cold"
+              ]
+            },
+            "consistency": {
+              "enum": [
+                "crash-consistent",
+                "filesystem-consistent",
+                "application-consistent"
+              ]
+            },
+            "allowShutdown": {
+              "type": "boolean"
+            },
+            "onUnavailable": {
+              "const": "fail"
+            }
+          },
+          "required": [
+            "mode",
+            "consistency",
+            "allowShutdown",
+            "onUnavailable"
+          ],
+          "additionalProperties": false
+        },
+        "retention": {
+          "type": "object",
+          "properties": {
+            "keepDaily": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keepWeekly": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keepMonthly": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "respectPins": {
+              "const": true
+            }
+          },
+          "required": [
+            "keepDaily",
+            "keepWeekly",
+            "keepMonthly",
+            "respectPins"
+          ],
+          "additionalProperties": false
+        },
+        "verification": {
+          "type": "object",
+          "properties": {
+            "afterCapture": {
+              "const": true
+            },
+            "testRestore": {
+              "enum": [
+                "manual",
+                "scheduled"
+              ]
+            }
+          },
+          "required": [
+            "afterCapture",
+            "testRestore"
+          ],
+          "additionalProperties": false
+        },
+        "extensions": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(\\.[a-z0-9-]+)+/[a-zA-Z0-9._-]+$": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "repositoryRef",
+        "selector",
+        "schedule",
+        "capture",
+        "retention",
+        "verification"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "additionalProperties": false
+}

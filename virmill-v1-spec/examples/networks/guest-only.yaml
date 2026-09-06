@@ -1,0 +1,12 @@
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: targets
+spec:
+  type: guest-only
+  ipv4:
+    cidr: 10.88.22.0/24
+    dhcp: {enabled: false, advertiseDefaultRoute: false}
+  ipv6: {mode: disabled}
+  hostAccess: deny
+  egress: none
