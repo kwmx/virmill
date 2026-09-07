@@ -622,7 +622,8 @@
         "native-first-qcow2-001",
         "native-first-creation-001",
         "native-first-preservation-001",
-        "native-first-recovery-001"
+        "native-first-recovery-001",
+        "native-first-defaults-regression-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required.",
@@ -2462,7 +2463,8 @@
         "nocloud-build-001",
         "nocloud-release-gate-001",
         "configuration-build-001",
-        "configuration-release-gate-001"
+        "configuration-release-gate-001",
+        "native-first-release-gate-001"
       ],
       "outstanding": [
         "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. First disposable-host run is recorded; native creation remains blocked by unreviewed Q35 device defaults."
