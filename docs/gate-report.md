@@ -18,6 +18,8 @@ matching; missing kickoff document recorded in ADR 0001. No scope was reduced.
 | 9 release | Evidence tooling and release blocker check present | Entire complete checklist remains unqualified |
 
 Evidence is retained in `evidence/ledger.jsonl` with logs and source/fixture digests.
+The [creation evidence summary](evidence/creation-slice.md) links the latest scoped
+checks, reproducible development artifacts and the still-blocked release gate.
 The core race suite, SDK cancellation, private IPC, confined two-language execution,
 simulated provider restart recovery and portable common-package builds pass their
 recorded scopes. This is not KVM boot, USB, packet routing or independent VM restore

@@ -1,0 +1,10 @@
+Native CLI/daemon OVA preparation: original SHA-256 39bf45595d3f544fedaaf21d869ee60396751a053d6bb968788102585eeb69a2 output disk hashes ['bbc19640dac4c911326978e34288e2309894c88661fc377ebcf6e51b7e15657a', '4590ad97d4d624f8d022ef363ba40e770bd0abafbef35399e636c4d5e3b24277'] ; no guest boot
+Creation CLI/daemon source validation reached native test-URI refusal; no creation job, native storage effect or guest boot occurred
+test_debian_archive_structure_and_rpm_metadata (__main__.Artifacts.test_debian_archive_structure_and_rpm_metadata) ... ok
+test_private_daemon_cli_and_lab_validation (__main__.Artifacts.test_private_daemon_cli_and_lab_validation) ... ok
+test_staged_install_and_uninstall_preserve_user_artifacts (__main__.Artifacts.test_staged_install_and_uninstall_preserve_user_artifacts) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.895s
+
+OK

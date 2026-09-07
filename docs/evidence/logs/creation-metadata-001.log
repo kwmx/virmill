@@ -1,0 +1,7 @@
+=== RUN   TestCreationDeviceMetadataFromInstalledQEMU
+    creation_linux_test.go:170: actual installed QEMU -device MODEL,help only, proof 5c1f4dba490e3eafab1f9d140d10e6816f34265efd1022b250a197172a58b73b; no machine initialization or guest execution
+    creation_linux_test.go:189: read-only installed firmware metadata: secureBoot=false descriptor=6e0ba29fb7d38c1f84c05b1d932e9ca28d976e644ecb9e888b7ed638753a3e38 code=2eeb785094b42fc16c41b46b92949405332ce527b62d0f1646fe0c3f42cffbde template=035317bb2923a13c1dc57373d608521cc3a486f1e3119016727d54baccc6e8bb; enrollment, firmware execution and TPM recovery remain untested
+    creation_linux_test.go:189: read-only installed firmware metadata: secureBoot=true descriptor=64d3b16ce90e372bdacbcd36484022955d154a4a86e165fda9213057a7e93fbe code=052ab8a99e3cf0178bee2a999a7b3a5e63ca524a5eb54005f79a2523f2339bee template=451d91357dfcd353da0f0988625e70da0605a1f5da7ef6d30c2c685bafc46ee8; enrollment, firmware execution and TPM recovery remain untested
+--- PASS: TestCreationDeviceMetadataFromInstalledQEMU (0.10s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	0.110s

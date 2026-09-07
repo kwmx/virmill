@@ -22,7 +22,8 @@
         "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Read-only native inventory and created-VM catalog binding exist; actual system/session inventories, event reconnection and explicit adoption remain unqualified/incomplete."
@@ -122,7 +123,8 @@
         "internal/operations/engine_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Plan binding tests pass; actual concurrent external libvirt edits need qualification."
@@ -151,7 +153,10 @@
         "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "creation-core-001",
+        "creation-metadata-001",
+        "creation-static-001"
       ],
       "outstanding": [
         "Connection allowlist implemented; full session capability probes and actual restrictions remain."
@@ -208,7 +213,8 @@
       ],
       "evidence": [
         "core-tests-001",
-        "import-conversion-001"
+        "import-conversion-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Prepared artifact mapping and define-last native adapter implemented; native streams/registration, VMware guest adaptation, disk/NIC order and guest boot remain unqualified."
@@ -248,7 +254,9 @@
         "core-tests-001",
         "import-conversion-001",
         "import-cli-daemon-001",
-        "resource-inventory-artifacts-001"
+        "resource-inventory-artifacts-001",
+        "creation-core-001",
+        "creation-artifacts-001"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified."
@@ -283,7 +291,10 @@
         "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
-        "import-conversion-001"
+        "import-conversion-001",
+        "creation-core-001",
+        "creation-metadata-001",
+        "creation-artifacts-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain."
@@ -351,7 +362,8 @@
       "evidence": [
         "import-conversion-001",
         "import-unit-001",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Preparation cancellation/failure preserves sources in fixtures. Creation retains partial volumes and locks; complete sets have reviewed definition-only recovery. Native stream interruption, low-space failure and partial-volume disposition remain unqualified/incomplete."
@@ -387,7 +399,9 @@
       ],
       "evidence": [
         "import-conversion-001",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "creation-core-001",
+        "creation-artifacts-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required."
@@ -718,7 +732,8 @@
       ],
       "evidence": [
         "resource-inventory-001",
-        "resource-inventory-core-001"
+        "resource-inventory-core-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Native active-file-pool allocation/upload/readback adapter and space preflight implemented but not run on a disposable qemu backend. Pool creation, growth/move, labels and guest data qualification remain."
@@ -748,7 +763,9 @@
         "internal/creating/recovery_linux_test.go",
         "internal/backend/libvirt/creation_linux_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "creation-core-001"
+      ],
       "outstanding": [
         "Prepared source bytes are copied into independent volume intents and verified before definition in coordinator fixtures; actual native independent clone and linked-base lifecycle remain unqualified."
       ],
@@ -1266,7 +1283,8 @@
         "core-tests-002",
         "core-tests-003",
         "import-conversion-001",
-        "import-unit-001"
+        "import-unit-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Synthetic crash/acknowledgement-loss recovery and jobs older than recent-list limit tested; actual backend/reboot fault matrix remains."
@@ -1297,7 +1315,8 @@
         "internal/creating/recovery_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage."
@@ -1328,7 +1347,8 @@
         "internal/creating/recovery_linux_test.go"
       ],
       "evidence": [
-        "ipc-tests-001"
+        "ipc-tests-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Database/socket singleton and persisted locks exist; multi-client resource contention/backend drift matrix remains."
@@ -1654,7 +1674,8 @@
         "import-unit-001",
         "import-cli-daemon-001",
         "resource-inventory-001",
-        "resource-inventory-core-001"
+        "resource-inventory-core-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete."
@@ -1683,7 +1704,8 @@
         "internal/creating/compatibility_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "creation-core-001"
       ],
       "outstanding": [
         "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains."
@@ -1722,7 +1744,9 @@
         "import-unit-001",
         "import-cli-daemon-001",
         "resource-inventory-001",
-        "resource-inventory-artifacts-001"
+        "resource-inventory-artifacts-001",
+        "creation-core-001",
+        "creation-artifacts-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain."
@@ -1761,7 +1785,10 @@
         "reproducible-build-004",
         "import-cli-daemon-001",
         "resource-inventory-build-001",
-        "resource-inventory-artifacts-001"
+        "resource-inventory-artifacts-001",
+        "creation-core-001",
+        "creation-build-001",
+        "creation-artifacts-001"
       ],
       "outstanding": [
         "Development packages and staged preservation tested; clean Fedora/Ubuntu/Debian install/upgrade/uninstall and actual migration matrix remain."
@@ -1787,7 +1814,9 @@
       "evidence": [
         "cross-build-001",
         "import-cross-build-001",
-        "resource-inventory-portable-001"
+        "resource-inventory-portable-001",
+        "creation-static-001",
+        "creation-portable-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -1826,7 +1855,11 @@
         "reproducible-build-004",
         "import-cli-daemon-001",
         "resource-inventory-build-001",
-        "resource-inventory-artifacts-001"
+        "resource-inventory-artifacts-001",
+        "creation-core-001",
+        "creation-static-001",
+        "creation-build-001",
+        "creation-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."
@@ -1850,7 +1883,9 @@
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-04",
       "tests": [],
-      "evidence": [],
+      "evidence": [
+        "creation-release-gate-001"
+      ],
       "outstanding": [
         "Full release blocked: incomplete mandatory code, no authorized disposable VM target, and missing required host/guest/hardware/restore evidence."
       ],
