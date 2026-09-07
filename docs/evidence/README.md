@@ -11,6 +11,7 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest development checkpoint: [identity-bound NoCloud seeds](nocloud-slice.md).
-Its actual confined seed generation and synthetic recovery results remain separate
-from unverified cloud-init execution, guest routing, native storage and hardware.
+Latest development checkpoint: [fixed CPU/RAM configuration](configuration-slice.md).
+Its native in-memory preservation tests and synthetic recovery remain separate
+from real VM, guest sizing and concurrent external-writer qualification. The prior
+[NoCloud checkpoint](nocloud-slice.md) records actual confined seed construction.

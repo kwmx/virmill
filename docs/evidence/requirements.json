@@ -83,7 +83,10 @@
         "tests/integration/artifacts_test.py"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "configuration-native-simulated-001",
+        "configuration-core-001",
+        "configuration-artifacts-001"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts, boot controls, actual host sizing and guest verification remain incomplete or unqualified."
@@ -119,7 +122,10 @@
         "tests/integration/artifacts_test.py"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "configuration-native-simulated-001",
+        "configuration-core-001",
+        "configuration-xml-fuzz-001"
       ],
       "outstanding": [
         "Pure span tests preserve every unrelated byte; official libvirt in-memory tests preserve opaque metadata and refuse synthetic display-password redaction. New plans retain hashes, not opaque XML. Real adopted VM and complete unknown XML normalization/preservation remain unqualified."
@@ -157,7 +163,9 @@
       ],
       "evidence": [
         "core-tests-001",
-        "creation-core-001"
+        "creation-core-001",
+        "configuration-native-simulated-001",
+        "configuration-core-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified."
@@ -200,7 +208,10 @@
         "core-tests-001",
         "creation-core-001",
         "creation-metadata-001",
-        "creation-static-001"
+        "creation-static-001",
+        "configuration-native-simulated-001",
+        "configuration-core-001",
+        "configuration-artifacts-001"
       ],
       "outstanding": [
         "Connection allowlist implemented; full session capability probes and actual restrictions remain."
@@ -1588,7 +1599,8 @@
         "installation-core-001",
         "installation-confinement-001",
         "nocloud-core-001",
-        "nocloud-confinement-001"
+        "nocloud-confinement-001",
+        "configuration-core-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains."
@@ -1696,7 +1708,8 @@
         "installation-core-001",
         "installation-confinement-001",
         "nocloud-core-001",
-        "nocloud-confinement-001"
+        "nocloud-confinement-001",
+        "configuration-core-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains."
@@ -1768,7 +1781,10 @@
       "evidence": [
         "nocloud-core-001",
         "nocloud-confinement-001",
-        "nocloud-key-fuzz-001"
+        "nocloud-key-fuzz-001",
+        "configuration-native-simulated-001",
+        "configuration-core-001",
+        "configuration-artifacts-001"
       ],
       "outstanding": [
         "NoCloud credential refusals withhold rejected values. New resource-edit plans persist hashes instead of opaque XML; secure XML differences fail closed, and returned native definition errors withhold XML values. Full secret store, inventory/guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required."
@@ -1787,19 +1803,22 @@
       "implementationPaths": [
         "internal/wire/json.go",
         "internal/validation/validate.go",
-        "internal/app/importer/ova.go"
+        "internal/app/importer/ova.go",
+        "internal/backend/xmlpatch/resources.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-03",
       "tests": [
         "internal/wire/json_test.go",
         "internal/app/importer/ova_test.go",
-        "internal/validation/validate_test.go"
+        "internal/validation/validate_test.go",
+        "internal/backend/xmlpatch/resources_test.go"
       ],
       "evidence": [
         "core-tests-001",
         "import-conversion-001",
-        "nocloud-key-fuzz-001"
+        "nocloud-key-fuzz-001",
+        "configuration-xml-fuzz-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain."
@@ -2095,7 +2114,8 @@
         "creation-core-001",
         "disk-set-core-001",
         "installation-core-001",
-        "nocloud-core-001"
+        "nocloud-core-001",
+        "configuration-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete."
@@ -2187,7 +2207,9 @@
         "disk-set-core-001",
         "disk-set-artifacts-001",
         "installation-artifacts-001",
-        "nocloud-artifacts-001"
+        "nocloud-artifacts-001",
+        "configuration-core-001",
+        "configuration-artifacts-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain."
@@ -2249,7 +2271,9 @@
         "installation-build-001",
         "installation-artifacts-001",
         "nocloud-build-001",
-        "nocloud-artifacts-001"
+        "nocloud-artifacts-001",
+        "configuration-build-001",
+        "configuration-artifacts-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
@@ -2281,7 +2305,8 @@
         "cleanup-static-portable-001",
         "disk-set-static-portable-001",
         "installation-static-portable-001",
-        "nocloud-static-portable-001"
+        "nocloud-static-portable-001",
+        "configuration-static-portable-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -2361,7 +2386,10 @@
         "installation-artifacts-001",
         "nocloud-static-portable-001",
         "nocloud-build-001",
-        "nocloud-artifacts-001"
+        "nocloud-artifacts-001",
+        "configuration-static-portable-001",
+        "configuration-build-001",
+        "configuration-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."
@@ -2394,7 +2422,9 @@
         "installation-build-001",
         "installation-release-gate-001",
         "nocloud-build-001",
-        "nocloud-release-gate-001"
+        "nocloud-release-gate-001",
+        "configuration-build-001",
+        "configuration-release-gate-001"
       ],
       "outstanding": [
         "Full release blocked: incomplete mandatory code, no authorized disposable VM target, and missing required host/guest/hardware/restore evidence."

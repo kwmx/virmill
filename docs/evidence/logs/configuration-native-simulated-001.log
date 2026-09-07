@@ -1,0 +1,10 @@
+=== RUN   TestNativeSimulatedConfigurationPreservesOpaqueXMLAndReadback
+    configuration_linux_test.go:63: official libvirt in-memory driver: fixed CPU/RAM redefine, opaque metadata preservation and secure readback only; no host domain or guest execution
+--- PASS: TestNativeSimulatedConfigurationPreservesOpaqueXMLAndReadback (0.03s)
+=== RUN   TestNativeSimulatedSecureDifferenceRefusesBeforeRedefinition
+    configuration_linux_test.go:88: in-memory driver redacts a synthetic display password; preservation preflight refuses without echoing it or redefining the domain
+--- PASS: TestNativeSimulatedSecureDifferenceRefusesBeforeRedefinition (0.01s)
+=== RUN   TestSecureConfigurationErrorNeverContainsValues
+--- PASS: TestSecureConfigurationErrorNeverContainsValues (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	1.097s
