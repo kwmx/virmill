@@ -18,7 +18,8 @@
         "internal/creating/acceptance_linux.go",
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
-        "docs/adr/0017-reviewed-creation-acceptance.md"
+        "docs/adr/0017-reviewed-creation-acceptance.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-01",
@@ -34,11 +35,15 @@
         "native-first-tui-001",
         "native-first-preservation-001",
         "device-policy-native-preservation-001",
-        "boot-media-native-preservation-001"
+        "boot-media-native-preservation-001",
+        "acceptance-core-001",
+        "acceptance-native-permission-refusal-001",
+        "acceptance-native-tui-001",
+        "acceptance-native-readback-001"
       ],
       "outstanding": [
         "Read-only native inventory and created-VM catalog binding exist; actual system/session inventories, event reconnection and explicit adoption remain unqualified/incomplete.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery and native in-memory checks are distinct from actual native acceptance and the complete workflow matrix; root-owned storage needs an explicitly supported read-access setup."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
       ],
       "hardwareVerified": false,
       "released": false
@@ -417,7 +422,7 @@
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Full installer console/ejection, native storage streaming and all declared guest boot/provisioning levels remain incomplete or unqualified.",
         "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case."
       ],
@@ -579,7 +584,7 @@
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -761,7 +766,8 @@
         "internal/creating/acceptance_linux.go",
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
-        "docs/adr/0017-reviewed-creation-acceptance.md"
+        "docs/adr/0017-reviewed-creation-acceptance.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -828,17 +834,20 @@
         "boot-media-native-disk-boot-001",
         "creation-progress-core-001",
         "result-progress-core-001",
-        "result-progress-native-readback-001"
+        "result-progress-native-readback-001",
+        "acceptance-core-001",
+        "acceptance-native-tui-001",
+        "acceptance-native-readback-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
-        "The retained first disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from its reviewed intent. Safe reviewed acceptance or disposition is required before that guest can boot; later versioned policy does not change its semantics.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "The first Q35 recipe remains incomplete and unchanged. Separate reviewed BIOS device acceptance passed guarded native byte/configuration verification under a temporary fixture ACL; the original job is partial and linked to the successful child. Full recovery/profile qualification and managed-storage permission setup remain required.",
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery and native in-memory checks are distinct from actual native acceptance and the complete workflow matrix; root-owned storage needs an explicitly supported read-access setup."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1746,7 +1755,8 @@
         "docs/adr/0016-active-creation-result-observations.md",
         "docs/vm-creation.md",
         "internal/creating/cleanup_linux.go",
-        "docs/evidence/result-progress-run.md"
+        "docs/evidence/result-progress-run.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-01",
@@ -1766,7 +1776,8 @@
         "native-first-tui-001",
         "device-policy-native-tui-002",
         "creation-progress-core-001",
-        "result-progress-core-001"
+        "result-progress-core-001",
+        "acceptance-native-tui-001"
       ],
       "outstanding": [
         "Coordinator separation implemented; long-running actual VM job client-detach/reconnect drill remains.",
@@ -1832,7 +1843,8 @@
         "internal/creating/acceptance_linux.go",
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
-        "docs/adr/0017-reviewed-creation-acceptance.md"
+        "docs/adr/0017-reviewed-creation-acceptance.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1904,16 +1916,23 @@
         "result-progress-core-001",
         "result-progress-static-001",
         "result-progress-native-upgrade-001",
-        "result-progress-native-readback-001"
+        "result-progress-native-readback-001",
+        "acceptance-static-001",
+        "acceptance-core-001",
+        "acceptance-native-access-001",
+        "acceptance-native-upgrade-001",
+        "acceptance-native-permission-refusal-001",
+        "acceptance-native-tui-001",
+        "acceptance-native-readback-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery and native in-memory checks are distinct from actual native acceptance and the complete workflow matrix; root-owned storage needs an explicitly supported read-access setup."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1994,7 +2013,8 @@
         "internal/creating/acceptance_linux.go",
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
-        "docs/adr/0017-reviewed-creation-acceptance.md"
+        "docs/adr/0017-reviewed-creation-acceptance.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -2041,14 +2061,17 @@
         "downtime-native-preview-001",
         "creation-progress-core-001",
         "result-progress-core-001",
-        "result-progress-native-readback-001"
+        "result-progress-native-readback-001",
+        "acceptance-core-001",
+        "acceptance-native-permission-refusal-001",
+        "acceptance-native-tui-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery and native in-memory checks are distinct from actual native acceptance and the complete workflow matrix; root-owned storage needs an explicitly supported read-access setup."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2446,7 +2469,8 @@
         "internal/creating/acceptance_linux.go",
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
-        "docs/adr/0017-reviewed-creation-acceptance.md"
+        "docs/adr/0017-reviewed-creation-acceptance.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2504,18 +2528,23 @@
         "creation-progress-core-001",
         "result-progress-core-001",
         "result-progress-artifacts-001",
-        "result-progress-native-readback-001"
+        "result-progress-native-readback-001",
+        "acceptance-core-001",
+        "acceptance-artifacts-001",
+        "acceptance-native-permission-refusal-001",
+        "acceptance-native-tui-001",
+        "acceptance-native-readback-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Native TUI plan review/digest authorization/detach passed for creation; guided forms and complete action parity remain required. Active creation result queries still suggest premature recovery (U009).",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery and native in-memory checks are distinct from actual native acceptance and the complete workflow matrix; root-owned storage needs an explicitly supported read-access setup."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2639,7 +2668,8 @@
         "docs/evidence/device-policy-run.md",
         "docs/evidence/boot-media-run.md",
         "docs/evidence/downtime-estimates-run.md",
-        "docs/evidence/result-progress-run.md"
+        "docs/evidence/result-progress-run.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -2695,7 +2725,12 @@
         "creation-progress-build-001",
         "result-progress-build-001",
         "result-progress-artifacts-001",
-        "result-progress-native-upgrade-001"
+        "result-progress-native-upgrade-001",
+        "acceptance-build-001",
+        "acceptance-artifacts-001",
+        "acceptance-native-access-001",
+        "acceptance-native-tools-001",
+        "acceptance-native-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
@@ -2716,7 +2751,8 @@
         "sdk/go/server.go",
         "docs/evidence/boot-media-run.md",
         "docs/evidence/downtime-estimates-run.md",
-        "docs/evidence/result-progress-run.md"
+        "docs/evidence/result-progress-run.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-02",
@@ -2741,7 +2777,10 @@
         "downtime-artifacts-001",
         "creation-progress-build-001",
         "result-progress-build-001",
-        "result-progress-artifacts-001"
+        "result-progress-artifacts-001",
+        "acceptance-portable-001",
+        "acceptance-build-001",
+        "acceptance-artifacts-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -2800,7 +2839,8 @@
         "internal/creating/acceptance_linux.go",
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
-        "docs/adr/0017-reviewed-creation-acceptance.md"
+        "docs/adr/0017-reviewed-creation-acceptance.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2879,17 +2919,23 @@
         "result-progress-static-001",
         "result-progress-build-001",
         "result-progress-artifacts-001",
-        "result-progress-native-readback-001"
+        "result-progress-native-readback-001",
+        "acceptance-static-001",
+        "acceptance-core-001",
+        "acceptance-build-001",
+        "acceptance-artifacts-001",
+        "acceptance-native-tui-001",
+        "acceptance-native-readback-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery and native in-memory checks are distinct from actual native acceptance and the complete workflow matrix; root-owned storage needs an explicitly supported read-access setup."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2906,7 +2952,8 @@
         "SHIP-CHECKLIST.md",
         "scripts/traceability.py",
         "docs/evidence/requirements.json",
-        "docs/evidence/result-progress-run.md"
+        "docs/evidence/result-progress-run.md",
+        "docs/evidence/creation-acceptance-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-04",
@@ -2927,10 +2974,11 @@
         "native-first-release-gate-002",
         "device-policy-release-gate-001",
         "boot-media-release-gate-001",
-        "result-progress-release-gate-001"
+        "result-progress-release-gate-001",
+        "acceptance-release-gate-001"
       ],
       "outstanding": [
-        "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. One versioned Q35/BIOS creation and narrow boot/configuration paths passed on the disposable host; the earlier uncertain creation still needs safe reviewed acceptance or disposition. All 71 complete acceptance cases remain open."
+        "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. One versioned Q35/BIOS creation and narrow boot/configuration paths passed on the disposable host; the earlier creation now links to successful separate reviewed acceptance while its original plan/receipt stay unchanged and its job stays partial. All 71 complete acceptance cases remain open."
       ],
       "hardwareVerified": false,
       "released": false

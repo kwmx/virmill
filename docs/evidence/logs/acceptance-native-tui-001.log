@@ -1,0 +1,9 @@
+{"at": "2026-09-07T14:47:51.887880+00:00", "fixtureReadACLGranted": true, "scope": "one retained disposable volume", "originalMode": "0600", "SELinux": "Enforcing"}
+{"tuiPlanApproved": true, "planID": "6ab45dcf-bcad-4859-b4d8-727b110e33c6", "planDigest": "c36cba960f8259c643e04bbd6046055a362df69259669071c93e3dc74fd9757a", "operationID": "6d4792c7-4e09-40ab-95ef-9b4cc05be8af", "tuiDetached": true}
+{"operationID": "6d4792c7-4e09-40ab-95ef-9b4cc05be8af", "state": "validating"}
+{"operationID": "6d4792c7-4e09-40ab-95ef-9b4cc05be8af", "state": "running"}
+{"operationID": "6d4792c7-4e09-40ab-95ef-9b4cc05be8af", "state": "verifying"}
+{"operationID": "6d4792c7-4e09-40ab-95ef-9b4cc05be8af", "state": "succeeded"}
+{"acceptance": "passed", "originalCreationRemainsPartial": true, "originalPlanAndReceiptUnchanged": true, "managedOwnershipObserved": true, "allInheritedLocksReleased": true, "allGuestXMLUnchanged": true, "retainedDiskSHA256": "8eb9be4a9592ad8242fa4e99fbac2dd2eef474bb93e99f3699d17617c7d93c70", "noGuestStartOrDefinition": true}
+{"temporaryACLRestoredExactly": true, "mode": "0600", "coordinatorFileReadAccessRemoved": true, "operationID": "6d4792c7-4e09-40ab-95ef-9b4cc05be8af"}
+Warning: option --restore=file is unsafe without option -P (--physical) as it traverses symbolic links in pathnames

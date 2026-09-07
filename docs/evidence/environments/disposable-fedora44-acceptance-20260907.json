@@ -1,0 +1,11 @@
+{
+  "recordedAt": "2026-09-07T14:54:13.678478+00:00",
+  "baseEnvironment": "disposable-fedora44-20260907.json",
+  "runtimeRevision": "12d7bba1e5e958324bf6199041359e344c153213",
+  "additionalPackages": [
+    "acl-2.4.0-1.fc44.x86_64 installed=1788773301",
+    "libacl-2.4.0-1.fc44.x86_64 installed=1788772680"
+  ],
+  "SELinux": "Enforcing",
+  "readAccessSetup": "Temporary read-only ACL on one retained disposable volume; original ACL restored exactly after acceptance. External fixture setup, not a Virmill helper-managed permission workflow."
+}

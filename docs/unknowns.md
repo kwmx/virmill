@@ -24,13 +24,14 @@
   artifacts; publication and real release signing require owner review.
 - U007: The optional shell-profile recipe source is not supplied. Keep the audited
   digest as a source requirement; never fetch-and-execute an unpinned replacement.
-- U008: Native Q35 creation adds unreviewed controllers, inputs, audio, balloon and
-  reset-watchdog settings. Strict comparison retains the failed operation and
-  powered-off VM. Versioned explicit device intent passed the separate Q35/BIOS native
-  creation/boot/shutdown test. Compatible acceptance of the retained definition
-  and other native profiles remain required. Old recipes still refuse changed semantics.
-  ADR 0017 adds a separate reviewed BIOS device-acceptance adapter with guarded
-  retained-byte readback. Deterministic tests are separate from native qualification.
+- U008: The first Q35 creation refused unreviewed controllers, inputs, audio,
+  balloon and reset-watchdog settings. Versioned explicit device intent passed a
+  separate creation/boot/shutdown test. ADR 0017's separate reviewed BIOS acceptance
+  then verified the retained definition and all disk bytes under a temporary test
+  ACL. Its original job is partial and linked to the successful acceptance child;
+  the original plan/receipt are unchanged and all inherited locks are released.
+  See `evidence/creation-acceptance-run.md`. Other profiles and the full recovery
+  matrix remain required; old recipes still refuse changed semantics.
 
 - U009: During initial validation, `vm creation result` suggests recovery before a
   receipt exists, although the job is still running. Corrected by optional-receipt
@@ -47,11 +48,12 @@
   `evidence/downtime-estimates-run.md`; earlier runtime evidence is unchanged. Exact
   capacity/duration estimation for the full matrix remains required.
 
-Unimplemented code is tracked separately in the requirements tracker and is not
-classified as a hardware limitation. None of these unknowns reduces 1.0 scope.
-
 - U011: The retained disposable-host file volume is root-owned mode 0600. Libvirt
   download authorization does not grant the coordinator filesystem read access
   for cooperative QEMU guards. Acceptance preflight refuses missing access.
-  Native qualification may use an explicitly recorded temporary fixture ACL;
-  bounded helper integration for managed-storage access remains implementation work.
+  One native acceptance passed under an explicitly recorded temporary fixture ACL,
+  which was restored exactly. Bounded helper integration for managed-storage access
+  remains implementation work; external fixture setup does not qualify that workflow.
+
+Unimplemented code is tracked separately in the requirements tracker and is not
+classified as a hardware limitation. None of these unknowns reduces 1.0 scope.

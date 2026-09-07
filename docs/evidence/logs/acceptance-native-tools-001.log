@@ -1,0 +1,1 @@
+{"setfacl": "/usr/bin/setfacl", "getfacl": "/usr/bin/getfacl", "sudoNoninteractive": 0, "SELinux": "Enforcing"}

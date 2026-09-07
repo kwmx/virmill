@@ -11,7 +11,11 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest installed build: [creation/cleanup result readback](result-progress-run.md).
+Latest installed build: [retained creation acceptance](creation-acceptance-run.md).
+The original uncertain definition was separately accepted with reviewed devices
+and guarded byte verification. Its original job remains partial, linked to the
+successful acceptance; all inherited locks were released after confirmation.
+Earlier [creation/cleanup result readback](result-progress-run.md) remains recorded.
 The [boot/media run](boot-media-run.md) records actual CLI/TUI configuration,
 ISO-menu and disk-login boots, retained-media ejection and XML preservation.
 The [device-policy run](device-policy-run.md) records one successful Q35/BIOS
@@ -19,9 +23,8 @@ creation. These observations do not complete the mandatory workflow matrix.
 
 The [first disposable-host run](disposable-first-run.md) records package
 installation, QCOW2 preparation, native storage streaming and OVA manifest checks.
-Its earlier uncertain creation remains powered off with three retained locks;
-safe reviewed acceptance or disposition is still outstanding. The later successful
-creation did not change that operation's semantics or remove its locks.
+Its earlier uncertain creation remains powered off. The separate acceptance run
+resolved its ownership without rewriting its original recipe or incomplete receipt.
 
 Prior development checkpoint: [fixed CPU/RAM configuration](configuration-slice.md).
 Its native in-memory preservation tests and synthetic recovery remain separate

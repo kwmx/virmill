@@ -1,0 +1,4 @@
+{"apiVersion":"virmill/v1","data":{"acknowledgements":null,"actorUID":0,"apiVersion":"","beforeFingerprints":null,"connectionID":"","createdAt":"0001-01-01T00:00:00Z","estimates":{"additionalBytes":0,"requiresDowntime":false},"expiresAt":"0001-01-01T00:00:00Z","inputDigest":"","operation":"","planDigest":"","planID":"","requiredGrants":null,"resourceIDs":null,"risks":null,"steps":null},"warnings":[],"error":{"code":"PERMISSION_DENIED","message":"retained file requires ordinary-user read access for guarded acceptance","resource":"","operationID":"","retryable":false,"safeNextActions":[]}}
+PERMISSION_DENIED: retained file requires ordinary-user read access for guarded acceptance
+
+{"permissionRefusal": "passed", "planJobAndLockStateUnchanged": true, "oldLocksRetained": 3, "guestXMLUnchanged": true, "VMRemainsStopped": true}

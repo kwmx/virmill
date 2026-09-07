@@ -44,3 +44,13 @@ include actual creation, boot and graceful shutdown of a separate guest, plus
 external QMP/screenshot inspection. The first TUI harness failed on coalesced key
 input before any mutation; its corrected retry is retained separately. Old plan
 IDs/digests expire and must never be replayed as a fresh authorization.
+
+The `acceptance-*` programs and `upgrade-acceptance.py` record revision 12d7bba.
+They first prove permission refusal, then use a temporary single-file read ACL for
+explicit TUI acceptance, restore the original ACL and read the final result through
+CLI/TUI. See `docs/evidence/creation-acceptance-run.md` for exact identities and
+limitations. The original job stays partial; no VM definition or guest start is
+replayed. ACL setup is external fixture preparation, not a qualified Virmill
+helper workflow. The historical restore emitted a symlink warning: future fixture
+restoration must use `setfacl -P` and verify path/generation. These historical
+scripts are retained byte-for-byte for their recorded stdin hashes.
