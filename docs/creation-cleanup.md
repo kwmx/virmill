@@ -81,8 +81,10 @@ only; it never repeats deletion. If volumes remain, review a fresh cleanup plan
 using the failed cleanup operation ID. It can dispose the remaining candidates or
 retain them. Already absent volumes are not deleted again. A committed disposition
 prevents the old creation recipe from being resumed or cataloged as a created VM.
-External writers can still race the last observation; native fault/race tests are
-blocked until a disposable host is designated.
+External writers can still race the last observation. One actual interrupted
+upload and TUI retention passed in the [disposable multi-disk run](evidence/multidisk-crash-run.md).
+Native deletion, full fault/race coverage and deliberate release of pins remain
+unqualified; retention success does not establish deletion safety.
 
 Opening an older schema-1 or schema-2 journal creates and flushes a private
 `journal.db.pre-v3-UUID.db` backup, then upgrades to schema 3. Version 3 requires

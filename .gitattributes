@@ -4,3 +4,4 @@ docs/evidence/logs/** -whitespace
 tests/fixtures/creation/qemu12-q35-unreviewed.xml -whitespace
 tests/fixtures/creation/qemu12-q35-reviewed.xml -whitespace
 tests/fixtures/configuration/*.xml -whitespace
+tests/fixtures/import/multidisk-probe/qemu12-q35-defined.xml -whitespace

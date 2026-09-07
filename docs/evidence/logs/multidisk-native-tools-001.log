@@ -1,0 +1,6 @@
+{"freeBytes": 133384904704, "tools": {"as": "/usr/bin/as", "objcopy": "/usr/bin/objcopy", "nasm": null, "qemu-img": "/usr/bin/qemu-img", "bwrap": "/usr/bin/bwrap"}}
+{"command": ["rpm", "-q", "binutils", "nasm", "qemu-img", "bubblewrap"], "exitCode": 1, "output": "binutils-2.46.1-1.fc44.x86_64\npackage nasm is not installed\nqemu-img-10.2.2-1.fc44.x86_64\nbubblewrap-0.12.0-1.fc44.x86_64\n"}
+{"command": ["systemctl", "--user", "is-active", "virmill-test-12d7bba.service"], "exitCode": 0, "output": "active\n"}
+{"vmID": "ae630461-91d3-4f07-ad88-e6842c3dc3ea", "state": "shut off", "xmlSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824"}
+{"vmID": "a19bf9ee-cd7f-4921-baac-39ce1694eb35", "state": "shut off", "xmlSHA256": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2"}
+{"vmID": "2ec994ce-2950-498c-8b19-d2f7dbb53a78", "state": "shut off", "xmlSHA256": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408"}

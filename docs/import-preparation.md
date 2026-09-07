@@ -84,3 +84,9 @@ its dependencies have been resolved; no automatic garbage collector runs.
 
 The reproducible [fixture recipe](../tests/fixtures/import/README.md) distinguishes
 file conversion from the still-required real guest qualification.
+
+The [generated split-VMDK probe](../tests/fixtures/import/multidisk-probe/README.md)
+provides an original two-disk OVA recipe with all extents. Its
+[native run](evidence/multidisk-crash-run.md) passed this workflow, durable
+interruption/retention and a later KVM BIOS second-disk read. It contains no OS or
+NICs and therefore does not qualify the required VMware Linux/multi-NIC fixture.

@@ -31,12 +31,13 @@ provisioning transport and source digest separately for each future run.
 
 The [first disposable-host run](evidence/disposable-first-run.md) adds actual
 qemu-driver allocation/upload/refresh/readback for one independent Kali QCOW2.
-Definition verification refused unreviewed native device defaults; the guest
-remains powered off with a recovery-required operation. Its three locks survived
-coordinator SIGKILL and explicit reconciliation without replay. This supplements
-synthetic coordinator and native **test-driver XML** fixtures. General XML
-normalization, file-label behavior, streams under interruption, firmware
-initialization and guest boot remain unqualified.
+Initial definition verification refused unreviewed native device defaults. Its
+three locks survived coordinator SIGKILL and explicit reconciliation without
+replay while it was already uncertain. The later separate reviewed acceptance
+resolved ownership while preserving the original partial recipe and releasing
+its locks; the guest remains stopped. This supplements
+synthetic coordinator and native **test-driver XML** fixtures. General XML normalization, file-label behavior, complete interrupted-stream
+coverage, firmware initialization and the guest matrix remain unqualified.
 Unsupported normalization fails reconciliation rather than certifying an altered
 definition. See ADR 0006 and `tests/fixtures/creation/README.md` for the boundary.
 
@@ -45,10 +46,20 @@ explicit Q35/BIOS Kali clone: full native volume verification and definition,
 actual TUI authorization, KVM-enabled boot to the graphical login screen, and
 graceful shutdown. It had no NICs, USB, UEFI or TPM. This is observed support for
 that exact test, not certification of a guest family or completion of any entire
-acceptance scenario. The earlier uncertain VM remains stopped and unresolved.
+acceptance scenario. The earlier VM remains stopped; its original job is partial and links to the
+subsequent successful reviewed acceptance.
 
 The [boot/media run](evidence/boot-media-run.md) adds actual TUI boot-order editing,
 Kali ISO-menu boot, CLI ejection retaining the medium and drive, 3-CPU/3-GiB disk
 boot, and native stale-plan/unknown-metadata checks on the same Q35/BIOS guest.
 All guests ended stopped. This does not certify a complete installation, adoption,
 live resource editing, Virmill console, firmware state or other hardware.
+
+The [multi-disk run](evidence/multidisk-crash-run.md) uses original generated BIOS
+code and two split-VMDK disks. Actual confined conversion, two native copies,
+explicit disk order and a second-disk read passed under KVM. A coordinator SIGKILL
+during the second upload preserved an incomplete copy and all locks; reconciliation
+refused replay, and TUI retention committed pins before releasing locks. A fresh
+creation booted successfully and ended stopped with unchanged disk hashes. This
+is one generated probe and one stream boundary, not a supported Linux/Windows
+appliance, multi-NIC test, power-loss test or firmware/TPM recovery qualification.

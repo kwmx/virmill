@@ -11,7 +11,11 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest installed build: [retained creation acceptance](creation-acceptance-run.md).
+Latest native evidence: [multi-disk import and active upload crash](multidisk-crash-run.md).
+The generated split-VMDK probe passed preparation, an actual interrupted native
+upload, TUI retention, fresh two-disk creation and a KVM second-disk read. It does
+not qualify an OS family or the full recovery matrix. The same installed build
+previously passed [retained creation acceptance](creation-acceptance-run.md).
 The original uncertain definition was separately accepted with reviewed devices
 and guarded byte verification. Its original job remains partial, linked to the
 successful acceptance; all inherited locks were released after confirmation.

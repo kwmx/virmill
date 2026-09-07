@@ -1,0 +1,27 @@
+{
+  "observedAt": "2026-09-07",
+  "baseEnvironment": "disposable-fedora44-20260907.json",
+  "runtimeRevision": "12d7bba1e5e958324bf6199041359e344c153213",
+  "sourceDigest": "1af76a2288eb7e735633c422dbd6a47b08fb6059e9fb2f52c605b955d5ba6f09",
+  "fixtureGeneratorPackages": [
+    "binutils-2.46.1-1.fc44.x86_64",
+    "qemu-img-10.2.2-1.fc44.x86_64",
+    "bubblewrap-0.12.0-1.fc44.x86_64",
+    "util-linux-2.41.5-1.fc44.x86_64"
+  ],
+  "fixtureToolSHA256": {
+    "as": "388a25358e48c00dd0efab716ffc12e1dfac27c2501b85f18d5b36057a43bd2d",
+    "ld": "eccfdb2b11bcae1ca6e2915a40db609299f46d7def305dab744c0da0aaf54370",
+    "objcopy": "d4c9b0d52b21fa8375e082a13e12eac1a8b6fb515a0f034dd085dd5de4011da4",
+    "qemu-img": "4362e911c13bb90e39b69479462cd4adb840749b582f4892ca114eb7e94dcf2e",
+    "bwrap": "6da06f152b0865172d73348c34cb88487c326ce2f21cd980fc25ff10c4dbcdfb",
+    "prlimit": "f3b2a0c9e1d77d62e6c4a7bc1f83b78d92d7d9e901dd2be228df44cc12c762da"
+  },
+  "SELinux": "Enforcing",
+  "fixtureManifest": "tests/fixtures/import/multidisk-probe/observed-fixture-20260907.json",
+  "limitations": [
+    "Generated BIOS probe on one nested KVM host; no OS compatibility, provisioning, routing, USB or firmware/TPM recovery claim.",
+    "Existing installed development binaries reused; no new runtime build in this fixture-only run.",
+    "No host power cut, host reboot or native libvirt-daemon crash was injected."
+  ]
+}

@@ -1,0 +1,14 @@
+Pool virmill-multidisk-12d7bba defined
+
+Pool virmill-multidisk-12d7bba started
+
+{"name": "virmill-multidisk-12d7bba", "target": "/var/lib/libvirt/images/virmill-multidisk-12d7bba", "connection": "qemu:///system", "createdBy": "external disposable-test setup, not Virmill storage workflow", "autostart": false, "deleteExisting": false, "existingStoppedVMXMLSHA256": {"ae630461-91d3-4f07-ad88-e6842c3dc3ea": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824", "a19bf9ee-cd7f-4921-baac-39ce1694eb35": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2", "2ec994ce-2950-498c-8b19-d2f7dbb53a78": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408"}, "uuid": "36ab8b28-60d8-4495-9046-6f2f6bfc23b2"}
+Name:           virmill-multidisk-12d7bba
+UUID:           36ab8b28-60d8-4495-9046-6f2f6bfc23b2
+State:          running
+Persistent:     yes
+Autostart:      no
+Capacity:       253.35 GiB
+Allocation:     133.52 GiB
+Available:      119.83 GiB
+

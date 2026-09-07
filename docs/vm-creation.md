@@ -151,6 +151,12 @@ history and must not be used as an automatic downgrade.
 
 Older stored `vm.create` operations keep their original device expectations. New
 plans use `vm.create.devices-v1`; do not downgrade a coordinator to execute these
-plans. An already-defined legacy VM with unreviewed devices remains uncertain.
-Resume/cleanup do not bypass that mismatch; safe reviewed acceptance of such a
-definition remains outstanding. Preserve its resources and locks.
+plans. An already-defined legacy VM with unreviewed devices remains uncertain until
+a separate [reviewed acceptance](creation-acceptance.md) validates its explicit
+policy, exact definition and retained bytes. Resume/cleanup do not bypass that
+mismatch. Preserve its resources and locks while acceptance is unresolved.
+
+The [generated multi-disk test](evidence/multidisk-crash-run.md) records actual
+second-volume upload interruption, refusal of incomplete-set resume, explicit
+retention, and a fresh BIOS disk-read probe. These are narrow native observations;
+they do not qualify all creation sources, guest readiness or crash boundaries.
