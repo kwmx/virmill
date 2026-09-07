@@ -68,6 +68,19 @@ class Artifacts(unittest.TestCase):
                 # CLI paths originate in this temporary client directory, while
                 # the coordinator was started from the repository directory.
                 command = [str(ROOT/'build/bin/virmill')]
+                resource_input = json.loads((ROOT/'examples/configuration/fixed-resources.json').read_text())
+                for forbidden in (False, True):
+                    selected = dict(resource_input)
+                    if forbidden:
+                        selected['password'] = 'resource-secret-fixture-sentinel'
+                    rejected = subprocess.run(command+['vm','set','30f4fc6d-ed33-411f-bb40-ff8b2128d660',
+                        '--connection','test:///default','--input',json.dumps(selected),'--plan',
+                        '--output','json','--non-interactive'],cwd=root,env=env,capture_output=True,text=True,timeout=30)
+                    self.assertNotEqual(rejected.returncode,0)
+                    self.assertNotIn('resource-secret-fixture-sentinel',rejected.stdout+rejected.stderr)
+                    error = json.loads(rejected.stdout)['error']
+                    self.assertEqual(error['code'],'INVALID_INPUT' if forbidden else 'UNSUPPORTED_CAPABILITY')
+                print('Packaged CPU/RAM preview: strict resource schema and native test-URI refusal pass; no host configuration effect')
                 preview = subprocess.run(command+['plugin','new','./generated',
                     '--id','example.virmill.integration','--sdk-directory',str(ROOT/'sdk/go'),
                     '--output','json','--non-interactive'],cwd=root,env=env,check=True,capture_output=True,text=True)

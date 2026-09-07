@@ -5,8 +5,10 @@ Shift-Tab to choose a section, arrows to select an action, Enter to open an inpu
 submit a read request, Esc to cancel/back, ? for help and PgUp/PgDn for result details.
 Ctrl-C or q detaches from the interface. It never terminates a VM or daemon job.
 
-Inputs use stable VM UUIDs or explicit local file paths. For vCPU edits enter
-`{"id":"VM_UUID","input":{"vcpus":4}}`; autostart uses `enabled: true`.
+Inputs use stable VM UUIDs or explicit local file paths. For fixed CPU/RAM edits enter
+`{"id":"VM_UUID","input":{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}}`;
+see the [configuration guide](vm-configuration.md) for preservation checks and
+required acknowledgements. Autostart uses `enabled: true`.
 The current editor is a basic input view, not the full required creation/hardware
 wizard. Sections without completed workflows say so explicitly.
 

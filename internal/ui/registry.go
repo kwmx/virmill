@@ -55,7 +55,7 @@ var Actions = []Action{
 	{"vm save", "vm.plan", "VMs", "Plan managed save (not an independent backup)", "id", "save"},
 	{"vm restore-saved", "vm.plan", "VMs", "Plan restoration of saved state", "id", "restore-saved"},
 	{"vm autostart", "vm.plan", "VMs", "Plan autostart policy", "id", "autostart"},
-	{"vm set", "vm.plan", "VMs", "Plan a lossless powered-off vCPU edit", "id", "set"},
+	{"vm set", "vm.plan", "VMs", "Plan a preservation-checked next-boot CPU/RAM edit on a powered-off VM", "id", "set"},
 	{"import inspect", "import.inspect", "VMs", "Inspect bounded OVA packaging; no extraction or guest execution", "path", ""},
 	{"import prepare", "import.prepare", "VMs", "Plan independent conversion of every selected OVA disk; no VM is defined", "path", "prepare"},
 	{"import prepare-disks", "import.prepare-disks", "VMs", "Plan independent copies of an explicitly selected existing disk set and its backing files", "path", "prepare-disks"},

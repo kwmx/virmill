@@ -176,3 +176,10 @@ func TestNoCloudCreationOptionsUseSharedService(t *testing.T) {
 		t.Fatal("NoCloud request bypassed shared creation", r)
 	}
 }
+
+func TestFixedResourcesUseSharedPlanning(t *testing.T) {
+ r:=&recorder{};var out bytes.Buffer;c:=New(r,&out,&out)
+ c.SetArgs([]string{"vm","set","vm-fixture","--input",`{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}`,"--plan","--output","json","--non-interactive"})
+ if err:=c.Execute();err!=nil{t.Fatal(err)}
+ if r.method!="vm.plan"||r.request.Action!="set"||r.request.Input["applyMode"]!="next-boot"||r.request.Input["memoryMiB"]!=float64(4096){t.Fatal("resource edit bypassed shared planning",r)}
+}

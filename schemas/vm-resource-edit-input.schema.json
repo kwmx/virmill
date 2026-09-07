@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-resource-edit-input.schema.json",
+  "title": "Explicit fixed CPU and RAM edit request",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "vcpus": {"type": "integer", "minimum": 1, "maximum": 512},
+    "memoryMiB": {"type": "integer", "minimum": 1, "maximum": 1048576},
+    "applyMode": {"enum": ["next-boot", "now", "both"]}
+  },
+  "anyOf": [{"required": ["vcpus"]}, {"required": ["memoryMiB"]}]
+}

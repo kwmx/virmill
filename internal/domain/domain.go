@@ -90,6 +90,13 @@ type VM struct {
 	Tags           []string    `json:"tags"`
 	HasManagedSave bool        `json:"hasManagedSave"`
 }
+
+// ConfigurationValidator repeats provider-specific preservation checks before
+// journal acceptance and execution. It never mutates the domain.
+type ConfigurationValidator interface {
+	CheckConfiguration(context.Context, string, string, map[string]any) error
+	ObserveConfiguration(context.Context, string, string, map[string]any) (bool, error)
+}
 type Grant struct {
 	Operation  string `json:"operation"`
 	ResourceID string `json:"resourceID"`

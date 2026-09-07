@@ -214,22 +214,7 @@ func (p *Provider) Execute(ctx context.Context, uri, id, action string, input ma
 		}
 		return d.SetAutostart(v)
 	case "set":
-		x, ok := input["xml"].(string)
-		if !ok {
-			return errors.New("validated XML missing")
-		}
-		state, _, e := d.GetState()
-		if e != nil {
-			return e
-		}
-		if state != native.DOMAIN_SHUTOFF {
-			return domain.Fail("UNSUPPORTED_CAPABILITY", "powered-off edit required")
-		}
-		defined, e := c.DomainDefineXMLFlags(x, native.DOMAIN_DEFINE_VALIDATE)
-		if e != nil {
-			return e
-		}
-		return defined.Free()
+		return executeConfiguration(c, d, uri, input)
 	default:
 		return domain.Fail("NOT_IMPLEMENTED", "no native execution adapter for "+action)
 	}

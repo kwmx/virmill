@@ -73,3 +73,22 @@ tool/cache drift, rejected-secret error hygiene and definition recovery without
 regenerating an already verified seed. Actual CLI/private-daemon tests perform
 seed preview from generated nonbootable prepared disks, then stop at production
 creation's explicit test-URI refusal before any host connection.
+
+## Fixed CPU/RAM preservation fixtures
+
+`internal/backend/xmlpatch/resources_test.go` constructs opaque XML, mixed memory
+units and dependent topology/tuning layouts. It checks byte preservation and
+refusal without any native domain. `internal/app/resource_edit_test.go` uses a
+synthetic configuration backend and real temporary SQLite journals for phase,
+cancellation, stale state, value-free plans, legacy-handler refusal and reopen
+reconciliation without replay.
+
+`internal/backend/libvirt/configuration_linux_test.go` uses the official binding
+with `test:///default` only. It defines a stopped in-memory domain, changes fixed
+CPU/RAM and reads back opaque metadata and the synthetic disk path. A separate
+in-memory VNC fixture demonstrates actual test-driver password redaction and
+pre-effect refusal. No display server, disk file, host domain or guest is started.
+The production provider continues to reject test/remote URIs.
+
+Run these fixtures with the pinned toolchain and `-tags libvirt_dlopen`.
+This is not a real VM, hardware or guest sizing certification.

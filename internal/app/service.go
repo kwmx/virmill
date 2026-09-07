@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"virmill.local/core/contracts"
 	"virmill.local/core/internal/app/importer"
 	"virmill.local/core/internal/app/lab"
@@ -48,6 +47,9 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	for _, action := range []string{"start", "stop", "hard-stop", "pause", "resume", "save", "restore-saved", "autostart", "set"} {
 		e.Handlers["vm."+action] = &vmHandler{s: s, action: action}
 	}
+	// A distinct durable operation prevents older binaries from executing the new
+	// preservation contract through their legacy vm.set handler.
+	e.Handlers["vm.configure-resources"] = &vmHandler{s: s, action: "set"}
 	return s
 }
 func (s *Service) Call(ctx context.Context, uid uint32, method string, r Request) Response {
@@ -208,19 +210,23 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 	if r.ID == "" {
 		return empty, domain.Fail("INVALID_INPUT", "stable VM UUID required")
 	}
+	if r.Action == "set" {
+		b, err := json.Marshal(r.Input)
+		if err != nil || validation.Schema("vm-resource-edit-input", b) != nil {
+			return empty, domain.Fail("INVALID_INPUT", "resource edit input must match the bundled CPU/RAM schema; rejected values are withheld")
+		}
+	}
 	v, e := s.GetVM(ctx, r.Connection, r.ID)
 	if e != nil {
 		return empty, e
 	}
-	input := r.Input
-	if input == nil {
-		input = map[string]any{}
-	}
-	for field := range input {
-		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB")) || (r.Action == "autostart" && field == "enabled")
+	input := map[string]any{}
+	for field, value := range r.Input {
+		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB" || field == "applyMode")) || (r.Action == "autostart" && field == "enabled")
 		if !allowed {
 			return empty, domain.Fail("INVALID_INPUT", "unknown parameter for this operation: "+field)
 		}
+		input[field] = value
 	}
 	input["vmID"] = r.ID
 	acks := []string{"host-mutation"}
@@ -230,38 +236,33 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 		risks = append(risks, "Abrupt power loss may corrupt guest data")
 	}
 	if r.Action == "set" {
-		if v.State != "stopped" {
-			return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "this edit adapter requires a powered-off VM; shutdown is a separate approved operation")
+		if _, ok := input["applyMode"]; !ok {
+			input["applyMode"] = "next-boot"
 		}
-		changes := map[string]string{}
-		for _, field := range []string{"vcpus", "memoryMiB"} {
-			if value, ok := input[field]; ok {
-				n, ok := value.(float64)
-				if !ok || n != float64(int64(n)) || n < 1 || n > 1048576 {
-					return empty, domain.Fail("INVALID_INPUT", "positive bounded integer required")
-				}
-				if field == "vcpus" {
-					if n > 512 {
-						return empty, domain.Fail("INVALID_INPUT", "vcpus exceeds supported bound")
-					}
-					changes["domain/vcpu"] = strconv.FormatInt(int64(n), 10)
-				} else {
-					return empty, domain.Fail("NOT_IMPLEMENTED", "memory units and max/current-memory edit validation require a dedicated adapter")
-				}
-			}
-		}
-		if len(changes) == 0 {
-			return empty, domain.Fail("INVALID_INPUT", "no recognized edit fields")
-		}
-		x, e := xmlpatch.Patch(v.PersistentXML, changes)
+		edit, e := resourceEdit(input)
 		if e != nil {
 			return empty, e
 		}
-		input["xml"] = x
+		if e = editableVM(v); e != nil {
+			return empty, e
+		}
+		x, e := xmlpatch.EditResources(v.PersistentXML, edit)
+		if e != nil {
+			return empty, e
+		}
+		input["xmlSHA256"] = xmlpatch.Digest(x)
+		input["editVersion"] = float64(1)
+		input["editBeforeFingerprint"] = v.Fingerprint
+		acks = append(acks, "exclusive-configuration-writer")
+		risks = append(risks, "Persistent CPU/RAM edit only; guest state, available host memory and next boot are not verified", "Coordinate external administrators: libvirt definition has no atomic compare-and-swap; immediate state checks cannot exclude every concurrent writer")
 	}
 	key := v.Key.String()
-	step := domain.Step{ID: "effect", Action: "vm." + r.Action, Preconditions: []string{"unchanged domain fingerprint", "current capability and actor checks"}, Idempotency: "reconcile-before-retry", Compensation: "Preserve domain and disks; create a reviewed recovery plan", Reconciliation: "Read stable UUID and expected backend state without replay", CompletionPredicate: "Native backend reports requested state"}
-	return s.Engine.Plan(ctx, uid, r.Connection, "vm."+r.Action, []string{key}, map[string]string{key: v.Fingerprint}, input, []domain.Step{step}, acks, risks)
+	operation := "vm." + r.Action
+	if r.Action == "set" {
+		operation = "vm.configure-resources"
+	}
+	step := domain.Step{ID: "effect", Action: operation, Preconditions: []string{"unchanged domain fingerprint", "current capability and actor checks"}, Idempotency: "reconcile-before-retry", Compensation: "Preserve domain and disks; create a reviewed recovery plan", Reconciliation: "Read stable UUID and expected backend state without replay", CompletionPredicate: "Native backend reports requested state"}
+	return s.Engine.Plan(ctx, uid, r.Connection, operation, []string{key}, map[string]string{key: v.Fingerprint}, input, []domain.Step{step}, acks, risks)
 }
 
 type vmHandler struct {
@@ -275,12 +276,12 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		return nil, err
 	}
 	requested := map[string]any{}
-	for _, key := range []string{"vcpus", "memoryMiB", "enabled"} {
+	for _, key := range []string{"vcpus", "memoryMiB", "enabled", "applyMode"} {
 		if value, ok := input[key]; ok {
 			requested[key] = value
 		}
 	}
-	return map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "diskDeletion": false}, nil
+	return map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "requiresShutdown": h.action == "set", "diskDeletion": false}, nil
 }
 
 func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error {
@@ -295,6 +296,32 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 	}
 	if p.Before[v.Key.String()] != v.Fingerprint {
 		return domain.Fail("STALE_PLAN", "domain changed since the preview")
+	}
+	if h.action == "set" {
+		if p.Operation != "vm.configure-resources" || input["editVersion"] != float64(1) || input["editBeforeFingerprint"] != v.Fingerprint {
+			return domain.Fail("STALE_PLAN", "configuration plan requires a fresh preservation-aware preview")
+		}
+		if e = editableVM(v); e != nil {
+			return e
+		}
+		edit, err := resourceEdit(input)
+		if err != nil {
+			return err
+		}
+		x, err := xmlpatch.EditResources(v.PersistentXML, edit)
+		if err != nil {
+			return err
+		}
+		if xmlpatch.Digest(x) != input["xmlSHA256"] {
+			return domain.Fail("STALE_PLAN", "configuration edit differs from the reviewed resource fields")
+		}
+		checker, ok := h.s.Provider.(domain.ConfigurationValidator)
+		if !ok {
+			return domain.Fail("UNSUPPORTED_CAPABILITY", "provider cannot check preservation of a persistent configuration edit")
+		}
+		if err = checker.CheckConfiguration(ctx, p.ConnectionID, id, input); err != nil {
+			return err
+		}
 	}
 	if h.action == "restore-saved" && !v.HasManagedSave {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "VM has no managed save image to restore")
@@ -331,8 +358,14 @@ func (h *vmHandler) Reconcile(ctx context.Context, p domain.Plan, b []byte, step
 		return v.State == "stopped" && v.HasManagedSave, nil
 	}
 	if h.action == "set" {
-		expected, _ := input["xml"].(string)
-		return v.PersistentXML == expected, nil
+		if p.Operation != "vm.configure-resources" {
+			return false, domain.Fail("RECOVERY_REQUIRED", "legacy configuration uncertainty requires explicit disposition; do not replay")
+		}
+		checker, ok := h.s.Provider.(domain.ConfigurationValidator)
+		if !ok {
+			return false, domain.Fail("UNSUPPORTED_CAPABILITY", "configuration readback adapter unavailable")
+		}
+		return checker.ObserveConfiguration(ctx, p.ConnectionID, id, input)
 	}
 	target := map[string]string{"start": "running", "restore-saved": "running", "stop": "stopped", "hard-stop": "stopped", "pause": "paused", "resume": "running", "save": "stopped"}[h.action]
 	return v.State == target, nil

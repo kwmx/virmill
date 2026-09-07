@@ -1302,7 +1302,7 @@ Global Flags:
 
 ## `virmill vm set`
 
-Plan a lossless powered-off vCPU edit
+Plan a preservation-checked next-boot CPU/RAM edit on a powered-off VM
 
 ```text
 Usage:

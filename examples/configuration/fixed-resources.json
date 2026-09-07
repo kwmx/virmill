@@ -1,0 +1,5 @@
+{
+  "vcpus": 4,
+  "memoryMiB": 4096,
+  "applyMode": "next-boot"
+}

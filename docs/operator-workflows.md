@@ -43,20 +43,20 @@ and registration use the separate [creation adapter](vm-creation.md).
 Guest adaptation and boot remain unqualified. Preparation
 produces disk artifacts, not a defined VM.
 
-Powered-off vCPU previews patch the original XML byte spans and retain unknown
-namespaces, comments, attributes and device definitions. Ambiguous or structured
-fields are refused. A changed domain fingerprint invalidates apply. Full live/
-next-boot editing, advanced XML authorization and complete hardware controls remain
-required. Current state tests cover the patch algorithm; only a real adopted VM
-can satisfy the complete preservation acceptance scenario.
+[Fixed CPU/RAM edits](vm-configuration.md) patch original XML spans, check dependent
+resource policy and privately detect settings omitted from ordinary XML. New plans
+store hashes instead of opaque XML. A changed fingerprint invalidates apply;
+managed-save/live/advanced layouts are refused. Native test-driver preservation and
+synthetic recovery are exercised, while real adopted VM and external-race safety
+remain unqualified. Complete live modes, boot and hardware controls remain required.
 
 ## Multiple networks and labs
 
 `lab validate` resolves the declarative DAG and in-document network references.
 It rejects duplicate identities, cycles, overlapping lab CIDRs, inappropriate DHCP,
 multiple normal IPv4 defaults and inconsistent static addressing. It warns about a
-VM joining both an externally reachable and a protected segment. The cloud-init
-renderer and actual guest route verification are not implemented. Neither validation
+VM joining both an externally reachable and a protected segment. The optional [NoCloud renderer](cloud-provisioning.md) now emits explicit guest
+NIC intent; actual guest route verification remains unqualified. Neither validation
 nor a disabled DHCP declaration enforces a firewall or proves isolation.
 
 Mandatory network creation, IPv6 policy, forwarding, existing bridges, NetworkManager
@@ -73,8 +73,9 @@ or critical host-use devices. Unknown host use fails closed. These are synthetic
 selector tests; actual udev ownership, persistent binding/start hooks, USB attach/
 detach/replug and both live/persistent recovery are not implemented or certified.
 
-Cloud-init seed generation, SSH/guest-agent transports, approved recipe execution,
-sharing/viewer integrations and first-boot verification remain required work. No
+[NoCloud seed generation](cloud-provisioning.md) is implemented for a declared
+profile without qualified guest execution. SSH/guest-agent transports, approved
+recipes, sharing/viewer integrations and first-boot verification remain required. No
 unknown appliance is automatically modified, and no shell-profile recipe is fetched.
 The audited optional recipe archive was not supplied.
 

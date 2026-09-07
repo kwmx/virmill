@@ -64,18 +64,29 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/backend/xmlpatch/patch.go",
-        "internal/app/service.go"
+        "internal/app/service.go",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
       "tests": [
-        "internal/backend/xmlpatch/patch_test.go"
+        "internal/backend/xmlpatch/patch_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001"
       ],
       "outstanding": [
-        "Only powered-off vCPU span patch; RAM/boot/live/next-boot/both adapters and guest tests remain."
+        "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts, boot controls, actual host sizing and guest verification remain incomplete or unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -89,18 +100,29 @@
       "gate": 3,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/backend/xmlpatch/patch.go"
+        "internal/backend/xmlpatch/patch.go",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-04",
       "tests": [
-        "internal/backend/xmlpatch/patch_test.go"
+        "internal/backend/xmlpatch/patch_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001"
       ],
       "outstanding": [
-        "Byte-preservation unit tests pass; real adopted VM preservation remains unverified."
+        "Pure span tests preserve every unrelated byte; official libvirt in-memory tests preserve opaque metadata and refuse synthetic display-password redaction. New plans retain hashes, not opaque XML. Real adopted VM and complete unknown XML normalization/preservation remain unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -115,19 +137,30 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/operations/engine.go",
-        "internal/app/service.go"
+        "internal/app/service.go",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-05",
       "tests": [
-        "internal/operations/engine_test.go"
+        "internal/operations/engine_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
         "creation-core-001"
       ],
       "outstanding": [
-        "Plan binding tests pass; actual concurrent external libvirt edits need qualification."
+        "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -143,14 +176,25 @@
       "implementationPaths": [
         "internal/backend/libvirt/provider_linux.go",
         "internal/creating/ownership_linux.go",
-        "internal/backend/libvirt/creation_probes_linux.go"
+        "internal/backend/libvirt/creation_probes_linux.go",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-06",
       "tests": [
         "internal/backend/libvirt/provider_linux_test.go",
         "internal/creating/ownership_linux_test.go",
-        "internal/backend/libvirt/creation_linux_test.go"
+        "internal/backend/libvirt/creation_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1494,7 +1538,12 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1518,7 +1567,12 @@
         "internal/backend/libvirt/creation_media_linux_test.go",
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1602,7 +1656,12 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -1621,7 +1680,12 @@
         "tests/integration/artifacts_test.py",
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -1681,14 +1745,25 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-02",
       "tests": [
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "nocloud-core-001",
@@ -1696,7 +1771,7 @@
         "nocloud-key-fuzz-001"
       ],
       "outstanding": [
-        "NoCloud accepts structured public configuration only. Creation schema errors withhold rejected values, seed process content is absent from errors, and credential-refusal tests check error/journal/worker boundaries. Full secret store, guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required."
+        "NoCloud credential refusals withhold rejected values. New resource-edit plans persist hashes instead of opaque XML; secure XML differences fail closed, and returned native definition errors withhold XML values. Full secret store, inventory/guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1985,7 +2060,12 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2000,7 +2080,11 @@
         "internal/backend/libvirt/creation_media_linux_test.go",
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2068,7 +2152,12 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -2079,7 +2168,11 @@
         "internal/creating/compatibility_linux_test.go",
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2117,7 +2210,12 @@
         "internal/store/recovery_accept.go",
         "internal/operations/engine.go",
         "internal/creating/recovery_linux.go",
-        "internal/store/recovery.go"
+        "internal/store/recovery.go",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -2126,7 +2224,12 @@
         "internal/store/store_test.go",
         "internal/store/recovery_accept_test.go",
         "internal/operations/recovery_test.go",
-        "internal/creating/recovery_linux_test.go"
+        "internal/creating/recovery_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "artifact-tests-001",
@@ -2210,7 +2313,12 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/app/resource_edit.go",
+        "internal/backend/xmlpatch/resources.go",
+        "internal/backend/libvirt/configuration_linux.go",
+        "schemas/vm-resource-edit-input.schema.json",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2225,7 +2333,11 @@
         "internal/backend/libvirt/creation_media_linux_test.go",
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/app/resource_edit_test.go",
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/backend/libvirt/configuration_linux_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",

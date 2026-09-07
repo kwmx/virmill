@@ -296,3 +296,13 @@ func TestNoCloudCreationFormUsesSharedService(t *testing.T) {
 		t.Fatal("NoCloud mapping lost", r)
 	}
 }
+
+func TestFixedResourceFormUsesSharedPlanning(t *testing.T) {
+ r:=&recorder{};m:=New(r,"qemu:///session")
+ for i,name:=range sections{if name=="VMs"{m.Section=i}}
+ for i,a:=range m.actions(){if a.Command=="vm set"{m.Selected=i}}
+ model,_:=m.Update(tea.KeyMsg{Type:tea.KeyEnter});m=model.(Model)
+ m.Input=`{"id":"vm-fixture","input":{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}}`
+ _,cmd:=m.Update(tea.KeyMsg{Type:tea.KeyEnter});if cmd==nil{t.Fatal("resource form did not dispatch")};_=cmd()
+ if r.method!="vm.plan"||r.request.Action!="set"||r.request.Connection!="qemu:///session"||r.request.Input["memoryMiB"]!=float64(4096)||r.request.Input["applyMode"]!="next-boot"{t.Fatal("resource edit differs from CLI",r)}
+}
