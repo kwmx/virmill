@@ -1,0 +1,1 @@
+{"observedServices": {"virmill-host-helper.service": {"enabledState": "static", "activeState": "inactive"}, "virmill-host-helper.socket": {"enabledState": "disabled", "activeState": "inactive"}, "virmilld.service": {"enabledState": "disabled"}}, "transientTestCoordinator": "ActiveState=active\nMainPID=11066\n"}

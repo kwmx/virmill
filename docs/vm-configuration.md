@@ -3,8 +3,10 @@
 `vm set` provides preservation-checked CPU/RAM edits for a powered-off persistent
 VM. Use its stable UUID and explicit local connection. The CLI and TUI share the
 same plan, permission, execution and reconciliation services. This development
-adapter has synthetic and libvirt in-memory test evidence; real VM configuration
-and guest sizing remain unqualified.
+adapter has synthetic, libvirt in-memory and one narrow native test: a Q35/BIOS
+Kali guest booted after a combined 3-CPU/3072-MiB, boot-order and media edit. See
+the [native run](evidence/boot-media-run.md) for exact evidence and limits. General
+guest sizing, live modes and all configuration profiles remain unqualified.
 
 ```sh
 virmill vm set VM_UUID --connection qemu:///session \

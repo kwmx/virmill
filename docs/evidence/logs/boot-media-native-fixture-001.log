@@ -1,0 +1,5 @@
+Pool virmill-policy-c7f8b76 refreshed
+
+Device attached successfully
+
+{"externalFixturePreparation": true, "virmillDiskAttachQualified": false, "vmID": "a19bf9ee-cd7f-4921-baac-39ce1694eb35", "sourceISOAndIndependentCopySHA256": "6dbefacc95e3b556c19c48e8bae39b8b505e2d3a1aba0bfb7ab62b036c3d2ba3", "copyBytes": 4802531328, "copyMode": "0o444", "readOnlyCDROM": "sda", "sourceType": "volume", "beforeXMLSHA256": "a673bc94f8e039591ff1e3a0a2d9e7de2a0f3d2432f9c4074ef3945ccffe0515", "afterXMLSHA256": "b587370d482485f7cde9c664f690e90c2748a83f530da7f216af1a5483847a36"}

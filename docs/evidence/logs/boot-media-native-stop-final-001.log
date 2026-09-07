@@ -1,0 +1,3 @@
+{"apiVersion":"virmill/v1","data":{"cancelRequested":false,"createdAt":"2026-09-07T13:17:41.939967033Z","error":null,"operationID":"4e342132-fc81-42e0-9e84-9ca002a51bd7","planID":"74b26872-201f-4370-83d1-1911942d973e","state":"succeeded","step":0},"warnings":[],"error":null}
+
+{"nativeState": "shut off", "observationOnly": true, "mutationReplayed": false}

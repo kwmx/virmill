@@ -34,5 +34,10 @@
   receipt exists, although the job is still running. Report active stages without
   premature recovery guidance; preserve uncertainty errors for actual failure.
 
+- U010: Native lifecycle plans inherit the engine’s zero-valued downtime estimate,
+  including `requiresDowntime: false` for explicit stop. Human-readable risks exist,
+  but structured estimates need operation-specific values before release. Observed
+  in `evidence/boot-media-run.md`; this is an implementation issue, not hardware.
+
 Unimplemented code is tracked separately in the requirements tracker and is not
 classified as a hardware limitation. None of these unknowns reduces 1.0 scope.

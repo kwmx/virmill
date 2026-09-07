@@ -46,3 +46,9 @@ actual TUI authorization, KVM-enabled boot to the graphical login screen, and
 graceful shutdown. It had no NICs, USB, UEFI or TPM. This is observed support for
 that exact test, not certification of a guest family or completion of any entire
 acceptance scenario. The earlier uncertain VM remains stopped and unresolved.
+
+The [boot/media run](evidence/boot-media-run.md) adds actual TUI boot-order editing,
+Kali ISO-menu boot, CLI ejection retaining the medium and drive, 3-CPU/3-GiB disk
+boot, and native stale-plan/unknown-metadata checks on the same Q35/BIOS guest.
+All guests ended stopped. This does not certify a complete installation, adoption,
+live resource editing, Virmill console, firmware state or other hardware.
