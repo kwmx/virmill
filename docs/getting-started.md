@@ -10,6 +10,15 @@ verify it into `.tools/`. No global toolchain installation occurs. Dependencies 
 vendored; `make build` is offline. This is a CGo application with native libvirt
 runtime dependencies, not a standalone hypervisor.
 
+The current build and package scripts require a Git checkout at the project root;
+linked worktrees are supported. Package sources must be tracked regular files.
+The native package scripts require Linux and Python 3.11 or newer.
+Untracked documentation, local media and stale package outputs are excluded;
+selected symbolic links are refused. Use a clean, reviewed revision for a
+reproducibility run: tracked working-tree edits are still development inputs, and
+an embedded Git revision alone does not attest their contents. RPM/DEB checksums
+cover exactly the two core/helper package pairs produced by the current builder.
+
 ```sh
 make build
 make verify

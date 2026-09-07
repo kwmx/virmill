@@ -60,7 +60,7 @@ func (s *Service) PlanResume(ctx context.Context, uid uint32, r app.Request) (do
 	}
 	in := resumeInput{ParentOperationID: parent.ID, CreationPlanID: originalID, Receipt: receipt}
 	resources := append([]string{}, prior.ResourceIDs...)
-	step := domain.Step{ID: "define", Action: "vm.create.resume", Preconditions: []string{"exact durable complete volume receipt", "every original resource lock retained", "unchanged hardware, firmware, networks and source", "VM UUID/name absent", "every retained volume unattached and reverified"}, Idempotency: "reconcile-before-retry", Compensation: "Retain original and copied disks; preserve inherited resource locks on failure or cancellation", Reconciliation: "Observe exact original definition without allocating or uploading again", CompletionPredicate: "Original reviewed VM definition matches all reverified retained volumes"}
+	step := domain.Step{ID: "define", Action: "vm.create.resume", Preconditions: []string{"exact durable complete volume receipt", "every original resource lock retained", "unchanged hardware, firmware, networks and source", "VM UUID/name absent", "every retained volume unattached and reverified"}, Idempotency: "reconcile-before-retry", Compensation: "Retain original and copied disks; preserve inherited resource locks on failure or cancellation", Reconciliation: "Observe exact original definition and any required versioned NVRAM declaration binding without allocating, uploading or initializing again", CompletionPredicate: "Original reviewed VM definition matches all reverified retained volumes and any NVRAM declaration binding required by its recipe; auxiliary initialization remains unverified"}
 	acks := []string{"host-mutation", "inherit-recovery-resources", "define-retained-volumes"}
 	if receipt.Defined {
 		return empty, domain.Fail("RECOVERY_REQUIRED", "definition was already observed; reconcile the uncertain operation instead of resuming")
@@ -202,7 +202,7 @@ func (h *resumeHandler) Review(ctx context.Context, p domain.Plan, b []byte) (ma
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"parentOperationID": in.ParentOperationID, "originalCreationPlanID": in.CreationPlanID, "target": recipe.Target, "retainedVolumes": receipt.Volumes, "reverifyBeforeDefine": true, "allocatesVolumes": false, "uploadsVolumes": false, "startsVM": false, "guestBootVerified": false}, nil
+	return map[string]any{"nvramDeclarationVersion": recipe.NVRAMDeclarationVersion, "nvramInitializationVerified": false, "parentOperationID": in.ParentOperationID, "originalCreationPlanID": in.CreationPlanID, "target": recipe.Target, "retainedVolumes": receipt.Volumes, "reverifyBeforeDefine": true, "allocatesVolumes": false, "uploadsVolumes": false, "startsVM": false, "guestBootVerified": false}, nil
 }
 func (h *resumeHandler) Execute(ctx context.Context, p domain.Plan, b []byte, step domain.Step) error {
 	if err := h.Validate(ctx, p, b); err != nil {

@@ -1,0 +1,366 @@
+=== RUN   TestNVRAMLifecycleBindsBeforeDefinitionSuccessAndReusesRecord
+--- PASS: TestNVRAMLifecycleBindsBeforeDefinitionSuccessAndReusesRecord (0.17s)
+=== RUN   TestNVRAMLifecyclePlanRefusesMissingInspectionOrFirmwareDigest
+=== RUN   TestNVRAMLifecyclePlanRefusesMissingInspectionOrFirmwareDigest/inspector
+=== RUN   TestNVRAMLifecyclePlanRefusesMissingInspectionOrFirmwareDigest/firmware_digest
+--- PASS: TestNVRAMLifecyclePlanRefusesMissingInspectionOrFirmwareDigest (0.01s)
+    --- PASS: TestNVRAMLifecyclePlanRefusesMissingInspectionOrFirmwareDigest/inspector (0.00s)
+    --- PASS: TestNVRAMLifecyclePlanRefusesMissingInspectionOrFirmwareDigest/firmware_digest (0.00s)
+=== RUN   TestNVRAMLifecycleLostDefinitionAcknowledgementReopensWithoutReplay
+--- PASS: TestNVRAMLifecycleLostDefinitionAcknowledgementReopensWithoutReplay (0.13s)
+=== RUN   TestNVRAMLifecycleChangedPathRetainsOriginalBindingAndLocks
+--- PASS: TestNVRAMLifecycleChangedPathRetainsOriginalBindingAndLocks (0.11s)
+=== RUN   TestNVRAMLifecycleInspectionAndJournalFailureRetainResources
+=== RUN   TestNVRAMLifecycleInspectionAndJournalFailureRetainResources/inspection
+=== RUN   TestNVRAMLifecycleInspectionAndJournalFailureRetainResources/binding_journal
+=== RUN   TestNVRAMLifecycleInspectionAndJournalFailureRetainResources/defined_receipt_journal
+--- PASS: TestNVRAMLifecycleInspectionAndJournalFailureRetainResources (0.23s)
+    --- PASS: TestNVRAMLifecycleInspectionAndJournalFailureRetainResources/inspection (0.07s)
+    --- PASS: TestNVRAMLifecycleInspectionAndJournalFailureRetainResources/binding_journal (0.07s)
+    --- PASS: TestNVRAMLifecycleInspectionAndJournalFailureRetainResources/defined_receipt_journal (0.09s)
+=== RUN   TestNVRAMLifecycleCancelDuringInspectionRetainsResources
+=== RUN   TestNVRAMLifecycleCancelDuringInspectionRetainsResources/operation_cancel_during_execution
+=== RUN   TestNVRAMLifecycleCancelDuringInspectionRetainsResources/operation_cancel_during_verification
+=== RUN   TestNVRAMLifecycleCancelDuringInspectionRetainsResources/coordinator_shutdown
+--- PASS: TestNVRAMLifecycleCancelDuringInspectionRetainsResources (0.33s)
+    --- PASS: TestNVRAMLifecycleCancelDuringInspectionRetainsResources/operation_cancel_during_execution (0.09s)
+    --- PASS: TestNVRAMLifecycleCancelDuringInspectionRetainsResources/operation_cancel_during_verification (0.11s)
+    --- PASS: TestNVRAMLifecycleCancelDuringInspectionRetainsResources/coordinator_shutdown (0.12s)
+=== RUN   TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning
+=== RUN   TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning/legacy
+=== RUN   TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning/versioned_bound
+=== RUN   TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning/versioned_record_missing
+--- PASS: TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning (0.25s)
+    --- PASS: TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning/legacy (0.09s)
+    --- PASS: TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning/versioned_bound (0.08s)
+    --- PASS: TestNVRAMLifecycleJournalReopenPreservesRecipeVersionMeaning/versioned_record_missing (0.08s)
+=== RUN   TestNVRAMLifecycleRecoveryRefusesPersistedPolicyDowngrade
+=== RUN   TestNVRAMLifecycleRecoveryRefusesPersistedPolicyDowngrade/recipe_version
+=== RUN   TestNVRAMLifecycleRecoveryRefusesPersistedPolicyDowngrade/reviewed_plan_policy
+--- PASS: TestNVRAMLifecycleRecoveryRefusesPersistedPolicyDowngrade (0.21s)
+    --- PASS: TestNVRAMLifecycleRecoveryRefusesPersistedPolicyDowngrade/recipe_version (0.11s)
+    --- PASS: TestNVRAMLifecycleRecoveryRefusesPersistedPolicyDowngrade/reviewed_plan_policy (0.10s)
+=== RUN   TestNVRAMLifecycleResultRefusesPersistedPolicyDowngrade
+=== RUN   TestNVRAMLifecycleResultRefusesPersistedPolicyDowngrade/recipe_version
+=== RUN   TestNVRAMLifecycleResultRefusesPersistedPolicyDowngrade/reviewed_plan_policy
+--- PASS: TestNVRAMLifecycleResultRefusesPersistedPolicyDowngrade (0.24s)
+    --- PASS: TestNVRAMLifecycleResultRefusesPersistedPolicyDowngrade/recipe_version (0.12s)
+    --- PASS: TestNVRAMLifecycleResultRefusesPersistedPolicyDowngrade/reviewed_plan_policy (0.12s)
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_plan
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_recipe
+--- PASS: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes (0.50s)
+    --- PASS: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_plan (0.24s)
+    --- PASS: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_recipe (0.26s)
+=== RUN   TestNVRAMValidationCanonicalPath
+=== RUN   TestNVRAMValidationCanonicalPath/absolute
+=== RUN   TestNVRAMValidationCanonicalPath/spaces_in_filename
+=== RUN   TestNVRAMValidationCanonicalPath/unicode_filename
+=== RUN   TestNVRAMValidationCanonicalPath/ordinary_dots
+=== RUN   TestNVRAMValidationCanonicalPath/4096_bytes
+=== RUN   TestNVRAMValidationCanonicalPath/empty
+=== RUN   TestNVRAMValidationCanonicalPath/root
+=== RUN   TestNVRAMValidationCanonicalPath/relative
+=== RUN   TestNVRAMValidationCanonicalPath/dot
+=== RUN   TestNVRAMValidationCanonicalPath/parent
+=== RUN   TestNVRAMValidationCanonicalPath/dot_component
+=== RUN   TestNVRAMValidationCanonicalPath/parent_component
+=== RUN   TestNVRAMValidationCanonicalPath/doubled_root_separator
+=== RUN   TestNVRAMValidationCanonicalPath/doubled_separator
+=== RUN   TestNVRAMValidationCanonicalPath/trailing_separator
+=== RUN   TestNVRAMValidationCanonicalPath/leading_space
+=== RUN   TestNVRAMValidationCanonicalPath/trailing_space
+=== RUN   TestNVRAMValidationCanonicalPath/whitespace_only
+=== RUN   TestNVRAMValidationCanonicalPath/tab
+=== RUN   TestNVRAMValidationCanonicalPath/newline
+=== RUN   TestNVRAMValidationCanonicalPath/carriage_return
+=== RUN   TestNVRAMValidationCanonicalPath/NUL
+=== RUN   TestNVRAMValidationCanonicalPath/DEL
+=== RUN   TestNVRAMValidationCanonicalPath/C1_control
+=== RUN   TestNVRAMValidationCanonicalPath/bidi_format
+=== RUN   TestNVRAMValidationCanonicalPath/invalid_UTF8
+=== RUN   TestNVRAMValidationCanonicalPath/4097_bytes
+--- PASS: TestNVRAMValidationCanonicalPath (0.01s)
+    --- PASS: TestNVRAMValidationCanonicalPath/absolute (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/spaces_in_filename (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/unicode_filename (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/ordinary_dots (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/4096_bytes (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/empty (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/root (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/relative (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/dot (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/parent (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/dot_component (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/parent_component (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/doubled_root_separator (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/doubled_separator (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/trailing_separator (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/leading_space (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/trailing_space (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/whitespace_only (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/tab (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/newline (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/carriage_return (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/NUL (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/DEL (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/C1_control (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/bidi_format (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/invalid_UTF8 (0.00s)
+    --- PASS: TestNVRAMValidationCanonicalPath/4097_bytes (0.00s)
+=== RUN   TestNVRAMValidationExactFirmwareMapping
+=== RUN   TestNVRAMValidationExactFirmwareMapping/changed_code_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/missing_state_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/unsupported_wanted_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/unsafe_wanted_template
+=== RUN   TestNVRAMValidationExactFirmwareMapping/writable_loader
+=== RUN   TestNVRAMValidationExactFirmwareMapping/security_enabled
+=== RUN   TestNVRAMValidationExactFirmwareMapping/changed_code
+=== RUN   TestNVRAMValidationExactFirmwareMapping/changed_template
+=== RUN   TestNVRAMValidationExactFirmwareMapping/missing_loader_type
+=== RUN   TestNVRAMValidationExactFirmwareMapping/ROM_loader
+=== RUN   TestNVRAMValidationExactFirmwareMapping/unknown_security
+=== RUN   TestNVRAMValidationExactFirmwareMapping/security_disabled
+=== RUN   TestNVRAMValidationExactFirmwareMapping/stateless_yes
+=== RUN   TestNVRAMValidationExactFirmwareMapping/missing_code_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/BIOS_recipe
+=== RUN   TestNVRAMValidationExactFirmwareMapping/relative_wanted_code
+=== RUN   TestNVRAMValidationExactFirmwareMapping/unknown_readonly
+=== RUN   TestNVRAMValidationExactFirmwareMapping/changed_state_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/missing_template_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/changed_template_format
+=== RUN   TestNVRAMValidationExactFirmwareMapping/missing_NVRAM
+=== RUN   TestNVRAMValidationExactFirmwareMapping/unreviewed_explicit_no
+--- PASS: TestNVRAMValidationExactFirmwareMapping (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/changed_code_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/missing_state_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/unsupported_wanted_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/unsafe_wanted_template (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/writable_loader (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/security_enabled (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/changed_code (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/changed_template (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/missing_loader_type (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/ROM_loader (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/unknown_security (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/security_disabled (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/stateless_yes (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/missing_code_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/BIOS_recipe (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/relative_wanted_code (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/unknown_readonly (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/changed_state_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/missing_template_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/changed_template_format (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/missing_NVRAM (0.00s)
+    --- PASS: TestNVRAMValidationExactFirmwareMapping/unreviewed_explicit_no (0.00s)
+=== RUN   TestNVRAMValidationBindingIdentity
+=== RUN   TestNVRAMValidationBindingIdentity/missing_observation_fingerprint
+=== RUN   TestNVRAMValidationBindingIdentity/uppercase_observation_fingerprint
+=== RUN   TestNVRAMValidationBindingIdentity/missing_proof_version
+=== RUN   TestNVRAMValidationBindingIdentity/missing_operation_in_both
+=== RUN   TestNVRAMValidationBindingIdentity/different_provider
+=== RUN   TestNVRAMValidationBindingIdentity/empty_firmware_digests
+=== RUN   TestNVRAMValidationBindingIdentity/short_observation_fingerprint
+=== RUN   TestNVRAMValidationBindingIdentity/future_recipe
+=== RUN   TestNVRAMValidationBindingIdentity/different_connection
+=== RUN   TestNVRAMValidationBindingIdentity/different_kind
+=== RUN   TestNVRAMValidationBindingIdentity/nonhex_firmware_digests
+=== RUN   TestNVRAMValidationBindingIdentity/uppercase_firmware_digests
+=== RUN   TestNVRAMValidationBindingIdentity/nonhex_observation_fingerprint
+=== RUN   TestNVRAMValidationBindingIdentity/negative_recipe
+=== RUN   TestNVRAMValidationBindingIdentity/different_plan
+=== RUN   TestNVRAMValidationBindingIdentity/different_input
+=== RUN   TestNVRAMValidationBindingIdentity/different_operation
+=== RUN   TestNVRAMValidationBindingIdentity/different_receipt_plan
+=== RUN   TestNVRAMValidationBindingIdentity/different_receipt_connection
+=== RUN   TestNVRAMValidationBindingIdentity/different_receipt_creation_binding
+=== RUN   TestNVRAMValidationBindingIdentity/different_firmware_digest
+=== RUN   TestNVRAMValidationBindingIdentity/legacy_recipe
+=== RUN   TestNVRAMValidationBindingIdentity/future_proof_version
+=== RUN   TestNVRAMValidationBindingIdentity/different_VM
+=== RUN   TestNVRAMValidationBindingIdentity/different_receipt_VM
+=== RUN   TestNVRAMValidationBindingIdentity/different_proof_creation_binding
+=== RUN   TestNVRAMValidationBindingIdentity/both_creation_bindings_forged
+--- PASS: TestNVRAMValidationBindingIdentity (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/missing_observation_fingerprint (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/uppercase_observation_fingerprint (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/missing_proof_version (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/missing_operation_in_both (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_provider (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/empty_firmware_digests (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/short_observation_fingerprint (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/future_recipe (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_connection (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_kind (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/nonhex_firmware_digests (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/uppercase_firmware_digests (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/nonhex_observation_fingerprint (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/negative_recipe (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_plan (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_input (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_operation (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_receipt_plan (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_receipt_connection (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_receipt_creation_binding (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_firmware_digest (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/legacy_recipe (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/future_proof_version (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_VM (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_receipt_VM (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/different_proof_creation_binding (0.00s)
+    --- PASS: TestNVRAMValidationBindingIdentity/both_creation_bindings_forged (0.00s)
+=== RUN   TestNVRAMValidationRecipeVersionBoundary
+--- PASS: TestNVRAMValidationRecipeVersionBoundary (0.00s)
+=== RUN   TestNVRAMValidationStoredJSON
+=== RUN   TestNVRAMValidationStoredJSON/unknown_firmware_field
+=== RUN   TestNVRAMValidationStoredJSON/wrong_case_nested_field_only
+=== RUN   TestNVRAMValidationStoredJSON/invalid_UTF8
+=== RUN   TestNVRAMValidationStoredJSON/missing_resource
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmwareDigest
+=== RUN   TestNVRAMValidationStoredJSON/valid
+=== RUN   TestNVRAMValidationStoredJSON/unknown_top_field
+=== RUN   TestNVRAMValidationStoredJSON/duplicate_version
+=== RUN   TestNVRAMValidationStoredJSON/case_variant_nested_format_alias
+=== RUN   TestNVRAMValidationStoredJSON/wrong_case_field_only
+=== RUN   TestNVRAMValidationStoredJSON/escaped_NUL_path
+=== RUN   TestNVRAMValidationStoredJSON/missing_inputDigest
+=== RUN   TestNVRAMValidationStoredJSON/missing_creationBinding
+=== RUN   TestNVRAMValidationStoredJSON/truncated
+=== RUN   TestNVRAMValidationStoredJSON/unknown_NVRAM_field
+=== RUN   TestNVRAMValidationStoredJSON/escaped_duplicate_version
+=== RUN   TestNVRAMValidationStoredJSON/duplicate_nested_path
+=== RUN   TestNVRAMValidationStoredJSON/same_value_version_alias
+=== RUN   TestNVRAMValidationStoredJSON/empty_path
+=== RUN   TestNVRAMValidationStoredJSON/missing_planID
+=== RUN   TestNVRAMValidationStoredJSON/missing_resource.resourceUUID
+=== RUN   TestNVRAMValidationStoredJSON/string_version
+=== RUN   TestNVRAMValidationStoredJSON/missing_operationID
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware
+=== RUN   TestNVRAMValidationStoredJSON/missing_resource.connectionID
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.loaderType
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.loaderReadOnly
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.loaderSecure
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.nvram.templateFormat
+=== RUN   TestNVRAMValidationStoredJSON/same_value_firmware_alias
+=== RUN   TestNVRAMValidationStoredJSON/future_version
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.loaderFormat
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.loaderStateless
+=== RUN   TestNVRAMValidationStoredJSON/valid_reordered_and_indented
+=== RUN   TestNVRAMValidationStoredJSON/case_variant_version_alias
+=== RUN   TestNVRAMValidationStoredJSON/same_value_NVRAM_alias
+=== RUN   TestNVRAMValidationStoredJSON/missing_NVRAM
+=== RUN   TestNVRAMValidationStoredJSON/unpaired_surrogate
+=== RUN   TestNVRAMValidationStoredJSON/missing_schemaVersion
+=== RUN   TestNVRAMValidationStoredJSON/missing_observedFingerprint
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.nvram
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.nvram.format
+=== RUN   TestNVRAMValidationStoredJSON/wrong_root_type
+=== RUN   TestNVRAMValidationStoredJSON/null_scalar_cannot_mean_empty
+=== RUN   TestNVRAMValidationStoredJSON/missing_resource.providerID
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.nvram.path
+=== RUN   TestNVRAMValidationStoredJSON/trailing_value
+=== RUN   TestNVRAMValidationStoredJSON/unknown_resource_field
+=== RUN   TestNVRAMValidationStoredJSON/same_value_resource_alias
+=== RUN   TestNVRAMValidationStoredJSON/missing_operation
+=== RUN   TestNVRAMValidationStoredJSON/missing_resource.kind
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.loader
+=== RUN   TestNVRAMValidationStoredJSON/missing_firmware.nvram.template
+=== RUN   TestNVRAMValidationStoredJSON/empty
+=== RUN   TestNVRAMValidationStoredJSON/null
+=== RUN   TestNVRAMValidationStoredJSON/array
+--- PASS: TestNVRAMValidationStoredJSON (0.06s)
+    --- PASS: TestNVRAMValidationStoredJSON/unknown_firmware_field (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/wrong_case_nested_field_only (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/invalid_UTF8 (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_resource (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmwareDigest (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/valid (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/unknown_top_field (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/duplicate_version (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/case_variant_nested_format_alias (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/wrong_case_field_only (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/escaped_NUL_path (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_inputDigest (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_creationBinding (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/truncated (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/unknown_NVRAM_field (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/escaped_duplicate_version (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/duplicate_nested_path (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/same_value_version_alias (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/empty_path (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_planID (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_resource.resourceUUID (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/string_version (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_operationID (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_resource.connectionID (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.loaderType (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.loaderReadOnly (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.loaderSecure (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.nvram.templateFormat (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/same_value_firmware_alias (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/future_version (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.loaderFormat (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.loaderStateless (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/valid_reordered_and_indented (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/case_variant_version_alias (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/same_value_NVRAM_alias (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_NVRAM (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/unpaired_surrogate (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_schemaVersion (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_observedFingerprint (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.nvram (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.nvram.format (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/wrong_root_type (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/null_scalar_cannot_mean_empty (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_resource.providerID (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.nvram.path (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/trailing_value (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/unknown_resource_field (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/same_value_resource_alias (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_operation (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_resource.kind (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.loader (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/missing_firmware.nvram.template (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/empty (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/null (0.00s)
+    --- PASS: TestNVRAMValidationStoredJSON/array (0.00s)
+PASS
+ok  	virmill.local/core/internal/creating	3.288s
+=== RUN   TestReconcileCompatibilityNegativeJournalStep
+--- PASS: TestReconcileCompatibilityNegativeJournalStep (0.00s)
+=== RUN   TestReconcileCompatibilityCanonicalRepresentationChanges
+--- PASS: TestReconcileCompatibilityCanonicalRepresentationChanges (0.00s)
+=== RUN   TestReconcileCompatibilityExpiredRecoveryKeepsOriginalReferenceAndChildIdentity
+--- PASS: TestReconcileCompatibilityExpiredRecoveryKeepsOriginalReferenceAndChildIdentity (0.01s)
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/missing-job
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/malformed-job
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/missing-plan
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/malformed-plan
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/missing-handler
+=== RUN   TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/step-out-of-range
+--- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal (0.02s)
+    --- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/missing-job (0.00s)
+    --- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/malformed-job (0.00s)
+    --- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/missing-plan (0.00s)
+    --- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/malformed-plan (0.00s)
+    --- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/missing-handler (0.00s)
+    --- PASS: TestReconcileCompatibilityReadAndDispatchFailuresPreserveJournal/step-out-of-range (0.00s)
+=== RUN   TestReconcileCompatibilityRejectedIntegrityPreservesRetryIdentityAndBusyResource
+--- PASS: TestReconcileCompatibilityRejectedIntegrityPreservesRetryIdentityAndBusyResource (0.01s)
+=== RUN   TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization
+=== RUN   TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/expired_unchanged
+=== RUN   TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/changed_plan
+=== RUN   TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/changed_recipe
+=== RUN   TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/duplicate_recipe_keys
+=== RUN   TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/malformed_recipe
+--- PASS: TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization (0.02s)
+    --- PASS: TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/expired_unchanged (0.00s)
+    --- PASS: TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/changed_plan (0.00s)
+    --- PASS: TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/changed_recipe (0.00s)
+    --- PASS: TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/duplicate_recipe_keys (0.00s)
+    --- PASS: TestReconcileRequiresImmutableRecipeButNotUnexpiredAuthorization/malformed_recipe (0.00s)
+PASS
+ok  	virmill.local/core/internal/operations	1.081s

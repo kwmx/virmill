@@ -1,0 +1,10 @@
+Verifying...                          ########################################
+Preparing...                          ########################################
+Updating / installing...
+virmill-host-helper-0.0.0-0.dev       ########################################
+virmill-0.0.0-0.dev                   ########################################
+Cleaning up / removing...
+virmill-host-helper-0.0.0-0.dev       ########################################
+virmill-0.0.0-0.dev                   ########################################
+Running as unit: virmill-test-4c58176.service; invocation ID: 979d42eeab4841bb823438835845ce02
+{"upgrade": "passed", "revision": "4c5817674e8c036081715237ad1e768869f377c5", "newUnit": "virmill-test-4c58176.service", "all31JobBodiesUnchanged": true, "allPlansAndMetadataUnchanged": true, "locksPreserved": [], "allSixStoppedVMXMLSHA256": {"b9496482-2eeb-40e1-892b-4e291c108c52": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e", "a19bf9ee-cd7f-4921-baac-39ce1694eb35": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2", "ae630461-91d3-4f07-ad88-e6842c3dc3ea": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824", "f78674f3-bf3a-43e5-81f9-4283e2472024": "081324fb849b275fafacfdf7efc6e22581f1ea926e87b75e80af8f0af688b31c", "2ec994ce-2950-498c-8b19-d2f7dbb53a78": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408", "d4c95f21-28bc-428d-9e5f-ceda025d279e": "a10ba2cb370cd1740d42e34a944663420e8b716315e47f21d999a5a64249411e"}, "probeDiskSHA256": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51", "noGuestStartOrDefinitionOrReconciliation": true, "completeCaptureVerified": false, "independentRecoveryVerified": false, "SELinux": "Enforcing", "nativePackages": ["libvirt-daemon-kvm-12.0.0-3.fc44.x86_64", "qemu-kvm-10.2.2-1.fc44.x86_64", "edk2-ovmf-20260812-4.fc44.noarch", "swtpm-0.10.2-1.fc44.x86_64", "restic-0.19.1-1.fc44.x86_64"]}

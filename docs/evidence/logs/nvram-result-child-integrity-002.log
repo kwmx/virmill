@@ -1,0 +1,11 @@
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_plan
+    nvram_result_recovery_linux_test.go:107: result error differs from completion: complete=true error=SOURCE_CHANGED: persisted creation result plan digest differs
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_recipe
+    nvram_result_recovery_linux_test.go:107: result error differs from completion: complete=true error=SOURCE_CHANGED: persisted creation result plan digest differs
+--- FAIL: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes (0.49s)
+    --- FAIL: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_plan (0.27s)
+    --- FAIL: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_recipe (0.22s)
+FAIL
+FAIL	virmill.local/core/internal/creating	0.523s
+FAIL

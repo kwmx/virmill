@@ -46,6 +46,20 @@ they are separate from the installed ad60807 runtime. The complete release gate
 `cold-native-release-gate-001` failed for all 71 unaccepted scenarios and the
 unfinished SHIP checklist, as required.
 
+The reviewed syntax/observer checkpoint was then frozen at
+`4c5817674e8c036081715237ad1e768869f377c5`, source digest
+`483440c70932ecaf3d29f893ec24ae6ff59fa8a83ffb43ee282966cad852b0b1`.
+`cold-native-packages-repro-001` reproduced all three binaries and four packages;
+`cold-native-packaging-001` passed all three packaged-artifact tests without skips.
+`cold-native-cross-001` compiled the portable common packages, Go SDK and example
+for Darwin/arm64 and Windows/amd64; those foreign binaries were not executed.
+`cold-native-upgrade-001` installed the exact RPMs on the disposable host and
+preserved all 31 job bodies, plans, metadata, six stopped definitions, the probe
+disk and zero locks. It restarted only the private coordinator, with the helper
+inactive and SELinux enforcing. No guest was started, defined or reconciled in
+that upgrade. Its [environment](environments/disposable-cold-4c58176.json) records
+the installed checkpoint; later binding implementation is separate work.
+
 ## Original EFI fixture and observation failures
 
 The [original probe](../../tests/fixtures/protection/uefi-tpm-probe) stores a benign

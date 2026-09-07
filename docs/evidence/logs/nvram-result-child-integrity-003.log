@@ -1,0 +1,8 @@
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_plan
+=== RUN   TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_recipe
+--- PASS: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes (0.55s)
+    --- PASS: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_plan (0.31s)
+    --- PASS: TestNVRAMRecoveryResultRequiresUnchangedChildAndOriginalRecipes/child_recipe (0.24s)
+PASS
+ok  	virmill.local/core/internal/creating	1.587s

@@ -41,13 +41,14 @@ type request struct {
 	Hardware     domain.CreationSpec `json:"hardware"`
 }
 type input struct {
-	SourceOperationID string                `json:"sourceOperationID"`
-	Seed              *seedRecipe           `json:"seed,omitempty"`
-	Artifact          importing.Artifact    `json:"artifact"`
-	Directory         string                `json:"directory"`
-	Target            domain.CreationTarget `json:"target"`
-	Volumes           []domain.VolumeIntent `json:"volumes"`
-	RequiredBytes     uint64                `json:"requiredBytes"`
+	NVRAMDeclarationVersion int                   `json:"nvramDeclarationVersion,omitempty"`
+	SourceOperationID       string                `json:"sourceOperationID"`
+	Seed                    *seedRecipe           `json:"seed,omitempty"`
+	Artifact                importing.Artifact    `json:"artifact"`
+	Directory               string                `json:"directory"`
+	Target                  domain.CreationTarget `json:"target"`
+	Volumes                 []domain.VolumeIntent `json:"volumes"`
+	RequiredBytes           uint64                `json:"requiredBytes"`
 }
 type volumeProgress struct {
 	Intent    domain.VolumeIntent   `json:"intent"`
@@ -247,8 +248,14 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 	acks := []string{"host-mutation", "copy-managed-volumes", "new-vm-identity"}
 	risks := []string{"Creates new independent managed volumes and defines a powered-off VM; original source remains unchanged", "Guest drivers, boot, provisioning, routes and isolation are not verified by definition", "Failed allocation/upload/definition retains partial resources and the journal; no automatic deletion", "New UUID and MAC identities; guest OS identities/credentials remain in copied disks and need explicit guest adaptation"}
 	if spec.Firmware.Mode == "uefi" {
+		if _, ok := s.Backend.(domain.ColdStateInspector); !ok || !nvramDigest(in.Target.FirmwareDigest) {
+			return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "UEFI creation requires native NVRAM declaration inspection and a bound firmware digest")
+		}
+		in.NVRAMDeclarationVersion = 1
+		step.CompletionPredicate = "All independent volumes verified, exact stopped VM definition observed and its NVRAM declaration durably bound; auxiliary initialization remains unverified"
+		step.Reconciliation = "Observe the exact definition and verified-volume receipt, then compare the bound NVRAM declaration without rebinding or replaying effects"
 		acks = append(acks, "new-firmware-state")
-		risks = append(risks, "UEFI/TPM clone creation does not restore existing guest keys. The first assigned NVRAM path and fresh auxiliary-state initialization are not yet durably verified; encrypted-guest recovery is unqualified")
+		risks = append(risks, "UEFI/TPM clone creation does not restore existing guest keys. The first durably observed NVRAM declaration will be bound; historical first assignment and fresh auxiliary-state initialization remain unverified, and encrypted-guest recovery is unqualified")
 	}
 	if len(spec.NICs) > 0 {
 		acks = append(acks, "network-attachment")
@@ -287,7 +294,7 @@ func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[stri
 	if in.Seed != nil {
 		staging = filepath.Join(in.Seed.CacheDirectory, seedStage(p))
 	}
-	return map[string]any{"seedStagingDirectory": staging, "provisioning": in.Seed, "sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
+	return map[string]any{"nvramDeclarationVersion": in.NVRAMDeclarationVersion, "nvramInitializationVerified": false, "seedStagingDirectory": staging, "provisioning": in.Seed, "sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
 }
 
 // Estimate describes the existing pool-space policy, without measuring physical
@@ -660,12 +667,18 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 	if _, err = s.Backend.DefineCreatedVM(ctx, p.ConnectionID, in.Target, volumes, r.Binding); err != nil {
 		return err
 	}
-	_, ok, err := s.Backend.ObserveCreatedVM(ctx, p.ConnectionID, in.Target, volumes, r.Binding)
+	vm, ok, err := s.Backend.ObserveCreatedVM(ctx, p.ConnectionID, in.Target, volumes, r.Binding)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return domain.Fail("RECOVERY_REQUIRED", "new definition was not observed")
+	}
+	if err = s.bindNVRAMDeclaration(ctx, p, in, r, vm); err != nil {
+		return err
+	}
+	if err = s.nvramBoundary(ctx, in); err != nil {
+		return err
 	}
 	r.Defined = true
 	return s.save(r, &previous)
@@ -749,8 +762,14 @@ func (s *Service) Reconcile(ctx context.Context, p domain.Plan, b []byte, step d
 	if err != nil {
 		return false, err
 	}
-	_, ok, err := s.Backend.ObserveCreatedVM(ctx, p.ConnectionID, in.Target, volumes, r.Binding)
+	vm, ok, err := s.Backend.ObserveCreatedVM(ctx, p.ConnectionID, in.Target, volumes, r.Binding)
 	if err != nil || !ok {
+		return false, err
+	}
+	if err = s.bindNVRAMDeclaration(ctx, p, in, r, vm); err != nil {
+		return false, err
+	}
+	if err = s.nvramBoundary(ctx, in); err != nil {
 		return false, err
 	}
 	if !r.Defined {
@@ -766,9 +785,15 @@ func (s *Service) Reconcile(ctx context.Context, p domain.Plan, b []byte, step d
 	if err = s.recordOwnership(p, in, r); err != nil {
 		return false, err
 	}
+	if err = s.nvramBoundary(ctx, in); err != nil {
+		return false, err
+	}
 	return true, nil
 }
 func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	j, err := s.Store.Job(id)
 	if err != nil {
 		return nil, err
@@ -786,15 +811,31 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	if p.Operation == acceptanceOperation {
 		return s.acceptanceResult(j, p, encoded)
 	}
+	if err = verifyCreationResultRecipe(p, encoded); err != nil {
+		return nil, err
+	}
 	if p.Operation == "vm.create.resume" {
 		var recovery resumeInput
 		if err = wire.Decode(encoded, &recovery); err != nil {
 			return nil, err
 		}
-		p, _, err = s.Store.Plan(recovery.CreationPlanID)
+		p, encoded, err = s.Store.Plan(recovery.CreationPlanID)
 		if err != nil {
 			return nil, err
 		}
+		if err = verifyCreationResultRecipe(p, encoded); err != nil {
+			return nil, err
+		}
+	}
+	if p.ActorUID != uid {
+		return nil, domain.Fail("PERMISSION_DENIED", "original creation plan belongs to a different actor")
+	}
+	var in input
+	if err = wire.Decode(encoded, &in); err != nil {
+		return nil, err
+	}
+	if err = creationRecipeVersion(p, in); err != nil {
+		return nil, err
 	}
 	receipt, present, err := s.loadOptional(p.ID)
 	if err != nil {
@@ -803,6 +844,9 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	result := map[string]any{"operation": j, "receipt": nil, "receiptAvailable": present, "complete": false, "guestBootVerified": false, "setupVerified": false, "connectivityVerified": false}
 	if present {
 		result["receipt"] = receipt
+	}
+	if err = s.nvramResult(ctx, p, in, receipt, present, result); err != nil {
+		return result, err
 	}
 	if creationInProgress(j.State) {
 		// A successful observation of progress does not mean the operation has
@@ -821,6 +865,18 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	}
 	result["complete"] = true
 	return result, nil
+}
+
+func verifyCreationResultRecipe(p domain.Plan, encoded []byte) error {
+	planDigest, err := operations.PlanDigest(p)
+	if err != nil || planDigest != p.Digest {
+		return domain.Fail("SOURCE_CHANGED", "persisted creation result plan digest differs")
+	}
+	inputDigest, err := operations.Digest(json.RawMessage(encoded))
+	if err != nil || inputDigest != p.InputDigest {
+		return domain.Fail("SOURCE_CHANGED", "persisted creation result recipe digest differs")
+	}
+	return nil
 }
 
 func creationInProgress(state string) bool {

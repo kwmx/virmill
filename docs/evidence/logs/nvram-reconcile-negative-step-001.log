@@ -1,0 +1,5 @@
+--- FAIL: TestReconcileCompatibilityNegativeJournalStep (0.00s)
+    reconcile_compatibility_test.go:117: negative journal step panicked instead of returning a bounded error: runtime error: index out of range [-1]
+FAIL
+FAIL	virmill.local/core/internal/operations	0.003s
+FAIL

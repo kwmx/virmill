@@ -285,11 +285,22 @@ func (e *Engine) Reconcile(ctx context.Context, id string) (domain.Job, error) {
 	if err != nil {
 		return j, err
 	}
+	// Recovery may run long after plan expiry, but it must still observe the
+	// exact immutable recipe that was authorized. In particular, a changed
+	// recipe version must not downgrade a new completion-proof requirement.
+	planDigest, err := PlanDigest(p)
+	if err != nil || planDigest != p.Digest {
+		return j, domain.Fail("SOURCE_CHANGED", "persisted recovery plan digest differs; retain resources without invoking its handler")
+	}
+	inputDigest, err := Digest(json.RawMessage(input))
+	if err != nil || inputDigest != p.InputDigest {
+		return j, domain.Fail("SOURCE_CHANGED", "persisted recovery recipe digest differs; retain resources without invoking its handler")
+	}
 	h, ok := e.Handlers[p.Operation]
 	if !ok {
 		return j, domain.Fail("NOT_IMPLEMENTED", "handler unavailable")
 	}
-	if j.Step >= len(p.Steps) {
+	if j.Step < 0 || j.Step >= len(p.Steps) {
 		return j, errors.New("journal step invalid")
 	}
 	// Recovery is another execution boundary for this same accepted job. Bind its

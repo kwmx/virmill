@@ -66,12 +66,14 @@ UEFI requires absolute installed code/template paths and their explicit `raw` or
 `qcow2` format. The selected system descriptor and libvirt capabilities must match.
 Secure Boot requires an enrolled-key template. `tpm: true` requires advertised
 TPM 2.0 emulator/CRB support. This clone path does not restore an existing guest's
-keys. The first assigned NVRAM path and fresh auxiliary-state initialization are
-not yet durably verified; encrypted-guest recovery remains unqualified. Matching
-code/template declarations does not establish instance freshness. The backend
-refuses changes to the reviewed firmware mapping; see the
-[NVRAM binding review](reviews/creation-nvram-binding-review.md) for the remaining
-initialization and recovery boundaries.
+keys. New recipes bind the first durably observed NVRAM declaration before
+confirming definition; old recipes remain explicitly unbound. Historical first
+assignment and fresh auxiliary-state initialization remain unverified, as does
+encrypted-guest recovery. Matching code/template declarations does not establish
+instance freshness. The backend refuses changes to the reviewed firmware mapping;
+see [declaration binding](creation-nvram-binding.md) and the
+[initialization review](reviews/creation-nvram-binding-review.md) for the remaining
+boundaries.
 
 Preview with the reviewed JSON input:
 

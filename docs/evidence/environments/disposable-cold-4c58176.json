@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-09-07T20:59:24.240380+00:00",
+  "runtimeRevision": "4c5817674e8c036081715237ad1e768869f377c5",
+  "sourceDigest": "483440c70932ecaf3d29f893ec24ae6ff59fa8a83ffb43ee282966cad852b0b1",
+  "baseEnvironment": "disposable-fedora44-20260907.json",
+  "nativePackages": [
+    "libvirt-daemon-kvm-12.0.0-3.fc44.x86_64",
+    "qemu-kvm-10.2.2-1.fc44.x86_64",
+    "edk2-ovmf-20260812-4.fc44.noarch",
+    "swtpm-0.10.2-1.fc44.x86_64",
+    "restic-0.19.1-1.fc44.x86_64"
+  ],
+  "SELinux": "Enforcing",
+  "privateCoordinatorUnit": "virmill-test-4c58176.service",
+  "privilegedHelper": "inactive",
+  "limitations": [
+    "One owner-authorized disposable Fedora 44 nested-KVM host; no full firmware/TPM capture, restore, USB or network qualification."
+  ],
+  "sourceOfObservation": "cold-native-upgrade-001; package versions re-observed; Virmill packages upgraded, no native VM/network/storage configuration changes",
+  "priorEnvironment": "environments/disposable-cold-ad60807.json"
+}

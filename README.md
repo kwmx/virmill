@@ -35,4 +35,5 @@ Read-only device and subnet facts: [PCI and CIDR discovery](docs/host-network-di
 
 Recovery prerequisites: [native firmware/TPM inspection](docs/cold-state-layout.md)
 and [declared manifest verification](docs/recovery-manifest-verification.md).
+New UEFI creation also records a [durable NVRAM declaration binding](docs/creation-nvram-binding.md).
 These observations do not establish complete capture or independent recovery.

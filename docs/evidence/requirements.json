@@ -481,7 +481,8 @@
         "cold-fixes-core-001",
         "cold-fixes-vet-001",
         "cold-fixes-packaging-001",
-        "cold-fixes-reconcile-001"
+        "cold-fixes-reconcile-001",
+        "cold-native-packaging-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -873,7 +874,11 @@
         "docs/evidence/cold-fixes-native-run.md",
         "docs/creation-nvram-path-validation.md",
         "docs/reviews/creation-tpm-firmware-capability-review.md",
-        "docs/reviews/creation-tpm-capability-regressions.md"
+        "docs/reviews/creation-tpm-capability-regressions.md",
+        "internal/creating/nvram_linux.go",
+        "docs/adr/0021-creation-nvram-declaration-binding.md",
+        "docs/creation-nvram-binding.md",
+        "docs/evidence/nvram-binding-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -913,7 +918,12 @@
         "internal/backend/libvirt/creation_firmware_normalization_test.go",
         "tests/fixtures/protection/disposable-recorded-run/cold-fixes-reconcile-001.py",
         "internal/backend/libvirt/creation_nvram_path_test.go",
-        "internal/backend/libvirt/creation_tpm_capabilities_test.go"
+        "internal/backend/libvirt/creation_tpm_capabilities_test.go",
+        "internal/creating/nvram_lifecycle_linux_test.go",
+        "internal/creating/nvram_validation_linux_test.go",
+        "internal/ui/cli/creation_nvram_test.go",
+        "internal/ui/tui/creation_nvram_test.go",
+        "internal/creating/nvram_result_recovery_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -965,7 +975,14 @@
         "cold-probe-4m-boot-001",
         "cold-probe-4m-second-plan-001",
         "cold-probe-4m-second-boot-001",
-        "cold-native-integration-core-001"
+        "cold-native-integration-core-001",
+        "cold-native-packaging-001",
+        "nvram-binding-core-001",
+        "nvram-result-child-integrity-001",
+        "nvram-result-child-integrity-002",
+        "nvram-result-child-integrity-003",
+        "nvram-binding-vet-001",
+        "nvram-recovery-integration-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
@@ -977,7 +994,7 @@
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
-        "Narrow firmware normalization passed native reconciliation. Later lexical NVRAM validation rejects malformed paths and ambiguous attributes, but first assigned path/generation and initialization provenance remain unbound in receipts. No complete-capture or fresh-state guarantee follows from matching."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1520,7 +1537,14 @@
         "docs/reviews/creation-tpm-capability-regressions.md",
         "docs/reviews/uefi-tcg2-probe-review.md",
         "docs/reviews/uefi-console-observer-review.md",
-        "docs/reviews/native-tpm-state-resolution.md"
+        "docs/reviews/native-tpm-state-resolution.md",
+        "internal/creating/nvram_linux.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/devices_linux.go",
+        "docs/adr/0021-creation-nvram-declaration-binding.md",
+        "docs/creation-nvram-binding.md",
+        "docs/evidence/nvram-binding-run.md",
+        "internal/creating/recovery_linux.go"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-01",
@@ -1557,7 +1581,12 @@
         "tests/fixtures/protection/uefi-tpm-probe/test_observe_console.py",
         "internal/backend/libvirt/creation_nvram_path_test.go",
         "internal/backend/libvirt/creation_tpm_capabilities_test.go",
-        "tests/fixtures/protection/disposable-recorded-run/cold-probe-4m-second-boot-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-4m-second-boot-001.py",
+        "internal/creating/nvram_lifecycle_linux_test.go",
+        "internal/creating/nvram_validation_linux_test.go",
+        "internal/ui/cli/creation_nvram_test.go",
+        "internal/ui/tui/creation_nvram_test.go",
+        "internal/creating/nvram_result_recovery_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1604,14 +1633,18 @@
         "cold-probe-4m-second-boot-001",
         "cold-native-integration-core-001",
         "cold-probe-4m-inspection-tui-001",
-        "cold-observer-tests-004"
+        "cold-observer-tests-004",
+        "cold-native-upgrade-001",
+        "nvram-binding-core-001",
+        "nvram-binding-vet-001",
+        "nvram-recovery-integration-001"
       ],
       "outstanding": [
         "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
-        "Narrow firmware normalization passed native reconciliation. Later lexical NVRAM validation rejects malformed paths and ambiguous attributes, but first assigned path/generation and initialization provenance remain unbound in receipts. No complete-capture or fresh-state guarantee follows from matching.",
-        "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified."
+        "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified.",
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2328,7 +2361,12 @@
         "docs/evidence/cold-fixes-native-run.md",
         "docs/creation-nvram-path-validation.md",
         "docs/reviews/creation-tpm-firmware-capability-review.md",
-        "docs/reviews/creation-tpm-capability-regressions.md"
+        "docs/reviews/creation-tpm-capability-regressions.md",
+        "internal/creating/nvram_linux.go",
+        "docs/adr/0021-creation-nvram-declaration-binding.md",
+        "docs/creation-nvram-binding.md",
+        "docs/evidence/nvram-binding-run.md",
+        "docs/reviews/reconcile-integrity-compatibility.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -2379,7 +2417,14 @@
         "tests/fixtures/protection/disposable-recorded-run/cold-fixes-upgrade-001.py",
         "tests/fixtures/protection/disposable-recorded-run/cold-fixes-reconcile-001.py",
         "internal/backend/libvirt/creation_nvram_path_test.go",
-        "internal/backend/libvirt/creation_tpm_capabilities_test.go"
+        "internal/backend/libvirt/creation_tpm_capabilities_test.go",
+        "internal/creating/nvram_lifecycle_linux_test.go",
+        "internal/creating/nvram_validation_linux_test.go",
+        "internal/ui/cli/creation_nvram_test.go",
+        "internal/ui/tui/creation_nvram_test.go",
+        "internal/operations/reconcile_integrity_test.go",
+        "internal/creating/nvram_result_recovery_linux_test.go",
+        "internal/operations/reconcile_compatibility_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2437,7 +2482,15 @@
         "cold-fixes-core-001",
         "cold-fixes-upgrade-001",
         "cold-fixes-reconcile-001",
-        "cold-native-integration-core-001"
+        "cold-native-integration-core-001",
+        "cold-native-upgrade-001",
+        "nvram-binding-core-001",
+        "nvram-reconcile-negative-step-001",
+        "nvram-result-child-integrity-001",
+        "nvram-result-child-integrity-002",
+        "nvram-result-child-integrity-003",
+        "nvram-binding-vet-001",
+        "nvram-recovery-integration-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -2449,7 +2502,7 @@
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Narrow firmware normalization passed native reconciliation. Later lexical NVRAM validation rejects malformed paths and ambiguous attributes, but first assigned path/generation and initialization provenance remain unbound in receipts. No complete-capture or fresh-state guarantee follows from matching."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2466,7 +2519,8 @@
         "internal/operations/engine.go",
         "internal/store/store.go",
         "internal/store/recovery_accept.go",
-        "internal/creating/recovery_linux.go"
+        "internal/creating/recovery_linux.go",
+        "docs/reviews/reconcile-integrity-compatibility.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-03",
@@ -2474,12 +2528,14 @@
         "internal/operations/engine_test.go",
         "internal/store/recovery_accept_test.go",
         "internal/operations/recovery_test.go",
-        "internal/creating/recovery_linux_test.go"
+        "internal/creating/recovery_linux_test.go",
+        "internal/operations/reconcile_compatibility_test.go"
       ],
       "evidence": [
         "core-tests-001",
         "creation-core-001",
-        "cleanup-core-001"
+        "cleanup-core-001",
+        "nvram-recovery-integration-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage."
@@ -2537,7 +2593,8 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "docs/reviews/reconcile-integrity-compatibility.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -2568,7 +2625,8 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-recovery-refusals.py",
         "internal/storageaccess/service_linux_test.go",
         "internal/helper/access_linux_test.go",
-        "internal/backend/fileaccess/acl_linux_test.go"
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/operations/reconcile_compatibility_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -2600,7 +2658,8 @@
         "storage-access-clean-core-001",
         "helper-access-native-tui-revoke-001",
         "helper-access-native-tui-revoke-resume-001",
-        "helper-access-native-tui-grant-cli-revoke-001"
+        "helper-access-native-tui-grant-cli-revoke-001",
+        "nvram-recovery-integration-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -3426,7 +3485,13 @@
         "internal/creating/service_linux.go",
         "internal/app/service.go",
         "docs/creation-space-estimates.md",
-        "docs/evidence/cold-fixes-native-run.md"
+        "docs/evidence/cold-fixes-native-run.md",
+        "internal/creating/nvram_linux.go",
+        "internal/creating/devices_linux.go",
+        "docs/adr/0021-creation-nvram-declaration-binding.md",
+        "docs/creation-nvram-binding.md",
+        "docs/evidence/nvram-binding-run.md",
+        "internal/creating/recovery_linux.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -3455,7 +3520,12 @@
         "internal/creating/estimates_linux_test.go",
         "internal/ui/cli/creation_estimates_test.go",
         "internal/ui/tui/creation_estimates_test.go",
-        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-estimate-tui-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-estimate-tui-001.py",
+        "internal/creating/nvram_lifecycle_linux_test.go",
+        "internal/creating/nvram_validation_linux_test.go",
+        "internal/ui/cli/creation_nvram_test.go",
+        "internal/ui/tui/creation_nvram_test.go",
+        "internal/creating/nvram_result_recovery_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3479,12 +3549,17 @@
         "cold-fixes-packaging-001",
         "cold-fixes-estimate-tui-001",
         "cold-native-integration-core-001",
-        "cold-probe-4m-inspection-tui-001"
+        "cold-probe-4m-inspection-tui-001",
+        "cold-native-packaging-001",
+        "nvram-binding-core-001",
+        "nvram-binding-vet-001",
+        "nvram-recovery-integration-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
-        "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required."
+        "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3521,7 +3596,9 @@
         "docs/managed-volume-access.md",
         "docs/adr/0018-managed-volume-read-access.md",
         "docs/evidence/discovery-plugin-run.md",
-        "docs/evidence/cold-fixes-native-run.md"
+        "docs/evidence/cold-fixes-native-run.md",
+        "scripts/reproducibility.py",
+        "docs/reviews/repository-hygiene-20260908.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -3541,7 +3618,8 @@
         "internal/helper/access_linux_test.go",
         "internal/backend/fileaccess/acl_linux_test.go",
         "tests/fixtures/protection/disposable-recorded-run/cold-source-upgrade-001.py",
-        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-upgrade-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-upgrade-001.py",
+        "tests/integration/package_inputs_test.py"
       ],
       "evidence": [
         "artifact-tests-001",
@@ -3607,11 +3685,16 @@
         "cold-fixes-packaging-001",
         "cold-fixes-upgrade-001",
         "cold-native-integration-vet-001",
-        "cold-native-release-gate-001"
+        "cold-native-release-gate-001",
+        "cold-native-packages-repro-001",
+        "cold-native-packaging-001",
+        "cold-native-upgrade-001",
+        "nvram-package-inputs-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
-        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Package source selection now requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing expected packages are refused. Twenty generated fixture tests pass; actual rebuilt RPM/DEB integration from the new frozen checkpoint is pending. Tracked source provenance, full distribution installation matrix and installed documentation links still require release evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3630,12 +3713,16 @@
         "docs/evidence/boot-media-run.md",
         "docs/evidence/downtime-estimates-run.md",
         "docs/evidence/result-progress-run.md",
-        "docs/evidence/creation-acceptance-run.md"
+        "docs/evidence/creation-acceptance-run.md",
+        "scripts/package.py",
+        "scripts/reproducibility.py",
+        "docs/reviews/repository-hygiene-20260908.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-02",
       "tests": [
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "tests/integration/package_inputs_test.py"
       ],
       "evidence": [
         "cross-build-001",
@@ -3664,10 +3751,14 @@
         "storage-access-clean-static-001",
         "cold-prerequisites-repro-001",
         "cold-prerequisites-packaging-001",
-        "cold-source-cross-001"
+        "cold-source-cross-001",
+        "cold-native-packages-repro-001",
+        "cold-native-cross-001",
+        "nvram-package-inputs-001"
       ],
       "outstanding": [
-        "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
+        "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support.",
+        "Package source selection now requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing expected packages are refused. Twenty generated fixture tests pass; actual rebuilt RPM/DEB integration from the new frozen checkpoint is pending. Tracked source provenance, full distribution installation matrix and installed documentation links still require release evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3763,7 +3854,16 @@
         "docs/reviews/creation-tpm-firmware-capability-review.md",
         "docs/reviews/creation-tpm-capability-regressions.md",
         "docs/reviews/uefi-tcg2-probe-review.md",
-        "docs/reviews/uefi-console-observer-review.md"
+        "docs/reviews/uefi-console-observer-review.md",
+        "internal/creating/nvram_linux.go",
+        "docs/adr/0021-creation-nvram-declaration-binding.md",
+        "docs/creation-nvram-binding.md",
+        "docs/evidence/nvram-binding-run.md",
+        "internal/creating/recovery_linux.go",
+        "docs/reviews/reconcile-integrity-compatibility.md",
+        "scripts/package.py",
+        "scripts/reproducibility.py",
+        "docs/reviews/repository-hygiene-20260908.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -3841,7 +3941,14 @@
         "tests/fixtures/protection/uefi-tpm-probe/test_observe_console.py",
         "internal/backend/libvirt/creation_nvram_path_test.go",
         "internal/backend/libvirt/creation_tpm_capabilities_test.go",
-        "tests/fixtures/protection/disposable-recorded-run/cold-probe-4m-second-boot-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-4m-second-boot-001.py",
+        "internal/creating/nvram_lifecycle_linux_test.go",
+        "internal/creating/nvram_validation_linux_test.go",
+        "internal/ui/cli/creation_nvram_test.go",
+        "internal/ui/tui/creation_nvram_test.go",
+        "internal/creating/nvram_result_recovery_linux_test.go",
+        "internal/operations/reconcile_compatibility_test.go",
+        "tests/integration/package_inputs_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3956,7 +4063,14 @@
         "cold-probe-4m-inspection-tui-001",
         "cold-native-integration-vet-001",
         "cold-observer-tests-004",
-        "cold-native-release-gate-001"
+        "cold-native-release-gate-001",
+        "cold-native-packages-repro-001",
+        "cold-native-packaging-001",
+        "cold-native-upgrade-001",
+        "nvram-binding-core-001",
+        "nvram-binding-vet-001",
+        "nvram-recovery-integration-001",
+        "nvram-package-inputs-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3972,7 +4086,9 @@
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
         "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
-        "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required."
+        "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore.",
+        "Package source selection now requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing expected packages are refused. Twenty generated fixture tests pass; actual rebuilt RPM/DEB integration from the new frozen checkpoint is pending. Tracked source provenance, full distribution installation matrix and installed documentation links still require release evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4015,7 +4131,8 @@
         "acceptance-release-gate-001",
         "multidisk-records-001",
         "multidisk-release-gate-001",
-        "discovery-release-gate-001"
+        "discovery-release-gate-001",
+        "cold-native-packages-repro-001"
       ],
       "outstanding": [
         "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open."

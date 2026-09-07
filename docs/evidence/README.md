@@ -5,6 +5,15 @@ digest, exact environment, fixture digests, result, evidence class and retained
 log hashes. Failed/blocked checks remain visible. Tests against synthetic objects
 do not certify actual virtualization, packet flow, firmware, TPM or USB.
 
+The recorder's historical `sourceDigest` covers the implementation trees `cmd`,
+`internal`, `sdk`, `schemas`, `contracts`, `scripts`, `tests`, `packaging` and the
+root Go module files, excluding interpreter caches. It does **not** hash every
+repository file: docs, examples and vendor sources are outside that digest.
+New entries label this unchanged algorithm as `implementation-tree-v1`. Frozen
+builds use an exact Git checkout; package file manifests and artifact digests bind
+their additional inputs. A working-tree digest or embedded HEAD alone is not a
+complete release source attestation.
+
 `requirements.json` maps all 71 immutable acceptance IDs to implementation,
 planned tests, evidence and remaining work. Generated `../implementation-status.md`
 is a readable view. No row passes solely because a related unit test passed.
@@ -16,6 +25,9 @@ A distinct 4 MiB firmware probe reported SEEDED then PRESERVED across two KVM
 boots; the retained 2 MiB probe failed TCG2 lookup. CLI/TUI inspection continues
 to report unresolved TPM storage. Complete capture and independent restore remain
 unverified. Failed observer attempts and both firmware outcomes are retained.
+
+Current integration: [durable creation declaration binding](nvram-binding-run.md),
+with legacy compatibility, cancellation and immutable recovery-result checks.
 
 Earlier native evidence: [multi-disk import and active upload crash](multidisk-crash-run.md).
 The generated split-VMDK probe passed preparation, an actual interrupted native
