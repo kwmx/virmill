@@ -1,0 +1,80 @@
+{
+  "recordedAt": "2026-09-07T18:44:41.370931+00:00",
+  "revision": "24858d49151dc0090d05e2b7bc7ae2a0d4eedeca",
+  "sourceDigest": "22f2e5391a9dc725848f48219c2bf997b6b371a99b4e43c3e1940967830a6d8f",
+  "collectorPython": "/home/linuxbrew/.linuxbrew/opt/python@3.14/bin/python3.14",
+  "hostMutationAuthorized": false,
+  "observations": [
+    {
+      "command": [
+        "python3",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdout": "Python 3.14.6\n",
+      "stderr": "",
+      "executable": "/home/linuxbrew/.linuxbrew/Cellar/python@3.14/3.14.6/bin/python3.14",
+      "executableSHA256": "a7738082185395bdb559c67f09a1e8d01761a75d48362496672008c56725c2d0"
+    },
+    {
+      "command": [
+        "/usr/bin/python3",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdout": "Python 3.14.7\n",
+      "stderr": "",
+      "executable": "/usr/bin/python3.14",
+      "executableSHA256": "0d64bd6d66d68dac91cdadafc46e22d4f09f22bdc997aaae870f42865b024a3e"
+    },
+    {
+      "command": [
+        "./scripts/go",
+        "version"
+      ],
+      "exitCode": 0,
+      "stdout": "go version go1.27.1 linux/amd64\n",
+      "stderr": "",
+      "executable": "/home/faisal/project/virmill/scripts/go",
+      "executableSHA256": "e278bb0e67cf0f71f09a76ff4ac29054e03b512ae8fdabcc4aac5750144b6d91"
+    },
+    {
+      "command": [
+        "rpm",
+        "-q",
+        "gcc",
+        "binutils",
+        "python3",
+        "libvirt-libs",
+        "libvirt-client",
+        "edk2-ovmf",
+        "swtpm",
+        "dosfstools",
+        "mtools",
+        "rpm-build"
+      ],
+      "exitCode": 0,
+      "stdout": "gcc-16.2.1-2.fc44.x86_64\nbinutils-2.46.1-1.fc44.x86_64\npython3-3.14.7-1.fc44.x86_64\nlibvirt-libs-12.0.0-3.fc44.x86_64\nlibvirt-client-12.0.0-3.fc44.x86_64\nedk2-ovmf-20260812-4.fc44.noarch\nswtpm-0.10.2-1.fc44.x86_64\ndosfstools-4.2-18.fc44.x86_64\nmtools-4.0.49-3.fc44.x86_64\nrpm-build-6.0.2-1.fc44.x86_64\n",
+      "stderr": "",
+      "executable": "/usr/bin/rpm",
+      "executableSHA256": "d0dabe0d323e943e6366a7b09d391dfbe50659a5df80a5c7a1885e5026aa2362"
+    },
+    {
+      "command": [
+        "uname",
+        "-srmo"
+      ],
+      "exitCode": 0,
+      "stdout": "Linux 7.1.13-200.fc44.x86_64 x86_64 GNU/Linux\n",
+      "stderr": "",
+      "executable": "/usr/bin/uname",
+      "executableSHA256": "8da4d0ab265f26f6a9acbdde769f97f1108ba7681c4aa3557b24ad5d41d4f285"
+    }
+  ],
+  "limitations": [
+    "Local source/build fixtures only. Host virtualization/network/storage mutations are not authorized.",
+    "Parent commands named python3 resolve to Homebrew Python 3.14.6; /usr/bin/python3 is Fedora Python 3.14.7. Both are available, not interchangeable provenance.",
+    "Clean probe a/b were built by the parent with Homebrew Python 3.14.6. Their EFI/FAT bytes match the agent builds using Fedora Python 3.14.7; build-manifest tool fields truthfully differ.",
+    "No UEFI guest, TPM state capture or restore executed. Required-IPC final rerun was rejected before execution by the approval review service usage limit."
+  ]
+}

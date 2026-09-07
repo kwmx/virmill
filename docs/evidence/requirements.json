@@ -362,7 +362,13 @@
         "native-first-capabilities-001",
         "native-first-capabilities-002",
         "discovery-clean-core-001",
-        "discovery-native-observation-002"
+        "discovery-native-observation-002",
+        "cold-state-preflight-001",
+        "cold-state-preflight-002",
+        "cold-native-readiness-003",
+        "cold-native-readiness-004",
+        "cold-prerequisites-cross-001",
+        "cold-prerequisites-core-sandbox-001"
       ],
       "outstanding": [
         "Connection allowlist implemented; full session capability probes and actual restrictions remain.",
@@ -1427,7 +1433,19 @@
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
         "docs/recovery-manifest-verification.md",
-        "internal/helper/sealed_linux.go"
+        "internal/helper/sealed_linux.go",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json",
+        "internal/domain/cold_source.go",
+        "internal/backend/libvirt/cold_source_xml.go",
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/app/protection/capture_manifest.go",
+        "internal/app/protection/capture_manifest_validation.go",
+        "internal/app/protection/capture_verify.go",
+        "schemas/cold-recovery-point.schema.json",
+        "docs/cold-source-layout.md",
+        "docs/cold-source-files.md",
+        "docs/cold-capture-manifest.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-01",
@@ -1438,13 +1456,38 @@
         "internal/app/recovery_inspection_test.go",
         "internal/ui/cli/recovery_test.go",
         "internal/ui/tui/recovery_test.go",
-        "internal/helper/sealed_linux_test.go"
+        "internal/helper/sealed_linux_test.go",
+        "internal/backend/libvirt/cold_source_xml_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/app/protection/capture_manifest_validation_test.go",
+        "internal/app/protection/capture_verify_test.go",
+        "internal/app/protection/manifest_open_linux_test.go",
+        "internal/app/capture_verification_test.go",
+        "internal/ui/cli/capture_verification_test.go",
+        "internal/ui/tui/capture_verification_test.go",
+        "internal/validation/cold_capture_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "cold-state-preflight-001",
+        "cold-state-preflight-002",
+        "cold-native-readiness-003",
+        "cold-native-readiness-004",
+        "cold-probe-pool-001",
+        "cold-prerequisites-vet-001",
+        "cold-probe-call-regression-001",
+        "cold-probe-build-a-001",
+        "cold-prerequisites-core-sandbox-001",
+        "cold-state-fuzz-001",
+        "cold-schema-fixtures-001",
+        "cold-probe-build-b-001",
+        "cold-sealed-sandbox-observation-001",
+        "cold-required-ipc-approval-blocked-001"
       ],
       "outstanding": [
-        "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete."
+        "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1488,7 +1531,9 @@
         "docs/adr/0020-cold-recovery-boundary.md",
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
-        "docs/recovery-manifest-verification.md"
+        "docs/recovery-manifest-verification.md",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-03",
@@ -1502,7 +1547,12 @@
         "internal/helper/sealed_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "cold-prerequisites-vet-001",
+        "cold-prerequisites-core-sandbox-001",
+        "cold-manifest-fuzz-001",
+        "cold-state-fuzz-001",
+        "cold-schema-fixtures-001"
       ],
       "outstanding": [
         "Native auxiliary-state layouts and unsupported combinations are explicit; declared manifest consistency is checked. The actual cold/live/memory capability, capture and restore matrix remains incomplete."
@@ -1531,7 +1581,19 @@
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
         "docs/recovery-manifest-verification.md",
-        "internal/helper/sealed_linux.go"
+        "internal/helper/sealed_linux.go",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json",
+        "internal/domain/cold_source.go",
+        "internal/backend/libvirt/cold_source_xml.go",
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/app/protection/capture_manifest.go",
+        "internal/app/protection/capture_manifest_validation.go",
+        "internal/app/protection/capture_verify.go",
+        "schemas/cold-recovery-point.schema.json",
+        "docs/cold-source-layout.md",
+        "docs/cold-source-files.md",
+        "docs/cold-capture-manifest.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-01",
@@ -1542,13 +1604,39 @@
         "internal/app/recovery_inspection_test.go",
         "internal/ui/cli/recovery_test.go",
         "internal/ui/tui/recovery_test.go",
-        "internal/helper/sealed_linux_test.go"
+        "internal/helper/sealed_linux_test.go",
+        "internal/backend/libvirt/cold_source_xml_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/app/protection/capture_manifest_validation_test.go",
+        "internal/app/protection/capture_verify_test.go",
+        "internal/app/protection/manifest_open_linux_test.go",
+        "internal/app/capture_verification_test.go",
+        "internal/ui/cli/capture_verification_test.go",
+        "internal/ui/tui/capture_verification_test.go",
+        "internal/validation/cold_capture_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "cold-state-preflight-001",
+        "cold-state-preflight-002",
+        "cold-native-readiness-003",
+        "cold-native-readiness-004",
+        "cold-probe-pool-001",
+        "cold-prerequisites-vet-001",
+        "cold-probe-call-regression-001",
+        "cold-probe-build-a-001",
+        "cold-prerequisites-core-sandbox-001",
+        "cold-manifest-fuzz-001",
+        "cold-state-fuzz-001",
+        "cold-schema-fixtures-001",
+        "cold-probe-build-b-001",
+        "cold-sealed-sandbox-observation-001",
+        "cold-required-ipc-approval-blocked-001"
       ],
       "outstanding": [
-        "Declared-member integrity checking and cold-state prerequisites are implemented. Complete capture, secret policy, encrypted restic repository operations and independent restore without original files/database remain incomplete."
+        "Declared-member integrity checking and cold-state prerequisites are implemented. Complete capture, secret policy, encrypted restic repository operations and independent restore without original files/database remain incomplete.",
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1603,7 +1691,9 @@
         "internal/app/protection/manifest.go",
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
-        "docs/recovery-manifest-verification.md"
+        "docs/recovery-manifest-verification.md",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-04",
@@ -1616,7 +1706,11 @@
         "internal/app/protection/manifest_test.go",
         "internal/helper/sealed_linux_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "cold-prerequisites-vet-001",
+        "cold-prerequisites-core-sandbox-001",
+        "cold-manifest-fuzz-001"
+      ],
       "outstanding": [
         "Declared-member verification rejects corruption, missing artifacts and observed substitutions. Complete retention/pruning, repository locks, active-job pins and repository-level verification remain incomplete."
       ],
@@ -2359,7 +2453,10 @@
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
         "docs/recovery-manifest-verification.md",
-        "internal/helper/sealed_linux.go"
+        "internal/helper/sealed_linux.go",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json",
+        "internal/backend/coldfiles/source_linux.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -2377,7 +2474,9 @@
         "internal/ui/cli/recovery_test.go",
         "internal/ui/tui/recovery_test.go",
         "internal/app/protection/manifest_test.go",
-        "internal/helper/sealed_linux_test.go"
+        "internal/helper/sealed_linux_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -2394,7 +2493,13 @@
         "helper-access-root-tests-clean-001",
         "helper-access-native-tui-grant-cli-revoke-001",
         "helper-access-native-auth-preserve-001",
-        "discovery-clean-core-001"
+        "discovery-clean-core-001",
+        "cold-prerequisites-vet-001",
+        "cold-prerequisites-core-sandbox-001",
+        "cold-manifest-fuzz-001",
+        "cold-state-fuzz-001",
+        "cold-sealed-sandbox-observation-001",
+        "cold-required-ipc-approval-blocked-001"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
@@ -2468,7 +2573,17 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "internal/domain/cold_source.go",
+        "internal/backend/libvirt/cold_source_xml.go",
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/app/protection/capture_manifest.go",
+        "internal/app/protection/capture_manifest_validation.go",
+        "internal/app/protection/capture_verify.go",
+        "schemas/cold-recovery-point.schema.json",
+        "docs/cold-source-layout.md",
+        "docs/cold-source-files.md",
+        "docs/cold-capture-manifest.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-03",
@@ -2481,7 +2596,17 @@
         "internal/helper/access_linux_test.go",
         "internal/backend/fileaccess/acl_linux_test.go",
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/backend/libvirt/cold_source_xml_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/app/protection/capture_manifest_validation_test.go",
+        "internal/app/protection/capture_verify_test.go",
+        "internal/app/protection/manifest_open_linux_test.go",
+        "internal/app/capture_verification_test.go",
+        "internal/ui/cli/capture_verification_test.go",
+        "internal/ui/tui/capture_verification_test.go",
+        "internal/validation/cold_capture_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2502,7 +2627,8 @@
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
-        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2576,7 +2702,10 @@
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
         "docs/recovery-manifest-verification.md",
-        "internal/helper/sealed_linux.go"
+        "internal/helper/sealed_linux.go",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json",
+        "internal/backend/coldfiles/source_linux.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
@@ -2598,7 +2727,9 @@
         "internal/ui/cli/recovery_test.go",
         "internal/ui/tui/recovery_test.go",
         "internal/app/protection/manifest_test.go",
-        "internal/helper/sealed_linux_test.go"
+        "internal/helper/sealed_linux_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2615,7 +2746,12 @@
         "helper-access-root-tests-clean-001",
         "helper-access-native-auth-preserve-001",
         "discovery-clean-core-001",
-        "discovery-confined-001"
+        "discovery-confined-001",
+        "cold-prerequisites-vet-001",
+        "cold-prerequisites-core-sandbox-001",
+        "cold-manifest-fuzz-001",
+        "cold-sealed-sandbox-observation-001",
+        "cold-required-ipc-approval-blocked-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -2658,7 +2794,9 @@
         "disk-set-confinement-001",
         "boot-media-portable-001",
         "boot-media-sdk-001",
-        "downtime-portable-001"
+        "downtime-portable-001",
+        "cold-prerequisites-go-sdk-001",
+        "cold-sdk-traceability-correction-001"
       ],
       "outstanding": [
         "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
@@ -2887,7 +3025,19 @@
         "internal/app/protection/manifest.go",
         "internal/app/protection/manifest_verify_linux.go",
         "internal/app/protection/manifest_verify_other.go",
-        "docs/recovery-manifest-verification.md"
+        "docs/recovery-manifest-verification.md",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json",
+        "internal/domain/cold_source.go",
+        "internal/backend/libvirt/cold_source_xml.go",
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/app/protection/capture_manifest.go",
+        "internal/app/protection/capture_manifest_validation.go",
+        "internal/app/protection/capture_verify.go",
+        "schemas/cold-recovery-point.schema.json",
+        "docs/cold-source-layout.md",
+        "docs/cold-source-files.md",
+        "docs/cold-capture-manifest.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2936,7 +3086,17 @@
         "internal/backend/libvirt/cold_state_linux_test.go",
         "internal/app/recovery_inspection_test.go",
         "internal/ui/cli/recovery_test.go",
-        "internal/ui/tui/recovery_test.go"
+        "internal/ui/tui/recovery_test.go",
+        "internal/backend/libvirt/cold_source_xml_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/app/protection/capture_manifest_validation_test.go",
+        "internal/app/protection/capture_verify_test.go",
+        "internal/app/protection/manifest_open_linux_test.go",
+        "internal/app/capture_verification_test.go",
+        "internal/ui/cli/capture_verification_test.go",
+        "internal/ui/tui/capture_verification_test.go",
+        "internal/validation/cold_capture_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2985,7 +3145,8 @@
         "discovery-clean-core-001",
         "discovery-artifacts-001",
         "discovery-native-observation-001",
-        "discovery-native-observation-002"
+        "discovery-native-observation-002",
+        "cold-prerequisites-core-sandbox-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -2999,7 +3160,8 @@
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
-        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required."
+        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3059,7 +3221,17 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/domain/cold_source.go",
+        "internal/backend/libvirt/cold_source_xml.go",
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/app/protection/capture_manifest.go",
+        "internal/app/protection/capture_manifest_validation.go",
+        "internal/app/protection/capture_verify.go",
+        "schemas/cold-recovery-point.schema.json",
+        "docs/cold-source-layout.md",
+        "docs/cold-source-files.md",
+        "docs/cold-capture-manifest.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -3074,7 +3246,17 @@
         "internal/app/resource_edit_test.go",
         "internal/backend/xmlpatch/resources_test.go",
         "internal/backend/libvirt/configuration_linux_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/backend/libvirt/cold_source_xml_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/app/protection/capture_manifest_validation_test.go",
+        "internal/app/protection/capture_verify_test.go",
+        "internal/app/protection/manifest_open_linux_test.go",
+        "internal/app/capture_verification_test.go",
+        "internal/ui/cli/capture_verification_test.go",
+        "internal/ui/tui/capture_verification_test.go",
+        "internal/validation/cold_capture_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3094,7 +3276,8 @@
         "configuration-artifacts-001"
       ],
       "outstanding": [
-        "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain."
+        "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3204,7 +3387,9 @@
         "helper-access-upgrade-001",
         "discovery-repro-001",
         "discovery-artifacts-001",
-        "discovery-native-upgrade-001"
+        "discovery-native-upgrade-001",
+        "cold-prerequisites-repro-001",
+        "cold-prerequisites-packaging-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -3258,7 +3443,9 @@
         "acceptance-artifacts-001",
         "storage-access-cross-001",
         "storage-access-repro-001",
-        "storage-access-clean-static-001"
+        "storage-access-clean-static-001",
+        "cold-prerequisites-repro-001",
+        "cold-prerequisites-packaging-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -3336,7 +3523,19 @@
         "internal/plugins/runner.go",
         "docs/plugin-protocol-fault-fixtures.md",
         "docs/adr/0019-discovery-and-plugin-session-failure.md",
-        "docs/evidence/discovery-plugin-run.md"
+        "docs/evidence/discovery-plugin-run.md",
+        "docs/evidence/cold-prerequisites-run.md",
+        "docs/evidence/environments/local-cold-24858d4.json",
+        "internal/domain/cold_source.go",
+        "internal/backend/libvirt/cold_source_xml.go",
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/app/protection/capture_manifest.go",
+        "internal/app/protection/capture_manifest_validation.go",
+        "internal/app/protection/capture_verify.go",
+        "schemas/cold-recovery-point.schema.json",
+        "docs/cold-source-layout.md",
+        "docs/cold-source-files.md",
+        "docs/cold-capture-manifest.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -3383,7 +3582,17 @@
         "internal/app/network/prefixes_test.go",
         "internal/plugins/runner_faults_test.go",
         "internal/plugins/runner_close_test.go",
-        "tests/fixtures/plugins/protocol-faults/main.py"
+        "tests/fixtures/plugins/protocol-faults/main.py",
+        "internal/backend/libvirt/cold_source_xml_test.go",
+        "internal/backend/coldfiles/source_linux_test.go",
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/app/protection/capture_manifest_validation_test.go",
+        "internal/app/protection/capture_verify_test.go",
+        "internal/app/protection/manifest_open_linux_test.go",
+        "internal/app/capture_verification_test.go",
+        "internal/ui/cli/capture_verification_test.go",
+        "internal/ui/tui/capture_verification_test.go",
+        "internal/validation/cold_capture_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3459,7 +3668,11 @@
         "discovery-repro-001",
         "discovery-artifacts-001",
         "discovery-native-upgrade-001",
-        "discovery-native-observation-002"
+        "discovery-native-observation-002",
+        "cold-prerequisites-cross-001",
+        "cold-prerequisites-repro-001",
+        "cold-prerequisites-go-sdk-001",
+        "cold-prerequisites-packaging-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3473,7 +3686,8 @@
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
-        "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance."
+        "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance.",
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
       ],
       "hardwareVerified": false,
       "released": false

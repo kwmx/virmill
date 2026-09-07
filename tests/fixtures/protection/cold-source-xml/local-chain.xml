@@ -1,0 +1,36 @@
+<domain type='kvm'>
+  <name>cold-source-local-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='MiB'>512</memory>
+  <vcpu>1</vcpu>
+  <os><type arch='x86_64' machine='q35'>hvm</type></os>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none'/>
+      <source file='/fixture/cold/leaf.qcow2'/>
+      <backingStore type='volume' index='1'>
+        <format type='qcow2'/>
+        <source pool='fixture-pool' volume='base:1'/>
+        <backingStore type='file' index='2'>
+          <format type='raw'/>
+          <source file='/fixture/cold/base.raw'/>
+          <backingStore/>
+        </backingStore>
+      </backingStore>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <disk type='volume' device='disk'>
+      <source pool='fixture-pool' volume='data'/>
+      <target dev='sda' bus='scsi'/>
+    </disk>
+    <disk device='cdrom'>
+      <source startupPolicy='optional'/>
+      <target dev='sdb' bus='sata' tray='open'/>
+    </disk>
+    <disk type='file' device='floppy'>
+      <source file='/fixture/media/boot.img'/>
+      <target dev='fda' bus='fdc'/>
+      <readonly/>
+    </disk>
+  </devices>
+</domain>

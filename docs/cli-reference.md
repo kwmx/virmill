@@ -1417,7 +1417,7 @@ Global Flags:
 
 ## `virmill vm recovery inspect`
 
-Inspect configured firmware, NVRAM, TPM and secret dependencies without reading confidential state
+Inspect configured disks, backing sources, firmware, TPM and unresolved dependencies without reading source bytes
 
 ```text
 Usage:

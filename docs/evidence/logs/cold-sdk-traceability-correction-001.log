@@ -1,0 +1,1 @@
+Traceability correction only: cold-prerequisites-go-sdk-001 executed the Go SDK tests successfully, but its PLG-01 requirement label was invalid. The correct acceptance association is EXT-01, with REL-03 retained. The original append-only evidence is preserved. This correction is not another test run or complete plugin acceptance.

@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -46,14 +47,8 @@ func openManifestRoot(root string) (*manifestRoot, error) {
 }
 
 func (root *manifestRoot) openMember(path string, readable bool) (manifestHeldFile, error) {
-	flags := uint64(unix.O_PATH | unix.O_CLOEXEC)
-	if readable {
-		// Opening a FIFO after a pathname race must never wait for a writer.
-		// The held descriptor is type/link/generation checked before any read.
-		flags = unix.O_RDONLY | unix.O_NONBLOCK | unix.O_CLOEXEC | unix.O_NOCTTY
-	}
 	fd, err := unix.Openat2(int(root.file.Fd()), path, &unix.OpenHow{
-		Flags:   flags,
+		Flags:   unix.O_PATH | unix.O_CLOEXEC,
 		Resolve: unix.RESOLVE_BENEATH | unix.RESOLVE_NO_SYMLINKS | unix.RESOLVE_NO_MAGICLINKS | unix.RESOLVE_NO_XDEV,
 	})
 	if err != nil {
@@ -64,6 +59,27 @@ func (root *manifestRoot) openMember(path string, readable bool) (manifestHeldFi
 	if err != nil {
 		f.Close()
 		return manifestHeldFile{}, err
+	}
+	if readable {
+		// Check type through O_PATH first: even opening a device for reading may
+		// have side effects. Reopen only this held ordinary inode, never the
+		// caller's path, then check its complete identity again before reading.
+		defer f.Close()
+		fd, err := unix.Open(fmt.Sprintf("/proc/self/fd/%d", f.Fd()), unix.O_RDONLY|unix.O_NONBLOCK|unix.O_CLOEXEC|unix.O_NOCTTY, 0)
+		if err != nil {
+			return manifestHeldFile{}, err
+		}
+		bytesFile := os.NewFile(uintptr(fd), path)
+		observed, err := fileidentity.InspectFile(bytesFile, false)
+		if err != nil {
+			bytesFile.Close()
+			return manifestHeldFile{}, err
+		}
+		if observed != id {
+			bytesFile.Close()
+			return manifestHeldFile{}, domain.Fail("STALE_PLAN", "recovery member changed before readable open")
+		}
+		return manifestHeldFile{file: bytesFile, path: path, identity: id}, nil
 	}
 	return manifestHeldFile{file: f, path: path, identity: id}, nil
 }

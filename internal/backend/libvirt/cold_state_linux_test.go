@@ -4,6 +4,9 @@ package libvirt
 
 import (
 	"context"
+	"encoding/json"
+	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"virmill.local/core/internal/domain"
@@ -34,5 +37,33 @@ func TestColdStateInspectionDoesNotReadOrInferCapturedState(t *testing.T) {
 	cancel()
 	if _, err = coldStateInspection(ctx, vm); err == nil {
 		t.Fatal("canceled observation accepted")
+	}
+}
+
+func TestColdInspectionIncludesEveryDeclaredSourceAndMatchesCaptureFixture(t *testing.T) {
+	base := "../../../tests/fixtures/protection/capture-manifest/"
+	xml, err := os.ReadFile(base + "xml.fixture")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(base + "manifest.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Source domain.ColdSourceLayout `json:"source"`
+	}
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	vm := domain.VM{Key: domain.ResourceKey{UUID: fixture.Source.State.VMID}, State: "stopped", Fingerprint: "synthetic", PersistentXML: string(xml)}
+	got, err := coldStateInspection(context.Background(), vm)
+	if err != nil || got.Source == nil || !reflect.DeepEqual(*got.Source, fixture.Source) || !reflect.DeepEqual(got.Layout, fixture.Source.State) {
+		t.Fatal("native projection differs from source declaration fixture", got, err)
+	}
+	vm.PersistentXML = strings.Replace(vm.PersistentXML, "</devices>", `<filesystem type="mount"><source dir="/unopened/external"/><target dir="shared"/></filesystem></devices>`, 1)
+	got, err = coldStateInspection(context.Background(), vm)
+	if err != nil || len(got.Source.External) != 1 || got.Source.External[0].Kind != "filesystem" || !strings.Contains(strings.Join(got.Warnings, " "), "Unresolved") {
+		t.Fatal("external state dependency disappeared", got, err)
 	}
 }

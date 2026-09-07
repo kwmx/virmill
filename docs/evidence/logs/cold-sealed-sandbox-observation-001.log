@@ -1,0 +1,113 @@
+=== RUN   TestSealedSnapshotTransferAndImmutability
+    sealed_linux_test.go:66: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedSnapshotTransferAndImmutability (0.00s)
+=== RUN   TestSealedCaptureRejectsWrongLengthAndCancellation
+--- PASS: TestSealedCaptureRejectsWrongLengthAndCancellation (0.00s)
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/missing
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/multiple
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/truncated-control
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/unsealed
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/malformed-json
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/two-frames
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/oversized-metadata
+    sealed_linux_test.go:124: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- PASS: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/missing (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/multiple (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/truncated-control (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/unsealed (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/malformed-json (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/two-frames (0.00s)
+    --- SKIP: TestSealedReceiveRejectsDescriptorForgeriesWithoutLeaks/oversized-metadata (0.00s)
+=== RUN   TestSealedReceiveCancellation
+    sealed_linux_test.go:200: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedReceiveCancellation (0.00s)
+=== RUN   TestSealedCaptureCancellationAtFinalEOF
+--- PASS: TestSealedCaptureCancellationAtFinalEOF (0.00s)
+=== RUN   TestSealedSendRejectsMultilineMetadataBeforeTransfer
+=== RUN   TestSealedSendRejectsMultilineMetadataBeforeTransfer/"{\n\"version\":1\n}"
+    sealed_linux_test.go:250: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedSendRejectsMultilineMetadataBeforeTransfer/"{}\n"
+    sealed_linux_test.go:250: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedSendRejectsMultilineMetadataBeforeTransfer/"\n{}"
+    sealed_linux_test.go:250: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- PASS: TestSealedSendRejectsMultilineMetadataBeforeTransfer (0.00s)
+    --- SKIP: TestSealedSendRejectsMultilineMetadataBeforeTransfer/"{\n\"version\":1\n}" (0.00s)
+    --- SKIP: TestSealedSendRejectsMultilineMetadataBeforeTransfer/"{}\n" (0.00s)
+    --- SKIP: TestSealedSendRejectsMultilineMetadataBeforeTransfer/"\n{}" (0.00s)
+=== RUN   TestSealedReceiveRejectsWriteOnlySnapshot
+    sealed_linux_test.go:293: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedReceiveRejectsWriteOnlySnapshot (0.00s)
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/empty
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/oversized
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-write-seal
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-grow-seal
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-shrink-seal
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-seal-seal
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/future-write-is-insufficient
+    sealed_linux_test.go:354: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- PASS: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/empty (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/oversized (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-write-seal (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-grow-seal (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-shrink-seal (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/missing-seal-seal (0.00s)
+    --- SKIP: TestSealedReceiveRejectsInvalidObjectsWithoutLeaks/future-write-is-insufficient (0.00s)
+=== RUN   TestSealedSnapshotMaximumBoundsAndPartialWrite
+    sealed_linux_test.go:416: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedSnapshotMaximumBoundsAndPartialWrite (0.00s)
+=== RUN   TestSealedSendCancellationWhileBlocked
+    sealed_linux_test.go:457: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedSendCancellationWhileBlocked (0.00s)
+=== RUN   TestSealedReceiveCancellationAfterDescriptorArrival
+    sealed_linux_test.go:486: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedReceiveCancellationAfterDescriptorArrival (0.00s)
+=== RUN   TestSealedReceiveUnexpectedCredentialsWithoutLeaks
+    sealed_linux_test.go:526: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedReceiveUnexpectedCredentialsWithoutLeaks (0.00s)
+=== RUN   TestSealedReceiveFragmentedFrames
+=== RUN   TestSealedReceiveFragmentedFrames/descriptor-first
+    sealed_linux_test.go:550: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveFragmentedFrames/descriptor-last
+    sealed_linux_test.go:550: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveFragmentedFrames/duplicate-later
+    sealed_linux_test.go:550: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+=== RUN   TestSealedReceiveFragmentedFrames/EOF-before-delimiter
+    sealed_linux_test.go:550: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- PASS: TestSealedReceiveFragmentedFrames (0.00s)
+    --- SKIP: TestSealedReceiveFragmentedFrames/descriptor-first (0.00s)
+    --- SKIP: TestSealedReceiveFragmentedFrames/descriptor-last (0.00s)
+    --- SKIP: TestSealedReceiveFragmentedFrames/duplicate-later (0.00s)
+    --- SKIP: TestSealedReceiveFragmentedFrames/EOF-before-delimiter (0.00s)
+=== RUN   TestSealedCaptureSourceFailuresCloseMemfd
+=== RUN   TestSealedCaptureSourceFailuresCloseMemfd/copy-error
+=== RUN   TestSealedCaptureSourceFailuresCloseMemfd/final-read-error
+=== RUN   TestSealedCaptureSourceFailuresCloseMemfd/no-final-EOF
+=== RUN   TestSealedCaptureSourceFailuresCloseMemfd/canceled-during-copy
+--- PASS: TestSealedCaptureSourceFailuresCloseMemfd (0.00s)
+    --- PASS: TestSealedCaptureSourceFailuresCloseMemfd/copy-error (0.00s)
+    --- PASS: TestSealedCaptureSourceFailuresCloseMemfd/final-read-error (0.00s)
+    --- PASS: TestSealedCaptureSourceFailuresCloseMemfd/no-final-EOF (0.00s)
+    --- PASS: TestSealedCaptureSourceFailuresCloseMemfd/canceled-during-copy (0.00s)
+=== RUN   TestSealedSnapshotReadOnlyDescriptorAndEscapedNewline
+    sealed_linux_test.go:668: BLOCKED: private Unix descriptor IPC unavailable: file file+net private test socket: getsockopt: operation not permitted
+--- SKIP: TestSealedSnapshotReadOnlyDescriptorAndEscapedNewline (0.00s)
+=== RUN   TestSealedTransportNilConnections
+--- PASS: TestSealedTransportNilConnections (0.00s)
+PASS
+ok  	virmill.local/core/internal/helper	0.006s

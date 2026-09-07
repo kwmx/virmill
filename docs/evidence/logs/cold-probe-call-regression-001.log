@@ -1,0 +1,7 @@
+gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)
+GNU objdump version 2.46.1-1.fc44
++ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fpie -mno-red-zone -maccumulate-outgoing-args -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -fno-plt -c /home/faisal/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/probe.c -o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-call-regression/probe-unsafe-fno-plt.o
+PASS rejected probe-unsafe-fno-plt.o: ELF GOT relocations are unsupported by this EFI recipe; do not use -fno-plt
++ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fpie -mno-red-zone -maccumulate-outgoing-args -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -c /home/faisal/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/probe.c -o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-call-regression/probe-reviewed.o
+PASS reviewed compiler flags contain no unsupported ELF GOT relocations
+PASS compile-only call-target regression; no EFI, guest, firmware or TPM execution

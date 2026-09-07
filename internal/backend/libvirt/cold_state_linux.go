@@ -30,14 +30,22 @@ func coldStateInspection(ctx context.Context, vm domain.VM) (domain.ColdStateIns
 	if vm.PersistentXML == "" {
 		return out, domain.Fail("UNSUPPORTED_CAPABILITY", "cold recovery inspection requires a persistent domain definition")
 	}
-	layout, err := InspectColdStateXML(vm.PersistentXML)
+	source, err := InspectColdSourceXML(vm.PersistentXML)
 	if err != nil {
 		return out, err
 	}
+	layout := source.State
 	if layout.VMID != vm.Key.UUID {
 		return out, domain.Fail("INVALID_STATE", "persistent XML identity differs from native VM identity")
 	}
 	out = domain.ColdStateInspection{Resource: vm.Key, State: vm.State, HasManagedSave: vm.HasManagedSave, Autostart: vm.Autostart, Fingerprint: vm.Fingerprint, Layout: layout, Warnings: []string{"Configuration observation only. No disk, NVRAM, TPM or secret bytes have been captured or verified."}}
+	out.Source = &source
+	if len(source.External) > 0 {
+		out.Warnings = append(out.Warnings, "Unresolved storage or runtime dependencies are listed in source.externalDependencies. A capture adapter must resolve every dependency before publishing a complete set.")
+	}
+	if source.Architecture == "" || source.Machine == "" {
+		out.Warnings = append(out.Warnings, "Native XML omits architecture or machine identity. Capture requires an independently resolved compatibility inventory.")
+	}
 	if vm.State != "stopped" {
 		out.Warnings = append(out.Warnings, "Complete auxiliary-state capture requires an approved shutdown and a confirmed stopped VM; do not copy live NVRAM or TPM files.")
 	}

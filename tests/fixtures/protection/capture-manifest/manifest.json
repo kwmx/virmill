@@ -1,0 +1,186 @@
+{
+  "apiVersion": "virmill/v1",
+  "kind": "ColdRecoveryPoint",
+  "version": 1,
+  "snapshotID": "11111111-2222-4333-8444-555555555555",
+  "operationID": "66666666-7777-4888-8999-aaaaaaaaaaaa",
+  "sourceVM": {
+    "providerID": "libvirt",
+    "connectionID": "qemu:///system",
+    "kind": "vm",
+    "resourceUUID": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"
+  },
+  "startedAt": "2026-09-07T00:00:00Z",
+  "finishedAt": "2026-09-07T00:00:01Z",
+  "sourceFingerprint": "76cf0fe03b4b0ea5e024b2da36de328ce5c29a55cdc7f31a7f5fdca80818912f",
+  "source": {
+    "state": {
+      "vmID": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+      "firmware": {
+        "loader": "/fixture/CODE.fd",
+        "loaderType": "pflash",
+        "loaderReadOnly": "yes",
+        "loaderSecure": "",
+        "loaderFormat": "raw",
+        "loaderStateless": "",
+        "nvram": {
+          "path": "/fixture/VARS.fd",
+          "format": "",
+          "template": "",
+          "templateFormat": ""
+        }
+      },
+      "tpm": {
+        "model": "tpm-crb",
+        "version": "2.0",
+        "sourceType": "file",
+        "sourcePath": "/fixture/tpm-state",
+        "persistentState": "yes",
+        "profile": "",
+        "profileSource": "",
+        "profileRemoveDisabled": "",
+        "encryptionSecret": ""
+      },
+      "secretReferences": []
+    },
+    "architecture": "x86_64",
+    "machine": "pc-q35-10.2",
+    "disks": [
+      {
+        "target": "sda",
+        "device": "disk",
+        "readOnly": false,
+        "empty": false,
+        "bus": "sata",
+        "source": {
+          "type": "file",
+          "format": "raw",
+          "file": "/fixture/system.raw",
+          "pool": "",
+          "volume": ""
+        },
+        "backing": [],
+        "backingTerminated": false
+      },
+      {
+        "target": "sdb",
+        "device": "disk",
+        "readOnly": false,
+        "empty": false,
+        "bus": "sata",
+        "source": {
+          "type": "file",
+          "format": "raw",
+          "file": "/fixture/data.raw",
+          "pool": "",
+          "volume": ""
+        },
+        "backing": [],
+        "backingTerminated": false
+      },
+      {
+        "target": "sdc",
+        "device": "cdrom",
+        "readOnly": true,
+        "empty": true,
+        "bus": "sata",
+        "source": {
+          "type": "file",
+          "format": "",
+          "file": "",
+          "pool": "",
+          "volume": ""
+        },
+        "backing": [],
+        "backingTerminated": false
+      }
+    ],
+    "externalDependencies": []
+  },
+  "stateBefore": "stopped",
+  "stateAfter": "stopped",
+  "hasManagedSave": false,
+  "nativeVersions": {
+    "libvirt": "synthetic-fixture",
+    "qemu": "synthetic-fixture",
+    "swtpm": "synthetic-fixture"
+  },
+  "members": [
+    {
+      "id": "system",
+      "kind": "disk",
+      "path": "system.fixture",
+      "sha256": "e962c7f03effc1d41a9bc31b6f6877d7088eebdcf7c550a93c03f840e4ff28dc",
+      "size": 50
+    },
+    {
+      "id": "data",
+      "kind": "disk",
+      "path": "data.fixture",
+      "sha256": "1b19ce744142287d66e4acfb458268468e8168d883d2bac39c9531ed9cbc461a",
+      "size": 26
+    },
+    {
+      "id": "xml",
+      "kind": "persistent-xml",
+      "path": "xml.fixture",
+      "sha256": "76cf0fe03b4b0ea5e024b2da36de328ce5c29a55cdc7f31a7f5fdca80818912f",
+      "size": 850
+    },
+    {
+      "id": "code",
+      "kind": "firmware-code",
+      "path": "code.fixture",
+      "sha256": "5de368339ec45ee1dc2fa5b130405d21477bfc8bfeb70c73015ea842fbe9e29e",
+      "size": 40
+    },
+    {
+      "id": "vars",
+      "kind": "nvram",
+      "path": "vars.fixture",
+      "sha256": "c7289e4a3f25011a788c4d641af9b1a5682384fcd63c948b43184fc920b4da5a",
+      "size": 21
+    },
+    {
+      "id": "tpm",
+      "kind": "tpm",
+      "path": "tpm.fixture",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "id": "inventory",
+      "kind": "auxiliary-inventory",
+      "path": "inventory.fixture",
+      "sha256": "b79b9b2e350a3dd11ebf764d18ff5552ed87af023a7b0cf3fa1fb013f868962b",
+      "size": 44
+    }
+  ],
+  "disks": [
+    {
+      "target": "sda",
+      "memberID": "system",
+      "format": "raw",
+      "independent": true
+    },
+    {
+      "target": "sdb",
+      "memberID": "data",
+      "format": "raw",
+      "independent": true
+    }
+  ],
+  "persistentXMLMember": "xml",
+  "effectiveXMLMember": "xml",
+  "firmwareCodeMember": "code",
+  "nvramMember": "vars",
+  "tpmMembers": [
+    {
+      "name": "state",
+      "memberID": "tpm"
+    }
+  ],
+  "auxiliaryInventoryMember": "inventory",
+  "secrets": [],
+  "independentlyRecoverable": true
+}

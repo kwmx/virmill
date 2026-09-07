@@ -1,0 +1,619 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/cold-recovery-point.schema.json",
+  "title": "Versioned cold recovery declaration; integrity is not capture provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "kind": {
+      "const": "ColdRecoveryPoint"
+    },
+    "version": {
+      "const": 1
+    },
+    "snapshotID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "operationID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "sourceVM": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "providerID": {
+          "const": "libvirt"
+        },
+        "connectionID": {
+          "enum": [
+            "qemu:///system",
+            "qemu:///session"
+          ]
+        },
+        "kind": {
+          "const": "vm"
+        },
+        "resourceUUID": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "required": [
+        "providerID",
+        "connectionID",
+        "kind",
+        "resourceUUID"
+      ]
+    },
+    "startedAt": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40
+    },
+    "finishedAt": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40
+    },
+    "sourceFingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "stateBefore": {
+      "const": "stopped"
+    },
+    "stateAfter": {
+      "const": "stopped"
+    },
+    "hasManagedSave": {
+      "const": false
+    },
+    "nativeVersions": {
+      "type": "object",
+      "minProperties": 2,
+      "maxProperties": 32,
+      "required": [
+        "libvirt",
+        "qemu"
+      ],
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "members": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/member"
+      },
+      "minItems": 1
+    },
+    "disks": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "memberID": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "format": {
+            "enum": [
+              "raw",
+              "qcow2"
+            ]
+          },
+          "independent": {
+            "const": true
+          }
+        },
+        "required": [
+          "target",
+          "memberID",
+          "format",
+          "independent"
+        ]
+      }
+    },
+    "persistentXMLMember": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "effectiveXMLMember": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "firmwareCodeMember": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "nvramMember": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "tpmMembers": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "memberID": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "name",
+          "memberID"
+        ]
+      }
+    },
+    "auxiliaryInventoryMember": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "secrets": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "memberID": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "external": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "uuid",
+          "memberID",
+          "external"
+        ]
+      }
+    },
+    "independentlyRecoverable": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "version",
+    "snapshotID",
+    "operationID",
+    "sourceVM",
+    "startedAt",
+    "finishedAt",
+    "sourceFingerprint",
+    "source",
+    "stateBefore",
+    "stateAfter",
+    "hasManagedSave",
+    "nativeVersions",
+    "members",
+    "disks",
+    "persistentXMLMember",
+    "effectiveXMLMember",
+    "firmwareCodeMember",
+    "nvramMember",
+    "tpmMembers",
+    "auxiliaryInventoryMember",
+    "secrets",
+    "independentlyRecoverable"
+  ],
+  "$defs": {
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "format": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "file": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "pool": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "volume": {
+          "type": "string",
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "type",
+        "format",
+        "file",
+        "pool",
+        "volume"
+      ]
+    },
+    "nvram": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "format": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "template": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "templateFormat": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "path",
+        "format",
+        "template",
+        "templateFormat"
+      ]
+    },
+    "firmware": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "loader": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "loaderType": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "loaderReadOnly": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "loaderSecure": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "loaderFormat": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "loaderStateless": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "nvram": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/nvram"
+            }
+          ]
+        }
+      },
+      "required": [
+        "loader",
+        "loaderType",
+        "loaderReadOnly",
+        "loaderSecure",
+        "loaderFormat",
+        "loaderStateless",
+        "nvram"
+      ]
+    },
+    "tpm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "sourceType": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "sourcePath": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "persistentState": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "profile": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "profileSource": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "profileRemoveDisabled": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "encryptionSecret": {
+          "type": "string",
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "model",
+        "version",
+        "sourceType",
+        "sourcePath",
+        "persistentState",
+        "profile",
+        "profileSource",
+        "profileRemoveDisabled",
+        "encryptionSecret"
+      ]
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vmID": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "firmware": {
+          "$ref": "#/$defs/firmware"
+        },
+        "tpm": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/tpm"
+            }
+          ]
+        },
+        "secretReferences": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        }
+      },
+      "required": [
+        "vmID",
+        "firmware",
+        "tpm",
+        "secretReferences"
+      ]
+    },
+    "disk": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "device": {
+          "enum": [
+            "disk",
+            "lun",
+            "cdrom",
+            "floppy"
+          ]
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "empty": {
+          "type": "boolean"
+        },
+        "bus": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "source": {
+          "$ref": "#/$defs/storage"
+        },
+        "backing": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/storage"
+          }
+        },
+        "backingTerminated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "target",
+        "device",
+        "readOnly",
+        "empty",
+        "bus",
+        "source",
+        "backing",
+        "backingTerminated"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/state"
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "machine": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "disks": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/disk"
+          }
+        },
+        "externalDependencies": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "target": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "kind",
+              "target"
+            ]
+          }
+        }
+      },
+      "required": [
+        "state",
+        "architecture",
+        "machine",
+        "disks",
+        "externalDependencies"
+      ]
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "kind": {
+          "enum": [
+            "disk",
+            "media",
+            "persistent-xml",
+            "effective-xml",
+            "firmware-code",
+            "nvram",
+            "tpm",
+            "secret",
+            "auxiliary-inventory"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 17592186044416
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "sha256",
+        "size"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "not": {
+                  "const": "tpm"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "size": {
+                "minimum": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

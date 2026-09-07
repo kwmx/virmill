@@ -1,0 +1,4 @@
+tests/fixtures/protection/cold-state-xml/bios-no-aux.xml validates
+tests/fixtures/protection/cold-state-xml/rom-tpm12-default.xml validates
+tests/fixtures/protection/cold-state-xml/uefi-tpm20-dir.xml validates
+tests/fixtures/protection/cold-state-xml/uefi-tpm20-file.xml validates

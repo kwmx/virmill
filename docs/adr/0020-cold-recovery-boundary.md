@@ -40,6 +40,11 @@ an authorized helper method. The typed executor, grant binding and publication
 still need implementation and native tests. No existing helper operation silently
 acquires this authority.
 
+Descriptor sealing fixes content, not the open-file-description offset shared
+through SCM_RIGHTS. Downstream consumers must use positional reads from the held
+snapshot and close the dedicated transport after its single response. The transport
+does not replace peer verification, grant checks or source/metadata binding.
+
 Restore is a separate reviewed operation. Stage and verify every artifact before
 definition or reference changes; validate native firmware/CPU/network support.
 Default new-identity isolated restore cannot silently reset TPM identity. Recovery
@@ -55,6 +60,25 @@ It cannot infer omitted disks, prove a complete capture, validate repository
 encryption, or claim a guest boot. The eventual complete-capture manifest needs a
 separate versioned source inventory and provenance contract; old declarations
 will not be reinterpreted as that stronger proof.
+
+The versioned `ColdRecoveryPoint` declaration now has a strict bundled schema,
+explicit source disk/backing inventory, per-target independent artifact mappings,
+firmware code and auxiliary members, secret dispositions and native versions.
+The existing CLI/TUI manifest checker dispatches this kind explicitly while
+preserving the legacy contract. It checks required declarations and held member
+integrity, never capture provenance. Even a self-declared complete inventory must
+retain false complete-capture, independent-recovery and boot verification flags.
+An auxiliary inventory artifact is a required input to later proof validation;
+its mere presence or checksum does not authenticate helper observations.
+
+The source-file utility holds an O_PATH inode pin and a QEMU permission guard.
+It checks the previously observed complete file identity before a readable open
+and transfers a duplicate of the guarded open file description. Closing a helper
+reference must never explicitly unlock that shared description; exclusion lasts
+until its final recipient closes. The caller still owes stopped-state, native
+resource mapping, root-policy and pre/post-copy checks. Cooperative QEMU locks
+do not stop arbitrary writers and do not create privileged read authority. This
+utility is not yet connected to a capture endpoint or durable publication job.
 
 An original UEFI guest fixture will record benign TPM NV state and distinguish
 first initialization from subsequent persistence. It runs only in an explicitly

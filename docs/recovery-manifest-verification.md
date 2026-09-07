@@ -1,4 +1,11 @@
-# Legacy recovery manifest verification
+# Recovery manifest verification
+
+`backup verify-manifest` accepts the unchanged legacy declaration below and the
+versioned [`ColdRecoveryPoint` declaration](cold-capture-manifest.md). An explicit
+`kind` selects the versioned contract; an unknown kind or version fails without
+falling back. Required fields cannot be inferred from missing booleans or null
+arrays. The versioned response also names `manifestKind` and `manifestVersion`.
+Both formats retain the same limits on what an integrity check can prove.
 
 The legacy `protection.Manifest` verifier checks the declaration and the bytes of
 **every declared member**. It does not establish that the manifest describes a
@@ -89,10 +96,12 @@ claim independent recovery. External secret references also prohibit that claim.
 The implementation reuses the repository's `fileidentity` adapter. It holds the
 root directory and opens members with `openat2`, preventing path escape, symbolic
 links, magic links and traversal into mounted subtrees beneath the root. The
-selected root itself may be a mounted backup filesystem. Readable opens include
-`O_NONBLOCK` and `O_NOCTTY`; a regular file replaced by a FIFO cannot wait for a
-writer during open. Every opened descriptor is checked as a regular file with
-exactly one link before reading. Symlinks, hard links, FIFOs, sockets, directories
+selected root itself may be a mounted backup filesystem. An `O_PATH` descriptor
+is first checked as an ordinary single-link file, before any readable open. The
+verified held inode is then reopened through `/proc/self/fd`, with `O_NONBLOCK`
+and `O_NOCTTY`, and its identity is checked again. This refuses a substituted
+special file before opening it for bytes. Missing proc access fails closed.
+Symlinks, hard links, FIFOs, sockets, directories
 and devices are not accepted as members or manifest documents.
 
 All declared member descriptors are held before any member is hashed and remain

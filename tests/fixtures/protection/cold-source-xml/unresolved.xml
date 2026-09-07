@@ -1,0 +1,33 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>cold-source-unresolved-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='MiB'>512</memory>
+  <vcpu>1</vcpu>
+  <os><type arch='x86_64' machine='q35'>hvm</type></os>
+  <devices>
+    <disk type='block' device='disk'>
+      <driver name='qemu' type='raw'/>
+      <source dev='/dev/fixture-storage'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <disk type='network' device='disk'>
+      <driver name='qemu' type='raw'/>
+      <source protocol='rbd' name='DO_NOT_ECHO_REMOTE_OBJECT'>
+        <host name='example.invalid' port='6789'/>
+        <auth username='DO_NOT_ECHO_USERNAME'>
+          <secret type='ceph' uuid='11111111-2222-4333-8444-555555555555'/>
+        </auth>
+      </source>
+      <target dev='vdb' bus='virtio'/>
+    </disk>
+    <filesystem type='mount' accessmode='passthrough'>
+      <source dir='/fixture/DO_NOT_ECHO_DIRECTORY'/>
+      <target dir='shared-data'/>
+    </filesystem>
+    <hostdev mode='subsystem' type='pci' managed='yes'>
+      <source><address domain='0x0000' bus='0x01' slot='0x00' function='0x0'/></source>
+    </hostdev>
+    <shmem name='DO_NOT_ECHO_SHMEM_NAME'><model type='ivshmem-plain'/><size unit='MiB'>4</size></shmem>
+  </devices>
+  <qemu:commandline><qemu:arg value='DO_NOT_ECHO_COMMAND_CONTENT'/></qemu:commandline>
+</domain>

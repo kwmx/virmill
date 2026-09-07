@@ -3,13 +3,14 @@ package domain
 import "context"
 
 type ColdStateInspection struct {
-	Resource       ResourceKey     `json:"resource"`
-	State          string          `json:"state"`
-	HasManagedSave bool            `json:"hasManagedSave"`
-	Autostart      bool            `json:"autostart"`
-	Fingerprint    string          `json:"fingerprint"`
-	Layout         ColdStateLayout `json:"layout"`
-	Warnings       []string        `json:"warnings"`
+	Resource       ResourceKey       `json:"resource"`
+	State          string            `json:"state"`
+	HasManagedSave bool              `json:"hasManagedSave"`
+	Autostart      bool              `json:"autostart"`
+	Fingerprint    string            `json:"fingerprint"`
+	Layout         ColdStateLayout   `json:"layout"`
+	Source         *ColdSourceLayout `json:"source,omitempty"`
+	Warnings       []string          `json:"warnings"`
 }
 
 type ColdStateInspector interface {

@@ -1,0 +1,37 @@
+<domain type='kvm'>
+  <name>cold-source-configuration-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='MiB'>512</memory>
+  <vcpu>1</vcpu>
+  <os><type arch='x86_64' machine='q35'>hvm</type></os>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='raw'/>
+      <source file='/fixture/cold/disk.raw'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <controller type='pci' index='0' model='pcie-root'/>
+    <controller type='pci' index='1' model='pcie-root-port'>
+      <model name='pcie-root-port'/>
+      <target chassis='1' port='0x10'/>
+      <alias name='pci.1'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
+    </controller>
+    <controller type='usb' index='0' model='qemu-xhci' ports='15'/>
+    <input type='tablet' bus='usb'/>
+    <input type='keyboard' bus='ps2'/>
+    <video>
+      <driver name='qemu'/>
+      <model type='virtio' heads='1' primary='yes'>
+        <acceleration accel3d='no'/>
+        <resolution x='1280' y='720'/>
+      </model>
+    </video>
+    <memballoon model='virtio' autodeflate='on'><stats period='10'/></memballoon>
+    <watchdog model='itco' action='reset'/>
+    <panic model='isa'/>
+    <hub type='usb'/>
+    <sound model='ich9'><codec type='duplex'/><audio id='1'/></sound>
+    <audio id='1' type='none'/>
+  </devices>
+</domain>

@@ -1,0 +1,24 @@
+<domain type='kvm'>
+  <name>cold-source-structured-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='MiB'>512</memory>
+  <vcpu>1</vcpu>
+  <os><type>hvm</type></os>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/fixture/cold/encrypted.qcow2'>
+        <encryption format='luks'><secret type='passphrase' uuid='99999999-aaaa-4bbb-8ccc-dddddddddddd'/></encryption>
+        <dataStore type='file'>
+          <format type='raw'/>
+          <source file='/fixture/cold/DO_NOT_ECHO_EXTERNAL_DATA'/>
+        </dataStore>
+      </source>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <disk type='volume' device='disk'>
+      <source pool='fixture-pool' volume='unit:0:0:1' mode='direct'/>
+      <target dev='vdb' bus='virtio'/>
+    </disk>
+  </devices>
+</domain>

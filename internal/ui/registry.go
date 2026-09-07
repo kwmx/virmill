@@ -50,7 +50,7 @@ var Actions = []Action{
 	{"network show", "network.get", "Networks", "Inspect live/persistent network configuration by stable UUID", "id", ""},
 	{"vm list", "inventory.list", "VMs", "List native libvirt inventory without adoption", "", ""},
 	{"vm show", "inventory.get", "VMs", "Inspect live and persistent state by UUID", "id", ""},
-	{"vm recovery inspect", "vm.recovery.inspect", "Protection", "Inspect configured firmware, NVRAM, TPM and secret dependencies without reading confidential state", "id", ""},
+	{"vm recovery inspect", "vm.recovery.inspect", "Protection", "Inspect configured disks, backing sources, firmware, TPM and unresolved dependencies without reading source bytes", "id", ""},
 	{"vm boot show", "vm.boot.get", "VMs", "Inspect separate live and next-boot device order using disk targets and NIC MACs", "id", ""},
 	{"vm create", "vm.create", "VMs", "Plan managed copies, optional NoCloud provisioning and a new powered-off VM from a prepared source", "id", "create"},
 	{"vm creation result", "vm.creation.result", "VMs", "Observe active progress and durable volume/definition stages by creation operation ID", "id", ""},

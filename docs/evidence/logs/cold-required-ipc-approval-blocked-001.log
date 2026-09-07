@@ -1,0 +1,4 @@
+Automatic approval review rejected the escalated clean-source required-IPC test before execution.
+Reason: Automatic approval review failed because its review service reported a usage limit. The requested command did not execute.
+This is an execution/approval infrastructure blocker, not a test failure or missing user authorization. No workaround or indirect unsandboxed execution was attempted.
+Sandboxed race tests ran separately; descriptor IPC tests visibly skip there because getsockopt is denied. The disposable pool was already created, but no UEFI/TPM guest was defined or started.

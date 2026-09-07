@@ -239,22 +239,11 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 				return nil, domain.Fail("INVALID_INPUT", "member root must be a nonempty path")
 			}
 		}
-		m, e := protection.ReadManifestContext(ctx, r.Path)
-		if e != nil {
-			return nil, e
+		report, err := protection.CheckManifestContext(ctx, r.Path, root)
+		if err != nil {
+			return nil, err
 		}
-		if root == "" {
-			e = m.Validate()
-		} else {
-			e = m.VerifyContext(ctx, root)
-		}
-		if e != nil {
-			return nil, e
-		}
-		if e = ctx.Err(); e != nil {
-			return nil, e
-		}
-		return map[string]any{"verification": "manifest-checked", "membersChecked": root != "", "completeCaptureVerified": false, "independentRecoveryVerified": false, "bootTested": false}, nil
+		return report, nil
 	default:
 		if extension, ok := s.Extensions[method]; ok {
 			return extension(ctx, uid, r)
