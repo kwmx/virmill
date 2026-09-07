@@ -11,6 +11,6 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest development checkpoint: [ISO preparation and read-only media](installation-slice.md).
-Its generated-file and simulated XML results remain separate from unverified native
-storage, installer execution and hardware behavior.
+Latest development checkpoint: [identity-bound NoCloud seeds](nocloud-slice.md).
+Its actual confined seed generation and synthetic recovery results remain separate
+from unverified cloud-init execution, guest routing, native storage and hardware.
