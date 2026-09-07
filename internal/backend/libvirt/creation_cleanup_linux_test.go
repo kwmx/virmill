@@ -147,6 +147,19 @@ func TestRealFileCleanupGraphWithNativeSimulatedInventory(t *testing.T) {
 		t.Fatal(err)
 	}
 	qemu("create", "-f", "qcow2", keepPath, "8M")
+	// An ISO-format inventory entry is raw media for the bounded image inspector.
+	media := addVolume("retained-media.iso", "iso")
+	defer media.Free()
+	mediaPath, err := media.GetPath()
+	if err != nil {
+		t.Fatal(err)
+	}
+	mediaBytes := make([]byte, 40*2048)
+	copy(mediaBytes[16*2048:], []byte{1, 'C', 'D', '0', '0', '1', 1})
+	if err = os.WriteFile(mediaPath, mediaBytes, 0600); err != nil {
+		t.Fatal(err)
+	}
+
 	proof, err := inspectCreationCleanup(context.Background(), c, "test:///default", target.Spec, candidates, true)
 	if err != nil {
 		t.Fatal(err)

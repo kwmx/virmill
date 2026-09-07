@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/prepared-installation.schema.json",
+  "title": "Prepared ISO media and verified empty disks (no guest boot claim)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "$ref": "prepared-import.schema.json#/properties/apiVersion"
+    },
+    "planID": {
+      "$ref": "prepared-import.schema.json#/properties/planID"
+    },
+    "operationID": {
+      "$ref": "prepared-import.schema.json#/properties/operationID"
+    },
+    "inputDigest": {
+      "$ref": "prepared-import.schema.json#/properties/inputDigest"
+    },
+    "createdAt": {
+      "$ref": "prepared-import.schema.json#/properties/createdAt"
+    },
+    "sourceSHA256": {
+      "$ref": "prepared-import.schema.json#/properties/sourceSHA256"
+    },
+    "system": {
+      "$ref": "prepared-import.schema.json#/properties/system"
+    },
+    "tool": {
+      "$ref": "prepared-import.schema.json#/properties/tool"
+    },
+    "disks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceID",
+          "sourcePath",
+          "path",
+          "format",
+          "virtualBytes",
+          "fileBytes",
+          "sha256",
+          "sourceChain",
+          "verification"
+        ],
+        "properties": {
+          "sourceID": {
+            "type": "string",
+            "maxLength": 2048
+          },
+          "sourcePath": {
+            "const": ""
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^disks/disk-[0-9]{3}\\.qcow2$"
+          },
+          "format": {
+            "const": "qcow2"
+          },
+          "virtualBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 549755813888
+          },
+          "fileBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 687211544576
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sourceChain": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "verification": {
+            "const": "virtual-size+qemu-check+zero-map"
+          }
+        }
+      }
+    },
+    "reportSHA256": {
+      "$ref": "prepared-import.schema.json#/properties/reportSHA256"
+    },
+    "vmDefined": {
+      "$ref": "prepared-import.schema.json#/properties/vmDefined"
+    },
+    "guestBootVerified": {
+      "$ref": "prepared-import.schema.json#/properties/guestBootVerified"
+    },
+    "kind": {
+      "const": "PreparedInstallation"
+    },
+    "descriptorSHA256": {
+      "const": ""
+    },
+    "sourceFiles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "identity": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "device": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              "inode": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 687211544576
+              },
+              "modifiedNS": {
+                "type": "string",
+                "pattern": "^-?[0-9]+$"
+              }
+            },
+            "required": [
+              "device",
+              "inode",
+              "size",
+              "modifiedNS"
+            ]
+          },
+          "changed": {
+            "type": "string",
+            "pattern": "^-?[0-9]+:[0-9]{9}$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "providedDigest": {
+            "type": "boolean"
+          },
+          "originalPath": {
+            "type": "string",
+            "pattern": "^/",
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "path",
+          "identity",
+          "changed",
+          "sha256",
+          "providedDigest",
+          "originalPath"
+        ]
+      }
+    },
+    "media": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sourceID": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+          },
+          "sourcePath": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "path": {
+            "const": "media/media-000.iso"
+          },
+          "format": {
+            "const": "raw"
+          },
+          "fileBytes": {
+            "type": "integer",
+            "minimum": 34816,
+            "maximum": 68719476736,
+            "multipleOf": 2048
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "recognition": {
+            "enum": [
+              "iso9660-volume-identifier",
+              "udf-volume-identifiers",
+              "iso9660+udf-volume-identifiers"
+            ]
+          },
+          "verification": {
+            "const": "sha256+sector-alignment+volume-recognition"
+          }
+        },
+        "required": [
+          "sourceID",
+          "sourcePath",
+          "path",
+          "format",
+          "fileBytes",
+          "sha256",
+          "recognition",
+          "verification"
+        ]
+      }
+    }
+  },
+  "required": [
+    "apiVersion",
+    "planID",
+    "operationID",
+    "inputDigest",
+    "createdAt",
+    "sourceSHA256",
+    "system",
+    "tool",
+    "disks",
+    "reportSHA256",
+    "vmDefined",
+    "guestBootVerified",
+    "kind",
+    "descriptorSHA256",
+    "sourceFiles",
+    "media"
+  ]
+}

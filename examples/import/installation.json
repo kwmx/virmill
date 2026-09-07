@@ -1,0 +1,15 @@
+{
+  "offlineSources": true,
+  "destination": "/absolute/private/prepared-installation",
+  "mediaID": "installer",
+  "disks": [
+    {
+      "id": "boot",
+      "virtualBytes": 21474836480
+    },
+    {
+      "id": "data",
+      "virtualBytes": 10737418240
+    }
+  ]
+}

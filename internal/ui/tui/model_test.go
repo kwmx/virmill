@@ -150,6 +150,36 @@ func TestSelectedDiskPreparationFormUsesSharedService(t *testing.T) {
 	}
 }
 
+func TestInstallationPreparationFormUsesSharedService(t *testing.T) {
+	r := &recorder{}
+	m := New(r, "qemu:///system")
+	for i, name := range sections {
+		if name == "VMs" {
+			m.Section = i
+		}
+	}
+	found := false
+	for i, a := range m.actions() {
+		if a.Command == "import prepare-install" {
+			m.Selected, found = i, true
+		}
+	}
+	if !found {
+		t.Fatal("installation preparation inaccessible in TUI")
+	}
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = model.(Model)
+	m.Input = `{"path":"/tmp/installer.iso","input":{"destination":"/tmp/private/prepared","offlineSources":true,"mediaID":"installer","disks":[{"id":"boot","virtualBytes":16777216}]}}`
+	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("installation form not submitted")
+	}
+	cmd()
+	if r.method != "import.prepare-install" || r.request.Path != "/tmp/installer.iso" || r.request.Input["mediaID"] != "installer" {
+		t.Fatal("installation form lost input", r)
+	}
+}
+
 func TestStorageAndNetworkInventoryAreReachableWithoutApproval(t *testing.T) {
 	for _, test := range []struct{ section, method string }{{"Storage", "storage.pool.list"}, {"Networks", "network.list"}} {
 		r := &recorder{}

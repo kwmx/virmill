@@ -76,6 +76,16 @@ type PreparedDisk struct {
 	SourceChain  []image.Info `json:"sourceChain"`
 	Verification string       `json:"verification"`
 }
+type PreparedMedia struct {
+	SourceID     string `json:"sourceID"`
+	SourcePath   string `json:"sourcePath"`
+	Path         string `json:"path"`
+	Format       string `json:"format"`
+	FileBytes    int64  `json:"fileBytes"`
+	SHA256       string `json:"sha256"`
+	Recognition  string `json:"recognition"`
+	Verification string `json:"verification"`
+}
 type Artifact struct {
 	APIVersion        string          `json:"apiVersion"`
 	Kind              string          `json:"kind"`
@@ -92,11 +102,15 @@ type Artifact struct {
 	VMDefined         bool            `json:"vmDefined"`
 	GuestBootVerified bool            `json:"guestBootVerified"`
 	SourceFiles       []DiskSetFile   `json:"sourceFiles,omitempty"`
+	Media             []PreparedMedia `json:"media,omitempty"`
 }
 
 func Register(appService *app.Service) {
 	s := &Service{Engine: appService.Engine, Store: appService.Engine.Store, Tool: image.Tool{}}
 	disks := &DiskSetService{Service: s, FilesTool: image.Tool{}}
+	install := &InstallationService{Service: s, EmptyTool: image.Tool{}}
+	appService.Engine.Handlers["import.prepare-install"] = install
+	appService.Extensions["import.prepare-install"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return install.Plan(ctx, uid, r) }
 	appService.Engine.Handlers["import.prepare-disks"] = disks
 	appService.Extensions["import.prepare-disks"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return disks.Plan(ctx, uid, r) }
 	appService.Engine.Handlers["import.prepare"] = s
@@ -112,6 +126,9 @@ func Register(appService *app.Service) {
 		}
 		if p.ActorUID != uid {
 			return nil, domain.Fail("PERMISSION_DENIED", "not your preparation operation")
+		}
+		if p.Operation == "import.prepare-install" {
+			return install.Result(ctx, uid, r.ID)
 		}
 		if p.Operation == "import.prepare-disks" {
 			return disks.Result(ctx, uid, r.ID)
@@ -777,24 +794,31 @@ func Verify(ctx context.Context, directory string) (Artifact, error) {
 	if artifact.Kind == "PreparedDiskSet" {
 		schema = "prepared-disk-set"
 	}
+	if artifact.Kind == "PreparedInstallation" {
+		schema = "prepared-installation"
+	}
 	if err = validation.Schema(schema, b); err != nil {
 		return artifact, err
 	}
-	if artifact.APIVersion != domain.APIVersion || (artifact.Kind != "PreparedImport" && artifact.Kind != "PreparedDiskSet") || artifact.PlanID == "" || artifact.VMDefined || artifact.GuestBootVerified || len(artifact.Disks) == 0 || len(artifact.Disks) > 64 {
+	if artifact.APIVersion != domain.APIVersion || (artifact.Kind != "PreparedImport" && artifact.Kind != "PreparedDiskSet" && artifact.Kind != "PreparedInstallation") || artifact.PlanID == "" || artifact.VMDefined || artifact.GuestBootVerified || len(artifact.Disks) == 0 || len(artifact.Disks) > 64 {
 		return artifact, domain.Fail("INVALID_INPUT", "invalid prepared-import manifest")
 	}
 	files := map[string]struct {
 		digest string
 		size   int64
 	}{"source.ovf": {artifact.DescriptorSHA256, importer.DescriptorLimit}, "import-report.json": {artifact.ReportSHA256, wire.MaxFrame}}
-	if artifact.Kind == "PreparedDiskSet" {
+	if artifact.Kind == "PreparedDiskSet" || artifact.Kind == "PreparedInstallation" {
 		digest, err := sourceSetDigest(artifact.SourceFiles)
 		if err != nil || digest != artifact.SourceSHA256 {
 			return artifact, domain.Fail("SOURCE_CHANGED", "disk-set source proof digest differs from its manifest")
 		}
 		delete(files, "source.ovf")
 		delete(files, "import-report.json")
-		files["disk-source-report.json"] = struct {
+		reportName := "disk-source-report.json"
+		if artifact.Kind == "PreparedInstallation" {
+			reportName = "installation-report.json"
+		}
+		files[reportName] = struct {
 			digest string
 			size   int64
 		}{artifact.ReportSHA256, wire.MaxFrame}
@@ -807,6 +831,15 @@ func Verify(ctx context.Context, directory string) (Artifact, error) {
 			digest string
 			size   int64
 		}{disk.SHA256, disk.FileBytes}
+	}
+	for i, media := range artifact.Media {
+		if media.Path != fmt.Sprintf("media/media-%03d.iso", i) || media.Format != "raw" || media.FileBytes < 17*2048 || media.FileBytes > 64<<30 || media.FileBytes%2048 != 0 {
+			return artifact, domain.Fail("INVALID_INPUT", "invalid prepared installation media")
+		}
+		files[media.Path] = struct {
+			digest string
+			size   int64
+		}{media.SHA256, media.FileBytes}
 	}
 	for name, expected := range files {
 		f, err := r.OpenFile(name, os.O_RDONLY|unix.O_NOFOLLOW|unix.O_NONBLOCK, 0)

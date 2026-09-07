@@ -100,7 +100,7 @@ func (f *fixtureBackend) PopulateVolume(ctx context.Context, uri string, v domai
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.volumes[v.Intent.Name] = append([]byte(nil), b...)
-	if fail == "populate" && count == 2 {
+	if (fail == "populate" && count == 2) || (fail == "populate-media" && v.Intent.ContentType == "cdrom-iso") {
 		return errors.New("synthetic upload failure after write")
 	}
 	return nil

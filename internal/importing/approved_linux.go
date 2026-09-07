@@ -24,11 +24,18 @@ func Approved(ctx context.Context, db *store.Store, uid uint32, operationID stri
 	if err != nil {
 		return empty, "", err
 	}
-	if p.ActorUID != uid || (p.Operation != "import.prepare" && p.Operation != "import.prepare-disks") || j.State != "succeeded" {
+	if p.ActorUID != uid || (p.Operation != "import.prepare" && p.Operation != "import.prepare-disks" && p.Operation != "import.prepare-install") || j.State != "succeeded" {
 		return empty, "", domain.Fail("INVALID_INPUT", "source must be your successful local import preparation operation")
 	}
 	var destination, kind string
-	if p.Operation == "import.prepare-disks" {
+	if p.Operation == "import.prepare-install" {
+		var in installationInput
+		if err = wire.Decode(input, &in); err != nil {
+			return empty, "", err
+		}
+		destination = in.Destination
+		kind = "PreparedInstallation"
+	} else if p.Operation == "import.prepare-disks" {
 		var in diskSetInput
 		if err = wire.Decode(input, &in); err != nil {
 			return empty, "", err

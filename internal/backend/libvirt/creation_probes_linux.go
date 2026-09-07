@@ -50,6 +50,17 @@ func probeCreationDevices(ctx context.Context, emulator string, s domain.Creatio
 			models["virtio-scsi-pci"] = true
 		}
 	}
+	for _, m := range s.Media {
+		switch m.Bus {
+		case "sata":
+			models["ide-cd"] = true
+		case "scsi":
+			models["virtio-scsi-pci"] = true
+			models["scsi-cd"] = true
+		default:
+			return "", errors.New("unknown media bus probe")
+		}
+	}
 	names := []string{}
 	for name := range models {
 		names = append(names, name)

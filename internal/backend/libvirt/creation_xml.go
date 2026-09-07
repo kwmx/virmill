@@ -34,7 +34,7 @@ func diskSuffix(n int) string {
 // existing domain or replace XML containing unknown configuration.
 func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, binding string) (string, error) {
 	s := t.Spec
-	if len(volumes) != len(s.Disks) {
+	if len(volumes) != len(s.Disks)+len(s.Media) {
 		return "", errors.New("complete volume set required")
 	}
 	var b strings.Builder
@@ -66,6 +66,14 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 			scsi++
 		}
 	}
+	for _, m := range s.Media {
+		if m.Bus == "sata" {
+			sata++
+		}
+		if m.Bus == "scsi" {
+			scsi++
+		}
+	}
 	if sata > 0 {
 		b.WriteString(`<controller type="sata" index="0"/>`)
 	}
@@ -75,7 +83,7 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 	sata, scsi = 0, 0
 	for i, d := range s.Disks {
 		v := volumes[i]
-		if v.Intent.SourceID != d.SourceID || v.Intent.PoolID != s.PoolID {
+		if v.Intent.SourceID != d.SourceID || v.Intent.PoolID != s.PoolID || v.Intent.ContentType != "" {
 			return "", errors.New("volume/controller mapping differs")
 		}
 		prefix := "sd"
@@ -92,6 +100,24 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 			scsi++
 		}
 		b.WriteString(`</disk>`)
+	}
+	for i, m := range s.Media {
+		v := volumes[len(s.Disks)+i]
+		if v.Intent.SourceID != m.SourceID || v.Intent.PoolID != s.PoolID || v.Intent.ContentType != "cdrom-iso" || (m.Bus != "sata" && m.Bus != "scsi") {
+			return "", errors.New("read-only media mapping differs")
+		}
+		fmt.Fprintf(&b, `<disk type="volume" device="cdrom"><driver name="qemu" type="raw" cache="writethrough" error_policy="stop"/><source pool="%s" volume="%s"/><target dev="sd%s" bus="%s"/><readonly/>`, xmlText(t.PoolName), xmlText(v.Intent.Name), diskSuffix(len(s.Disks)+i), xmlText(m.Bus))
+		if m.BootOrder > 0 {
+			fmt.Fprintf(&b, `<boot order="%d"/>`, m.BootOrder)
+		}
+		unit := scsi
+		if m.Bus == "sata" {
+			unit = sata
+			sata++
+		} else {
+			scsi++
+		}
+		fmt.Fprintf(&b, `<address type="drive" controller="0" bus="0" target="0" unit="%d"/></disk>`, unit)
 	}
 	networks := map[string]string{}
 	for _, n := range t.Networks {
@@ -173,7 +199,19 @@ func verifyVolumeMetadata(data string, expected domain.VolumeIntent) error {
 	if err != nil {
 		return err
 	}
-	if (attr(capacity, "unit") != "bytes" && attr(capacity, "unit") != "") || value != expected.VirtualBytes || attr(child(target, "format"), "type") != "qcow2" {
+	format := "qcow2"
+	observedFormat := attr(child(target, "format"), "type")
+	if expected.ContentType == "cdrom-iso" {
+		format = "raw"
+		// libvirt may identify ISO9660 bytes as iso after pool refresh. Both
+		// describe the same raw CD-ROM bytes; SHA-256 and exact size still bind them.
+		if observedFormat == "iso" {
+			observedFormat = "raw"
+		}
+	} else if expected.ContentType != "" {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "unknown volume content type")
+	}
+	if (attr(capacity, "unit") != "bytes" && attr(capacity, "unit") != "") || value != expected.VirtualBytes || observedFormat != format {
 		return domain.Fail("RECOVERY_REQUIRED", "uploaded volume format or capacity differs")
 	}
 	for _, n := range root.children {

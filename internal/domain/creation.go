@@ -22,6 +22,14 @@ type CreationDisk struct {
 	Bus       string `json:"bus"`
 	BootOrder int    `json:"bootOrder"`
 }
+
+// CreationMedia is an independent read-only ISO volume. BootOrder 0 means the
+// media is attached without becoming a boot candidate (for example a NoCloud seed).
+type CreationMedia struct {
+	SourceID  string `json:"sourceID"`
+	Bus       string `json:"bus"`
+	BootOrder int    `json:"bootOrder"`
+}
 type CreationNIC struct {
 	ID          string `json:"id"`
 	SourceIndex int    `json:"sourceIndex"`
@@ -43,6 +51,7 @@ type CreationSpec struct {
 	Clock        string           `json:"clock"`
 	Graphics     string           `json:"graphics"`
 	Disks        []CreationDisk   `json:"disks"`
+	Media        []CreationMedia  `json:"media,omitempty"`
 	NICs         []CreationNIC    `json:"nics"`
 }
 type CreationTarget struct {
@@ -57,6 +66,7 @@ type CreationTarget struct {
 	FirmwareDigest     string           `json:"firmwareDigest"`
 }
 type VolumeIntent struct {
+	ContentType  string `json:"contentType,omitempty"` // empty: legacy qcow2 disk; cdrom-iso: raw read-only media
 	PoolID       string `json:"poolID"`
 	Name         string `json:"name"`
 	SourceID     string `json:"sourceID"`

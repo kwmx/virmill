@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/installation-preparation-input.schema.json",
+  "title": "Explicit ISO installation preparation with independent blank disks",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "offlineSources": {
+      "const": true
+    },
+    "destination": {
+      "type": "string",
+      "pattern": "^/",
+      "maxLength": 4096
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "mediaID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+    },
+    "disks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+          },
+          "virtualBytes": {
+            "type": "integer",
+            "minimum": 1048576,
+            "maximum": 549755813888,
+            "multipleOf": 512
+          }
+        },
+        "required": [
+          "id",
+          "virtualBytes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "offlineSources",
+    "destination",
+    "mediaID",
+    "disks"
+  ]
+}

@@ -154,6 +154,22 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		in.RequiredBytes += bound(uint64(source.VirtualBytes))
 		in.Volumes = append(in.Volumes, domain.VolumeIntent{PoolID: spec.PoolID, Name: fmt.Sprintf("virmill-%s-disk-%03d.qcow2", spec.UUID, i), SourceID: d.SourceID, VirtualBytes: uint64(source.VirtualBytes), FileBytes: uint64(source.FileBytes), SHA256: source.SHA256})
 	}
+	if len(spec.Media) != len(artifact.Media) {
+		return empty, domain.Fail("INVALID_INPUT", "map every prepared read-only medium exactly once")
+	}
+	media := map[string]importing.PreparedMedia{}
+	for _, m := range artifact.Media {
+		media[m.SourceID] = m
+	}
+	for i, m := range spec.Media {
+		source, ok := media[m.SourceID]
+		if !ok || seen[m.SourceID] || source.Format != "raw" {
+			return empty, domain.Fail("INVALID_INPUT", "media selection is incomplete, duplicated or not an independent ISO")
+		}
+		seen[m.SourceID] = true
+		in.RequiredBytes += uint64(source.FileBytes)
+		in.Volumes = append(in.Volumes, domain.VolumeIntent{ContentType: "cdrom-iso", PoolID: spec.PoolID, Name: fmt.Sprintf("virmill-%s-media-%03d.iso", spec.UUID, i), SourceID: m.SourceID, VirtualBytes: uint64(source.FileBytes), FileBytes: uint64(source.FileBytes), SHA256: source.SHA256})
+	}
 	nics := 0
 	for _, item := range artifact.System.Items {
 		if item.ResourceType == "10" {
@@ -197,6 +213,10 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 	if len(spec.NICs) > 0 {
 		acks = append(acks, "network-attachment")
 		risks = append(risks, "Selected existing networks may expose the guest or bridge segments; guest route/policy configuration is a separate workflow")
+	}
+	if len(spec.Media) > 0 {
+		acks = append(acks, "attach-readonly-media")
+		risks = append(risks, "Copies all selected media into independent managed read-only CD-ROM volumes; boot order is explicit and no unattended installation is inferred")
 	}
 	return s.Engine.Plan(ctx, uid, r.Connection, "vm.create", resources, before, in, []domain.Step{step}, acks, risks)
 }
@@ -314,9 +334,12 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		return err
 	}
 	defer root.Close()
-	sources := map[string]importing.PreparedDisk{}
+	sources := map[string]string{}
 	for _, d := range in.Artifact.Disks {
-		sources[d.SourceID] = d
+		sources[d.SourceID] = d.Path
+	}
+	for _, m := range in.Artifact.Media {
+		sources[m.SourceID] = m.Path
 	}
 	var written uint64
 	for i, v := range in.Volumes {
@@ -356,10 +379,10 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		if allocationErr != nil {
 			return allocationErr
 		}
-		if err = operations.Note(ctx, s.Store, "Intent persisted: upload verified source disk "+v.SourceID+" into its new volume"); err != nil {
+		if err = operations.Note(ctx, s.Store, "Intent persisted: upload verified source artifact "+v.SourceID+" into its new volume"); err != nil {
 			return err
 		}
-		f, err := root.OpenFile(sources[v.SourceID].Path, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+		f, err := root.OpenFile(sources[v.SourceID], os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
 		if err != nil {
 			return err
 		}

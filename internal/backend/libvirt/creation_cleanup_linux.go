@@ -430,14 +430,16 @@ func cleanupGraph(ctx context.Context, c *native.Connect, uri string, candidates
 			f.Close()
 			return "", domain.Fail("RESOURCE_BUSY", "another pool path aliases a cleanup file generation")
 		}
-		// A stale raw declaration must not hide a qcow2 backing edge.
+		// ISO pool metadata still denotes raw CD-ROM bytes for qemu-img.
+		format := cleanupImageFormat(v.format)
+		// A stale raw/ISO declaration must not hide a qcow2 backing edge.
 		var magic [4]byte
 		n, _ := f.ReadAt(magic[:], 0)
-		if v.format == "raw" && n == 4 && string(magic[:]) == "QFI\xfb" {
+		if format == "raw" && n == 4 && string(magic[:]) == "QFI\xfb" {
 			f.Close()
 			return "", domain.Fail("SOURCE_CHANGED", "native raw declaration masks a qcow2 header")
 		}
-		image, identity, e := (imageTool.Tool{}).InspectFile(ctx, f, workspace, v.format)
+		image, identity, e := (imageTool.Tool{}).InspectFile(ctx, f, workspace, format)
 		f.Close()
 		if e != nil {
 			return "", e
@@ -456,7 +458,7 @@ func cleanupGraph(ctx context.Context, c *native.Connect, uri string, candidates
 		if selected[backing] {
 			return "", domain.Fail("RESOURCE_BUSY", "retained image references a cleanup volume: "+path)
 		}
-		if backing != "" && (volumes[backing].path == "" || volumes[backing].format != image.BackingFormat) {
+		if backing != "" && (volumes[backing].path == "" || cleanupImageFormat(volumes[backing].format) != image.BackingFormat) {
 			return "", domain.Fail("RECOVERY_REQUIRED", "missing, external or ambiguous backing dependency: "+path)
 		}
 		var stored struct {
@@ -570,3 +572,12 @@ func checkCleanupXML(document string, selected map[string]bool, volumes map[stri
 }
 
 var _ domain.CreationCleanupBackend = (*Provider)(nil)
+
+// Keep the original native XML/format in the graph proof; normalize only the
+// fixed image inspector format and backing-edge equivalence.
+func cleanupImageFormat(format string) string {
+	if format == "iso" {
+		return "raw"
+	}
+	return format
+}

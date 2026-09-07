@@ -175,7 +175,7 @@
               "bootOrder": {
                 "type": "integer",
                 "minimum": 1,
-                "maximum": 64
+                "maximum": 68
               }
             }
           }
@@ -222,9 +222,40 @@
               }
             }
           }
+        },
+        "media": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceID",
+              "bus",
+              "bootOrder"
+            ],
+            "properties": {
+              "sourceID": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "bus": {
+                "enum": [
+                  "sata",
+                  "scsi"
+                ]
+              },
+              "bootOrder": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 68
+              }
+            }
+          }
         }
       }
     }
   }
 }
-

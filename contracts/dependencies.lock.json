@@ -176,6 +176,13 @@
       "package": "qemu-img-10.2.2-1.fc44.x86_64",
       "sha256": "628a2c8566346bc9bc9fa9610d7245f3f18ef2a80f54caf2c3ad501b3576da11",
       "purpose": "Generated-file QEMU writer permission fixtures; no guest execution"
+    },
+    {
+      "path": "/usr/bin/genisoimage",
+      "version": "genisoimage 1.1.11 (Linux)",
+      "package": "genisoimage-1.1.11-63.fc44.x86_64",
+      "sha256": "73444004f0e95190264cd7e098108e760960cf63ba833b669487b01d5bb83e99",
+      "purpose": "Generated nonbootable ISO9660 fixture creation only; not a runtime dependency or guest support claim"
     }
   ],
   "qemuSourceLockProtocol": {

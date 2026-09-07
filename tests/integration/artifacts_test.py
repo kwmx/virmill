@@ -85,6 +85,7 @@ class Artifacts(unittest.TestCase):
                 if os.environ.get('VIRMILL_TEST_DISK_TOOLS') == '1':
                     self.prepare_fixture_through_cli(root, env, command)
                     self.prepare_disk_fixture_through_cli(root, env, command)
+                    self.prepare_installation_through_cli(root, env, command)
             finally:
                 daemon.terminate()
                 daemon.wait(timeout=5)
@@ -201,6 +202,43 @@ class Artifacts(unittest.TestCase):
         print('Native CLI/daemon selected-file preparation: source hashes',originals,
               'output disk hashes',[d['sha256'] for d in artifact['disks']],
               '; private receipt accepted by creation; native test-URI refused; no host storage effect or VM boot')
+
+    def prepare_installation_through_cli(self, root, env, command):
+        source_dir = root/'iso-source'
+        source_dir.mkdir(mode=0o700)
+        (source_dir/'README.txt').write_text('Virmill generated nonbootable installation fixture\n')
+        source = root/'installer.iso'
+        subprocess.run(['/usr/bin/genisoimage','-quiet','-V','VIRMILL_TEST','-o',str(source),str(source_dir)],check=True,capture_output=True)
+        original = hashlib.sha256(source.read_bytes()).hexdigest()
+        def invoke(*args):
+            result = subprocess.run(command+list(args)+['--output','json','--non-interactive'],cwd=root,env=env,check=True,capture_output=True,text=True,timeout=30)
+            response = json.loads(result.stdout)
+            self.assertIsNone(response['error'])
+            return response['data']
+        inputs = dict(destination='./prepared-installation',offlineSources=True,sha256=original,mediaID='installer',disks=[dict(id='boot',virtualBytes=1048576),dict(id='data',virtualBytes=2097152)])
+        plan = invoke('import','prepare-install','./installer.iso','--input',json.dumps(inputs),'--plan')
+        self.assertEqual(plan['review']['destination'],str(root/'prepared-installation'))
+        self.assertFalse((root/'prepared-installation').exists())
+        job = invoke('plan','apply',plan['planID'],'--digest',plan['planDigest'],'--idempotency-key','installation-fixture','--ack','write-import-artifacts','--ack','offline-source-files','--wait')
+        self.assertEqual(job['state'],'succeeded')
+        artifact = invoke('import','verify','./prepared-installation')
+        self.assertEqual(artifact,invoke('import','result',job['operationID'])['artifact'])
+        self.assertEqual(artifact['kind'],'PreparedInstallation')
+        self.assertEqual(artifact['media'][0]['sha256'],original)
+        self.assertEqual([d['virtualBytes'] for d in artifact['disks']],[1048576,2097152])
+        self.assertTrue(all(d['verification']=='virtual-size+qemu-check+zero-map' and d['sourceChain']==[] for d in artifact['disks']))
+        self.assertFalse(artifact['vmDefined'])
+        self.assertFalse(artifact['guestBootVerified'])
+        self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(),original)
+        creation = json.loads((ROOT/'examples/creation/prepared-installation.json').read_text())
+        before = invoke('operation','list')
+        rejected = subprocess.run(command+['vm','create',job['operationID'],'--connection','test:///default','--input',json.dumps(creation),'--plan','--output','json','--non-interactive'],cwd=root,env=env,capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(rejected.returncode,0)
+        error = json.loads(rejected.stdout)['error']
+        self.assertEqual(error['code'],'UNSUPPORTED_CAPABILITY')
+        self.assertIn('only explicit local qemu:///system or qemu:///session',error['message'])
+        self.assertEqual(invoke('operation','list'),before)
+        print('Native CLI/daemon ISO preparation: copied media SHA-256',original,'empty disk hashes',[d['sha256'] for d in artifact['disks']],'; approved source reaches native test-URI refusal; no host storage mutation or guest boot')
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

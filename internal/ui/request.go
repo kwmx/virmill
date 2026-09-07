@@ -34,7 +34,7 @@ func NormalizeRequest(method string, r app.Request) (app.Request, error) {
 		keys = []string{"sdkDirectory", "signingKeyPath", "output"}
 	case "backup.verify-manifest":
 		keys = []string{"root"}
-	case "import.prepare", "import.prepare-disks":
+	case "import.prepare", "import.prepare-disks", "import.prepare-install":
 		keys = []string{"destination"}
 	}
 	for _, key := range keys {

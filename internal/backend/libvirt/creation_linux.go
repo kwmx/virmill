@@ -25,6 +25,7 @@ import (
 
 var uuidPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 var volumePattern = regexp.MustCompile(`^virmill-[0-9a-f-]{36}-disk-[0-9]{3}\.qcow2$`)
+var mediaVolumePattern = regexp.MustCompile(`^virmill-[0-9a-f-]{36}-media-[0-9]{3}\.iso$`)
 var digestPattern = regexp.MustCompile(`^[0-9a-f]{64}$`)
 var macPattern = regexp.MustCompile(`^[0-9a-f]{2}(:[0-9a-f]{2}){5}$`)
 
@@ -59,14 +60,20 @@ func validateCreationSpec(s domain.CreationSpec) error {
 	} else {
 		return domain.Fail("INVALID_INPUT", "explicit bios or uefi firmware required")
 	}
-	if len(s.Disks) < 1 || len(s.Disks) > 64 || len(s.NICs) > 32 {
-		return domain.Fail("INVALID_INPUT", "creation requires 1–64 disks and at most 32 NICs")
+	if len(s.Disks) < 1 || len(s.Disks) > 64 || len(s.Media) > 4 || len(s.NICs) > 32 {
+		return domain.Fail("INVALID_INPUT", "creation requires 1–64 disks, at most four read-only media and at most 32 NICs")
+	}
+	bootCount := len(s.Disks)
+	for _, m := range s.Media {
+		if m.BootOrder > 0 {
+			bootCount++
+		}
 	}
 	disks := map[string]bool{}
 	orders := map[int]bool{}
 	sata := 0
 	for _, d := range s.Disks {
-		if d.SourceID == "" || disks[d.SourceID] || orders[d.BootOrder] || d.BootOrder < 1 || d.BootOrder > len(s.Disks) {
+		if d.SourceID == "" || disks[d.SourceID] || orders[d.BootOrder] || d.BootOrder < 1 || d.BootOrder > bootCount {
 			return domain.Fail("INVALID_INPUT", "disk IDs and complete boot ordering must be unique")
 		}
 		disks[d.SourceID] = true
@@ -77,6 +84,22 @@ func validateCreationSpec(s domain.CreationSpec) error {
 		case "virtio", "scsi":
 		default:
 			return domain.Fail("INVALID_INPUT", "unsupported disk bus")
+		}
+	}
+	for _, m := range s.Media {
+		if m.SourceID == "" || disks[m.SourceID] || m.BootOrder < 0 || m.BootOrder > bootCount || (m.BootOrder > 0 && orders[m.BootOrder]) {
+			return domain.Fail("INVALID_INPUT", "media IDs and boot ordering must be unique across disks and media")
+		}
+		disks[m.SourceID] = true
+		if m.BootOrder > 0 {
+			orders[m.BootOrder] = true
+		}
+		switch m.Bus {
+		case "sata":
+			sata++
+		case "scsi":
+		default:
+			return domain.Fail("INVALID_INPUT", "read-only media require SATA or SCSI")
 		}
 	}
 	if sata > 6 {
@@ -209,6 +232,11 @@ func checkCaps(c domainCaps, s domain.CreationSpec) error {
 	for _, d := range s.Disks {
 		if c.Devices.Disk.Supported != "yes" || !enumHas(c.Devices.Disk.Enums, "bus", d.Bus) {
 			return domain.Fail("UNSUPPORTED_CAPABILITY", "requested disk bus is unavailable")
+		}
+	}
+	for _, m := range s.Media {
+		if c.Devices.Disk.Supported != "yes" || !enumHas(c.Devices.Disk.Enums, "diskDevice", "cdrom") || !enumHas(c.Devices.Disk.Enums, "bus", m.Bus) {
+			return domain.Fail("UNSUPPORTED_CAPABILITY", "requested CD-ROM device/bus is not positively advertised")
 		}
 	}
 	if len(s.NICs) > 0 && c.Devices.Interface.Supported != "yes" {
@@ -397,7 +425,11 @@ func (p *Provider) PreflightCreation(ctx context.Context, uri string, s domain.C
 }
 
 func validateVolume(v domain.VolumeIntent) error {
-	if !uuidPattern.MatchString(v.PoolID) || !volumePattern.MatchString(v.Name) || v.VirtualBytes < 1 || v.VirtualBytes > 512<<30 || v.FileBytes < 1 || v.FileBytes > v.VirtualBytes+v.VirtualBytes/4+(16<<20) || !digestPattern.MatchString(v.SHA256) {
+	validContent := v.ContentType == "" && volumePattern.MatchString(v.Name)
+	if v.ContentType == "cdrom-iso" {
+		validContent = mediaVolumePattern.MatchString(v.Name) && v.FileBytes == v.VirtualBytes && v.FileBytes >= 32768 && v.FileBytes <= 64<<30 && v.FileBytes%2048 == 0
+	}
+	if !uuidPattern.MatchString(v.PoolID) || !validContent || v.VirtualBytes < 1 || v.VirtualBytes > 512<<30 || v.FileBytes < 1 || v.FileBytes > v.VirtualBytes+v.VirtualBytes/4+(16<<20) || !digestPattern.MatchString(v.SHA256) {
 		return domain.Fail("INVALID_INPUT", "invalid new managed-volume intent")
 	}
 	return nil

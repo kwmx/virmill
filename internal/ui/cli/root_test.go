@@ -101,6 +101,19 @@ func TestExistingDiskPreparationUsesSharedService(t *testing.T) {
 	}
 }
 
+func TestInstallationPreparationUsesSharedService(t *testing.T) {
+	r := &recorder{}
+	var out bytes.Buffer
+	c := New(r, &out, &out)
+	c.SetArgs([]string{"import", "prepare-install", "/tmp/installer.iso", "--input", `{"destination":"/tmp/private/prepared","offlineSources":true,"mediaID":"installer","disks":[{"id":"boot","virtualBytes":16777216}]}`, "--plan", "--output", "json", "--non-interactive"})
+	if err := c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "import.prepare-install" || r.request.Path != "/tmp/installer.iso" || r.request.Action != "prepare-install" || r.request.Input["mediaID"] != "installer" {
+		t.Fatal("installation request bypassed shared service or lost input", r)
+	}
+}
+
 func TestResourceInventoryCommandsPreserveExplicitConnection(t *testing.T) {
 	for _, test := range []struct {
 		args   []string

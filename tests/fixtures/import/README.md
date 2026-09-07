@@ -70,3 +70,27 @@ These commands create only temporary files, a private journal/socket and confine
 image workers. They do not open a libvirt domain for mutation, boot a guest, change
 host networks/services/devices or prove hardware support. Required guest fixtures
 and their explicit disposable target remain in the qualification plan.
+
+## ISO preparation and empty disks
+
+`TestRealISOAndConfinedBlankDiskPreparation` creates a temporary ordinary directory
+with a Virmill README, then invokes the exact installed `/usr/bin/genisoimage`
+1.1.11 (package `genisoimage-1.1.11-63.fc44.x86_64`) with
+`-quiet -V VIRMILL_TEST -o TEMP/fixture.iso TEMP/source`.
+The executable SHA-256 is pinned in `contracts/dependencies.lock.json`.
+This recipe creates nonbootable ISO9660 media; timestamps make its bytes specific
+to each run, so the test logs the actual media digest rather than promising an
+invented stable image hash. No proprietary media is downloaded or redistributed.
+
+The actual preparation service copies and verifies that ISO and invokes confined
+QEMU 10.2.2 to create 8 MiB and 16 MiB empty qcow2 disks, checking format/capacity,
+backing independence, consistency and complete zero maps. The image adapter test
+also compares generated blank disks (including a non-cluster-aligned 512-byte size)
+against independent temporary sparse raw zero files. Synthetic phase fixtures have
+only recognition headers and deliberately non-image worker bytes; they prove
+journal semantics only. Native libvirt test-driver fixtures check read-only CD-ROM
+XML/boot mapping, never real pool streaming or guest installation.
+
+The staged package integration test additionally prepares an ISO through the real
+CLI/private daemon, verifies the approved receipt and reaches production creation's
+explicit test-URI refusal. It never contacts a host libvirt connection.

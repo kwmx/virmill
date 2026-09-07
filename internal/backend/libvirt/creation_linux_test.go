@@ -160,6 +160,7 @@ func TestCreationDeviceMetadataFromInstalledQEMU(t *testing.T) {
 	}
 	target, _ := creationFixture()
 	target.Spec.NICs = append(target.Spec.NICs, domain.CreationNIC{Model: "rtl8139"})
+	target.Spec.Media = []domain.CreationMedia{{Bus: "sata"}, {Bus: "scsi"}}
 	proof, err := probeCreationDevices(context.Background(), "/usr/bin/qemu-system-x86_64", target.Spec)
 	if err != nil {
 		t.Fatal(err)

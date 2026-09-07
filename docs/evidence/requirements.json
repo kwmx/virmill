@@ -176,7 +176,10 @@
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
         "internal/backend/image/tool_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/importing/install_linux.go",
+        "internal/backend/image/empty_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -184,7 +187,11 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/importing/install_linux_test.go",
+        "internal/backend/image/empty_linux_test.go",
+        "internal/creating/media_linux_test.go",
+        "internal/backend/libvirt/creation_media_linux_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -192,7 +199,7 @@
         "disk-set-artifacts-001"
       ],
       "outstanding": [
-        "Standalone disk-set preparation feeds the existing creation adapter with explicit hardware assumptions; generated-file conversion, OFD exclusion, journal recovery and CLI dispatch are tested. ISO/cloud/NoCloud workflows, native storage/definition and declared guest verification levels remain incomplete or unqualified."
+        "Existing-disk and ISO artifact preparation feed reviewed creation. ISO media copies and confined empty-disk checks, read-only media XML, publication/reopen recovery and shared CLI/TUI access exist. Full installer console/ejection lifecycle, cloud/NoCloud provisioning, native storage streaming and declared guest verification remain incomplete or unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -390,7 +397,9 @@
         "internal/backend/image/metadata_linux.go",
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/importing/install_linux.go",
+        "internal/backend/image/empty_linux.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-06",
@@ -407,7 +416,11 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/importing/install_linux_test.go",
+        "internal/backend/image/empty_linux_test.go",
+        "internal/creating/media_linux_test.go",
+        "internal/backend/libvirt/creation_media_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -445,7 +458,9 @@
         "internal/backend/libvirt/creation_xml.go",
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/importing/install_linux.go",
+        "internal/backend/image/empty_linux.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -458,7 +473,11 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/importing/install_linux_test.go",
+        "internal/backend/image/empty_linux_test.go",
+        "internal/creating/media_linux_test.go",
+        "internal/backend/libvirt/creation_media_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -1373,7 +1392,10 @@
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
         "internal/backend/image/tool_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/importing/install_linux.go",
+        "internal/backend/image/empty_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1390,7 +1412,11 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/importing/install_linux_test.go",
+        "internal/backend/image/empty_linux_test.go",
+        "internal/creating/media_linux_test.go",
+        "internal/backend/libvirt/creation_media_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1816,7 +1842,10 @@
         "internal/ui/cli/root.go",
         "internal/ui/tui/model.go",
         "docs/vm-creation.md",
-        "internal/ui/request.go"
+        "internal/ui/request.go",
+        "internal/importing/install_linux.go",
+        "internal/backend/image/empty_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -1824,7 +1853,11 @@
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
         "internal/creating/compatibility_linux_test.go",
-        "internal/ui/request_test.go"
+        "internal/ui/request_test.go",
+        "internal/importing/install_linux_test.go",
+        "internal/backend/image/empty_linux_test.go",
+        "internal/creating/media_linux_test.go",
+        "internal/backend/libvirt/creation_media_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2008,7 +2041,10 @@
         "scripts/traceability.py",
         "internal/ui/registry.go",
         "internal/ui/tui/model.go",
-        "docs/vm-creation.md"
+        "docs/vm-creation.md",
+        "internal/importing/install_linux.go",
+        "internal/backend/image/empty_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2016,7 +2052,11 @@
         "internal/validation/validate_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "internal/creating/compatibility_linux_test.go"
+        "internal/creating/compatibility_linux_test.go",
+        "internal/importing/install_linux_test.go",
+        "internal/backend/image/empty_linux_test.go",
+        "internal/creating/media_linux_test.go",
+        "internal/backend/libvirt/creation_media_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",

@@ -14,7 +14,8 @@ The [OVA preparation workflow](docs/import-preparation.md) converts complete dis
 sets into verified independent artifacts through the CLI or TUI. The
 [existing-disk preparation workflow](docs/existing-disk-preparation.md) copies
 explicitly selected files with guarded backing/extent access. The
-[VM creation adapter](docs/vm-creation.md) adds explicit hardware mappings,
+[ISO preparation workflow](docs/installation-preparation.md) copies media and
+creates verified empty disks. The [VM creation adapter](docs/vm-creation.md) adds explicit hardware mappings,
 define-last storage phases and reviewed definition recovery.
 [Failed-creation cleanup](docs/creation-cleanup.md) adds explicit retention or
 guarded deletion with durable recovery. Native storage,

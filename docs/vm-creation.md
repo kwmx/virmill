@@ -1,7 +1,8 @@
 # Creating a VM from prepared disks
 
 This development adapter defines a powered-off VM from a successful local OVA or
-[existing-disk preparation](existing-disk-preparation.md) operation.
+[existing-disk preparation](existing-disk-preparation.md), or
+[ISO preparation](installation-preparation.md) operation.
 Native disk streaming and guest behavior are not qualified.
 Use an explicitly authorized disposable libvirt environment for application tests.
 The complete release checklist remains open.
@@ -19,7 +20,10 @@ activate these resources. Pool space must meet the displayed conservative budget
 Copy [the example input](../examples/creation/prepared-ova.json) and replace its
 placeholder pool/network UUIDs and hardware choices. It illustrates two original
 disks and two original NICs; it is not ready to apply unchanged. Map each prepared
-disk ID once, with a supported bus and unique boot order covering every disk.
+disk ID once, with a supported bus and unique positive boot order covering all disk/media boot candidates.
+Map every prepared medium through `hardware.media`; use zero only to explicitly
+exclude a medium from boot candidates. Media is copied into its own read-only
+managed CD-ROM volume and included in verification and recovery.
 Map every original NIC by its zero-based order among the descriptor's NIC items.
 Use `sourceIndex: -1` only for an additional adapter. To keep an original adapter
 initially disconnected, select its intended network and set `link: down`.
@@ -28,7 +32,7 @@ Disk-only sources have no known original NICs or hardware configuration. Use
 hardware assumption explicitly, and use `sourceIndex: -1` for every new NIC.
 
 The current adapter accepts explicit x86_64 KVM Q35/i440fx machine versions,
-1–64 disks and up to 32 NICs. Disk buses are SATA (at most six), virtio and
+1–64 disks, up to four read-only SATA/SCSI media and up to 32 NICs. Disk buses are SATA (at most six total disk/media devices), virtio and
 virtio-scsi. NIC models are virtio, e1000e and rtl8139, subject to preflight.
 Driver compatibility inside the appliance remains the operator's mapping decision.
 CPU mode, memory, UTC/local time, BIOS/UEFI and display choice are explicit.
@@ -59,7 +63,8 @@ identity inside the copied disks. Guest adaptation is reported `not-run`.
 `plan apply PLAN_ID` requires `--digest`, `--idempotency-key` and every
 `--ack` listed by that exact plan. Creation always requires `host-mutation`,
 `copy-managed-volumes` and `new-vm-identity`; NICs add `network-attachment` and
-UEFI adds `new-firmware-state`. Apply repeats preflight. No VM starts automatically.
+UEFI adds `new-firmware-state`; media adds `attach-readonly-media`.
+Apply repeats preflight. No VM starts automatically.
 
 In the TUI, open **VMs → vm create** and enter
 `{"id":"PREPARATION_OPERATION_ID","input":{...the same JSON parameters...}}`.
