@@ -1,0 +1,51 @@
+=== RUN   TestObservedQEMUCreationDefaultsRemainUnconfirmed
+--- PASS: TestObservedQEMUCreationDefaultsRemainUnconfirmed (0.00s)
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/balloon_model
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_index
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_address
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/invalid_slot
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/incomplete_address
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_PCI_address
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/watchdog_action
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/USB_model
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/host_audio
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/controller_ROM
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_chassis
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_port
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/missing_bus
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/foreign_domain
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/target_override
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/namespace_escape
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/unknown_topology
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_balloon
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/host_device
+=== RUN   TestObservedQ35RequiresExactReviewedDevicePolicy/controller_driver
+=== NAME  TestObservedQ35RequiresExactReviewedDevicePolicy
+    creation_observed_linux_test.go:99: captured XML replay only; no hardware, VM, volume or firmware operation executed
+--- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy (0.01s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/balloon_model (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_index (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_address (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/invalid_slot (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/incomplete_address (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_PCI_address (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/watchdog_action (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/USB_model (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/host_audio (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/controller_ROM (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_chassis (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_port (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/missing_bus (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/foreign_domain (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/target_override (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/namespace_escape (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/unknown_topology (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/duplicate_balloon (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/host_device (0.00s)
+    --- PASS: TestObservedQ35RequiresExactReviewedDevicePolicy/controller_driver (0.00s)
+=== RUN   TestObservedQ35DisabledDevicePolicyMatchesNativeDefinition
+    creation_observed_linux_test.go:129: regression replay of exact native XML; separate evidence records the actual disposable run
+--- PASS: TestObservedQ35DisabledDevicePolicyMatchesNativeDefinition (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	0.023s

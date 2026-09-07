@@ -66,3 +66,8 @@ All 71 acceptance scenarios remain required and open. Multi-disk OVA creation,
 other guests and machine profiles, networking/isolation, USB, firmware/TPM,
 active-operation crash boundaries, safe captures/restores and the full release
 checklist still require implementation and evidence.
+
+The clean-archive release evaluation `device-policy-release-gate-001` failed as
+expected: all 71 mandatory acceptance records and the full ship checklist remain
+open. `device-policy-captured-001` passed both exact XML regression fixtures; it
+does not itself validate hardware. No release-completion claim was made.
