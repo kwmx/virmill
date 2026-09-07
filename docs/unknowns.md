@@ -29,6 +29,8 @@
   powered-off VM. Versioned explicit device intent passed the separate Q35/BIOS native
   creation/boot/shutdown test. Compatible acceptance of the retained definition
   and other native profiles remain required. Old recipes still refuse changed semantics.
+  ADR 0017 adds a separate reviewed BIOS device-acceptance adapter with guarded
+  retained-byte readback. Deterministic tests are separate from native qualification.
 
 - U009: During initial validation, `vm creation result` suggests recovery before a
   receipt exists, although the job is still running. Corrected by optional-receipt
@@ -47,3 +49,9 @@
 
 Unimplemented code is tracked separately in the requirements tracker and is not
 classified as a hardware limitation. None of these unknowns reduces 1.0 scope.
+
+- U011: The retained disposable-host file volume is root-owned mode 0600. Libvirt
+  download authorization does not grant the coordinator filesystem read access
+  for cooperative QEMU guards. Acceptance preflight refuses missing access.
+  Native qualification may use an explicitly recorded temporary fixture ACL;
+  bounded helper integration for managed-storage access remains implementation work.

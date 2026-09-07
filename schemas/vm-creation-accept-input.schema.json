@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-creation-accept-input.schema.json",
+  "title": "Explicit acceptance of existing creation chipset devices",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "devicePolicy"
+  ],
+  "properties": {
+    "devicePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "chipset",
+        "pciPlacement",
+        "usbController",
+        "memoryBalloon",
+        "watchdogAction",
+        "input",
+        "audio",
+        "serial"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "chipset": {
+          "enum": [
+            "q35",
+            "i440fx"
+          ]
+        },
+        "pciPlacement": {
+          "const": "libvirt-auto"
+        },
+        "usbController": {
+          "enum": [
+            "none",
+            "qemu-xhci"
+          ]
+        },
+        "memoryBalloon": {
+          "enum": [
+            "none",
+            "virtio"
+          ]
+        },
+        "watchdogAction": {
+          "enum": [
+            "none",
+            "reset"
+          ]
+        },
+        "input": {
+          "const": "ps2"
+        },
+        "audio": {
+          "const": "none"
+        },
+        "serial": {
+          "const": "isa-serial"
+        }
+      }
+    }
+  }
+}

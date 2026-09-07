@@ -5,7 +5,10 @@ This development adapter defines a powered-off VM from a successful local OVA or
 [ISO preparation](installation-preparation.md) operation.
 Optional [NoCloud provisioning](cloud-provisioning.md) can attach an identity-bound
 seed to an explicitly declared compatible cloud-image disk set.
-Native disk streaming and guest behavior are not qualified.
+One Q35/BIOS native disk-streaming and login-screen boot path is recorded in the
+release evidence; the complete source/profile and guest-readiness matrix remains
+unqualified. [Retained-definition acceptance](creation-acceptance.md) is a separate
+reviewed recovery path for explicit BIOS chipset devices.
 Use an explicitly authorized disposable libvirt environment for application tests.
 The complete release checklist remains open.
 

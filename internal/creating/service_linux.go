@@ -81,6 +81,11 @@ func Register(service *app.Service, seedCacheDirectory string) {
 	service.Engine.Handlers["vm.create"] = s
 	service.Engine.Handlers["vm.create.devices-v1"] = s
 	service.Engine.Handlers["vm.create.resume"] = &resumeHandler{s: s}
+	if acceptance, ok := service.Provider.(domain.CreationAcceptanceBackend); ok {
+		h := &acceptanceHandler{s: s, backend: acceptance}
+		service.Engine.Handlers[acceptanceOperation] = h
+		service.Extensions["vm.creation.accept"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return h.Plan(ctx, uid, r) }
+	}
 	if cleanup, ok := service.Provider.(domain.CreationCleanupBackend); ok {
 		h := &cleanupHandler{s: s, backend: cleanup}
 		service.Engine.Handlers["vm.create.cleanup"] = h
@@ -649,11 +654,14 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	if err != nil {
 		return nil, err
 	}
-	if p.ActorUID != uid || (!creationOperation(p.Operation) && p.Operation != "vm.create.resume" && p.Operation != "vm.create.cleanup") {
+	if p.ActorUID != uid || (!creationOperation(p.Operation) && p.Operation != "vm.create.resume" && p.Operation != "vm.create.cleanup" && p.Operation != acceptanceOperation) {
 		return nil, domain.Fail("INVALID_INPUT", "not your VM creation operation")
 	}
 	if p.Operation == "vm.create.cleanup" {
 		return s.cleanupResult(j, p, encoded)
+	}
+	if p.Operation == acceptanceOperation {
+		return s.acceptanceResult(j, p, encoded)
 	}
 	if p.Operation == "vm.create.resume" {
 		var recovery resumeInput

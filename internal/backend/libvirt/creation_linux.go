@@ -322,6 +322,10 @@ func (p *Provider) CheckCreationIdentity(ctx context.Context, uri, id, name stri
 	return absentDomain(c, id, name)
 }
 func (p *Provider) PreflightCreation(ctx context.Context, uri string, s domain.CreationSpec) (domain.CreationTarget, error) {
+	return p.preflightCreation(ctx, uri, s, false)
+}
+
+func (p *Provider) preflightCreation(ctx context.Context, uri string, s domain.CreationSpec, existing bool) (domain.CreationTarget, error) {
 	out := domain.CreationTarget{Spec: s, Networks: []domain.VirtualNetwork{}}
 	if err := validateCreationSpec(s); err != nil {
 		return out, err
@@ -337,8 +341,10 @@ func (p *Provider) PreflightCreation(ctx context.Context, uri string, s domain.C
 		return out, err
 	}
 	defer c.Close()
-	if err = absentDomain(c, s.UUID, s.Name); err != nil {
-		return out, err
+	if !existing {
+		if err = absentDomain(c, s.UUID, s.Name); err != nil {
+			return out, err
+		}
 	}
 	pool, err := c.LookupStoragePoolByUUIDString(s.PoolID)
 	if err != nil {
@@ -558,6 +564,12 @@ func lookupCreated(c *native.Connect, expected domain.CreatedVolume) (*native.St
 	return v, nil
 }
 func requireUnattached(c *native.Connect, volume domain.CreatedVolume) error {
+	return requireUnattachedExcept(c, volume, "")
+}
+
+// The sole exception is used by read-only acceptance of an exactly matched,
+// stopped creation definition. Upload and ordinary verification never use it.
+func requireUnattachedExcept(c *native.Connect, volume domain.CreatedVolume, acceptedVM string) error {
 	domains, err := c.ListAllDomains(0)
 	if err != nil {
 		return err
@@ -568,6 +580,15 @@ func requireUnattached(c *native.Connect, volume domain.CreatedVolume) error {
 		}
 	}()
 	for i := range domains {
+		if acceptedVM != "" {
+			id, e := domains[i].GetUUIDString()
+			if e != nil {
+				return e
+			}
+			if id == acceptedVM {
+				continue
+			}
+		}
 		persistent, e := domains[i].IsPersistent()
 		if e != nil {
 			return e

@@ -206,6 +206,7 @@ func TestCreationAndDefinitionRecoveryHaveSharedTUIAccess(t *testing.T) {
 	for _, test := range []struct{ command, input, method, id string }{
 		{"vm create", `{"id":"prepared-operation","input":{"identityMode":"clone","hardware":{"disks":[{"sourceID":"boot","bus":"sata","bootOrder":1}],"nics":[]}}}`, "vm.create", "prepared-operation"},
 		{"vm creation resume", "failed-operation", "vm.creation.resume", "failed-operation"},
+		{"vm creation accept", `{"id":"failed-operation","input":{"devicePolicy":{"version":1,"watchdogAction":"reset"}}}`, "vm.creation.accept", "failed-operation"},
 		{"vm creation cleanup", `{"id":"failed-operation","input":{"disposition":"retain"}}`, "vm.creation.cleanup", "failed-operation"},
 		{"vm creation result", "creation-operation", "vm.creation.result", "creation-operation"},
 	} {
@@ -232,6 +233,9 @@ func TestCreationAndDefinitionRecoveryHaveSharedTUIAccess(t *testing.T) {
 		cmd()
 		if r.method != test.method || r.request.ID != test.id || r.request.Connection != "qemu:///session" {
 			t.Fatal("TUI mapping/connection drift", r)
+		}
+		if r.method == "vm.creation.accept" && r.request.Input["devicePolicy"].(map[string]any)["watchdogAction"] != "reset" {
+			t.Fatal("TUI acceptance lost explicit device policy")
 		}
 	}
 }

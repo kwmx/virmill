@@ -1,0 +1,13 @@
+{
+  "devicePolicy": {
+    "version": 1,
+    "chipset": "q35",
+    "pciPlacement": "libvirt-auto",
+    "usbController": "qemu-xhci",
+    "memoryBalloon": "virtio",
+    "watchdogAction": "reset",
+    "input": "ps2",
+    "audio": "none",
+    "serial": "isa-serial"
+  }
+}

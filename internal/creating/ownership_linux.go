@@ -11,12 +11,13 @@ import (
 )
 
 type ownershipRecord struct {
-	Version        int                    `json:"schemaVersion"`
-	Key            domain.ResourceKey     `json:"key"`
-	CreationPlanID string                 `json:"creationPlanID"`
-	OperationID    string                 `json:"operationID"`
-	Binding        string                 `json:"binding"`
-	Volumes        []domain.CreatedVolume `json:"volumes"`
+	Version          int                    `json:"schemaVersion"`
+	Key              domain.ResourceKey     `json:"key"`
+	CreationPlanID   string                 `json:"creationPlanID"`
+	OperationID      string                 `json:"operationID"`
+	Binding          string                 `json:"binding"`
+	Volumes          []domain.CreatedVolume `json:"volumes"`
+	AcceptancePlanID string                 `json:"acceptancePlanID,omitempty"`
 }
 
 func (s *Service) recordOwnership(p domain.Plan, in input, receipt Receipt) error {
@@ -62,8 +63,33 @@ func (s *Service) Ownership(ctx context.Context, vm domain.VM) (domain.VM, error
 	if err = wire.Decode(b, &record); err != nil {
 		return vm, err
 	}
-	if record.Version != 1 || record.Key != vm.Key {
+	if (record.Version != 1 && record.Version != 2) || record.Key != vm.Key || (record.Version == 1 && record.AcceptancePlanID != "") || (record.Version == 2 && record.AcceptancePlanID == "") {
 		return vm, domain.Fail("RECOVERY_REQUIRED", "unsupported or mismatched VM ownership record")
+	}
+	if record.Version == 2 {
+		p, b, err := s.Store.Plan(record.AcceptancePlanID)
+		if err != nil {
+			return vm, err
+		}
+		var in acceptanceInput
+		if err = wire.Decode(b, &in); err != nil {
+			return vm, err
+		}
+		proof, present, err := s.acceptanceProof(p, in)
+		if err != nil {
+			return vm, err
+		}
+		_, recipe, receipt, err := s.originalReceipt(p, resumeInput{CreationPlanID: in.CreationPlanID, Receipt: in.Receipt})
+		if err != nil {
+			return vm, err
+		}
+		volumes, err := readyVolumes(receipt, recipe)
+		if err != nil {
+			return vm, err
+		}
+		if p.Operation != acceptanceOperation || in.Version != 1 || !present || !same(record, acceptedOwnership(p, in, proof, volumes)) {
+			return vm, domain.Fail("RECOVERY_REQUIRED", "accepted VM ownership proof differs")
+		}
 	}
 	if err = xmlpatch.Validate(vm.PersistentXML); err != nil {
 		return vm, err

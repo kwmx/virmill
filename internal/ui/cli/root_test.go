@@ -141,6 +141,7 @@ func TestCreationAndRecoveryCommandsUseSharedService(t *testing.T) {
 	}{
 		{[]string{"vm", "create", "prepared-operation", "--input", `{"identityMode":"clone","hardware":{"name":"fixture","disks":[{"sourceID":"boot","bus":"sata","bootOrder":1}],"nics":[]}}`, "--plan"}, "vm.create", "prepared-operation"},
 		{[]string{"vm", "creation", "resume", "failed-operation", "--plan"}, "vm.creation.resume", "failed-operation"},
+		{[]string{"vm", "creation", "accept", "failed-operation", "--input", `{"devicePolicy":{"version":1,"watchdogAction":"reset"}}`, "--plan"}, "vm.creation.accept", "failed-operation"},
 		{[]string{"vm", "creation", "cleanup", "failed-operation", "--input", `{"disposition":"retain"}`, "--plan"}, "vm.creation.cleanup", "failed-operation"},
 		{[]string{"vm", "creation", "result", "creation-operation"}, "vm.creation.result", "creation-operation"},
 	} {
@@ -156,6 +157,9 @@ func TestCreationAndRecoveryCommandsUseSharedService(t *testing.T) {
 		}
 		if r.method == "vm.create" && r.request.Input["identityMode"] != "clone" {
 			t.Fatal("identity choice lost")
+		}
+		if r.method == "vm.creation.accept" && r.request.Input["devicePolicy"].(map[string]any)["watchdogAction"] != "reset" {
+			t.Fatal("acceptance device choice lost")
 		}
 	}
 }
