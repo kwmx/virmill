@@ -1,0 +1,10 @@
+=== RUN   TestConcurrentCancellation
+--- PASS: TestConcurrentCancellation (0.00s)
+PASS
+ok  	virmill.local/sdk	1.012s
+?   	virmill.local/sdk/example	[no test files]
+?   	virmill.local/sdk/protocol	[no test files]
+qemu-io version 10.2.2 (qemu-10.2.2-1.fc44)
+Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+628a2c8566346bc9bc9fa9610d7245f3f18ef2a80f54caf2c3ad501b3576da11  /usr/bin/qemu-io
+qemu-img-10.2.2-1.fc44.x86_64
