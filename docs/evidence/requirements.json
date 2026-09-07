@@ -2427,7 +2427,7 @@
         "configuration-release-gate-001"
       ],
       "outstanding": [
-        "Full release blocked: incomplete mandatory code, no authorized disposable VM target, and missing required host/guest/hardware/restore evidence."
+        "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. A remote disposable VM is now authorized; setup and guest qualification remain pending."
       ],
       "hardwareVerified": false,
       "released": false

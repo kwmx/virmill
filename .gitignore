@@ -1,7 +1,83 @@
-.tools/
-build/
-dist/
+# Local toolchain, build products and test output. Vendor source stays tracked
+# because the pinned build must work offline.
+/.tools/
+/build/
+/dist/
+/bin/
+/coverage/
+/virmill
+/virmilld
+/virmill-host-helper
 *.test
-__pycache__/
-.pytest_cache/
+coverage.out
+*.prof
+*.rpm
+*.deb
 
+# Machine-specific test configuration, downloaded media and application state.
+# Keep fixture recipes and text manifests in tests/fixtures/ under version control.
+/.virmill-local/
+/images/
+/artifacts/
+/tmp/
+/.cache/
+*.iso
+*.ova
+*.qcow
+*.qcow2
+*.vmdk
+*.vdi
+*.vhd
+*.vhdx
+*.img
+*.raw
+*.nvram
+*.fd
+*.vmem
+*.vmsn
+*.vmss
+tpm2-*.permall
+tpm-*.permall
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.sock
+*.pid
+
+# Local credentials. Public keys and example configuration remain reviewable.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.ssh/
+secrets/
+credentials/
+id_rsa
+id_ecdsa
+id_ecdsa_sk
+id_ed25519
+id_ed25519_sk
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Transient logs; the append-only release evidence is an intentional deliverable.
+*.log
+!/docs/evidence/logs/*.log
+
+# Interpreter caches and local editor files.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

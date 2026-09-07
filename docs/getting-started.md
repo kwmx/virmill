@@ -46,8 +46,11 @@ adapter, explicit mappings, staged result and definition-only recovery.
 VM mutation commands produce a preview. `plan apply` requires its full digest,
 an idempotency key and all acknowledgements, such as `--ack host-mutation`.
 Hard power-off also requires `data-loss-hard-stop`. Apply rechecks state and intent.
-Do not apply these development adapters to production VMs. No disposable VM host
-has been authorized in this implementation session.
+Do not apply these development adapters to production VMs. The owner has now
+authorized one remote disposable VM for installation and guest tests. Its SSH
+destination and setup inventory are local-only; see `.virmill-local/test-host.json`
+in the active development workspace. This does not authorize the development host
+or any other discovered target, or establish guest/hardware support.
 
 Closing the CLI or TUI does not terminate daemon jobs. `operation show`, `watch`
 and `reconcile` inspect durable state. Stopping the daemon marks unfinished work

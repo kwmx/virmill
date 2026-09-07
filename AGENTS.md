@@ -6,13 +6,16 @@ Implementation decisions and corrections live in `docs/adr/`.
 
 All 71 acceptance scenarios remain required for 1.0. A partial implementation is
 development source, never a smaller release. Record evidence at its actual level.
-No disposable host has been authorized. Local generated fixture files under this
-repository or temporary directories may be used; never mutate discovered VMs,
-host networks, services, block devices, firmware or USB without owner approval.
+The owner has authorized a remote disposable VM for installing Virmill and running
+guest/image tests. Its destination and observed setup are in the ignored
+`.virmill-local/test-host.json`; this is session authorization, not permission to
+use any discovered host. Preserve supplied source media and unrelated existing
+guests. The local development host remains unauthorized for host mutations.
+Local generated fixture files under this repository or temporary directories may
+be used. Missing access or hardware evidence does not authorize another target.
 
 Use `./scripts/go` for the pinned repository-local toolchain. Keep dependencies
 exact in go.mod/go.sum and contracts/dependencies.lock.json. Do not download at runtime.
 Use official Go libvirt bindings, Cobra, Bubble Tea, SQLite and the shared service.
 No shell command strings from user input. No success-returning placeholders.
 Update requirements.json, the evidence ledger and generated traceability after work.
-
