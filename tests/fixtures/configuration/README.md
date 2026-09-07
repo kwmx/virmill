@@ -39,3 +39,7 @@ recovery-required as an attention outcome.
 The later `upgrade-downtime-estimates.py` and `downtime-preview-tui.py` record
 15a1f2c installation and CLI/TUI preview parity. They preserve existing jobs, guest
 XML and old plan digests. No new guest mutation was applied in that preview run.
+
+`upgrade-result-progress.py` and `creation-result-readback.py` record 11a8174
+installation and read-only CLI/TUI compatibility with existing successful and
+uncertain creation receipts. They do not exercise active native uploads or cleanup.

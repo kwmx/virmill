@@ -1,0 +1,3 @@
+{"operationID": "28701ac3-325d-4596-8103-38e19f74b7cb", "state": "succeeded", "complete": true, "receiptAvailable": true, "defined": true, "volumesVerified": true, "guestReadinessFlags": false, "responseSHA256": "fda5ebe093b21ea13b8dc116c1f83720f49bff55a8e1b28fe5c450f4aed4cf03"}
+{"operationID": "b5983e68-bfcc-42f0-bf4e-3877029b756b", "state": "recovery-required", "complete": false, "receiptAvailable": true, "errorCode": "RECOVERY_REQUIRED", "exitCode": 6, "responseSHA256": "5c3ef9967f58c2ed2f18ba00c44b7cb3e79a6ff6f1d8b2eaa89d6f27c32a4308"}
+{"nativePTY": true, "CLIAndTUIReadExistingReceipts": true, "journalJobsAndLocksUnchanged": true, "legacyUncertainLocksRetained": 3, "allGuestsStopped": true, "nativeEffectsExecuted": false, "activeNativeUploadExercised": false}

@@ -751,7 +751,8 @@
         "docs/evidence/boot-media-run.md",
         "docs/adr/0016-active-creation-result-observations.md",
         "docs/vm-creation.md",
-        "internal/creating/cleanup_linux.go"
+        "internal/creating/cleanup_linux.go",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -816,11 +817,13 @@
         "boot-media-native-iso-boot-001",
         "boot-media-native-disk-start-001",
         "boot-media-native-disk-boot-001",
-        "creation-progress-core-001"
+        "creation-progress-core-001",
+        "result-progress-core-001",
+        "result-progress-native-readback-001"
       ],
       "outstanding": [
-        "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required.",
-        "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
+        "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
+        "The retained first disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from its reviewed intent. Safe reviewed acceptance or disposition is required before that guest can boot; later versioned policy does not change its semantics.",
         "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
@@ -1732,7 +1735,8 @@
         "internal/creating/service_linux.go",
         "docs/adr/0016-active-creation-result-observations.md",
         "docs/vm-creation.md",
-        "internal/creating/cleanup_linux.go"
+        "internal/creating/cleanup_linux.go",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-01",
@@ -1751,7 +1755,8 @@
         "native-first-upgrade-001",
         "native-first-tui-001",
         "device-policy-native-tui-002",
-        "creation-progress-core-001"
+        "creation-progress-core-001",
+        "result-progress-core-001"
       ],
       "outstanding": [
         "Coordinator separation implemented; long-running actual VM job client-detach/reconnect drill remains.",
@@ -1812,7 +1817,8 @@
         "docs/evidence/downtime-estimates-run.md",
         "internal/creating/service_linux.go",
         "docs/adr/0016-active-creation-result-observations.md",
-        "docs/vm-creation.md"
+        "docs/vm-creation.md",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1880,7 +1886,11 @@
         "boot-media-native-preservation-001",
         "downtime-native-upgrade-001",
         "creation-progress-core-001",
-        "creation-progress-static-001"
+        "creation-progress-static-001",
+        "result-progress-core-001",
+        "result-progress-static-001",
+        "result-progress-native-upgrade-001",
+        "result-progress-native-readback-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -1964,7 +1974,8 @@
         "docs/evidence/downtime-estimates-run.md",
         "internal/creating/service_linux.go",
         "docs/adr/0016-active-creation-result-observations.md",
-        "docs/vm-creation.md"
+        "docs/vm-creation.md",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -2009,7 +2020,9 @@
         "downtime-core-001",
         "downtime-static-001",
         "downtime-native-preview-001",
-        "creation-progress-core-001"
+        "creation-progress-core-001",
+        "result-progress-core-001",
+        "result-progress-native-readback-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -2408,7 +2421,8 @@
         "docs/evidence/downtime-estimates-run.md",
         "internal/creating/service_linux.go",
         "docs/adr/0016-active-creation-result-observations.md",
-        "internal/creating/cleanup_linux.go"
+        "internal/creating/cleanup_linux.go",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2463,7 +2477,10 @@
         "downtime-core-001",
         "downtime-artifacts-001",
         "downtime-native-preview-001",
-        "creation-progress-core-001"
+        "creation-progress-core-001",
+        "result-progress-core-001",
+        "result-progress-artifacts-001",
+        "result-progress-native-readback-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -2596,7 +2613,8 @@
         "docs/vm-configuration.md",
         "docs/evidence/device-policy-run.md",
         "docs/evidence/boot-media-run.md",
-        "docs/evidence/downtime-estimates-run.md"
+        "docs/evidence/downtime-estimates-run.md",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -2649,7 +2667,10 @@
         "downtime-build-001",
         "downtime-artifacts-001",
         "downtime-native-upgrade-001",
-        "creation-progress-build-001"
+        "creation-progress-build-001",
+        "result-progress-build-001",
+        "result-progress-artifacts-001",
+        "result-progress-native-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
@@ -2669,7 +2690,8 @@
         "scripts/cross-build.sh",
         "sdk/go/server.go",
         "docs/evidence/boot-media-run.md",
-        "docs/evidence/downtime-estimates-run.md"
+        "docs/evidence/downtime-estimates-run.md",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-02",
@@ -2692,7 +2714,9 @@
         "boot-media-native-services-001",
         "downtime-build-001",
         "downtime-artifacts-001",
-        "creation-progress-build-001"
+        "creation-progress-build-001",
+        "result-progress-build-001",
+        "result-progress-artifacts-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -2746,7 +2770,8 @@
         "docs/evidence/downtime-estimates-run.md",
         "internal/creating/service_linux.go",
         "docs/adr/0016-active-creation-result-observations.md",
-        "internal/creating/cleanup_linux.go"
+        "internal/creating/cleanup_linux.go",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2820,7 +2845,12 @@
         "downtime-native-preview-001",
         "creation-progress-core-001",
         "creation-progress-static-001",
-        "creation-progress-build-001"
+        "creation-progress-build-001",
+        "result-progress-core-001",
+        "result-progress-static-001",
+        "result-progress-build-001",
+        "result-progress-artifacts-001",
+        "result-progress-native-readback-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -2845,7 +2875,8 @@
       "implementationPaths": [
         "SHIP-CHECKLIST.md",
         "scripts/traceability.py",
-        "docs/evidence/requirements.json"
+        "docs/evidence/requirements.json",
+        "docs/evidence/result-progress-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-04",
@@ -2865,10 +2896,11 @@
         "native-first-release-gate-001",
         "native-first-release-gate-002",
         "device-policy-release-gate-001",
-        "boot-media-release-gate-001"
+        "boot-media-release-gate-001",
+        "result-progress-release-gate-001"
       ],
       "outstanding": [
-        "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. First disposable-host run is recorded; native creation remains blocked by unreviewed Q35 device defaults."
+        "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. One versioned Q35/BIOS creation and narrow boot/configuration paths passed on the disposable host; the earlier uncertain creation still needs safe reviewed acceptance or disposition. All 71 complete acceptance cases remain open."
       ],
       "hardwareVerified": false,
       "released": false

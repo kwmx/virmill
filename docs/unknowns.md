@@ -35,7 +35,8 @@
   progress observations: queued/validating/running/verifying states remain explicitly
   incomplete and direct users to watch the job. Invalid/uncertain receipts still
   fail closed. See ADR 0016 and the result tests; native active-upload qualification
-  remains separate.
+  remains separate. Installed terminal-result readback passed without mutations;
+  see `evidence/result-progress-run.md`.
 
 - U010: Native lifecycle plans inherit the engine’s zero-valued downtime estimate,
   including `requiresDowntime: false` for explicit stop. Human-readable risks exist,
