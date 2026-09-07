@@ -1,6 +1,6 @@
 # ADR 0021 — Durable creation NVRAM declaration binding
 
-Status: implemented with local regression verification; native qualification in progress. No v1 scope change.
+Status: implemented with local regression and scoped native declaration/reconciliation verification. Full recovery qualification remains outstanding. No v1 scope change.
 
 The creation matcher historically allowed any absolute NVRAM destination whenever
 the reviewed XML delegated destination assignment to libvirt. Lexical validation
@@ -50,7 +50,8 @@ through CLI and TUI; file initialization/freshness and complete capture remain
 explicitly unverified. No bytes, file generation or deletion authority are implied.
 
 Versioned recipe/proof checks and journal reopen/lost-acknowledgement regressions
-provide migration evidence without changing the SQLite schema. Native declaration
-binding still needs its own disposable-host test. The larger typed initialization
+provide migration evidence without changing the SQLite schema. The [disposable-host test and supplemental installed CLI/TUI observation](../evidence/nvram-binding-run.md)
+now verify one never-booted guest's first binding, repeated A, B refusal and
+restored-A reconciliation. Two fixture failures are retained separately. The larger typed initialization
 and confidential capture boundaries in ADR 0020 remain required before stronger
 fresh-state or recovery claims can be made.

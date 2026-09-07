@@ -105,3 +105,29 @@ ModuleNotFoundError: No module named 'yaml' — not passed
 The new tests use generated temporary Git repositories/worktrees and ordinary files/FIFOs/links only. They exercise indexed/untracked/ignored selection, fixed/generated source refusal, link/type/missing-file failures, bounded owned cleanup, stale exclusion, exact missing-output failure, archive layout and literal RPM rendering. Two orchestration checks replace only the `rpmbuild` subprocess with an explicitly test-only result and generated fake RPM bytes; input selection, temporary staging, DEB assembly, manifests and checksum accounting execute. This is not evidence that a native RPM builder accepted the new spec.
 
 Python AST parsing passed for the three changed/new Python files. `git diff --check` passed for the owned patch. Metadata/name/rule inventories above completed successfully. The normative package validator was blocked at its local PyYAML import; no success is inferred from that failure. No real package build, installation, host service, VM, SSH operation, root-repository index write, evidence-ledger edit or commit was performed by this review agent. Parent integration and frozen native package checks remain required before publishing new package evidence.
+
+## Parent integration follow-up
+
+The frozen `dc2ab1a` runtime subsequently passed two actual offline RPM/DEB builds,
+package/staged-install/private coordinator checks and one disposable Fedora RPM
+upgrade. The exact all-tracked source inventory and package install manifests are
+linked from [the integrated run](../evidence/nvram-binding-run.md). These results
+supersede the earlier pending-build statement for that exact checkpoint, without
+changing this audit's historical observations or qualifying the full release.
+
+The parent changed the `/.tools/` ignore rule to `/.tools`, covering both the
+ordinary local toolchain directory and the frozen checkout's toolchain symlink.
+No toolchain file or link was tracked. Additional `.o`, `.a`, `.so`, `.so.*`,
+`.efi`/`.EFI` and named TPM volatile/save-state patterns guard accidental output
+outside the expected ignored build trees. Original source/fixture recipes and
+public evidence remain tracked. The subsequent metadata audit observed 1,974
+tracked and 18 prospective regular files, no symlinks/nonregular entries and no
+tracked ignored files. No source media or confidential payload was opened by
+that metadata audit. Later contributions still require their own inclusion review.
+
+A read-only parent dependency probe also found `/usr/bin/python3` 3.14.7 with
+PyYAML 6.0.3 available, but no `jsonschema` module. The default Python remains
+3.14.6 without PyYAML. The standalone Python specification validator therefore
+still lacks a complete runtime in either inspected interpreter. No dependency
+was installed, and the separate passing vendored Go schema/example checks are
+not represented as an execution of that Python validator.

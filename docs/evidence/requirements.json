@@ -923,7 +923,10 @@
         "internal/creating/nvram_validation_linux_test.go",
         "internal/ui/cli/creation_nvram_test.go",
         "internal/ui/tui/creation_nvram_test.go",
-        "internal/creating/nvram_result_recovery_linux_test.go"
+        "internal/creating/nvram_result_recovery_linux_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -982,7 +985,15 @@
         "nvram-result-child-integrity-002",
         "nvram-result-child-integrity-003",
         "nvram-binding-vet-001",
-        "nvram-recovery-integration-001"
+        "nvram-recovery-integration-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-packages-001",
+        "nvram-binding-upgrade-001",
+        "nvram-binding-native-parser-002",
+        "nvram-binding-native-001",
+        "nvram-binding-native-002",
+        "nvram-binding-tui-fixture-003",
+        "nvram-binding-tui-003"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
@@ -994,7 +1005,7 @@
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
-        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1586,7 +1597,11 @@
         "internal/creating/nvram_validation_linux_test.go",
         "internal/ui/cli/creation_nvram_test.go",
         "internal/ui/tui/creation_nvram_test.go",
-        "internal/creating/nvram_result_recovery_linux_test.go"
+        "internal/creating/nvram_result_recovery_linux_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-002.py",
+        "internal/app/protection/cold_point_adversarial_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1637,14 +1652,22 @@
         "cold-native-upgrade-001",
         "nvram-binding-core-001",
         "nvram-binding-vet-001",
-        "nvram-recovery-integration-001"
+        "nvram-recovery-integration-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-native-parser-002",
+        "nvram-binding-native-001",
+        "nvram-binding-native-002",
+        "cold-point-adversarial-001",
+        "nvram-binding-tui-fixture-003",
+        "nvram-binding-tui-003"
       ],
       "outstanding": [
         "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
         "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified.",
-        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
+        "Additional generated-data race tests verify explicit-empty completeness, distinct secret/TPM role bindings, aggregate source limits and refusal to promote forged auxiliary content to verified capture/recovery/boot. This remains declaration/member-integrity checking; authenticated provenance and actual complete recovery are still required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1784,7 +1807,8 @@
         "tests/fixtures/protection/disposable-recorded-run/cold-probe-after-first-inspect-001.py",
         "tests/fixtures/protection/uefi-tpm-probe/observe_console.py",
         "tests/fixtures/protection/uefi-tpm-probe/test_observe_console.py",
-        "tests/fixtures/protection/disposable-recorded-run/cold-probe-4m-second-boot-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-4m-second-boot-001.py",
+        "internal/app/protection/cold_point_adversarial_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1827,12 +1851,14 @@
         "cold-probe-4m-second-boot-001",
         "cold-native-integration-core-001",
         "cold-probe-4m-inspection-tui-001",
-        "cold-observer-tests-004"
+        "cold-observer-tests-004",
+        "cold-point-adversarial-001"
       ],
       "outstanding": [
         "Declared-member integrity checking and cold-state prerequisites are implemented. Complete capture, secret policy, encrypted restic repository operations and independent restore without original files/database remain incomplete.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
-        "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified."
+        "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified.",
+        "Additional generated-data race tests verify explicit-empty completeness, distinct secret/TPM role bindings, aggregate source limits and refusal to promote forged auxiliary content to verified capture/recovery/boot. This remains declaration/member-integrity checking; authenticated provenance and actual complete recovery are still required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1900,15 +1926,18 @@
         "internal/ui/cli/recovery_test.go",
         "internal/ui/tui/recovery_test.go",
         "internal/app/protection/manifest_test.go",
-        "internal/helper/sealed_linux_test.go"
+        "internal/helper/sealed_linux_test.go",
+        "internal/app/protection/cold_point_adversarial_test.go"
       ],
       "evidence": [
         "cold-prerequisites-vet-001",
         "cold-prerequisites-core-sandbox-001",
-        "cold-manifest-fuzz-001"
+        "cold-manifest-fuzz-001",
+        "cold-point-adversarial-001"
       ],
       "outstanding": [
-        "Declared-member verification rejects corruption, missing artifacts and observed substitutions. Complete retention/pruning, repository locks, active-job pins and repository-level verification remain incomplete."
+        "Declared-member verification rejects corruption, missing artifacts and observed substitutions. Complete retention/pruning, repository locks, active-job pins and repository-level verification remain incomplete.",
+        "Additional generated-data race tests verify explicit-empty completeness, distinct secret/TPM role bindings, aggregate source limits and refusal to promote forged auxiliary content to verified capture/recovery/boot. This remains declaration/member-integrity checking; authenticated provenance and actual complete recovery are still required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2424,7 +2453,10 @@
         "internal/ui/tui/creation_nvram_test.go",
         "internal/operations/reconcile_integrity_test.go",
         "internal/creating/nvram_result_recovery_linux_test.go",
-        "internal/operations/reconcile_compatibility_test.go"
+        "internal/operations/reconcile_compatibility_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2490,7 +2522,14 @@
         "nvram-result-child-integrity-002",
         "nvram-result-child-integrity-003",
         "nvram-binding-vet-001",
-        "nvram-recovery-integration-001"
+        "nvram-recovery-integration-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-upgrade-001",
+        "nvram-binding-native-parser-002",
+        "nvram-binding-native-001",
+        "nvram-binding-native-002",
+        "nvram-binding-tui-fixture-003",
+        "nvram-binding-tui-003"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -2502,7 +2541,7 @@
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2535,7 +2574,8 @@
         "core-tests-001",
         "creation-core-001",
         "cleanup-core-001",
-        "nvram-recovery-integration-001"
+        "nvram-recovery-integration-001",
+        "nvram-binding-frozen-core-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage."
@@ -2659,7 +2699,8 @@
         "helper-access-native-tui-revoke-001",
         "helper-access-native-tui-revoke-resume-001",
         "helper-access-native-tui-grant-cli-revoke-001",
-        "nvram-recovery-integration-001"
+        "nvram-recovery-integration-001",
+        "nvram-binding-frozen-core-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -2911,7 +2952,8 @@
         "plugin-fault-regressions-001",
         "plugin-fault-fix-001",
         "discovery-clean-core-001",
-        "discovery-confined-001"
+        "discovery-confined-001",
+        "nvram-binding-frozen-core-001"
       ],
       "outstanding": [
         "Real generated-file single-FD sandbox probes preserve read-only access, close the inherited source FD and hide siblings/sockets. Plugin namespace tests remain scoped; full grant/network/security-framework qualification remains.",
@@ -3043,7 +3085,9 @@
         "downtime-portable-001",
         "cold-prerequisites-go-sdk-001",
         "cold-sdk-traceability-correction-001",
-        "cold-source-go-sdk-001"
+        "cold-source-go-sdk-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-packages-001"
       ],
       "outstanding": [
         "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
@@ -3071,7 +3115,9 @@
       "evidence": [
         "plugin-conformance-001",
         "cleanup-confinement-001",
-        "disk-set-confinement-001"
+        "disk-set-confinement-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-packages-001"
       ],
       "outstanding": [
         "Simulated create/partial/restart/reconcile/dedup fixture passes; complete provider pagination/lifecycle fixture matrix remains."
@@ -3125,7 +3171,8 @@
         "discovery-cross-001",
         "discovery-clean-static-001",
         "discovery-clean-core-001",
-        "discovery-confined-001"
+        "discovery-confined-001",
+        "nvram-binding-frozen-core-001"
       ],
       "outstanding": [
         "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains.",
@@ -3161,7 +3208,8 @@
         "plugin-lifecycle-003",
         "plugin-lifecycle-004",
         "cleanup-confinement-001",
-        "disk-set-confinement-001"
+        "disk-set-confinement-001",
+        "nvram-binding-frozen-core-001"
       ],
       "outstanding": [
         "Signed install/update/rollback, exact grants, revocation, active-job disposition and acknowledgement-loss recovery tested; unsigned/development override, persistent plugin-data migration and full qualification remain."
@@ -3525,7 +3573,9 @@
         "internal/creating/nvram_validation_linux_test.go",
         "internal/ui/cli/creation_nvram_test.go",
         "internal/ui/tui/creation_nvram_test.go",
-        "internal/creating/nvram_result_recovery_linux_test.go"
+        "internal/creating/nvram_result_recovery_linux_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3553,13 +3603,18 @@
         "cold-native-packaging-001",
         "nvram-binding-core-001",
         "nvram-binding-vet-001",
-        "nvram-recovery-integration-001"
+        "nvram-recovery-integration-001",
+        "nvram-binding-tui-fixture-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-tui-fixture-002",
+        "nvram-binding-tui-fixture-003",
+        "nvram-binding-tui-003"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
-        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3689,12 +3744,15 @@
         "cold-native-packages-repro-001",
         "cold-native-packaging-001",
         "cold-native-upgrade-001",
-        "nvram-package-inputs-001"
+        "nvram-package-inputs-001",
+        "nvram-binding-repro-001",
+        "nvram-binding-packages-001",
+        "nvram-binding-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Package source selection now requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing expected packages are refused. Twenty generated fixture tests pass; actual rebuilt RPM/DEB integration from the new frozen checkpoint is pending. Tracked source provenance, full distribution installation matrix and installed documentation links still require release evidence."
+        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3754,11 +3812,13 @@
         "cold-source-cross-001",
         "cold-native-packages-repro-001",
         "cold-native-cross-001",
-        "nvram-package-inputs-001"
+        "nvram-package-inputs-001",
+        "nvram-binding-repro-001",
+        "nvram-binding-cross-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support.",
-        "Package source selection now requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing expected packages are refused. Twenty generated fixture tests pass; actual rebuilt RPM/DEB integration from the new frozen checkpoint is pending. Tracked source provenance, full distribution installation matrix and installed documentation links still require release evidence."
+        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3948,7 +4008,9 @@
         "internal/ui/tui/creation_nvram_test.go",
         "internal/creating/nvram_result_recovery_linux_test.go",
         "internal/operations/reconcile_compatibility_test.go",
-        "tests/integration/package_inputs_test.py"
+        "tests/integration/package_inputs_test.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4070,7 +4132,16 @@
         "nvram-binding-core-001",
         "nvram-binding-vet-001",
         "nvram-recovery-integration-001",
-        "nvram-package-inputs-001"
+        "nvram-package-inputs-001",
+        "nvram-binding-release-gate-001",
+        "nvram-binding-tui-fixture-001",
+        "nvram-binding-repro-001",
+        "nvram-binding-frozen-core-001",
+        "nvram-binding-packages-001",
+        "nvram-binding-upgrade-001",
+        "nvram-binding-tui-fixture-002",
+        "nvram-binding-tui-fixture-003",
+        "nvram-binding-tui-003"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -4087,8 +4158,8 @@
         "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
-        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Native new-policy binding remains pending; declaration proves neither file initialization/freshness nor complete capture/restore.",
-        "Package source selection now requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing expected packages are refused. Twenty generated fixture tests pass; actual rebuilt RPM/DEB integration from the new frozen checkpoint is pending. Tracked source provenance, full distribution installation matrix and installed documentation links still require release evidence."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
+        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence."
       ],
       "hardwareVerified": false,
       "released": false

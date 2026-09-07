@@ -1,0 +1,20 @@
+test_alt_screen_and_wrapping_replace_cells (__main__.self_test.<locals>.Synthetic.test_alt_screen_and_wrapping_replace_cells) ... ok
+test_child_stderr_and_nonzero_exit_preserved (__main__.self_test.<locals>.Synthetic.test_child_stderr_and_nonzero_exit_preserved) ... ok
+test_child_timeout_and_output_limit (__main__.self_test.<locals>.Synthetic.test_child_timeout_and_output_limit) ... ok
+test_cleanup_signals_only_its_unreaped_child (__main__.self_test.<locals>.Synthetic.test_cleanup_signals_only_its_unreaped_child) ... ok
+test_duplicate_json_and_uuid_refused (__main__.self_test.<locals>.Synthetic.test_duplicate_json_and_uuid_refused) ... ok
+test_incremental_sequences_unicode_and_cursor (__main__.self_test.<locals>.Synthetic.test_incremental_sequences_unicode_and_cursor) ... ok
+test_old_page_cannot_match_current_screen (__main__.self_test.<locals>.Synthetic.test_old_page_cannot_match_current_screen) ... ok
+test_only_exact_known_native_failure_is_eligible (__main__.self_test.<locals>.Synthetic.test_only_exact_known_native_failure_is_eligible) ... ok
+test_pool_allows_only_numeric_usage_drift (__main__.self_test.<locals>.Synthetic.test_pool_allows_only_numeric_usage_drift) ... ok
+test_pool_rejects_configuration_or_capacity_changes (__main__.self_test.<locals>.Synthetic.test_pool_rejects_configuration_or_capacity_changes) ... ok
+test_pool_rejects_duplicate_and_malformed_statistics (__main__.self_test.<locals>.Synthetic.test_pool_rejects_duplicate_and_malformed_statistics) ... ok
+test_private_xdg_is_only_for_virmill (__main__.self_test.<locals>.Synthetic.test_private_xdg_is_only_for_virmill) ... ok
+test_saved_pool_command_requires_exact_read (__main__.self_test.<locals>.Synthetic.test_saved_pool_command_requires_exact_read) ... ok
+test_screen_rejects_stale_current_page_after_erase (__main__.self_test.<locals>.Synthetic.test_screen_rejects_stale_current_page_after_erase) ... ok
+test_unknown_or_incomplete_controls_fail_closed (__main__.self_test.<locals>.Synthetic.test_unknown_or_incomplete_controls_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.239s
+
+OK

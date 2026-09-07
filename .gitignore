@@ -1,6 +1,6 @@
 # Local toolchain, build products and test output. Vendor source stays tracked
 # because the pinned build must work offline.
-/.tools/
+/.tools
 /build/
 /dist/
 /bin/
@@ -13,6 +13,12 @@ coverage.out
 *.prof
 *.rpm
 *.deb
+*.o
+*.a
+*.so
+*.so.*
+*.efi
+*.EFI
 
 # Machine-specific test configuration, downloaded media and application state.
 # Keep fixture recipes and text manifests in tests/fixtures/ under version control.
@@ -39,6 +45,10 @@ coverage.out
 *.vmss
 tpm2-*.permall
 tpm-*.permall
+tpm2-*.volatilestate
+tpm-*.volatilestate
+tpm2-*.savestate
+tpm-*.savestate
 *.db
 *.db-*
 *.sqlite

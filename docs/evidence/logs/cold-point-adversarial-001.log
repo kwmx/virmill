@@ -1,0 +1,606 @@
+=== RUN   TestCaptureManifestValidDeclarations
+=== RUN   TestCaptureManifestValidDeclarations/session_and_equal_times
+=== RUN   TestCaptureManifestValidDeclarations/media
+=== RUN   TestCaptureManifestValidDeclarations/full_auxiliary
+=== RUN   TestCaptureManifestValidDeclarations/zero_TPM_bytes
+=== RUN   TestCaptureManifestValidDeclarations/external_secret
+=== RUN   TestCaptureManifestValidDeclarations/external_backing_source
+=== RUN   TestCaptureManifestValidDeclarations/basic
+=== RUN   TestCaptureManifestValidDeclarations/zero_UTC_offset
+=== RUN   TestCaptureManifestValidDeclarations/empty_removable
+=== RUN   TestCaptureManifestValidDeclarations/no_disks
+=== RUN   TestCaptureManifestValidDeclarations/volume_source
+=== RUN   TestCaptureManifestValidDeclarations/declared_flattened_backing
+=== RUN   TestCaptureManifestValidDeclarations/unresolved_native_auxiliary_paths
+=== RUN   TestCaptureManifestValidDeclarations/external_network_source
+--- PASS: TestCaptureManifestValidDeclarations (0.10s)
+    --- PASS: TestCaptureManifestValidDeclarations/session_and_equal_times (0.06s)
+    --- PASS: TestCaptureManifestValidDeclarations/media (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/full_auxiliary (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/zero_TPM_bytes (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/external_secret (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/external_backing_source (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/basic (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/zero_UTC_offset (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/empty_removable (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/no_disks (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/volume_source (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/declared_flattened_backing (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/unresolved_native_auxiliary_paths (0.00s)
+    --- PASS: TestCaptureManifestValidDeclarations/external_network_source (0.00s)
+=== RUN   TestCaptureManifestRejectsContradictions
+=== RUN   TestCaptureManifestRejectsContradictions/unclaimed_code
+=== RUN   TestCaptureManifestRejectsContradictions/source_invalid_secret
+=== RUN   TestCaptureManifestRejectsContradictions/operation_malformed
+=== RUN   TestCaptureManifestRejectsContradictions/managed_save
+=== RUN   TestCaptureManifestRejectsContradictions/TPM_version_absent
+=== RUN   TestCaptureManifestRejectsContradictions/disk_wrong_format
+=== RUN   TestCaptureManifestRejectsContradictions/zero_started
+=== RUN   TestCaptureManifestRejectsContradictions/no_members
+=== RUN   TestCaptureManifestRejectsContradictions/member_ID_oversized
+=== RUN   TestCaptureManifestRejectsContradictions/missing_effective
+=== RUN   TestCaptureManifestRejectsContradictions/duplicate_secret_disposition
+=== RUN   TestCaptureManifestRejectsContradictions/libvirt_absent
+=== RUN   TestCaptureManifestRejectsContradictions/zero_disk
+=== RUN   TestCaptureManifestRejectsContradictions/wrong_effective_role
+=== RUN   TestCaptureManifestRejectsContradictions/external_terminal_injection
+=== RUN   TestCaptureManifestRejectsContradictions/loader_unknown_format
+=== RUN   TestCaptureManifestRejectsContradictions/TPM_inconsistent_source
+=== RUN   TestCaptureManifestRejectsContradictions/version
+=== RUN   TestCaptureManifestRejectsContradictions/running_after
+=== RUN   TestCaptureManifestRejectsContradictions/member_digest_uppercase
+=== RUN   TestCaptureManifestRejectsContradictions/source_target_alias_duplicate
+=== RUN   TestCaptureManifestRejectsContradictions/extra_secret_disposition
+=== RUN   TestCaptureManifestRejectsContradictions/secret_both_dispositions
+=== RUN   TestCaptureManifestRejectsContradictions/member_unknown_kind
+=== RUN   TestCaptureManifestRejectsContradictions/member_digest_bad_hex
+=== RUN   TestCaptureManifestRejectsContradictions/oversized_member
+=== RUN   TestCaptureManifestRejectsContradictions/path_child
+=== RUN   TestCaptureManifestRejectsContradictions/missing_code
+=== RUN   TestCaptureManifestRejectsContradictions/external_secret_independent
+=== RUN   TestCaptureManifestRejectsContradictions/machine
+=== RUN   TestCaptureManifestRejectsContradictions/duplicate_paths_case
+=== RUN   TestCaptureManifestRejectsContradictions/unused_member
+=== RUN   TestCaptureManifestRejectsContradictions/source_target_invalid
+=== RUN   TestCaptureManifestRejectsContradictions/writable_CDROM
+=== RUN   TestCaptureManifestRejectsContradictions/source_hidden_traversal
+=== RUN   TestCaptureManifestRejectsContradictions/loader_missing_identity
+=== RUN   TestCaptureManifestRejectsContradictions/loader_unsafe_path
+=== RUN   TestCaptureManifestRejectsContradictions/duplicate_member
+=== RUN   TestCaptureManifestRejectsContradictions/ambiguous_source
+=== RUN   TestCaptureManifestRejectsContradictions/missing_NVRAM
+=== RUN   TestCaptureManifestRejectsContradictions/stateless_NVRAM
+=== RUN   TestCaptureManifestRejectsContradictions/TPM_invalid_version
+=== RUN   TestCaptureManifestRejectsContradictions/TPM_bad_encryption_ID
+=== RUN   TestCaptureManifestRejectsContradictions/fingerprint
+=== RUN   TestCaptureManifestRejectsContradictions/qemu_absent
+=== RUN   TestCaptureManifestRejectsContradictions/path_prefix
+=== RUN   TestCaptureManifestRejectsContradictions/missing_persistent
+=== RUN   TestCaptureManifestRejectsContradictions/volume_traversal
+=== RUN   TestCaptureManifestRejectsContradictions/TPM_wrong_member_kind
+=== RUN   TestCaptureManifestRejectsContradictions/URI_query
+=== RUN   TestCaptureManifestRejectsContradictions/architecture
+=== RUN   TestCaptureManifestRejectsContradictions/disk_missing_member
+=== RUN   TestCaptureManifestRejectsContradictions/external_independent
+=== RUN   TestCaptureManifestRejectsContradictions/unsafe_TPM_name
+=== RUN   TestCaptureManifestRejectsContradictions/TPM_invalid_profile
+=== RUN   TestCaptureManifestRejectsContradictions/duplicate_source_secret
+=== RUN   TestCaptureManifestRejectsContradictions/secret_neither_disposition
+=== RUN   TestCaptureManifestRejectsContradictions/source_kind
+=== RUN   TestCaptureManifestRejectsContradictions/disk_nonindependent
+=== RUN   TestCaptureManifestRejectsContradictions/opaque_source_wrong_location
+=== RUN   TestCaptureManifestRejectsContradictions/missing_secret_disposition
+=== RUN   TestCaptureManifestRejectsContradictions/secret_wrong_role
+=== RUN   TestCaptureManifestRejectsContradictions/kind
+=== RUN   TestCaptureManifestRejectsContradictions/zero_identity
+=== RUN   TestCaptureManifestRejectsContradictions/source_VM_mismatch
+=== RUN   TestCaptureManifestRejectsContradictions/provider
+=== RUN   TestCaptureManifestRejectsContradictions/nonUTC
+=== RUN   TestCaptureManifestRejectsContradictions/running_before
+=== RUN   TestCaptureManifestRejectsContradictions/disk_mapped_twice
+=== RUN   TestCaptureManifestRejectsContradictions/empty_volume_identity
+=== RUN   TestCaptureManifestRejectsContradictions/snapshot_uppercase
+=== RUN   TestCaptureManifestRejectsContradictions/version_key
+=== RUN   TestCaptureManifestRejectsContradictions/negative_TPM
+=== RUN   TestCaptureManifestRejectsContradictions/source_target_duplicate
+=== RUN   TestCaptureManifestRejectsContradictions/disk_target_extra
+=== RUN   TestCaptureManifestRejectsContradictions/source_absolute_path
+=== RUN   TestCaptureManifestRejectsContradictions/repeated_backing_identity
+=== RUN   TestCaptureManifestRejectsContradictions/duplicate_external
+=== RUN   TestCaptureManifestRejectsContradictions/reverse_times
+=== RUN   TestCaptureManifestRejectsContradictions/version_control
+=== RUN   TestCaptureManifestRejectsContradictions/member_digest_short
+=== RUN   TestCaptureManifestRejectsContradictions/empty_disk
+=== RUN   TestCaptureManifestRejectsContradictions/empty_removable_mapped
+=== RUN   TestCaptureManifestRejectsContradictions/source_format_control
+=== RUN   TestCaptureManifestRejectsContradictions/opaque_source_no_dependency
+=== RUN   TestCaptureManifestRejectsContradictions/NVRAM_unsafe_path
+=== RUN   TestCaptureManifestRejectsContradictions/API
+=== RUN   TestCaptureManifestRejectsContradictions/remote_URI
+=== RUN   TestCaptureManifestRejectsContradictions/empty_file_source
+=== RUN   TestCaptureManifestRejectsContradictions/missing_TPM_members
+=== RUN   TestCaptureManifestRejectsContradictions/unclaimed_TPM_members
+=== RUN   TestCaptureManifestRejectsContradictions/duplicate_TPM_name
+=== RUN   TestCaptureManifestRejectsContradictions/out_of_JSON_time_range
+=== RUN   TestCaptureManifestRejectsContradictions/member_ID_control
+=== RUN   TestCaptureManifestRejectsContradictions/media_wrong_member_kind
+=== RUN   TestCaptureManifestRejectsContradictions/empty_removable_identity
+=== RUN   TestCaptureManifestRejectsContradictions/template_format_without_template
+=== RUN   TestCaptureManifestRejectsContradictions/missing_auxiliary_inventory
+=== RUN   TestCaptureManifestRejectsContradictions/zero_finished
+=== RUN   TestCaptureManifestRejectsContradictions/disk_omitted
+--- PASS: TestCaptureManifestRejectsContradictions (0.35s)
+    --- PASS: TestCaptureManifestRejectsContradictions/unclaimed_code (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_invalid_secret (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/operation_malformed (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/managed_save (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/TPM_version_absent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/disk_wrong_format (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/zero_started (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/no_members (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/member_ID_oversized (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_effective (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/duplicate_secret_disposition (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/libvirt_absent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/zero_disk (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/wrong_effective_role (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/external_terminal_injection (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/loader_unknown_format (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/TPM_inconsistent_source (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/version (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/running_after (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/member_digest_uppercase (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_target_alias_duplicate (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/extra_secret_disposition (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/secret_both_dispositions (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/member_unknown_kind (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/member_digest_bad_hex (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/oversized_member (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/path_child (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_code (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/external_secret_independent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/machine (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/duplicate_paths_case (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/unused_member (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_target_invalid (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/writable_CDROM (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_hidden_traversal (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/loader_missing_identity (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/loader_unsafe_path (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/duplicate_member (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/ambiguous_source (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_NVRAM (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/stateless_NVRAM (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/TPM_invalid_version (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/TPM_bad_encryption_ID (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/fingerprint (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/qemu_absent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/path_prefix (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_persistent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/volume_traversal (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/TPM_wrong_member_kind (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/URI_query (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/architecture (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/disk_missing_member (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/external_independent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/unsafe_TPM_name (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/TPM_invalid_profile (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/duplicate_source_secret (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/secret_neither_disposition (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_kind (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/disk_nonindependent (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/opaque_source_wrong_location (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_secret_disposition (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/secret_wrong_role (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/kind (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/zero_identity (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_VM_mismatch (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/provider (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/nonUTC (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/running_before (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/disk_mapped_twice (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/empty_volume_identity (0.01s)
+    --- PASS: TestCaptureManifestRejectsContradictions/snapshot_uppercase (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/version_key (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/negative_TPM (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_target_duplicate (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/disk_target_extra (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_absolute_path (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/repeated_backing_identity (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/duplicate_external (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/reverse_times (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/version_control (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/member_digest_short (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/empty_disk (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/empty_removable_mapped (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/source_format_control (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/opaque_source_no_dependency (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/NVRAM_unsafe_path (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/API (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/remote_URI (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/empty_file_source (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_TPM_members (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/unclaimed_TPM_members (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/duplicate_TPM_name (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/out_of_JSON_time_range (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/member_ID_control (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/media_wrong_member_kind (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/empty_removable_identity (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/template_format_without_template (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/missing_auxiliary_inventory (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/zero_finished (0.00s)
+    --- PASS: TestCaptureManifestRejectsContradictions/disk_omitted (0.00s)
+=== RUN   TestCaptureManifestRejectsUnsafePaths
+=== RUN   TestCaptureManifestRejectsUnsafePaths/""
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"."
+=== RUN   TestCaptureManifestRejectsUnsafePaths/".."
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"../disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"/disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a/../disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a//disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a/./disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a/"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"C:disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a\\disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a\x00b"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a\n"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a\u202eb"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"_disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"disk_"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/disk"
+=== RUN   TestCaptureManifestRejectsUnsafePaths/"\xff"
+--- PASS: TestCaptureManifestRejectsUnsafePaths (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"." (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/".." (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"../disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"/disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a/../disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a//disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a/./disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a/" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"C:disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a\\disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a\x00b" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a\n" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a\u202eb" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"_disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"disk_" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/disk" (0.00s)
+    --- PASS: TestCaptureManifestRejectsUnsafePaths/"\xff" (0.00s)
+=== RUN   TestCaptureManifestBounds
+=== RUN   TestCaptureManifestBounds/native_versions
+=== RUN   TestCaptureManifestBounds/backing_count
+=== RUN   TestCaptureManifestBounds/external_count
+=== RUN   TestCaptureManifestBounds/secret_count
+=== RUN   TestCaptureManifestBounds/TPM_mapping_count
+--- PASS: TestCaptureManifestBounds (0.01s)
+    --- PASS: TestCaptureManifestBounds/native_versions (0.00s)
+    --- PASS: TestCaptureManifestBounds/backing_count (0.00s)
+    --- PASS: TestCaptureManifestBounds/external_count (0.00s)
+    --- PASS: TestCaptureManifestBounds/secret_count (0.00s)
+    --- PASS: TestCaptureManifestBounds/TPM_mapping_count (0.00s)
+=== RUN   TestCaptureManifestRequiresExplicitCollections
+=== RUN   TestCaptureManifestRequiresExplicitCollections/source_backing
+=== RUN   TestCaptureManifestRequiresExplicitCollections/source_disks
+=== RUN   TestCaptureManifestRequiresExplicitCollections/source_external
+=== RUN   TestCaptureManifestRequiresExplicitCollections/source_secrets
+=== RUN   TestCaptureManifestRequiresExplicitCollections/native_versions
+=== RUN   TestCaptureManifestRequiresExplicitCollections/members
+=== RUN   TestCaptureManifestRequiresExplicitCollections/disk_mappings
+=== RUN   TestCaptureManifestRequiresExplicitCollections/TPM_mappings
+=== RUN   TestCaptureManifestRequiresExplicitCollections/secret_dispositions
+--- PASS: TestCaptureManifestRequiresExplicitCollections (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/source_backing (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/source_disks (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/source_external (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/source_secrets (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/native_versions (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/members (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/disk_mappings (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/TPM_mappings (0.00s)
+    --- PASS: TestCaptureManifestRequiresExplicitCollections/secret_dispositions (0.00s)
+=== RUN   TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames
+=== RUN   TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/state/volatile
+=== RUN   TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/STATE/PERMANENT
+=== RUN   TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/state
+=== RUN   TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/state/permanent/child
+--- PASS: TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames (0.00s)
+    --- PASS: TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/state/volatile (0.00s)
+    --- PASS: TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/STATE/PERMANENT (0.00s)
+    --- PASS: TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/state (0.00s)
+    --- PASS: TestCaptureManifestRejectsSharedOutputAndConflictingTPMNames/state/permanent/child (0.00s)
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/null
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/array
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/oversized
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/unknown
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/escaped_duplicate
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/case_duplicate
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/null_struct
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/missing_source_array
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/empty
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/unpaired_surrogate
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/trailing
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/missing_false_claim
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/null_member_size
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/duplicate
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/case_alias
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/null_scalar
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/truncated
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/null_source_array
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/oversized_integer
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/nested_unknown
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/invalid_UTF8
+=== RUN   TestDecodeCaptureManifestStrictAndZeroOnError/missing_empty_field
+--- PASS: TestDecodeCaptureManifestStrictAndZeroOnError (0.04s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/null (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/array (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/oversized (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/unknown (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/escaped_duplicate (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/case_duplicate (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/null_struct (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/missing_source_array (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/empty (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/unpaired_surrogate (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/trailing (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/missing_false_claim (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/null_member_size (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/duplicate (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/case_alias (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/null_scalar (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/truncated (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/null_source_array (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/oversized_integer (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/nested_unknown (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/invalid_UTF8 (0.00s)
+    --- PASS: TestDecodeCaptureManifestStrictAndZeroOnError/missing_empty_field (0.00s)
+=== RUN   TestCaptureManifestSharedSyntheticDeclaration
+--- PASS: TestCaptureManifestSharedSyntheticDeclaration (0.00s)
+=== RUN   TestVersionedCaptureVerificationDoesNotAuthenticateSelfDeclarations
+--- PASS: TestVersionedCaptureVerificationDoesNotAuthenticateSelfDeclarations (0.02s)
+=== RUN   TestVersionedCaptureDispatchCannotDowngradeToLegacy
+--- PASS: TestVersionedCaptureDispatchCannotDowngradeToLegacy (0.04s)
+=== RUN   TestVersionedCaptureCancellationDoesNotOpenOrReturnData
+--- PASS: TestVersionedCaptureCancellationDoesNotOpenOrReturnData (0.00s)
+=== RUN   TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers
+=== RUN   TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/disk
+=== RUN   TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/tpm
+=== RUN   TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/secret
+=== RUN   TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/tpm-only-secret
+--- PASS: TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers (0.01s)
+    --- PASS: TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/disk (0.00s)
+    --- PASS: TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/tpm (0.00s)
+    --- PASS: TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/secret (0.00s)
+    --- PASS: TestColdPointExplicitEmptyMappingsCannotHideRequiredMembers/tpm-only-secret (0.00s)
+=== RUN   TestColdPointEncryptionReferenceUnionRequiresEveryDisposition
+--- PASS: TestColdPointEncryptionReferenceUnionRequiresEveryDisposition (0.01s)
+=== RUN   TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles
+=== RUN   TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles/distinct-tpm-names-one-member
+=== RUN   TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles/distinct-secret-uuids-one-member
+=== RUN   TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles/nvram-inventory-role-swap
+--- PASS: TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles (0.01s)
+    --- PASS: TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles/distinct-tpm-names-one-member (0.00s)
+    --- PASS: TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles/distinct-secret-uuids-one-member (0.00s)
+    --- PASS: TestColdPointDistinctIdentitiesCannotShareOrSwapArtifactRoles/nvram-inventory-role-swap (0.00s)
+=== RUN   TestColdPointAggregateSourceInventoryBound
+--- PASS: TestColdPointAggregateSourceInventoryBound (0.24s)
+=== RUN   TestColdPointForgedAuxiliaryClaimsRemainUnverifiedAndIntegrityChecked
+--- PASS: TestColdPointForgedAuxiliaryClaimsRemainUnverifiedAndIntegrityChecked (0.01s)
+=== RUN   TestManifestRefusesSpecialFileBeforeReadableOpen
+--- PASS: TestManifestRefusesSpecialFileBeforeReadableOpen (0.00s)
+=== RUN   TestFirmwareTPMCompletenessAndIndependentArtifactChecks
+--- PASS: TestFirmwareTPMCompletenessAndIndependentArtifactChecks (0.00s)
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/version
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-identity
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/identity-control
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/identity-format-control
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/identity-too-long
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-consistency
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/invented-consistency
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/cold-live-consistency
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/live-cold-consistency
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/unknown-mode
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/no-members
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/no-required
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-member-id
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-member-id
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-required-id
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-required-id
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/undeclared-member
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/unknown-kind
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-disk
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-xml
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-xml
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-live-xml
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-nvram
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/unexpected-nvram
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-nvram
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-tpm
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/unexpected-tpm
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/live-auxiliary-independent
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/external-secret-independent
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-secret-reference
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-secret-reference
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/zero-size
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/negative-size
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/size-limit
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/size-overflow
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-digest
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/wrong-digest-width
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/invalid-digest
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/uppercase-digest
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-path
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/absolute-path
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/dot-dot-path
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/noncanonical-path
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/trailing-slash
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/backslash-path
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/path-file-parent-conflict
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/too-many-members
+=== RUN   TestManifestValidationRejectsUnboundedAndContradictoryClaims/too-many-references
+--- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/version (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-identity (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/identity-control (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/identity-format-control (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/identity-too-long (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-consistency (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/invented-consistency (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/cold-live-consistency (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/live-cold-consistency (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/unknown-mode (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/no-members (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/no-required (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-member-id (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-member-id (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-required-id (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-required-id (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/undeclared-member (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/unknown-kind (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-disk (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-xml (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-xml (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-live-xml (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-nvram (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/unexpected-nvram (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-nvram (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/missing-tpm (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/unexpected-tpm (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/live-auxiliary-independent (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/external-secret-independent (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-secret-reference (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-secret-reference (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/zero-size (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/negative-size (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/size-limit (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/size-overflow (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/empty-digest (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/wrong-digest-width (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/invalid-digest (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/uppercase-digest (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/duplicate-path (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/absolute-path (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/dot-dot-path (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/noncanonical-path (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/trailing-slash (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/backslash-path (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/path-file-parent-conflict (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/too-many-members (0.00s)
+    --- PASS: TestManifestValidationRejectsUnboundedAndContradictoryClaims/too-many-references (0.00s)
+=== RUN   TestManifestValidationPreservesSupportedDeclarationsAndFiniteBounds
+--- PASS: TestManifestValidationPreservesSupportedDeclarationsAndFiniteBounds (0.00s)
+=== RUN   TestManifestEveryDeclaredMemberMustMatch
+=== RUN   TestManifestEveryDeclaredMemberMustMatch/missing
+=== RUN   TestManifestEveryDeclaredMemberMustMatch/shorter
+=== RUN   TestManifestEveryDeclaredMemberMustMatch/longer
+=== RUN   TestManifestEveryDeclaredMemberMustMatch/same-size-corruption
+=== RUN   TestManifestEveryDeclaredMemberMustMatch/directory
+--- PASS: TestManifestEveryDeclaredMemberMustMatch (0.00s)
+    --- PASS: TestManifestEveryDeclaredMemberMustMatch/missing (0.00s)
+    --- PASS: TestManifestEveryDeclaredMemberMustMatch/shorter (0.00s)
+    --- PASS: TestManifestEveryDeclaredMemberMustMatch/longer (0.00s)
+    --- PASS: TestManifestEveryDeclaredMemberMustMatch/same-size-corruption (0.00s)
+    --- PASS: TestManifestEveryDeclaredMemberMustMatch/directory (0.00s)
+=== RUN   TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles
+=== RUN   TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/member-inside
+=== RUN   TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/member-outside
+=== RUN   TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/ancestor
+=== RUN   TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/root
+--- PASS: TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles (0.00s)
+    --- PASS: TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/member-inside (0.00s)
+    --- PASS: TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/member-outside (0.00s)
+    --- PASS: TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/ancestor (0.00s)
+    --- PASS: TestManifestRefusesSymlinkComponentsAndAcceptsOrdinaryNestedFiles/root (0.00s)
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/regular-replacement
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/symlink-replacement
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/fifo-replacement
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/hardlink-added
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/same-size-write-restored-mtime
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/mode-change
+=== RUN   TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/root-replacement
+--- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/regular-replacement (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/symlink-replacement (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/fifo-replacement (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/hardlink-added (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/same-size-write-restored-mtime (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/mode-change (0.00s)
+    --- PASS: TestManifestHeldSetDetectsSubstitutionAndMetadataChanges/root-replacement (0.00s)
+=== RUN   TestManifestFIFOReplacementDoesNotBlock
+=== RUN   TestManifestFIFOReplacementDoesNotBlock/member
+=== RUN   TestManifestFIFOReplacementDoesNotBlock/document
+--- PASS: TestManifestFIFOReplacementDoesNotBlock (2.06s)
+    --- PASS: TestManifestFIFOReplacementDoesNotBlock/member (1.03s)
+    --- PASS: TestManifestFIFOReplacementDoesNotBlock/document (1.03s)
+=== RUN   TestManifestCancellationAndBoundedReads
+--- PASS: TestManifestCancellationAndBoundedReads (0.00s)
+=== RUN   TestReadManifestContextStrictStableBoundedFile
+=== RUN   TestReadManifestContextStrictStableBoundedFile/unknown-field
+=== RUN   TestReadManifestContextStrictStableBoundedFile/duplicate-field
+=== RUN   TestReadManifestContextStrictStableBoundedFile/escaped-duplicate-field
+=== RUN   TestReadManifestContextStrictStableBoundedFile/trailing-value
+=== RUN   TestReadManifestContextStrictStableBoundedFile/future-version
+=== RUN   TestReadManifestContextStrictStableBoundedFile/invalid-kind
+=== RUN   TestReadManifestContextStrictStableBoundedFile/empty-file
+=== RUN   TestReadManifestContextStrictStableBoundedFile/truncated
+--- PASS: TestReadManifestContextStrictStableBoundedFile (0.01s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/unknown-field (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/duplicate-field (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/escaped-duplicate-field (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/trailing-value (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/future-version (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/invalid-kind (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/empty-file (0.00s)
+    --- PASS: TestReadManifestContextStrictStableBoundedFile/truncated (0.00s)
+=== RUN   TestReadManifestRefusesAliasesAndHiddenTraversal
+=== RUN   TestReadManifestRefusesAliasesAndHiddenTraversal/symlink
+=== RUN   TestReadManifestRefusesAliasesAndHiddenTraversal/ancestor-symlink
+=== RUN   TestReadManifestRefusesAliasesAndHiddenTraversal/hardlink
+=== RUN   TestReadManifestRefusesAliasesAndHiddenTraversal/directory
+=== RUN   TestReadManifestRefusesAliasesAndHiddenTraversal/hidden-traversal
+--- PASS: TestReadManifestRefusesAliasesAndHiddenTraversal (0.00s)
+    --- PASS: TestReadManifestRefusesAliasesAndHiddenTraversal/symlink (0.00s)
+    --- PASS: TestReadManifestRefusesAliasesAndHiddenTraversal/ancestor-symlink (0.00s)
+    --- PASS: TestReadManifestRefusesAliasesAndHiddenTraversal/hardlink (0.00s)
+    --- PASS: TestReadManifestRefusesAliasesAndHiddenTraversal/directory (0.00s)
+    --- PASS: TestReadManifestRefusesAliasesAndHiddenTraversal/hidden-traversal (0.00s)
+=== RUN   TestManifestRejectsHardlinkedMember
+--- PASS: TestManifestRejectsHardlinkedMember (0.00s)
+=== RUN   FuzzDecodeCaptureManifest
+=== RUN   FuzzDecodeCaptureManifest/seed#0
+=== RUN   FuzzDecodeCaptureManifest/seed#1
+=== RUN   FuzzDecodeCaptureManifest/seed#2
+=== RUN   FuzzDecodeCaptureManifest/seed#3
+=== RUN   FuzzDecodeCaptureManifest/seed#4
+=== RUN   FuzzDecodeCaptureManifest/seed#5
+--- PASS: FuzzDecodeCaptureManifest (0.01s)
+    --- PASS: FuzzDecodeCaptureManifest/seed#0 (0.00s)
+    --- PASS: FuzzDecodeCaptureManifest/seed#1 (0.01s)
+    --- PASS: FuzzDecodeCaptureManifest/seed#2 (0.00s)
+    --- PASS: FuzzDecodeCaptureManifest/seed#3 (0.00s)
+    --- PASS: FuzzDecodeCaptureManifest/seed#4 (0.00s)
+    --- PASS: FuzzDecodeCaptureManifest/seed#5 (0.00s)
+=== RUN   FuzzManifestValidation
+=== RUN   FuzzManifestValidation/seed#0
+=== RUN   FuzzManifestValidation/seed#1
+--- PASS: FuzzManifestValidation (0.00s)
+    --- PASS: FuzzManifestValidation/seed#0 (0.00s)
+    --- PASS: FuzzManifestValidation/seed#1 (0.00s)
+PASS
+ok  	virmill.local/core/internal/app/protection	3.978s
+=== RUN   TestColdRecoveryPointSchemaIsOfflineStrictAndExplicit
+--- PASS: TestColdRecoveryPointSchemaIsOfflineStrictAndExplicit (0.11s)
+=== RUN   TestPluginSchemasAreOfflineAndValidateResults
+--- PASS: TestPluginSchemasAreOfflineAndValidateResults (0.00s)
+=== RUN   TestBundledExamplesOffline
+--- PASS: TestBundledExamplesOffline (0.01s)
+=== RUN   TestYAMLAndTerminalSafety
+--- PASS: TestYAMLAndTerminalSafety (0.00s)
+PASS
+ok  	virmill.local/core/internal/validation	1.159s
