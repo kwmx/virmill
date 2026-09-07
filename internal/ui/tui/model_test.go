@@ -139,3 +139,54 @@ func TestStorageAndNetworkInventoryAreReachableWithoutApproval(t *testing.T) {
 		}
 	}
 }
+
+func TestCreationAndDefinitionRecoveryHaveSharedTUIAccess(t *testing.T) {
+	for _, test := range []struct{ command, input, method, id string }{
+		{"vm create", `{"id":"prepared-operation","input":{"identityMode":"clone","hardware":{"disks":[{"sourceID":"boot","bus":"sata","bootOrder":1}],"nics":[]}}}`, "vm.create", "prepared-operation"},
+		{"vm creation resume", "failed-operation", "vm.creation.resume", "failed-operation"},
+		{"vm creation result", "creation-operation", "vm.creation.result", "creation-operation"},
+	} {
+		r := &recorder{}
+		m := New(r, "qemu:///session")
+		m.Section = 1
+		found := false
+		for i, a := range m.actions() {
+			if a.Command == test.command {
+				m.Selected = i
+				found = true
+			}
+		}
+		if !found {
+			t.Fatal("missing TUI action", test.command)
+		}
+		model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		m = model.(Model)
+		m.Input = test.input
+		_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		if cmd == nil {
+			t.Fatal("TUI form inaccessible", test.command)
+		}
+		cmd()
+		if r.method != test.method || r.request.ID != test.id || r.request.Connection != "qemu:///session" {
+			t.Fatal("TUI mapping/connection drift", r)
+		}
+	}
+}
+
+func TestLargeCreationFormRemainsBoundedAndVisible(t *testing.T) {
+	m := New(&recorder{}, "qemu:///session")
+	m.Editing = true
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(strings.Repeat("x", 20000))})
+	m = model.(Model)
+	if len(m.Input) != 20000 {
+		t.Fatal("complete multi-disk form truncated")
+	}
+	if strings.Count(m.View(), "\n") > 24 {
+		t.Fatal("form overflowed terminal")
+	}
+	model, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(strings.Repeat("x", 128<<10))})
+	m = model.(Model)
+	if len(m.Input) != 20000 || !strings.Contains(m.Output, "limit") {
+		t.Fatal("oversized paste not refused atomically")
+	}
+}

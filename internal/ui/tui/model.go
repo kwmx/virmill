@@ -114,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Mutation == "set" || a.Mutation == "autostart" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
+				if a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "vm.create" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
 					var form struct {
 						ID    string         `json:"id"`
 						Path  string         `json:"path"`
@@ -133,8 +133,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Input = ""
 				return m, m.call(a.Method, r)
 			default:
-				if v.Type == tea.KeyRunes && len(m.Input) < 8192 {
-					m.Input += string(v.Runes)
+				if v.Type == tea.KeyRunes {
+					incoming := string(v.Runes)
+					if len(m.Input)+len(incoming) <= 128<<10 {
+						m.Input += incoming
+					} else {
+						m.Output = "Input exceeds the 128 KiB form limit; the new text was not added."
+					}
 				}
 			}
 			return m, nil
@@ -240,7 +245,11 @@ func (m Model) View() string {
 		b.WriteString("Request in progress; UI remains available.\n")
 	}
 	if m.Editing {
-		b.WriteString("Input: path/ID; VM edits, import and plugin plans use JSON {id/path,input}. Esc cancels:\n> " + validation.SafeText(m.Input) + "\n")
+		lines := wrap(validation.SafeText(m.Input), max(20, m.Width-2))
+		if len(lines) > 3 {
+			lines = append([]string{"… earlier input hidden"}, lines[len(lines)-2:]...)
+		}
+		b.WriteString("Input: path/ID; VM creation/edits, import and plugin plans use JSON {id/path,input}. Esc cancels:\n> " + strings.Join(lines, "\n  ") + "\n")
 	}
 	if m.Confirm {
 		fmt.Fprintf(&b, "Approve plan %s. Required acknowledgements: %s\nType the full plan digest to authorize these exact effects; Esc cancels:\n%s\n> %s\n", m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, validation.SafeText(m.Input))

@@ -8,9 +8,9 @@ matching; missing kickoff document recorded in ADR 0001. No scope was reduced.
 |---|---|---|
 | 0 intake | Available docs/schemas read; ADRs, unknowns and 71-row tracker created | Missing kickoff noted; actual disposable host not designated |
 | 1 spike | Native official binding builds with dlopen and runs libvirt test driver; OVA/XML/USB/manifest/network-intent fixtures implemented | Actual system/session/event/import/USB/packet/rollback/cold-restore matrix and guest versions |
-| 2 foundations | SQLite WAL/FULL, version guard/backup, locks, strict RPC, UID checks, immutable plan/dedup and crash observation | Full state/step schema, all recovery adapters, schedules, independent guardians and real effect faults |
-| 3 VM operations | Shared CLI/TUI service, native inventory and subset of planned lifecycle/vCPU edits | Complete creation/configuration/storage/console/guest paths and real VM evidence |
-| 4 import/network | Bounded package inspection, confined all-disk OVA conversion/atomic artifact publication, native pool/network read adapters and semantic topology validation | Guest adaptation/registration/boot/all network mutation/policy/rollback/packet flows |
+| 2 foundations | SQLite WAL/FULL, schema-2 migration backup/barrier, atomic recovery lock transfer, strict RPC, UID checks, immutable plan/dedup and crash observation | Full state/step schema, all recovery adapters, schedules, independent guardians and real effect faults |
+| 3 VM operations | Shared CLI/TUI, native inventory/lifecycle subset, prepared-appliance define-last creation and catalog identity, reviewed definition recovery | All creation entry paths/full forms/configuration/partial-volume disposition/console/guest paths and real VM evidence |
+| 4 import/network | Bounded package inspection, confined all-disk OVA conversion/atomic artifact publication, explicit disk/NIC mapping, native pool/network reads and topology validation | Guest adaptation and registration/boot qualification; all network mutation/policy/rollback/packet flows |
 | 5 protection/devices | Graph, manifest and USB selector safety libraries | Actual capture/restic/restore/templates/snapshots/USB/sharing integrations |
 | 6 labs/automation | Schema, reference and DAG validation | Actual DAG apply/reconcile/teardown, provisioning, scheduling and coordinated restore |
 | 7 plugins | SDK, shared scaffold/pack/install/version/grant plans, confined read-only actions, two-language and persistent simulated provider fixtures | Unsigned/development override, quarantine, brokers, structured forms and full extension/provider matrix |
@@ -34,7 +34,13 @@ unchanged full 1.0 scope. Real generated-file tests now cover six source formats
 two split VMDK disks, contained backing-chain flattening, missing/outside extents,
 CLI/daemon preparation and hash verification. Synthetic phase tests additionally
 cover cancellation cleanup and reconciliation after lost publication acknowledgement.
-These do not qualify VMware guests or libvirt boot. The next dependency-ready work
-is complete immutable VM source/resource contracts and safe creation, backend
-lifecycle completion and the remaining recovery/protection handlers.
+These do not qualify VMware guests or libvirt boot. ADR 0006 adds native creation
+code with define-last storage phases, catalog identity and a reviewed recovery
+operation for fully verified retained volumes. Native test-driver XML validation
+covers BIOS and UEFI/TPM definitions; installed QEMU help probes cover device
+metadata. Neither exercises native storage streams, initializes firmware/TPM or
+boots a VM. Coordinator fixtures exercise cancellation, tampered volume refusal,
+lost acknowledgements, complete lock transfer, rollback and schema-1 migration.
+The next dependency-ready work includes partial-resource disposition, other VM
+creation entry paths, lifecycle/configuration completion and protection handlers.
 The root release checklist and requirements matrix must pass before version 1.0.

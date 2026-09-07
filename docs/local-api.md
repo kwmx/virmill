@@ -14,11 +14,14 @@ JSON-RPC error codes. Successful submission is queued/accepted, not completed.
 | version | none | build and API metadata |
 | host.inspect, host.doctor | none | read-only prerequisite checks |
 | host.capabilities | connection | native connection capabilities |
-| inventory.list | connection | observed VMs, external ownership |
+| inventory.list | connection | observed VMs; managed ownership requires the local catalog and matching native identity |
 | inventory.get | connection, id | VM live/persistent XML and fingerprint |
 | storage.pool.list, storage.pool.get | connection / connection, id (pool UUID) | observed pools / one pool; unknown capacity is null |
 | network.list, network.get | connection / connection, id (network UUID) | live/persistent network XML; isolationVerification=not-run |
 | vm.plan | connection, id, action, input | immutable operation plan |
+| vm.create | connection, id (successful preparation operation), input.identityMode/hardware | immutable define-last creation plan |
+| vm.creation.result | id (creation/recovery operation) | operation and durable volume/definition receipt; guest verification remains false |
+| vm.creation.resume | connection, id (uncertain creation/recovery operation) | fresh reviewed definition-only recovery plan |
 | plan.show | id | the immutable plan |
 | operation.apply | apply: planID, planDigest, idempotencyKey, acknowledgements | durable Job |
 | operation.list | none | durable jobs |
@@ -63,3 +66,13 @@ records file conversion checks with `vmDefined: false` and `guestBootVerified:
 false`. Unconfirmed jobs expose `publicationStatus: unconfirmed`, not a false
 assertion that publication never occurred. See [the workflow](import-preparation.md)
 for cancellation and retained staging behavior.
+
+Creation input uses the bundled `vm-creation-input` schema. The application
+generates UUID/MAC identities during preview and records them in its immutable
+input/review. The [creation workflow](vm-creation.md) documents explicit mapping,
+retained volumes and separate registration/boot/setup/connectivity stages.
+`vm.creation.resume` requires a complete verified set and transfers every original
+resource lock transactionally. Jobs have additive optional `recoveryOf` and
+`recoveryOperationID` links. The original job stays partial; canceled or failed
+recovery retains inherited locks. Schema 2 prevents older database readers from
+applying the pre-recovery cancellation rules. Reconciliation never replays effects.

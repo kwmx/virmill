@@ -39,6 +39,9 @@ Validation does not create networks or guests.
 `qemu:///session` is selected explicitly. Remote URIs and `test:///default` are
 rejected by the application. The native test-driver fixture exists only in tests.
 Existing inventory remains externally managed; inventory discovery never adopts it.
+A newly created domain is marked managed only after its durable catalog record and
+native identity match. See [VM creation](vm-creation.md) for the prepared-appliance
+adapter, explicit mappings, staged result and definition-only recovery.
 
 VM mutation commands produce a preview. `plan apply` requires its full digest,
 an idempotency key and all acknowledgements, such as `--ack host-mutation`.

@@ -1,0 +1,23 @@
+{
+  "identityMode": "clone",
+  "hardware": {
+    "name": "Imported appliance",
+    "poolID": "00000000-0000-4000-8000-000000000001",
+    "architecture": "x86_64",
+    "machine": "pc-q35-10.2",
+    "vcpus": 2,
+    "memoryMiB": 2048,
+    "cpu": {"mode": "host-passthrough"},
+    "firmware": {"mode": "bios", "secureBoot": false, "tpm": false},
+    "clock": "utc",
+    "graphics": "vnc-unix",
+    "disks": [
+      {"sourceID": "boot", "bus": "sata", "bootOrder": 1},
+      {"sourceID": "data", "bus": "scsi", "bootOrder": 2}
+    ],
+    "nics": [
+      {"id": "front", "sourceIndex": 0, "networkID": "00000000-0000-4000-8000-000000000002", "model": "virtio", "link": "up"},
+      {"id": "back", "sourceIndex": 1, "networkID": "00000000-0000-4000-8000-000000000003", "model": "e1000e", "link": "down"}
+    ]
+  }
+}

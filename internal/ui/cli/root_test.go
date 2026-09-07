@@ -105,3 +105,29 @@ func TestResourceInventoryCommandsPreserveExplicitConnection(t *testing.T) {
 		}
 	}
 }
+
+func TestCreationAndRecoveryCommandsUseSharedService(t *testing.T) {
+	for _, test := range []struct {
+		args   []string
+		method string
+		id     string
+	}{
+		{[]string{"vm", "create", "prepared-operation", "--input", `{"identityMode":"clone","hardware":{"name":"fixture","disks":[{"sourceID":"boot","bus":"sata","bootOrder":1}],"nics":[]}}`, "--plan"}, "vm.create", "prepared-operation"},
+		{[]string{"vm", "creation", "resume", "failed-operation", "--plan"}, "vm.creation.resume", "failed-operation"},
+		{[]string{"vm", "creation", "result", "creation-operation"}, "vm.creation.result", "creation-operation"},
+	} {
+		r := &recorder{}
+		var out bytes.Buffer
+		c := New(r, &out, &out)
+		c.SetArgs(append(test.args, "--connection", "qemu:///session", "--output", "json", "--non-interactive"))
+		if err := c.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		if r.method != test.method || r.request.ID != test.id || r.request.Connection != "qemu:///session" {
+			t.Fatal("creation/recovery bypassed shared service", r)
+		}
+		if r.method == "vm.create" && r.request.Input["identityMode"] != "clone" {
+			t.Fatal("identity choice lost")
+		}
+	}
+}

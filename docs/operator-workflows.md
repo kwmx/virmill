@@ -38,8 +38,9 @@ A valid checksum is not publisher authenticity or guest readiness. The separate
 [`import prepare` workflow](import-preparation.md) performs confined source-format,
 backing-chain and extent inspection, independent qcow2 conversion and content
 comparison for every explicitly selected disk. It preserves the descriptor and
-publishes the complete set under a durable receipt. Guest adaptation, full NIC/
-controller mapping, registration and guest boot remain incomplete. Preparation
+publishes the complete set under a durable receipt. Explicit NIC/controller mapping
+and registration use the separate [creation adapter](vm-creation.md).
+Guest adaptation and boot remain unqualified. Preparation
 produces disk artifacts, not a defined VM.
 
 Powered-off vCPU previews patch the original XML byte spans and retain unknown
@@ -100,8 +101,10 @@ are provided as if they were validated procedures.
 The coordinator socket is `$XDG_RUNTIME_DIR/virmill/control.sock`, mode 0600 in a
 0700 directory. The journal lives in `$XDG_STATE_HOME/virmill/journal.db`, with WAL,
 FULL synchronization and a singleton lock. Database versions newer than the
-application are refused. A consistent SQLite backup test covers schema 1; production
-upgrade migrations and scheduled credential-store access are still incomplete.
+application are refused. Schema 1 upgrades to schema 2 after a private, flushed
+consistent backup; the new version guards recovery lock-transfer semantics.
+Generated fixture tests cover migration, retained locks and rollback. Production
+package upgrade qualification and scheduled credential-store access remain incomplete.
 
 Standard XDG variables choose directories. `VIRMILL_SDK_DIRECTORY` optionally
 selects reviewed SDK source for scaffolding (default `/usr/share/virmill/sdk/go`).

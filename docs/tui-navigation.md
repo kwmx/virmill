@@ -10,6 +10,13 @@ Inputs use stable VM UUIDs or explicit local file paths. For vCPU edits enter
 The current editor is a basic input view, not the full required creation/hardware
 wizard. Sections without completed workflows say so explicitly.
 
+**VMs → vm create** accepts
+`{"id":"PREPARATION_OPERATION_ID","input":{...creation parameters...}}`.
+The [creation guide](vm-creation.md) explains disk/NIC identity and firmware choices.
+**vm creation result** and **vm creation resume** each accept an operation ID.
+Forms accept up to 128 KiB and display a bounded tail; oversized pastes are refused
+without partially appending them. CLI and TUI use the same creation/recovery plans.
+
 A plan is rendered from the same immutable service object used by CLI. Press a to
 review its acknowledgement IDs, then type its full digest to apply. Esc cancels
 that dialog without submitting any mutation. Jobs and errors use text labels;

@@ -33,7 +33,7 @@ Each ledger entry records its own revision, source digest, fixture hashes and li
 | NET-11 | None recorded | Real packet tests | not-implemented; not accepted |
 | NET-12 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Real backend | in-progress; not accepted |
 | STO-01 | [resource-inventory-001](evidence/logs/resource-inventory-001.log) (passed / native-simulated-driver-and-interface-contract); [resource-inventory-core-001](evidence/logs/resource-inventory-core-001.log) (passed / unit-and-simulated-contract) | Real backend | in-progress; not accepted |
-| STO-02 | None recorded | Real backend | not-implemented; not accepted |
+| STO-02 | None recorded | Real backend | in-progress; not accepted |
 | STO-03 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Unit + real backend | in-progress; not accepted |
 | SNAP-01 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Real backend + guest | in-progress; not accepted |
 | SNAP-02 | None recorded | Real backend | not-implemented; not accepted |

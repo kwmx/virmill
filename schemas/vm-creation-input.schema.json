@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-creation-input.schema.json",
+  "title": "Explicit VM creation from a local prepared import",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identityMode",
+    "hardware"
+  ],
+  "properties": {
+    "identityMode": {
+      "const": "clone"
+    },
+    "hardware": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "poolID",
+        "architecture",
+        "machine",
+        "vcpus",
+        "memoryMiB",
+        "cpu",
+        "firmware",
+        "clock",
+        "graphics",
+        "disks",
+        "nics"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "poolID": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "architecture": {
+          "const": "x86_64"
+        },
+        "machine": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "vcpus": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        },
+        "memoryMiB": {
+          "type": "integer",
+          "minimum": 128,
+          "maximum": 1048576
+        },
+        "cpu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "host-passthrough",
+                "host-model",
+                "custom"
+              ]
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        },
+        "firmware": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "secureBoot",
+            "tpm"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "bios",
+                "uefi"
+              ]
+            },
+            "secureBoot": {
+              "type": "boolean"
+            },
+            "tpm": {
+              "type": "boolean"
+            },
+            "code": {
+              "type": "string",
+              "pattern": "^/",
+              "maxLength": 4096
+            },
+            "template": {
+              "type": "string",
+              "pattern": "^/",
+              "maxLength": 4096
+            },
+            "format": {
+              "enum": [
+                "raw",
+                "qcow2"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "mode": {
+                    "const": "uefi"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "code",
+                  "template",
+                  "format"
+                ]
+              }
+            }
+          ]
+        },
+        "clock": {
+          "enum": [
+            "utc",
+            "localtime"
+          ]
+        },
+        "graphics": {
+          "enum": [
+            "none",
+            "vnc-unix"
+          ]
+        },
+        "disks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceID",
+              "bus",
+              "bootOrder"
+            ],
+            "properties": {
+              "sourceID": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "bus": {
+                "enum": [
+                  "virtio",
+                  "sata",
+                  "scsi"
+                ]
+              },
+              "bootOrder": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 64
+              }
+            }
+          }
+        },
+        "nics": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "sourceIndex",
+              "networkID",
+              "model",
+              "link"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{0,62}$"
+              },
+              "sourceIndex": {
+                "type": "integer",
+                "minimum": -1,
+                "maximum": 31
+              },
+              "networkID": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              "model": {
+                "enum": [
+                  "virtio",
+                  "e1000e",
+                  "rtl8139"
+                ]
+              },
+              "link": {
+                "enum": [
+                  "up",
+                  "down"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

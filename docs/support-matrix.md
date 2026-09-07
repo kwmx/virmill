@@ -15,3 +15,9 @@ legitimately obtained Windows UEFI/TPM. No images were supplied, downloaded or
 certified. Track architecture, machine/CPU, firmware, controllers, drivers,
 provisioning transport and source digest separately for each future run.
 
+The creation adapter has synthetic coordinator and native **test-driver XML**
+evidence, plus read-only installed QEMU device-help metadata. Native qemu-driver
+volume allocation/upload/refresh/readback, XML normalization, file labels, streams
+under interruption, firmware initialization and guest boot are not verified.
+Unsupported normalization fails reconciliation rather than certifying an altered
+definition. See ADR 0006 and `tests/fixtures/creation/README.md` for the boundary.

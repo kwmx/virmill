@@ -23,6 +23,13 @@ type Handler interface {
 type PlanReviewer interface {
 	Review(context.Context, domain.Plan, []byte) (map[string]any, error)
 }
+
+// RecoveryHandler identifies an uncertain job whose complete lock set must be
+// inherited atomically. It is implemented only by explicit reviewed workflows;
+// ordinary apply requests cannot select or bypass resource-lock ownership.
+type RecoveryHandler interface {
+	RecoveryParent(context.Context, domain.Plan, []byte) (string, error)
+}
 type ApplyRequest struct {
 	PlanID           string   `json:"planID"`
 	PlanDigest       string   `json:"planDigest"`
@@ -149,7 +156,16 @@ func (e *Engine) Apply(ctx context.Context, uid uint32, r ApplyRequest) (domain.
 	if err = h.Validate(ctx, p, input); err != nil {
 		return empty, err
 	}
-	j, err := e.Store.Accept(p, r.IdempotencyKey, requestHash)
+	var j domain.Job
+	if recovery, ok := h.(RecoveryHandler); ok {
+		parent, parentErr := recovery.RecoveryParent(ctx, p, input)
+		if parentErr != nil {
+			return empty, parentErr
+		}
+		j, err = e.Store.AcceptRecovery(p, r.IdempotencyKey, requestHash, parent)
+	} else {
+		j, err = e.Store.Accept(p, r.IdempotencyKey, requestHash)
+	}
 	if err != nil {
 		return empty, err
 	}
@@ -183,7 +199,11 @@ func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
 		j.CancelRequested = fresh.CancelRequested
 		j.Step = i
 		if j.CancelRequested {
-			_ = e.transition(&j, "canceled", "Canceled at a safe step boundary", nil)
+			if j.RecoveryOf != "" {
+				_ = e.transition(&j, "recovery-required", "Recovery canceled; inherited uncertain resources remain locked", domain.Fail("RECOVERY_REQUIRED", "review another recovery operation"))
+			} else {
+				_ = e.transition(&j, "canceled", "Canceled at a safe step boundary", nil)
+			}
 			e.mu.Unlock()
 			return
 		}
@@ -193,14 +213,18 @@ func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
 		}
 		e.mu.Unlock()
 		if err = h.Validate(ctx, p, input); err != nil {
-			_ = e.transition(&j, "failed", "Preconditions failed; no new step effect", err)
+			if j.RecoveryOf != "" {
+				_ = e.transition(&j, "recovery-required", "Recovery preconditions failed; inherited resources remain locked", err)
+			} else {
+				_ = e.transition(&j, "failed", "Preconditions failed; no new step effect", err)
+			}
 			return
 		}
 		if err = e.transition(&j, "running", "Intent persisted: "+step.Action, nil); err != nil {
 			return
 		}
 		if err = h.Execute(ctx, p, input, step); err != nil {
-			if errors.Is(err, ErrCanceledSafely) {
+			if errors.Is(err, ErrCanceledSafely) && j.RecoveryOf == "" {
 				_ = e.transition(&j, "canceled", "Canceled at a verified safe boundary; no published effect remains", nil)
 				return
 			}

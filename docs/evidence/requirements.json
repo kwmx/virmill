@@ -10,18 +10,22 @@
       "gate": 3,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/backend/libvirt/provider_linux.go"
+        "internal/backend/libvirt/provider_linux.go",
+        "internal/creating/ownership_linux.go",
+        "internal/backend/libvirt/creation_probes_linux.go"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-01",
       "tests": [
-        "internal/backend/libvirt/provider_linux_test.go"
+        "internal/backend/libvirt/provider_linux_test.go",
+        "internal/creating/ownership_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "core-tests-001"
       ],
       "outstanding": [
-        "Actual system/session inventories and event reconnection are not qualified; no adoption workflow."
+        "Read-only native inventory and created-VM catalog binding exist; actual system/session inventories, event reconnection and explicit adoption remain unqualified/incomplete."
       ],
       "hardwareVerified": false,
       "released": false
@@ -135,12 +139,16 @@
       "gate": 3,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/backend/libvirt/provider_linux.go"
+        "internal/backend/libvirt/provider_linux.go",
+        "internal/creating/ownership_linux.go",
+        "internal/backend/libvirt/creation_probes_linux.go"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-06",
       "tests": [
-        "internal/backend/libvirt/provider_linux_test.go"
+        "internal/backend/libvirt/provider_linux_test.go",
+        "internal/creating/ownership_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "core-tests-001"
@@ -181,21 +189,29 @@
       "implementationPaths": [
         "internal/app/importer/ova.go",
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-02",
       "tests": [
         "internal/app/importer/ova_test.go",
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
         "import-conversion-001"
       ],
       "outstanding": [
-        "Actual generated two-disk split-VMDK conversion preserves descriptor/controller order. VMware-origin guest adaptation, NIC mapping, registration and boot remain unverified."
+        "Prepared artifact mapping and define-last native adapter implemented; native streams/registration, VMware guest adaptation, disk/NIC order and guest boot remain unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -211,14 +227,22 @@
       "implementationPaths": [
         "internal/app/importer/ova.go",
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
       "tests": [
         "internal/app/importer/ova_test.go",
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -227,7 +251,7 @@
         "resource-inventory-artifacts-001"
       ],
       "outstanding": [
-        "Generic OVA preparation converts and atomically publishes every selected disk; generic guest registration, mapping and boot remain incomplete."
+        "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -242,13 +266,21 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
       "tests": [
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001"
@@ -300,13 +332,21 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-06",
       "tests": [
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -314,7 +354,7 @@
         "import-cli-daemon-001"
       ],
       "outstanding": [
-        "Original preservation, converter-failure staging, safe worker cancellation and lost-publication-ack recovery tested; actual disk-full/crash/reboot/registration failure matrix remains."
+        "Preparation cancellation/failure preserves sources in fixtures. Creation retains partial volumes and locks; complete sets have reviewed definition-only recovery. Native stream interruption, low-space failure and partial-volume disposition remain unqualified/incomplete."
       ],
       "hardwareVerified": false,
       "released": false
@@ -329,20 +369,28 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
       "tests": [
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
         "import-cli-daemon-001"
       ],
       "outstanding": [
-        "PreparedImport receipts explicitly separate disk conversion from VM definition and guest boot; registration/start/reachability stages remain to implement."
+        "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -650,7 +698,12 @@
         "internal/domain/inventory.go",
         "internal/backend/libvirt/inventory_linux.go",
         "internal/app/service.go",
-        "internal/ui/registry.go"
+        "internal/ui/registry.go",
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -658,14 +711,17 @@
         "internal/backend/libvirt/inventory_linux_test.go",
         "internal/app/service_test.go",
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
         "resource-inventory-001",
         "resource-inventory-core-001"
       ],
       "outstanding": [
-        "Read-only pool observation and nullable space counters implemented; Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data. Actual creation/mutation and host/guest qualification remain."
+        "Native active-file-pool allocation/upload/readback adapter and space preflight implemented but not run on a disposable qemu backend. Pool creation, growth/move, labels and guest data qualification remain."
       ],
       "hardwareVerified": false,
       "released": false
@@ -677,14 +733,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 5,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/creating/service_linux.go",
+        "internal/creating/recovery_linux.go",
+        "internal/domain/creation.go",
+        "internal/backend/libvirt/creation_linux.go",
+        "internal/backend/libvirt/creation_xml.go"
+      ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-02",
-      "tests": [],
+      "tests": [
+        "internal/creating/service_linux_test.go",
+        "internal/creating/recovery_linux_test.go",
+        "internal/backend/libvirt/creation_linux_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "Full clone is independent; linked clone retains declared immutable base dependencies."
+        "Prepared source bytes are copied into independent volume intents and verified before definition in coordinator fixtures; actual native independent clone and linked-base lifecycle remain unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1182,13 +1248,18 @@
         "internal/operations/engine.go",
         "internal/store/store.go",
         "internal/store/recovery.go",
-        "internal/importing/stage_linux.go"
+        "internal/importing/stage_linux.go",
+        "internal/store/recovery_accept.go",
+        "internal/creating/recovery_linux.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
       "tests": [
         "internal/operations/engine_test.go",
-        "internal/importing/stage_linux_test.go"
+        "internal/importing/stage_linux_test.go",
+        "internal/store/recovery_accept_test.go",
+        "internal/operations/recovery_test.go",
+        "internal/creating/recovery_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1213,12 +1284,17 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/operations/engine.go",
-        "internal/store/store.go"
+        "internal/store/store.go",
+        "internal/store/recovery_accept.go",
+        "internal/creating/recovery_linux.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-03",
       "tests": [
-        "internal/operations/engine_test.go"
+        "internal/operations/engine_test.go",
+        "internal/store/recovery_accept_test.go",
+        "internal/operations/recovery_test.go",
+        "internal/creating/recovery_linux_test.go"
       ],
       "evidence": [
         "core-tests-001"
@@ -1239,12 +1315,17 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/store/store.go",
-        "internal/operations/engine.go"
+        "internal/operations/engine.go",
+        "internal/store/recovery_accept.go",
+        "internal/creating/recovery_linux.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
       "tests": [
-        "internal/transport/local/socket_linux_test.go"
+        "internal/transport/local/socket_linux_test.go",
+        "internal/store/recovery_accept_test.go",
+        "internal/operations/recovery_test.go",
+        "internal/creating/recovery_linux_test.go"
       ],
       "evidence": [
         "ipc-tests-001"
@@ -1558,13 +1639,15 @@
       "implementationPaths": [
         "internal/ui/registry.go",
         "internal/ui/cli/root.go",
-        "internal/ui/tui/model.go"
+        "internal/ui/tui/model.go",
+        "docs/vm-creation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
       "tests": [
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/creating/compatibility_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1588,12 +1671,16 @@
       "gate": 8,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/ui/tui/model.go"
+        "internal/ui/tui/model.go",
+        "internal/ui/registry.go",
+        "docs/vm-creation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
       "tests": [
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/creating/compatibility_linux_test.go"
       ],
       "evidence": [
         "core-tests-001"
@@ -1615,13 +1702,18 @@
       "implementationPaths": [
         "internal/ui/cli/root.go",
         "internal/transport/local/socket_linux.go",
-        "internal/ui/request.go"
+        "internal/ui/request.go",
+        "internal/ui/registry.go",
+        "internal/ui/tui/model.go",
+        "docs/vm-creation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
       "tests": [
         "internal/ui/cli/root_test.go",
-        "internal/ui/request_test.go"
+        "internal/ui/request_test.go",
+        "internal/ui/tui/model_test.go",
+        "internal/creating/compatibility_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1649,13 +1741,19 @@
       "implementationPaths": [
         "scripts/package.py",
         "packaging/install.py",
-        "internal/store/store.go"
+        "internal/store/store.go",
+        "internal/store/recovery_accept.go",
+        "internal/operations/engine.go",
+        "internal/creating/recovery_linux.go"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
       "tests": [
         "tests/integration/artifacts_test.py",
-        "internal/store/store_test.go"
+        "internal/store/store_test.go",
+        "internal/store/recovery_accept_test.go",
+        "internal/operations/recovery_test.go",
+        "internal/creating/recovery_linux_test.go"
       ],
       "evidence": [
         "artifact-tests-001",
@@ -1710,12 +1808,18 @@
         "docs/getting-started.md",
         "docs/operator-workflows.md",
         "docs/plugin-author-guide.md",
-        "scripts/traceability.py"
+        "scripts/traceability.py",
+        "internal/ui/registry.go",
+        "internal/ui/tui/model.go",
+        "docs/vm-creation.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
       "tests": [
-        "internal/validation/validate_test.go"
+        "internal/validation/validate_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go",
+        "internal/creating/compatibility_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",

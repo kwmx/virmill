@@ -36,10 +36,11 @@ type Response struct {
 	Error      *domain.Error `json:"error"`
 }
 type Service struct {
-	Provider   domain.ComputeProvider
-	Engine     *operations.Engine
-	Inspector  func() []domain.Capability
-	Extensions map[string]func(context.Context, uint32, Request) (any, error)
+	Provider    domain.ComputeProvider
+	Engine      *operations.Engine
+	Inspector   func() []domain.Capability
+	Extensions  map[string]func(context.Context, uint32, Request) (any, error)
+	InventoryVM func(context.Context, domain.VM) (domain.VM, error)
 }
 
 func New(p domain.ComputeProvider, e *operations.Engine) *Service {
@@ -85,9 +86,21 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		}
 		return result, nil
 	case "inventory.list":
-		return s.Provider.List(ctx, r.Connection)
+		vms, err := s.Provider.List(ctx, r.Connection)
+		if err != nil {
+			return nil, err
+		}
+		if s.InventoryVM != nil {
+			for i := range vms {
+				vms[i], err = s.InventoryVM(ctx, vms[i])
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		return vms, nil
 	case "inventory.get":
-		return s.Provider.Get(ctx, r.Connection, r.ID)
+		return s.GetVM(ctx, r.Connection, r.ID)
 	case "storage.pool.list", "storage.pool.get", "network.list", "network.get":
 		inventory, ok := s.Provider.(domain.ResourceInventory)
 		if !ok {
@@ -182,12 +195,20 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return nil, domain.Fail("NOT_IMPLEMENTED", "unknown or unimplemented service method "+method)
 	}
 }
+
+func (s *Service) GetVM(ctx context.Context, connection, id string) (domain.VM, error) {
+	vm, err := s.Provider.Get(ctx, connection, id)
+	if err != nil || s.InventoryVM == nil {
+		return vm, err
+	}
+	return s.InventoryVM(ctx, vm)
+}
 func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Plan, error) {
 	var empty domain.Plan
 	if r.ID == "" {
 		return empty, domain.Fail("INVALID_INPUT", "stable VM UUID required")
 	}
-	v, e := s.Provider.Get(ctx, r.Connection, r.ID)
+	v, e := s.GetVM(ctx, r.Connection, r.ID)
 	if e != nil {
 		return empty, e
 	}
@@ -268,7 +289,7 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 		return e
 	}
 	id, _ := input["vmID"].(string)
-	v, e := h.s.Provider.Get(ctx, p.ConnectionID, id)
+	v, e := h.s.GetVM(ctx, p.ConnectionID, id)
 	if e != nil {
 		return e
 	}
@@ -298,7 +319,7 @@ func (h *vmHandler) Reconcile(ctx context.Context, p domain.Plan, b []byte, step
 		return false, e
 	}
 	id, _ := input["vmID"].(string)
-	v, e := h.s.Provider.Get(ctx, p.ConnectionID, id)
+	v, e := h.s.GetVM(ctx, p.ConnectionID, id)
 	if e != nil {
 		return false, e
 	}

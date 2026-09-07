@@ -25,7 +25,7 @@ CREATE TABLE dedup(key TEXT PRIMARY KEY,request_digest TEXT NOT NULL,job_id TEXT
 CREATE TABLE locks(resource TEXT PRIMARY KEY,job_id TEXT NOT NULL REFERENCES jobs(id));
 CREATE TABLE events(job_id TEXT NOT NULL REFERENCES jobs(id),seq INTEGER NOT NULL,body BLOB NOT NULL,PRIMARY KEY(job_id,seq));
 CREATE TABLE metadata(kind TEXT NOT NULL,id TEXT NOT NULL,body BLOB NOT NULL,PRIMARY KEY(kind,id));
-PRAGMA user_version=1;`
+PRAGMA user_version=2;`
 
 func Open(filename string) (*Store, error) {
 	dir := filepath.Dir(filename)
@@ -70,7 +70,7 @@ func Open(filename string) (*Store, error) {
 		db.Close()
 		return nil, e
 	}
-	if v > 1 {
+	if v > 2 {
 		db.Close()
 		return nil, errors.New("database schema newer than application; use compatible binary")
 	}
@@ -86,6 +86,20 @@ func Open(filename string) (*Store, error) {
 			return nil, e
 		}
 		if e = tx.Commit(); e != nil {
+			db.Close()
+			return nil, e
+		}
+	}
+	if v == 1 {
+		// Version 2 adds recovery-link/lock-transfer semantics to job JSON. The
+		// barrier is essential: an old binary must not cancel an inherited job
+		// as though it had no uncertain predecessor and release those locks.
+		backup := filename + ".pre-v2-" + domain.ID() + ".db"
+		if e = s.Backup(backup); e != nil {
+			db.Close()
+			return nil, fmt.Errorf("pre-migration backup: %w", e)
+		}
+		if _, e = db.Exec("PRAGMA user_version=2"); e != nil {
 			db.Close()
 			return nil, e
 		}
@@ -282,5 +296,29 @@ func (s *Store) Backup(destination string) error {
 	if e != nil {
 		return fmt.Errorf("consistent database backup: %w", e)
 	}
-	return os.Chmod(destination, 0600)
+	if e = os.Chmod(destination, 0600); e != nil {
+		return e
+	}
+	f, e := os.Open(destination)
+	if e != nil {
+		return e
+	}
+	e = f.Sync()
+	closeErr := f.Close()
+	if e != nil {
+		return e
+	}
+	if closeErr != nil {
+		return closeErr
+	}
+	dir, e := os.Open(filepath.Dir(destination))
+	if e != nil {
+		return e
+	}
+	e = dir.Sync()
+	closeErr = dir.Close()
+	if e != nil {
+		return e
+	}
+	return closeErr
 }

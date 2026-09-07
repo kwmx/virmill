@@ -137,13 +137,15 @@ type Event struct {
 	Message     string    `json:"message"`
 }
 type Job struct {
-	ID              string    `json:"operationID"`
-	PlanID          string    `json:"planID"`
-	State           string    `json:"state"`
-	Step            int       `json:"step"`
-	CreatedAt       time.Time `json:"createdAt"`
-	Error           *Error    `json:"error"`
-	CancelRequested bool      `json:"cancelRequested"`
+	ID                  string    `json:"operationID"`
+	PlanID              string    `json:"planID"`
+	State               string    `json:"state"`
+	Step                int       `json:"step"`
+	CreatedAt           time.Time `json:"createdAt"`
+	Error               *Error    `json:"error"`
+	CancelRequested     bool      `json:"cancelRequested"`
+	RecoveryOf          string    `json:"recoveryOf,omitempty"`
+	RecoveryOperationID string    `json:"recoveryOperationID,omitempty"`
 }
 
 func Terminal(s string) bool {

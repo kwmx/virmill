@@ -46,5 +46,20 @@ func NormalizeRequest(method string, r app.Request) (app.Request, error) {
 			r.Input[key] = absolute
 		}
 	}
+	if method == "vm.create" {
+		if hardware, ok := r.Input["hardware"].(map[string]any); ok {
+			if firmware, ok := hardware["firmware"].(map[string]any); ok {
+				for _, key := range []string{"code", "template"} {
+					if value, ok := firmware[key].(string); ok && value != "" {
+						absolute, err := filepath.Abs(value)
+						if err != nil {
+							return r, err
+						}
+						firmware[key] = absolute
+					}
+				}
+			}
+		}
+	}
 	return r, nil
 }
