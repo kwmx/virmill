@@ -36,8 +36,9 @@
 
 - U010: Native lifecycle plans inherit the engine’s zero-valued downtime estimate,
   including `requiresDowntime: false` for explicit stop. Human-readable risks exist,
-  but structured estimates need operation-specific values before release. Observed
-  in `evidence/boot-media-run.md`; this is an implementation issue, not hardware.
+  corrected by the operation-specific estimator in ADR 0015. Focused service,
+  engine and CLI/TUI tests pass; the earlier runtime evidence is unchanged. Exact
+  capacity/duration estimation for the full matrix remains required.
 
 Unimplemented code is tracked separately in the requirements tracker and is not
 classified as a hardware limitation. None of these unknowns reduces 1.0 scope.

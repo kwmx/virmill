@@ -365,3 +365,19 @@ func TestBootInspectionAndMediaEditingHaveSharedTUIAccess(t *testing.T) {
 		}
 	}
 }
+
+func TestTUIReviewShowsSharedDowntimeEstimate(t *testing.T) {
+	m := New(&recorder{}, "fixture")
+	m.Height = 70
+	m.Width = 180
+	p := domain.Plan{ID: "reviewed-plan", Digest: "reviewed-digest", Estimates: domain.Estimates{RequiresDowntime: true, Notes: "Guest downtime required"}}
+	next, _ := m.Update(resultMsg{response: app.Response{APIVersion: domain.APIVersion, Data: p}})
+	m = next.(Model)
+	if m.Plan == nil || !m.Plan.Estimates.RequiresDowntime || !strings.Contains(m.View(), `"requiresDowntime": true`) || !strings.Contains(m.View(), "Guest downtime required") {
+		t.Fatal("TUI review omitted estimate", m.View())
+	}
+	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+	if cmd != nil || !next.(Model).Confirm {
+		t.Fatal("estimate review bypassed digest authorization")
+	}
+}

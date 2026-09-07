@@ -1,0 +1,12 @@
+=== RUN   TestCapturedQEMU12BootMediaAndOpaquePreservation
+=== RUN   TestCapturedQEMU12BootMediaAndOpaquePreservation/boot-order-applied
+=== RUN   TestCapturedQEMU12BootMediaAndOpaquePreservation/boot-media-ejected
+=== RUN   TestCapturedQEMU12BootMediaAndOpaquePreservation/boot-media-opaque-edited
+=== NAME  TestCapturedQEMU12BootMediaAndOpaquePreservation
+    boot_captured_test.go:64: captured XML regression only; actual guest execution is recorded separately in the native evidence ledger
+--- PASS: TestCapturedQEMU12BootMediaAndOpaquePreservation (0.00s)
+    --- PASS: TestCapturedQEMU12BootMediaAndOpaquePreservation/boot-order-applied (0.00s)
+    --- PASS: TestCapturedQEMU12BootMediaAndOpaquePreservation/boot-media-ejected (0.00s)
+    --- PASS: TestCapturedQEMU12BootMediaAndOpaquePreservation/boot-media-opaque-edited (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/xmlpatch	0.007s

@@ -51,7 +51,10 @@
         "internal/backend/libvirt/provider_linux.go",
         "internal/ui/registry.go",
         "docs/evidence/device-policy-run.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "internal/app/estimates.go",
+        "internal/operations/engine.go",
+        "docs/adr/0015-operation-downtime-estimates.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -59,7 +62,11 @@
         "tests/fixtures/creation/disposable-recorded-run/apply-start-device-policy.py",
         "tests/fixtures/creation/disposable-recorded-run/stop-device-policy-guest.py",
         "tests/fixtures/creation/disposable-recorded-run/final-device-policy-preservation.py",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "internal/app/estimates_test.go",
+        "internal/operations/estimates_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -72,7 +79,8 @@
         "boot-media-native-stop-final-001"
       ],
       "outstanding": [
-        "Start and graceful shutdown passed for one isolated Kali Q35/BIOS clone on the authorized test VM. Full lifecycle/state/disk-preservation coverage, reboot and safe removal remain incomplete."
+        "Start and graceful shutdown passed for one isolated Kali Q35/BIOS clone on the authorized test VM. Full lifecycle/state/disk-preservation coverage, reboot and safe removal remain incomplete.",
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -98,7 +106,10 @@
         "internal/backend/xmlpatch/tree.go",
         "schemas/vm-hardware-edit-input.schema.json",
         "docs/adr/0014-boot-order-and-retained-media-edits.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "internal/app/estimates.go",
+        "internal/operations/engine.go",
+        "docs/adr/0015-operation-downtime-estimates.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
@@ -113,7 +124,9 @@
         "internal/app/hardware_edit_test.go",
         "internal/backend/xmlpatch/boot_test.go",
         "internal/backend/libvirt/boot_linux_test.go",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "internal/app/estimates_test.go",
+        "internal/operations/estimates_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -129,12 +142,14 @@
         "boot-media-native-iso-boot-001",
         "boot-media-native-eject-001",
         "boot-media-native-live-refusal-001",
-        "boot-media-native-disk-boot-001"
+        "boot-media-native-disk-boot-001",
+        "boot-media-captured-001"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
-        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case."
+        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -186,7 +201,8 @@
         "boot-media-xml-fuzz-001",
         "boot-media-native-tui-001",
         "boot-media-native-eject-001",
-        "boot-media-native-stale-preservation-001"
+        "boot-media-native-stale-preservation-001",
+        "boot-media-captured-001"
       ],
       "outstanding": [
         "Pure span tests preserve every unrelated byte; official libvirt in-memory tests preserve opaque metadata and refuse synthetic display-password redaction. New plans retain hashes, not opaque XML. Real adopted VM and complete unknown XML normalization/preservation remain unqualified.",
@@ -241,7 +257,8 @@
         "configuration-core-001",
         "boot-media-core-001",
         "boot-media-native-live-refusal-001",
-        "boot-media-native-stale-preservation-001"
+        "boot-media-native-stale-preservation-001",
+        "boot-media-captured-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -1908,7 +1925,9 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/app/estimates.go",
+        "docs/adr/0015-operation-downtime-estimates.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -1932,7 +1951,9 @@
         "internal/backend/xmlpatch/resources_test.go",
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/app/estimates_test.go",
+        "internal/operations/estimates_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -1949,7 +1970,8 @@
         "native-first-recovery-001"
       ],
       "outstanding": [
-        "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains."
+        "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2333,7 +2355,10 @@
         "internal/backend/xmlpatch/tree.go",
         "schemas/vm-hardware-edit-input.schema.json",
         "docs/adr/0014-boot-order-and-retained-media-edits.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "internal/app/estimates.go",
+        "internal/operations/engine.go",
+        "docs/adr/0015-operation-downtime-estimates.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2361,7 +2386,9 @@
         "internal/app/hardware_edit_test.go",
         "internal/backend/xmlpatch/boot_test.go",
         "internal/backend/libvirt/boot_linux_test.go",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "internal/app/estimates_test.go",
+        "internal/operations/estimates_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2388,7 +2415,8 @@
         "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
         "Native TUI plan review/digest authorization/detach passed for creation; guided forms and complete action parity remain required. Active creation result queries still suggest premature recovery (U009).",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
-        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case."
+        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2645,7 +2673,10 @@
         "internal/backend/xmlpatch/tree.go",
         "schemas/vm-hardware-edit-input.schema.json",
         "docs/adr/0014-boot-order-and-retained-media-edits.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "internal/app/estimates.go",
+        "internal/operations/engine.go",
+        "docs/adr/0015-operation-downtime-estimates.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2671,7 +2702,9 @@
         "internal/app/hardware_edit_test.go",
         "internal/backend/xmlpatch/boot_test.go",
         "internal/backend/libvirt/boot_linux_test.go",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "internal/app/estimates_test.go",
+        "internal/operations/estimates_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2713,7 +2746,8 @@
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
         "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
-        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case."
+        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2748,7 +2782,8 @@
         "configuration-release-gate-001",
         "native-first-release-gate-001",
         "native-first-release-gate-002",
-        "device-policy-release-gate-001"
+        "device-policy-release-gate-001",
+        "boot-media-release-gate-001"
       ],
       "outstanding": [
         "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. First disposable-host run is recorded; native creation remains blocked by unreviewed Q35 device defaults."

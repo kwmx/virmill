@@ -24,6 +24,12 @@ type PlanReviewer interface {
 	Review(context.Context, domain.Plan, []byte) (map[string]any, error)
 }
 
+// PlanEstimator supplies operation-specific estimates before the immutable plan
+// is hashed and stored. It must observe only, just like Validate and Review.
+type PlanEstimator interface {
+	Estimate(context.Context, domain.Plan, []byte) (domain.Estimates, error)
+}
+
 // RecoveryHandler identifies an uncertain job whose complete lock set must be
 // inherited atomically. It is implemented only by explicit reviewed workflows;
 // ordinary apply requests cannot select or bypass resource-lock ownership.
@@ -90,6 +96,12 @@ func (e *Engine) Plan(ctx context.Context, uid uint32, connection, operation str
 	}
 	if reviewer, ok := h.(PlanReviewer); ok {
 		p.Review, err = reviewer.Review(ctx, p, b)
+		if err != nil {
+			return p, err
+		}
+	}
+	if estimator, ok := h.(PlanEstimator); ok {
+		p.Estimates, err = estimator.Estimate(ctx, p, b)
 		if err != nil {
 			return p, err
 		}

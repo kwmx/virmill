@@ -217,3 +217,20 @@ func TestBootAndMediaCommandsUseSharedService(t *testing.T) {
 		}
 	}
 }
+
+type estimatedPlanClient struct{}
+
+func (*estimatedPlanClient) Call(context.Context, string, app.Request) (app.Response, error) {
+	return app.Response{APIVersion: domain.APIVersion, Data: domain.Plan{ID: "reviewed-plan", Digest: "reviewed-digest", Estimates: domain.Estimates{RequiresDowntime: true, Notes: "Guest downtime required"}}}, nil
+}
+func TestCLIPlanDisplaysSharedDowntimeEstimate(t *testing.T) {
+	var out, errs bytes.Buffer
+	cmd := New(&estimatedPlanClient{}, &out, &errs)
+	cmd.SetArgs([]string{"plan", "show", "reviewed-plan", "--output", "json", "--non-interactive"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), `"requiresDowntime":true`) || !strings.Contains(out.String(), "Guest downtime required") {
+		t.Fatal("CLI omitted shared estimate", out.String())
+	}
+}

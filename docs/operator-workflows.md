@@ -48,7 +48,9 @@ resource policy and privately detect settings omitted from ordinary XML. New pla
 store hashes instead of opaque XML. A changed fingerprint invalidates apply;
 managed-save/live/advanced layouts are refused. Native test-driver preservation and
 synthetic recovery are exercised, while real adopted VM and external-race safety
-remain unqualified. Complete live modes, boot and hardware controls remain required.
+remain unqualified. One native boot/media/resource edit and external-drift case is recorded in
+[evidence](evidence/boot-media-run.md). Complete live modes, adopted-VM qualification
+and remaining hardware controls remain required.
 
 ## Multiple networks and labs
 
@@ -120,3 +122,18 @@ The development installer/uninstaller acts only on listed package files. It does
 not remove VMs, disks, backup repositories, bridges, user data or enable persistence.
 Use a native package manager for later reviewed upgrades. Host cleanup must be a
 separate resource/dependency plan; that workflow is not yet implemented.
+
+## VM downtime estimates
+
+`plan show` and the TUI review show the same `estimates.requiresDowntime` field.
+New stop, explicit hard-stop, pause and managed-save plans set it to true. Persistent
+CPU/RAM, boot-order and media edits also require downtime: the VM must already be
+stopped, and Virmill does not implicitly shut it down or restart it. Start, resume,
+saved-state restoration and autostart policy changes do not introduce a new guest
+interruption. No estimate asserts guest readiness or a measured outage duration.
+
+Read `estimates.notes` with the boolean. Runtime guest writes, save-state byte counts
+and available host resources are not estimated; zero additionalBytes does not prove
+that an operation needs no free space. A failed/canceled estimate creates no plan
+or native effect. Old stored plans retain their original fields and digest; generate
+a fresh preview for corrected estimates. See [ADR 0015](adr/0015-operation-downtime-estimates.md).
