@@ -223,7 +223,8 @@
       "evidence": [
         "core-tests-001",
         "import-conversion-001",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "resource-inventory-artifacts-001"
       ],
       "outstanding": [
         "Generic OVA preparation converts and atomically publishes every selected disk; generic guest registration, mapping and boot remain incomplete."
@@ -399,7 +400,10 @@
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "resource-inventory-001",
+        "resource-inventory-core-001"
+      ],
       "outstanding": [
         "Read-only network observation preserves live/persistent distinction; installed test driver lacks inactive XML support. NAT guest has configured DNS/internet; a static target remains on its designated lab network. Actual creation/mutation and host/guest qualification remain."
       ],
@@ -656,7 +660,10 @@
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "resource-inventory-001",
+        "resource-inventory-core-001"
+      ],
       "outstanding": [
         "Read-only pool observation and nullable space counters implemented; Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data. Actual creation/mutation and host/guest qualification remain."
       ],
@@ -1562,7 +1569,9 @@
       "evidence": [
         "core-tests-001",
         "import-unit-001",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "resource-inventory-001",
+        "resource-inventory-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete."
@@ -1619,7 +1628,9 @@
         "core-tests-002",
         "core-tests-003",
         "import-unit-001",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "resource-inventory-001",
+        "resource-inventory-artifacts-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain."
@@ -1650,7 +1661,9 @@
         "artifact-tests-001",
         "core-tests-001",
         "reproducible-build-004",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "resource-inventory-build-001",
+        "resource-inventory-artifacts-001"
       ],
       "outstanding": [
         "Development packages and staged preservation tested; clean Fedora/Ubuntu/Debian install/upgrade/uninstall and actual migration matrix remain."
@@ -1675,7 +1688,8 @@
       "tests": [],
       "evidence": [
         "cross-build-001",
-        "import-cross-build-001"
+        "import-cross-build-001",
+        "resource-inventory-portable-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -1706,7 +1720,9 @@
       "evidence": [
         "core-tests-001",
         "reproducible-build-004",
-        "import-cli-daemon-001"
+        "import-cli-daemon-001",
+        "resource-inventory-build-001",
+        "resource-inventory-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."

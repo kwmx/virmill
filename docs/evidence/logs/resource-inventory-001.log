@@ -1,0 +1,47 @@
+=== RUN   TestReadOnlyPoolAndNetworkInventoryWithNativeTestDriver
+    inventory_linux_test.go:47: BLOCKED: installed libvirt test driver does not implement inactive network XML; adapter correctly returns its error instead of fabricating persistent state. Native network readback remains unqualified.
+    inventory_linux_test.go:75: Official libvirt read-only calls used its simulated test driver; no host pool/network was started, created or modified; no routing or storage hardware claim
+--- PASS: TestReadOnlyPoolAndNetworkInventoryWithNativeTestDriver (0.00s)
+=== RUN   TestNetworkStateSeparationAndUnsupportedFlagAreExplicit
+--- PASS: TestNetworkStateSeparationAndUnsupportedFlagAreExplicit (0.00s)
+=== RUN   TestInventoryResponseBound
+--- PASS: TestInventoryResponseBound (0.00s)
+=== RUN   TestOfficialBindingWithSimulatedLibvirtDriver
+    provider_linux_test.go:38: official native binding exercised against libvirt's simulated test driver; this is not KVM/guest evidence
+--- PASS: TestOfficialBindingWithSimulatedLibvirtDriver (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	1.024s
+=== RUN   TestMissingManagedSaveAndUnknownInputFailBeforeEffect
+--- PASS: TestMissingManagedSaveAndUnknownInputFailBeforeEffect (0.00s)
+=== RUN   TestResourceInventoryDoesNotPlanAdoptOrMutate
+--- PASS: TestResourceInventoryDoesNotPlanAdoptOrMutate (0.00s)
+PASS
+ok  	virmill.local/core/internal/app	1.030s
+=== RUN   TestClientResolvesPathsBeforeDetachedServiceCall
+--- PASS: TestClientResolvesPathsBeforeDetachedServiceCall (0.00s)
+PASS
+ok  	virmill.local/core/internal/ui	1.033s
+=== RUN   TestCleanJSONNoninteractiveAndSharedMethod
+--- PASS: TestCleanJSONNoninteractiveAndSharedMethod (0.00s)
+=== RUN   TestPlanApplyRequiresExplicitBinding
+--- PASS: TestPlanApplyRequiresExplicitBinding (0.00s)
+=== RUN   TestPluginPlansUseSharedServiceAndExplicitInputs
+--- PASS: TestPluginPlansUseSharedServiceAndExplicitInputs (0.00s)
+=== RUN   TestImportPreparationUsesSharedService
+--- PASS: TestImportPreparationUsesSharedService (0.00s)
+=== RUN   TestResourceInventoryCommandsPreserveExplicitConnection
+--- PASS: TestResourceInventoryCommandsPreserveExplicitConnection (0.00s)
+PASS
+ok  	virmill.local/core/internal/ui/cli	1.040s
+=== RUN   TestKeyboardNavigationSharedServiceAndResize
+--- PASS: TestKeyboardNavigationSharedServiceAndResize (0.00s)
+=== RUN   TestEscDiscardsApprovalWithoutMutation
+--- PASS: TestEscDiscardsApprovalWithoutMutation (0.00s)
+=== RUN   TestPluginFormDispatchAndScrollableActionMenu
+--- PASS: TestPluginFormDispatchAndScrollableActionMenu (0.00s)
+=== RUN   TestImportFormDispatchesCompleteMappingToSharedService
+--- PASS: TestImportFormDispatchesCompleteMappingToSharedService (0.00s)
+=== RUN   TestStorageAndNetworkInventoryAreReachableWithoutApproval
+--- PASS: TestStorageAndNetworkInventoryAreReachableWithoutApproval (0.00s)
+PASS
+ok  	virmill.local/core/internal/ui/tui	1.034s
