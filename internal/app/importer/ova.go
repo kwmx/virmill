@@ -124,7 +124,7 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 	if limits.Bytes <= 0 || limits.Bytes > 1<<50 || limits.Members <= 0 || limits.Members > MaxMembers {
 		return out, errors.New("invalid inspection limits")
 	}
-	bounded := &io.LimitedReader{R:r,N:limits.Bytes+int64(limits.Members)*2048+2*DescriptorLimit}
+	bounded := &io.LimitedReader{R: r, N: limits.Bytes + int64(limits.Members)*2048 + 2*DescriptorLimit}
 	r = bounded
 	h := sha256.New()
 	tr := tar.NewReader(io.TeeReader(r, h))
@@ -155,11 +155,15 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 		}
 		seen[fold] = true
 		for parent := path.Dir(fold); parent != "."; parent = path.Dir(parent) {
-			if regularPaths[parent] { return out, errors.New("archive parent is a regular file") }
+			if regularPaths[parent] {
+				return out, errors.New("archive parent is a regular file")
+			}
 			parents[parent] = true
 		}
 		if entry.Typeflag != tar.TypeDir {
-			if parents[fold] { return out, errors.New("archive file conflicts with child paths") }
+			if parents[fold] {
+				return out, errors.New("archive file conflicts with child paths")
+			}
 			regularPaths[fold] = true
 		}
 		if len(seen) > limits.Members {
@@ -232,7 +236,9 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 			return out, e
 		}
 	}
-	if bounded.N == 0 { return out, errors.New("archive source byte budget exceeded") }
+	if bounded.N == 0 {
+		return out, errors.New("archive source byte budget exceeded")
+	}
 	out.SHA256 = hex.EncodeToString(h.Sum(nil))
 	if len(descriptors) != 1 {
 		return out, errors.New("select an archive containing exactly one OVF descriptor")
@@ -252,7 +258,9 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 			return out, fmt.Errorf("missing disk member %s", d.Path)
 		}
 	}
-	line := regexp.MustCompile(`^(SHA1|SHA256|SHA512)\(([^)]+)\)\s*=\s*([A-Fa-f0-9]+)$`)
+	// VirtualBox exports use "SHA1 (file)"; other exporters omit the space.
+	// Accept horizontal spacing without relaxing member or digest validation.
+	line := regexp.MustCompile(`^(SHA1|SHA256|SHA512)[ \t]*\(([^)]+)\)\s*=\s*([A-Fa-f0-9]+)$`)
 	for mf, data := range manifests {
 		for _, s := range strings.Split(string(data), "\n") {
 			s = strings.TrimSpace(s)

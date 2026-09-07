@@ -11,6 +11,11 @@ First inspect the archive:
 virmill import inspect /path/to/appliance.ova --output json
 ```
 
+Manifest checks accept SHA1, SHA256 and SHA512, including the horizontal spacing
+used by VirtualBox (`SHA1 (file) = digest`). Every provided digest must match its
+member. SHA1 is reported as weak; valid checksums do not authenticate a publisher
+or establish guest readiness. This behavior is shared by the CLI and TUI inspector.
+
 Use the report's exact system and disk IDs. Provide a mapping for every disk,
 including an explicit source format and upper bound on its virtual size. Allowed
 format names are `raw`, `qcow2`, `vmdk`, `vdi`, `vpc` (VHD) and `vhdx`. A single
