@@ -82,7 +82,12 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
@@ -93,7 +98,10 @@
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -102,7 +110,8 @@
         "configuration-artifacts-001"
       ],
       "outstanding": [
-        "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts, boot controls, actual host sizing and guest verification remain incomplete or unqualified."
+        "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -121,7 +130,12 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-04",
@@ -132,7 +146,10 @@
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -141,7 +158,8 @@
         "configuration-xml-fuzz-001"
       ],
       "outstanding": [
-        "Pure span tests preserve every unrelated byte; official libvirt in-memory tests preserve opaque metadata and refuse synthetic display-password redaction. New plans retain hashes, not opaque XML. Real adopted VM and complete unknown XML normalization/preservation remain unqualified."
+        "Pure span tests preserve every unrelated byte; official libvirt in-memory tests preserve opaque metadata and refuse synthetic display-password redaction. New plans retain hashes, not opaque XML. Real adopted VM and complete unknown XML normalization/preservation remain unqualified.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -161,7 +179,12 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-05",
@@ -172,7 +195,10 @@
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -181,7 +207,8 @@
         "configuration-core-001"
       ],
       "outstanding": [
-        "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified."
+        "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -259,7 +286,13 @@
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
         "docs/adr/0013-reviewed-creation-device-policy.md",
-        "docs/evidence/device-policy-run.md"
+        "docs/evidence/device-policy-run.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -279,7 +312,12 @@
         "internal/creating/devices_linux_test.go",
         "internal/backend/libvirt/creation_devices_linux_test.go",
         "tests/fixtures/creation/disposable-recorded-run/plan-device-policy.py",
-        "tests/fixtures/creation/disposable-recorded-run/capture-device-policy-boot.py"
+        "tests/fixtures/creation/disposable-recorded-run/capture-device-policy-boot.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -306,7 +344,8 @@
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Full installer console/ejection, native storage streaming and all declared guest boot/provisioning levels remain incomplete or unqualified.",
         "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -630,7 +669,13 @@
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
         "docs/adr/0013-reviewed-creation-device-policy.md",
-        "docs/evidence/device-policy-run.md"
+        "docs/evidence/device-policy-run.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md",
+        "docs/vm-configuration.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -655,7 +700,12 @@
         "internal/creating/devices_linux_test.go",
         "internal/backend/libvirt/creation_devices_linux_test.go",
         "tests/fixtures/creation/disposable-recorded-run/check-device-policy-job-final.py",
-        "tests/fixtures/creation/disposable-recorded-run/capture-device-policy-boot.py"
+        "tests/fixtures/creation/disposable-recorded-run/capture-device-policy-boot.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -687,7 +737,8 @@
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required.",
         "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1654,7 +1705,12 @@
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
         "docs/adr/0013-reviewed-creation-device-policy.md",
-        "docs/evidence/device-policy-run.md"
+        "docs/evidence/device-policy-run.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1687,7 +1743,10 @@
         "internal/creating/devices_linux_test.go",
         "internal/backend/libvirt/creation_devices_linux_test.go",
         "internal/backend/libvirt/creation_observed_linux_test.go",
-        "tests/fixtures/creation/disposable-recorded-run/final-device-policy-preservation.py"
+        "tests/fixtures/creation/disposable-recorded-run/final-device-policy-preservation.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1714,7 +1773,8 @@
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2201,7 +2261,12 @@
         "internal/domain/creation_devices.go",
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
-        "docs/adr/0013-reviewed-creation-device-policy.md"
+        "docs/adr/0013-reviewed-creation-device-policy.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2225,7 +2290,10 @@
         "internal/backend/libvirt/creation_devices_linux_test.go",
         "internal/backend/libvirt/creation_observed_linux_test.go",
         "tests/fixtures/creation/disposable-recorded-run/apply-device-policy-tui.py",
-        "tests/fixtures/creation/disposable-recorded-run/apply-device-policy-tui-retry.py"
+        "tests/fixtures/creation/disposable-recorded-run/apply-device-policy-tui-retry.py",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2247,7 +2315,8 @@
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
         "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
-        "Native TUI plan review/digest authorization/detach passed for creation; guided forms and complete action parity remain required. Active creation result queries still suggest premature recovery (U009)."
+        "Native TUI plan review/digest authorization/detach passed for creation; guided forms and complete action parity remain required. Active creation result queries still suggest premature recovery (U009).",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2486,7 +2555,12 @@
         "internal/domain/creation_devices.go",
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
-        "docs/adr/0013-reviewed-creation-device-policy.md"
+        "docs/adr/0013-reviewed-creation-device-policy.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/boot.go",
+        "internal/backend/xmlpatch/tree.go",
+        "schemas/vm-hardware-edit-input.schema.json",
+        "docs/adr/0014-boot-order-and-retained-media-edits.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2508,7 +2582,10 @@
         "tests/integration/artifacts_test.py",
         "internal/creating/devices_linux_test.go",
         "internal/backend/libvirt/creation_devices_linux_test.go",
-        "internal/backend/libvirt/creation_observed_linux_test.go"
+        "internal/backend/libvirt/creation_observed_linux_test.go",
+        "internal/app/hardware_edit_test.go",
+        "internal/backend/xmlpatch/boot_test.go",
+        "internal/backend/libvirt/boot_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2542,7 +2619,8 @@
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
-        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; real boot/media edits, full installation and live/advanced configurations still need qualification."
       ],
       "hardwareVerified": false,
       "released": false

@@ -295,16 +295,73 @@ func TestNoCloudCreationFormUsesSharedService(t *testing.T) {
 	if r.method != "vm.create" || r.request.ID != "prepared-op" || r.request.Input["provisioning"].(map[string]any)["mediaID"] != "cloud-init" {
 		t.Fatal("NoCloud mapping lost", r)
 	}
- policy := r.request.Input["hardware"].(map[string]any)["devicePolicy"].(map[string]any)
- if policy["watchdogAction"] != "none" || policy["usbController"] != "none" || policy["memoryBalloon"] != "none" { t.Fatal("reviewed device policy lost in client form", policy) }
+	policy := r.request.Input["hardware"].(map[string]any)["devicePolicy"].(map[string]any)
+	if policy["watchdogAction"] != "none" || policy["usbController"] != "none" || policy["memoryBalloon"] != "none" {
+		t.Fatal("reviewed device policy lost in client form", policy)
+	}
 }
 
 func TestFixedResourceFormUsesSharedPlanning(t *testing.T) {
- r:=&recorder{};m:=New(r,"qemu:///session")
- for i,name:=range sections{if name=="VMs"{m.Section=i}}
- for i,a:=range m.actions(){if a.Command=="vm set"{m.Selected=i}}
- model,_:=m.Update(tea.KeyMsg{Type:tea.KeyEnter});m=model.(Model)
- m.Input=`{"id":"vm-fixture","input":{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}}`
- _,cmd:=m.Update(tea.KeyMsg{Type:tea.KeyEnter});if cmd==nil{t.Fatal("resource form did not dispatch")};_=cmd()
- if r.method!="vm.plan"||r.request.Action!="set"||r.request.Connection!="qemu:///session"||r.request.Input["memoryMiB"]!=float64(4096)||r.request.Input["applyMode"]!="next-boot"{t.Fatal("resource edit differs from CLI",r)}
+	r := &recorder{}
+	m := New(r, "qemu:///session")
+	for i, name := range sections {
+		if name == "VMs" {
+			m.Section = i
+		}
+	}
+	for i, a := range m.actions() {
+		if a.Command == "vm set" {
+			m.Selected = i
+		}
+	}
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = model.(Model)
+	m.Input = `{"id":"vm-fixture","input":{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}}`
+	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("resource form did not dispatch")
+	}
+	_ = cmd()
+	if r.method != "vm.plan" || r.request.Action != "set" || r.request.Connection != "qemu:///session" || r.request.Input["memoryMiB"] != float64(4096) || r.request.Input["applyMode"] != "next-boot" {
+		t.Fatal("resource edit differs from CLI", r)
+	}
+}
+
+func TestBootInspectionAndMediaEditingHaveSharedTUIAccess(t *testing.T) {
+	for _, test := range []struct{ command, input, method string }{
+		{"vm boot show", "vm-fixture", "vm.boot.get"},
+		{"vm set", `{"id":"vm-fixture","input":{"bootOrder":[{"kind":"disk","id":"vda"}],"ejectMedia":"sda","applyMode":"next-boot"}}`, "vm.plan"},
+	} {
+		r := &recorder{}
+		m := New(r, "qemu:///session")
+		for i, name := range sections {
+			if name == "VMs" {
+				m.Section = i
+			}
+		}
+		found := false
+		for i, a := range m.actions() {
+			if a.Command == test.command {
+				m.Selected = i
+				found = true
+			}
+		}
+		if !found {
+			t.Fatal("missing TUI action", test.command)
+		}
+		model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		m = model.(Model)
+		m.Input = test.input
+		_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		if cmd == nil {
+			t.Fatal("TUI input did not dispatch")
+		}
+		cmd()
+		if r.method != test.method || r.request.ID != "vm-fixture" || r.request.Connection != "qemu:///session" {
+			t.Fatal("boot/media request drift", r)
+		}
+		if test.method == "vm.plan" && (r.request.Action != "set" || r.request.Input["ejectMedia"] != "sda" || len(r.request.Input["bootOrder"].([]any)) != 1) {
+			t.Fatal("TUI lost boot/media intent", r)
+		}
+	}
 }

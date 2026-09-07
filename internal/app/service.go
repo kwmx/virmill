@@ -50,6 +50,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	// A distinct durable operation prevents older binaries from executing the new
 	// preservation contract through their legacy vm.set handler.
 	e.Handlers["vm.configure-resources"] = &vmHandler{s: s, action: "set"}
+	e.Handlers["vm.configure-hardware"] = &vmHandler{s: s, action: "set"}
 	return s
 }
 func (s *Service) Call(ctx context.Context, uid uint32, method string, r Request) Response {
@@ -103,6 +104,25 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return vms, nil
 	case "inventory.get":
 		return s.GetVM(ctx, r.Connection, r.ID)
+	case "vm.boot.get":
+		if r.ID == "" {
+			return nil, domain.Fail("INVALID_INPUT", "stable VM UUID required for boot inspection")
+		}
+		v, err := s.GetVM(ctx, r.Connection, r.ID)
+		if err != nil {
+			return nil, err
+		}
+		layers := map[string]any{"resource": v.Key, "state": v.State, "hasManagedSave": v.HasManagedSave, "persistent": nil, "live": nil, "guestBootVerified": false}
+		for name, xml := range map[string]string{"persistent": v.PersistentXML, "live": v.LiveXML} {
+			if xml != "" {
+				view, err := xmlpatch.InspectBoot(xml)
+				if err != nil {
+					return nil, err
+				}
+				layers[name] = view
+			}
+		}
+		return layers, nil
 	case "storage.pool.list", "storage.pool.get", "network.list", "network.get":
 		inventory, ok := s.Provider.(domain.ResourceInventory)
 		if !ok {
@@ -212,8 +232,12 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 	}
 	if r.Action == "set" {
 		b, err := json.Marshal(r.Input)
-		if err != nil || validation.Schema("vm-resource-edit-input", b) != nil {
-			return empty, domain.Fail("INVALID_INPUT", "resource edit input must match the bundled CPU/RAM schema; rejected values are withheld")
+		schema := "vm-resource-edit-input"
+		if hardwareRequest(r.Input) {
+			schema = "vm-hardware-edit-input"
+		}
+		if err != nil || validation.Schema(schema, b) != nil {
+			return empty, domain.Fail("INVALID_INPUT", "configuration input must match its bundled schema; rejected values are withheld")
 		}
 	}
 	v, e := s.GetVM(ctx, r.Connection, r.ID)
@@ -222,7 +246,7 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 	}
 	input := map[string]any{}
 	for field, value := range r.Input {
-		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB" || field == "applyMode")) || (r.Action == "autostart" && field == "enabled")
+		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB" || field == "applyMode" || field == "bootOrder" || field == "ejectMedia")) || (r.Action == "autostart" && field == "enabled")
 		if !allowed {
 			return empty, domain.Fail("INVALID_INPUT", "unknown parameter for this operation: "+field)
 		}
@@ -239,27 +263,55 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 		if _, ok := input["applyMode"]; !ok {
 			input["applyMode"] = "next-boot"
 		}
-		edit, e := resourceEdit(input)
-		if e != nil {
-			return empty, e
-		}
 		if e = editableVM(v); e != nil {
 			return empty, e
 		}
-		x, e := xmlpatch.EditResources(v.PersistentXML, edit)
-		if e != nil {
-			return empty, e
+		if hardwareRequest(input) {
+			edit, err := xmlpatch.ParseHardwareInput(input)
+			if err != nil {
+				return empty, err
+			}
+			x, err := xmlpatch.EditHardware(v.PersistentXML, edit)
+			if err != nil {
+				return empty, err
+			}
+			digest, err := xmlpatch.HardwareDigest(x)
+			if err != nil {
+				return empty, err
+			}
+			input["xmlSHA256"] = digest
+			input["editVersion"] = float64(2)
+			if edit.BootOrder != nil {
+				acks = append(acks, "replace-boot-order")
+			}
+			if edit.EjectMedia != "" {
+				acks = append(acks, "eject-retain-media")
+				risks = append(risks, "Ejects the selected medium while retaining its volume/file and read-only drive; an empty block/volume drive is explicitly represented as type=file")
+			}
+			risks = append(risks, "Boot selection is persistent firmware intent, not proof of bootability, installer completion or provisioning readiness")
+		} else {
+			edit, err := resourceEdit(input)
+			if err != nil {
+				return empty, err
+			}
+			x, err := xmlpatch.EditResources(v.PersistentXML, edit)
+			if err != nil {
+				return empty, err
+			}
+			input["xmlSHA256"] = xmlpatch.Digest(x)
+			input["editVersion"] = float64(1)
 		}
-		input["xmlSHA256"] = xmlpatch.Digest(x)
-		input["editVersion"] = float64(1)
 		input["editBeforeFingerprint"] = v.Fingerprint
 		acks = append(acks, "exclusive-configuration-writer")
-		risks = append(risks, "Persistent CPU/RAM edit only; guest state, available host memory and next boot are not verified", "Coordinate external administrators: libvirt definition has no atomic compare-and-swap; immediate state checks cannot exclude every concurrent writer")
+		risks = append(risks, "Changes only the reviewed persistent configuration; guest readiness, available host memory and next boot are not verified", "Coordinate external administrators: libvirt definition has no atomic compare-and-swap; immediate state checks cannot exclude every concurrent writer")
 	}
 	key := v.Key.String()
 	operation := "vm." + r.Action
 	if r.Action == "set" {
 		operation = "vm.configure-resources"
+		if hardwareRequest(input) {
+			operation = "vm.configure-hardware"
+		}
 	}
 	step := domain.Step{ID: "effect", Action: operation, Preconditions: []string{"unchanged domain fingerprint", "current capability and actor checks"}, Idempotency: "reconcile-before-retry", Compensation: "Preserve domain and disks; create a reviewed recovery plan", Reconciliation: "Read stable UUID and expected backend state without replay", CompletionPredicate: "Native backend reports requested state"}
 	return s.Engine.Plan(ctx, uid, r.Connection, operation, []string{key}, map[string]string{key: v.Fingerprint}, input, []domain.Step{step}, acks, risks)
@@ -276,12 +328,41 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		return nil, err
 	}
 	requested := map[string]any{}
-	for _, key := range []string{"vcpus", "memoryMiB", "enabled", "applyMode"} {
+	for _, key := range []string{"vcpus", "memoryMiB", "enabled", "applyMode", "bootOrder", "ejectMedia"} {
 		if value, ok := input[key]; ok {
 			requested[key] = value
 		}
 	}
-	return map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "requiresShutdown": h.action == "set", "diskDeletion": false}, nil
+	review := map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "requiresShutdown": h.action == "set", "diskDeletion": false}
+	if h.action == "set" && input["editVersion"] == float64(2) {
+		id, _ := input["vmID"].(string)
+		v, err := h.s.GetVM(ctx, p.ConnectionID, id)
+		if err != nil {
+			return nil, err
+		}
+		if v.Fingerprint != input["editBeforeFingerprint"] {
+			return nil, domain.Fail("STALE_PLAN", "domain changed during hardware review")
+		}
+		edit, err := xmlpatch.ParseHardwareInput(input)
+		if err != nil {
+			return nil, err
+		}
+		after, err := xmlpatch.EditHardware(v.PersistentXML, edit)
+		if err != nil {
+			return nil, err
+		}
+		beforeView, err := xmlpatch.InspectBoot(v.PersistentXML)
+		if err != nil {
+			return nil, err
+		}
+		afterView, err := xmlpatch.InspectBoot(after)
+		if err != nil {
+			return nil, err
+		}
+		review["beforeBoot"] = beforeView
+		review["afterBoot"] = afterView
+	}
+	return review, nil
 }
 
 func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error {
@@ -298,22 +379,18 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 		return domain.Fail("STALE_PLAN", "domain changed since the preview")
 	}
 	if h.action == "set" {
-		if p.Operation != "vm.configure-resources" || input["editVersion"] != float64(1) || input["editBeforeFingerprint"] != v.Fingerprint {
+		if !configurationVersion(p.Operation, input) || input["editBeforeFingerprint"] != v.Fingerprint {
 			return domain.Fail("STALE_PLAN", "configuration plan requires a fresh preservation-aware preview")
 		}
 		if e = editableVM(v); e != nil {
 			return e
 		}
-		edit, err := resourceEdit(input)
+		digest, err := configurationPreviewDigest(v.PersistentXML, input)
 		if err != nil {
 			return err
 		}
-		x, err := xmlpatch.EditResources(v.PersistentXML, edit)
-		if err != nil {
-			return err
-		}
-		if xmlpatch.Digest(x) != input["xmlSHA256"] {
-			return domain.Fail("STALE_PLAN", "configuration edit differs from the reviewed resource fields")
+		if digest != input["xmlSHA256"] {
+			return domain.Fail("STALE_PLAN", "configuration edit differs from the reviewed fields")
 		}
 		checker, ok := h.s.Provider.(domain.ConfigurationValidator)
 		if !ok {
@@ -358,7 +435,7 @@ func (h *vmHandler) Reconcile(ctx context.Context, p domain.Plan, b []byte, step
 		return v.State == "stopped" && v.HasManagedSave, nil
 	}
 	if h.action == "set" {
-		if p.Operation != "vm.configure-resources" {
+		if !configurationVersion(p.Operation, input) {
 			return false, domain.Fail("RECOVERY_REQUIRED", "legacy configuration uncertainty requires explicit disposition; do not replay")
 		}
 		checker, ok := h.s.Provider.(domain.ConfigurationValidator)

@@ -48,7 +48,15 @@ func (p *configProvider) CheckConfiguration(context.Context, string, string, map
 func (p *configProvider) ObserveConfiguration(_ context.Context, _, _ string, input map[string]any) (bool, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return xmlpatch.Digest(p.vm.PersistentXML) == input["xmlSHA256"] && p.vm.State == "stopped" && !p.vm.HasManagedSave, nil
+	digest := xmlpatch.Digest(p.vm.PersistentXML)
+	if input["editVersion"] == float64(2) {
+		var err error
+		digest, err = xmlpatch.HardwareDigest(p.vm.PersistentXML)
+		if err != nil {
+			return false, err
+		}
+	}
+	return digest == input["xmlSHA256"] && p.vm.State == "stopped" && !p.vm.HasManagedSave, nil
 }
 func (p *configProvider) Execute(ctx context.Context, _, _, action string, input map[string]any) error {
 	if p.entered != nil {
@@ -68,15 +76,27 @@ func (p *configProvider) Execute(ctx context.Context, _, _, action string, input
 	if p.fail == "define" {
 		return errors.New("synthetic define failure")
 	}
-	edit, err := resourceEdit(input)
-	if err != nil {
-		return err
+	if input["editVersion"] == float64(2) {
+		edit, err := xmlpatch.ParseHardwareInput(input)
+		if err != nil {
+			return err
+		}
+		xml, err := xmlpatch.EditHardware(p.vm.PersistentXML, edit)
+		if err != nil {
+			return err
+		}
+		p.vm.PersistentXML = xml
+	} else {
+		edit, err := resourceEdit(input)
+		if err != nil {
+			return err
+		}
+		xml, err := xmlpatch.EditResources(p.vm.PersistentXML, edit)
+		if err != nil {
+			return err
+		}
+		p.vm.PersistentXML = xml
 	}
-	xml, err := xmlpatch.EditResources(p.vm.PersistentXML, edit)
-	if err != nil {
-		return err
-	}
-	p.vm.PersistentXML = xml
 	h := sha256.Sum256([]byte(p.vm.PersistentXML))
 	p.vm.Fingerprint = hex.EncodeToString(h[:])
 	if p.fail == "ack" {

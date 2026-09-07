@@ -1086,6 +1086,29 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill vm boot show`
+
+Inspect separate live and next-boot device order using disk targets and NIC MACs
+
+```text
+Usage:
+  virmill vm boot show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill vm create`
 
 Plan managed copies, optional NoCloud provisioning and a new powered-off VM from a prepared source
@@ -1302,7 +1325,7 @@ Global Flags:
 
 ## `virmill vm set`
 
-Plan a preservation-checked next-boot CPU/RAM edit on a powered-off VM
+Plan next-boot CPU/RAM, boot order or retained-media ejection on a powered-off VM
 
 ```text
 Usage:

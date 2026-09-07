@@ -1,0 +1,5 @@
+{
+  "bootOrder": [{"kind": "disk", "id": "vda"}],
+  "ejectMedia": "sdb",
+  "applyMode": "next-boot"
+}

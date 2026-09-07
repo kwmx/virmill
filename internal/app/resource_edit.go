@@ -7,7 +7,7 @@ import (
 
 func editableVM(v domain.VM) error {
 	if v.State != "stopped" || v.PersistentXML == "" {
-		return domain.Fail("UNSUPPORTED_CAPABILITY", "resource edits require a powered-off persistent VM; shutdown is a separate approved operation")
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "configuration edits require a powered-off persistent VM; shutdown is a separate approved operation")
 	}
 	if v.HasManagedSave {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "managed-save state is bound to the old hardware; restore and shut down the guest before editing")

@@ -1,4 +1,4 @@
-# Fixed CPU and RAM configuration
+# VM resources, boot order and installation media
 
 `vm set` provides preservation-checked CPU/RAM edits for a powered-off persistent
 VM. Use its stable UUID and explicit local connection. The CLI and TUI share the
@@ -82,5 +82,61 @@ Older binaries do not know the new durable operation and cannot execute it.
 Legacy `vm.set` plans need a fresh preview, and legacy uncertain operations need
 explicit disposition. SQLite schema 3 and its existing migration backups remain
 unchanged. See [ADR 0011](adr/0011-fixed-resource-configuration-preservation.md).
-Advanced CPU/RAM, live modes, boot order, media ejection and the rest of complete
-configuration remain tracked in the full 1.0 requirements matrix.
+Advanced CPU/RAM, live modes and remaining configuration workflows stay in the
+full 1.0 matrix. The boot/media extension below adds a separate versioned operation.
+
+## Boot order and installation-media ejection
+
+Inspect the exact existing targets before editing:
+
+```sh
+virmill vm boot show VM_UUID --connection qemu:///system --output json
+```
+
+The result has separate `persistent` and `live` boot views, along with VM state and
+managed-save presence. `mode` distinguishes firmware defaults, legacy device-class
+order, per-device order and direct boot. A disk selector uses its observed target
+(for example `vda`); an interface selector uses its observed MAC. An order of zero
+means the device has no explicit per-device boot rank. This is observed intent,
+not a boot or network readiness test.
+
+To finish an installation, select the installed disk and eject its installer:
+
+```sh
+virmill vm set VM_UUID --connection qemu:///system \
+  --input '{"bootOrder":[{"kind":"disk","id":"vda"}],"ejectMedia":"sdb","applyMode":"next-boot"}' \
+  --plan --output json --non-interactive
+```
+
+Replace `vda` and `sdb` with targets from `vm boot show`; do not assume these names.
+The [example](../examples/configuration/finish-installation.json) is a template.
+`bootOrder` is the complete desired order: omitted devices lose their explicit
+rank. It may include existing interface MACs using `kind: interface`; disconnected
+interfaces and empty media are refused. Legacy firmware-class order is replaced
+explicitly. Direct/conflicting boot, ambiguous identities or advanced boot options
+are refused with an explanation and require their dedicated workflow.
+
+`ejectMedia` accepts one existing explicitly read-only CD-ROM. Ejection retains
+its backing file/volume and the empty drive. An empty block/volume drive is shown
+as `type: file` in the reviewed result. Ejecting a boot candidate requires a
+replacement `bootOrder`. Supplying the ejected target as a new boot candidate is
+refused. The command does not complete an installer, change guest credentials or
+remove installation files. Authentication, structured source policy and backing
+graphs require dedicated adapters. Inspect ordinary VM inventory for the retained
+source before the edit; opaque source paths are not copied into the new plan.
+
+In **VMs → vm set**, enter the same input wrapped as
+`{"id":"VM_UUID","input":{...}}`. **VMs → vm boot show** takes the VM UUID.
+Review `beforeBoot`, `afterBoot`, requested resource changes and the required
+acknowledgements. Use `plan apply` with the exact digest and all listed `--ack`
+values, or press `a` in the TUI and type the displayed digest. Boot replacement
+adds `replace-boot-order`; ejection adds `eject-retain-media`. Fixed CPU/RAM values
+may be combined with these fields in one reviewed definition.
+
+This workflow requires an already stopped persistent VM without managed-save
+state. It uses `vm.configure-hardware` internally and never changes an older
+resource plan's meaning. A known formatting change can verify semantically;
+unrecognized changes, unavailable secure readback or lost acknowledgement retain
+uncertainty. Inspect `operation show/watch` and explicitly reconcile by observation.
+Do not replay, erase locks or manually remove a medium to make a failed edit appear
+successful. See [ADR 0014](adr/0014-boot-order-and-retained-media-edits.md).

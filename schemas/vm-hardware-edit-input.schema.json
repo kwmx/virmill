@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-hardware-edit-input.schema.json",
+  "title": "Explicit next-boot resource, boot order and media ejection intent",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "vcpus": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 512
+    },
+    "memoryMiB": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1048576
+    },
+    "applyMode": {
+      "enum": [
+        "next-boot",
+        "now",
+        "both"
+      ]
+    },
+    "bootOrder": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "id"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "disk",
+              "interface"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "ejectMedia": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "vcpus"
+      ]
+    },
+    {
+      "required": [
+        "memoryMiB"
+      ]
+    },
+    {
+      "required": [
+        "bootOrder"
+      ]
+    },
+    {
+      "required": [
+        "ejectMedia"
+      ]
+    }
+  ]
+}

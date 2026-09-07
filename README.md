@@ -27,4 +27,4 @@ The public executable is `virmill`, the user coordinator is `virmilld`, and boun
 privileged work belongs to `virmill-host-helper`. No publication destination has
 been selected. Local module names make no repository or domain ownership claim.
 
-Fixed CPU/RAM editing and preservation limits: [configuration guide](docs/vm-configuration.md).
+CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-configuration.md).

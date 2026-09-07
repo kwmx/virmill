@@ -175,13 +175,45 @@ func TestNoCloudCreationOptionsUseSharedService(t *testing.T) {
 	if r.method != "vm.create" || r.request.ID != "prepared-op" || r.request.Input["provisioning"].(map[string]any)["profile"] != "nocloud-netplan-ipv4-v1" {
 		t.Fatal("NoCloud request bypassed shared creation", r)
 	}
- policy := r.request.Input["hardware"].(map[string]any)["devicePolicy"].(map[string]any)
- if policy["watchdogAction"] != "none" || policy["usbController"] != "none" || policy["memoryBalloon"] != "none" { t.Fatal("reviewed device policy lost in client form", policy) }
+	policy := r.request.Input["hardware"].(map[string]any)["devicePolicy"].(map[string]any)
+	if policy["watchdogAction"] != "none" || policy["usbController"] != "none" || policy["memoryBalloon"] != "none" {
+		t.Fatal("reviewed device policy lost in client form", policy)
+	}
 }
 
 func TestFixedResourcesUseSharedPlanning(t *testing.T) {
- r:=&recorder{};var out bytes.Buffer;c:=New(r,&out,&out)
- c.SetArgs([]string{"vm","set","vm-fixture","--input",`{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}`,"--plan","--output","json","--non-interactive"})
- if err:=c.Execute();err!=nil{t.Fatal(err)}
- if r.method!="vm.plan"||r.request.Action!="set"||r.request.Input["applyMode"]!="next-boot"||r.request.Input["memoryMiB"]!=float64(4096){t.Fatal("resource edit bypassed shared planning",r)}
+	r := &recorder{}
+	var out bytes.Buffer
+	c := New(r, &out, &out)
+	c.SetArgs([]string{"vm", "set", "vm-fixture", "--input", `{"vcpus":4,"memoryMiB":4096,"applyMode":"next-boot"}`, "--plan", "--output", "json", "--non-interactive"})
+	if err := c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "vm.plan" || r.request.Action != "set" || r.request.Input["applyMode"] != "next-boot" || r.request.Input["memoryMiB"] != float64(4096) {
+		t.Fatal("resource edit bypassed shared planning", r)
+	}
+}
+
+func TestBootAndMediaCommandsUseSharedService(t *testing.T) {
+	for _, test := range []struct {
+		args   []string
+		method string
+	}{
+		{[]string{"vm", "boot", "show", "vm-fixture"}, "vm.boot.get"},
+		{[]string{"vm", "set", "vm-fixture", "--input", `{"bootOrder":[{"kind":"disk","id":"vda"}],"ejectMedia":"sda","applyMode":"next-boot"}`, "--plan"}, "vm.plan"},
+	} {
+		r := &recorder{}
+		var out bytes.Buffer
+		c := New(r, &out, &out)
+		c.SetArgs(append(test.args, "--connection", "qemu:///session", "--output", "json", "--non-interactive"))
+		if err := c.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		if r.method != test.method || r.request.ID != "vm-fixture" || r.request.Connection != "qemu:///session" {
+			t.Fatal("boot operation bypassed shared service", r)
+		}
+		if test.method == "vm.plan" && (r.request.Action != "set" || r.request.Input["ejectMedia"] != "sda" || len(r.request.Input["bootOrder"].([]any)) != 1) {
+			t.Fatal("boot/media intent lost", r)
+		}
+	}
 }
