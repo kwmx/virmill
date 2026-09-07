@@ -1,0 +1,9 @@
+=== RUN   TestConcurrentCancellation
+--- PASS: TestConcurrentCancellation (0.00s)
+PASS
+ok  	virmill.local/sdk	1.010s
+?   	virmill.local/sdk/example	[no test files]
+?   	virmill.local/sdk/protocol	[no test files]
+genisoimage 1.1.11 (Linux)
+73444004f0e95190264cd7e098108e760960cf63ba833b669487b01d5bb83e99  /usr/bin/genisoimage
+genisoimage-1.1.11-63.fc44.x86_64

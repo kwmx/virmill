@@ -10,3 +10,7 @@ planned tests, evidence and remaining work. Generated `../implementation-status.
 is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
+
+Latest development checkpoint: [ISO preparation and read-only media](installation-slice.md).
+Its generated-file and simulated XML results remain separate from unverified native
+storage, installer execution and hardware behavior.
