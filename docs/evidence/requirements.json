@@ -54,7 +54,8 @@
         "docs/evidence/boot-media-run.md",
         "internal/app/estimates.go",
         "internal/operations/engine.go",
-        "docs/adr/0015-operation-downtime-estimates.md"
+        "docs/adr/0015-operation-downtime-estimates.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -76,7 +77,9 @@
         "boot-media-native-hard-stop-001",
         "boot-media-native-disk-start-001",
         "boot-media-native-stop-harness-001",
-        "boot-media-native-stop-final-001"
+        "boot-media-native-stop-final-001",
+        "downtime-core-001",
+        "downtime-static-001"
       ],
       "outstanding": [
         "Start and graceful shutdown passed for one isolated Kali Q35/BIOS clone on the authorized test VM. Full lifecycle/state/disk-preservation coverage, reboot and safe removal remain incomplete.",
@@ -109,7 +112,8 @@
         "docs/evidence/boot-media-run.md",
         "internal/app/estimates.go",
         "internal/operations/engine.go",
-        "docs/adr/0015-operation-downtime-estimates.md"
+        "docs/adr/0015-operation-downtime-estimates.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
@@ -143,7 +147,9 @@
         "boot-media-native-eject-001",
         "boot-media-native-live-refusal-001",
         "boot-media-native-disk-boot-001",
-        "boot-media-captured-001"
+        "boot-media-captured-001",
+        "downtime-core-001",
+        "downtime-native-preview-001"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
@@ -1785,7 +1791,8 @@
         "internal/backend/xmlpatch/tree.go",
         "schemas/vm-hardware-edit-input.schema.json",
         "docs/adr/0014-boot-order-and-retained-media-edits.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1849,7 +1856,8 @@
         "boot-media-core-001",
         "boot-media-native-upgrade-001",
         "boot-media-native-stop-final-001",
-        "boot-media-native-preservation-001"
+        "boot-media-native-preservation-001",
+        "downtime-native-upgrade-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -1927,7 +1935,8 @@
         "schemas/vm-resource-edit-input.schema.json",
         "docs/vm-configuration.md",
         "internal/app/estimates.go",
-        "docs/adr/0015-operation-downtime-estimates.md"
+        "docs/adr/0015-operation-downtime-estimates.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -1967,7 +1976,10 @@
         "nocloud-confinement-001",
         "configuration-core-001",
         "native-first-creation-001",
-        "native-first-recovery-001"
+        "native-first-recovery-001",
+        "downtime-core-001",
+        "downtime-static-001",
+        "downtime-native-preview-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -2160,7 +2172,8 @@
         "sdk/go/example/summary.go",
         "internal/plugins/runner.go",
         "internal/plugins/actions.go",
-        "internal/validation/dynamic.go"
+        "internal/validation/dynamic.go",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-01",
@@ -2177,7 +2190,8 @@
         "cleanup-confinement-001",
         "disk-set-confinement-001",
         "boot-media-portable-001",
-        "boot-media-sdk-001"
+        "boot-media-sdk-001",
+        "downtime-portable-001"
       ],
       "outstanding": [
         "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
@@ -2358,7 +2372,8 @@
         "docs/evidence/boot-media-run.md",
         "internal/app/estimates.go",
         "internal/operations/engine.go",
-        "docs/adr/0015-operation-downtime-estimates.md"
+        "docs/adr/0015-operation-downtime-estimates.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2408,7 +2423,10 @@
         "device-policy-native-tui-001",
         "boot-media-core-001",
         "boot-media-artifacts-001",
-        "boot-media-native-tui-001"
+        "boot-media-native-tui-001",
+        "downtime-core-001",
+        "downtime-artifacts-001",
+        "downtime-native-preview-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -2538,7 +2556,8 @@
         "schemas/vm-resource-edit-input.schema.json",
         "docs/vm-configuration.md",
         "docs/evidence/device-policy-run.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -2587,7 +2606,10 @@
         "boot-media-build-001",
         "boot-media-artifacts-001",
         "boot-media-native-upgrade-001",
-        "boot-media-native-services-001"
+        "boot-media-native-services-001",
+        "downtime-build-001",
+        "downtime-artifacts-001",
+        "downtime-native-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
@@ -2606,7 +2628,8 @@
       "implementationPaths": [
         "scripts/cross-build.sh",
         "sdk/go/server.go",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-02",
@@ -2626,7 +2649,9 @@
         "configuration-static-portable-001",
         "boot-media-build-001",
         "boot-media-artifacts-001",
-        "boot-media-native-services-001"
+        "boot-media-native-services-001",
+        "downtime-build-001",
+        "downtime-artifacts-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -2676,7 +2701,8 @@
         "docs/evidence/boot-media-run.md",
         "internal/app/estimates.go",
         "internal/operations/engine.go",
-        "docs/adr/0015-operation-downtime-estimates.md"
+        "docs/adr/0015-operation-downtime-estimates.md",
+        "docs/evidence/downtime-estimates-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2740,7 +2766,13 @@
         "boot-media-portable-001",
         "boot-media-build-001",
         "boot-media-artifacts-001",
-        "boot-media-native-tui-001"
+        "boot-media-native-tui-001",
+        "downtime-core-001",
+        "downtime-static-001",
+        "downtime-portable-001",
+        "downtime-build-001",
+        "downtime-artifacts-001",
+        "downtime-native-preview-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",

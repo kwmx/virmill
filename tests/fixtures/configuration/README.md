@@ -35,3 +35,7 @@ was performed in this run.
 `check-boot-media-stop-final.py` observed the same successful operation without
 replaying it. New harnesses must wait for explicitly terminal states, including
 recovery-required as an attention outcome.
+
+The later `upgrade-downtime-estimates.py` and `downtime-preview-tui.py` record
+15a1f2c installation and CLI/TUI preview parity. They preserve existing jobs, guest
+XML and old plan digests. No new guest mutation was applied in that preview run.

@@ -65,3 +65,7 @@ recovery and the remaining mandatory matrix still require implementation or evid
 No acceptance scenario is promoted to complete by this narrow run. Native plans
 also exposed the existing default `requiresDowntime: false` estimate on lifecycle
 operations; explicit stop warnings were present, but structured estimates need correction.
+
+The later [downtime correction](downtime-estimates-run.md), runtime 15a1f2c,
+fixes new VM-plan estimates and passed installed CLI/TUI previews without guest
+mutations. Earlier plans and this run’s evidence remain immutable.

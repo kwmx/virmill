@@ -23,6 +23,7 @@ coverage.out
 /.cache/
 *.iso
 *.ova
+*.7z
 *.qcow
 *.qcow2
 *.vmdk
