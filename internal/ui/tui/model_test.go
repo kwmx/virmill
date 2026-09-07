@@ -2,7 +2,9 @@ package tui
 
 import (
 	"context"
+	"encoding/json"
 	tea "github.com/charmbracelet/bubbletea"
+	"os"
 	"strings"
 	"testing"
 	"virmill.local/core/internal/app"
@@ -249,5 +251,48 @@ func TestLargeCreationFormRemainsBoundedAndVisible(t *testing.T) {
 	m = model.(Model)
 	if len(m.Input) != 20000 || !strings.Contains(m.Output, "limit") {
 		t.Fatal("oversized paste not refused atomically")
+	}
+}
+
+func TestNoCloudCreationFormUsesSharedService(t *testing.T) {
+	b, err := os.ReadFile("../../../examples/creation/nocloud.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var inputs map[string]any
+	if err = json.Unmarshal(b, &inputs); err != nil {
+		t.Fatal(err)
+	}
+	r := &recorder{}
+	m := New(r, "qemu:///session")
+	for i, name := range sections {
+		if name == "VMs" {
+			m.Section = i
+		}
+	}
+	found := false
+	for i, a := range m.actions() {
+		if a.Command == "vm create" {
+			m.Selected = i
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("creation form inaccessible")
+	}
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = model.(Model)
+	encoded, err := json.Marshal(map[string]any{"id": "prepared-op", "input": inputs})
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.Input = string(encoded)
+	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("NoCloud form not submitted")
+	}
+	cmd()
+	if r.method != "vm.create" || r.request.ID != "prepared-op" || r.request.Input["provisioning"].(map[string]any)["mediaID"] != "cloud-init" {
+		t.Fatal("NoCloud mapping lost", r)
 	}
 }

@@ -38,7 +38,7 @@ func run() error {
 	service := app.New(&backend.Provider{}, engine)
 	service.Inspector = platform.Doctor
 	importing.Register(service)
-	creating.Register(service)
+	creating.Register(service, p.Cache)
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e
 	}

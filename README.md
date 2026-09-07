@@ -17,6 +17,8 @@ explicitly selected files with guarded backing/extent access. The
 [ISO preparation workflow](docs/installation-preparation.md) copies media and
 creates verified empty disks. The [VM creation adapter](docs/vm-creation.md) adds explicit hardware mappings,
 define-last storage phases and reviewed definition recovery.
+[Declared cloud-image provisioning](docs/cloud-provisioning.md) adds identity-bound
+NoCloud seeds with explicit guest account and network intent.
 [Failed-creation cleanup](docs/creation-cleanup.md) adds explicit retention or
 guarded deletion with durable recovery. Native storage,
 guest qualification and other required creation sources remain in progress.

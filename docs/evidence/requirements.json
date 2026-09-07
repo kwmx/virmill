@@ -179,7 +179,12 @@
         "internal/platform/linux/sandbox.go",
         "internal/importing/install_linux.go",
         "internal/backend/image/empty_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -191,7 +196,10 @@
         "internal/importing/install_linux_test.go",
         "internal/backend/image/empty_linux_test.go",
         "internal/creating/media_linux_test.go",
-        "internal/backend/libvirt/creation_media_linux_test.go"
+        "internal/backend/libvirt/creation_media_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -202,7 +210,7 @@
         "installation-artifacts-001"
       ],
       "outstanding": [
-        "Existing-disk and ISO artifact preparation feed reviewed creation. ISO media copies and confined empty-disk checks, read-only media XML, publication/reopen recovery and shared CLI/TUI access exist. Full installer console/ejection lifecycle, cloud/NoCloud provisioning, native storage streaming and declared guest verification remain incomplete or unqualified."
+        "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Full installer console/ejection, native storage streaming and all declared guest boot/provisioning levels remain incomplete or unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -308,7 +316,12 @@
         "internal/backend/libvirt/creation_xml.go",
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -321,7 +334,10 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -405,7 +421,12 @@
         "internal/backend/image/guard_linux.go",
         "internal/platform/linux/sandbox.go",
         "internal/importing/install_linux.go",
-        "internal/backend/image/empty_linux.go"
+        "internal/backend/image/empty_linux.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-06",
@@ -426,7 +447,10 @@
         "internal/importing/install_linux_test.go",
         "internal/backend/image/empty_linux_test.go",
         "internal/creating/media_linux_test.go",
-        "internal/backend/libvirt/creation_media_linux_test.go"
+        "internal/backend/libvirt/creation_media_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -469,7 +493,12 @@
         "internal/backend/image/guard_linux.go",
         "internal/platform/linux/sandbox.go",
         "internal/importing/install_linux.go",
-        "internal/backend/image/empty_linux.go"
+        "internal/backend/image/empty_linux.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -486,7 +515,10 @@
         "internal/importing/install_linux_test.go",
         "internal/backend/image/empty_linux_test.go",
         "internal/creating/media_linux_test.go",
-        "internal/backend/libvirt/creation_media_linux_test.go"
+        "internal/backend/libvirt/creation_media_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -586,18 +618,26 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/app/network/intent.go",
-        "internal/app/lab/validate.go"
+        "internal/app/lab/validate.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-02",
       "tests": [
-        "internal/app/network/intent_test.go"
+        "internal/app/network/intent_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "core-tests-001"
       ],
       "outstanding": [
-        "Normal IPv4 route intent validation only; no renderer or actual guest route verification."
+        "Explicit NoCloud Netplan/networkd IPv4 renderer binds new MACs, permits one normal default route and suppresses protected DHCP routes/DNS. Actual multi-NIC route, DNS, forwarding and isolation verification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -647,14 +687,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 4,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
+      ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-05",
-      "tests": [],
+      "tests": [
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "IPv6/link-local/RA paths match policy; no false isolation claim from IPv4-only tests."
+        "The declared NoCloud IPv4 profile requests disabled DHCPv6, RA and IPv6 link-local configuration; enabled IPv6 profiles and actual IPv6/link-local/RA packet/isolation verification remain required. Generated configuration is not network evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1201,14 +1251,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 6,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
+      ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-01",
-      "tests": [],
+      "tests": [
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "Cloud-init and supported guest transports establish a non-root user/keys and report readiness truthfully."
+        "Typed NoCloud public-key/non-root-user configuration binds new clone identity, explicit NIC intent and exact deterministic media to reviewed creation. Seed generation is not guest execution; supported cloud-init/Netplan guest validation, guest transports and readiness remain unqualified or missing."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1408,7 +1468,12 @@
         "internal/platform/linux/sandbox.go",
         "internal/importing/install_linux.go",
         "internal/backend/image/empty_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1429,7 +1494,10 @@
         "internal/importing/install_linux_test.go",
         "internal/backend/image/empty_linux_test.go",
         "internal/creating/media_linux_test.go",
-        "internal/backend/libvirt/creation_media_linux_test.go"
+        "internal/backend/libvirt/creation_media_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1506,7 +1574,12 @@
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
         "internal/backend/image/tool_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -1522,7 +1595,10 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -1574,14 +1650,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 2,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
+      ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-02",
-      "tests": [],
+      "tests": [
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "Secrets and guest sensitive artifacts remain absent from default logs, telemetry and diagnostics."
+        "NoCloud accepts structured public configuration only. Creation schema errors withhold rejected values, seed process content is absent from errors, and credential-refusal tests check error/journal/worker boundaries. Full secret store, guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1863,7 +1949,12 @@
         "internal/ui/request.go",
         "internal/importing/install_linux.go",
         "internal/backend/image/empty_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -1875,7 +1966,10 @@
         "internal/importing/install_linux_test.go",
         "internal/backend/image/empty_linux_test.go",
         "internal/creating/media_linux_test.go",
-        "internal/backend/libvirt/creation_media_linux_test.go"
+        "internal/backend/libvirt/creation_media_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1937,7 +2031,12 @@
         "internal/ui/request.go",
         "internal/ui/registry.go",
         "internal/ui/tui/model.go",
-        "docs/vm-creation.md"
+        "docs/vm-creation.md",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -1945,7 +2044,10 @@
         "internal/ui/cli/root_test.go",
         "internal/ui/request_test.go",
         "internal/ui/tui/model_test.go",
-        "internal/creating/compatibility_linux_test.go"
+        "internal/creating/compatibility_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2067,7 +2169,12 @@
         "docs/vm-creation.md",
         "internal/importing/install_linux.go",
         "internal/backend/image/empty_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/app/provision/nocloud.go",
+        "internal/backend/seed/tool_linux.go",
+        "internal/creating/provision_linux.go",
+        "schemas/nocloud-config.schema.json",
+        "docs/cloud-provisioning.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2079,7 +2186,10 @@
         "internal/importing/install_linux_test.go",
         "internal/backend/image/empty_linux_test.go",
         "internal/creating/media_linux_test.go",
-        "internal/backend/libvirt/creation_media_linux_test.go"
+        "internal/backend/libvirt/creation_media_linux_test.go",
+        "internal/app/provision/nocloud_test.go",
+        "internal/backend/seed/tool_linux_test.go",
+        "internal/creating/provision_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",

@@ -1088,7 +1088,7 @@ Global Flags:
 
 ## `virmill vm create`
 
-Plan managed copies and a new powered-off VM from a completed import operation
+Plan managed copies, optional NoCloud provisioning and a new powered-off VM from a prepared source
 
 ```text
 Usage:

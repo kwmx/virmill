@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 	"virmill.local/core/internal/app"
@@ -156,5 +157,22 @@ func TestCreationAndRecoveryCommandsUseSharedService(t *testing.T) {
 		if r.method == "vm.create" && r.request.Input["identityMode"] != "clone" {
 			t.Fatal("identity choice lost")
 		}
+	}
+}
+
+func TestNoCloudCreationOptionsUseSharedService(t *testing.T) {
+	b, err := os.ReadFile("../../../examples/creation/nocloud.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := &recorder{}
+	var out bytes.Buffer
+	c := New(r, &out, &out)
+	c.SetArgs([]string{"vm", "create", "prepared-op", "--connection", "qemu:///session", "--input", string(b), "--plan", "--output", "json", "--non-interactive"})
+	if err = c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "vm.create" || r.request.ID != "prepared-op" || r.request.Input["provisioning"].(map[string]any)["profile"] != "nocloud-netplan-ipv4-v1" {
+		t.Fatal("NoCloud request bypassed shared creation", r)
 	}
 }

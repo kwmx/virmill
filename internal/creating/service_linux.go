@@ -10,10 +10,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync/atomic"
 	"syscall"
 	"time"
 	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/app/provision"
+	"virmill.local/core/internal/backend/seed"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/importing"
 	"virmill.local/core/internal/operations"
@@ -29,13 +32,17 @@ type Service struct {
 	Backend    domain.CreationBackend
 	Inventory  domain.ResourceInventory
 	LoadSource SourceLoader
+	SeedTool   SeedTool
+	SeedCache  string
 }
 type request struct {
 	IdentityMode string              `json:"identityMode"`
+	Provisioning *provision.Config   `json:"provisioning,omitempty"`
 	Hardware     domain.CreationSpec `json:"hardware"`
 }
 type input struct {
 	SourceOperationID string                `json:"sourceOperationID"`
+	Seed              *seedRecipe           `json:"seed,omitempty"`
 	Artifact          importing.Artifact    `json:"artifact"`
 	Directory         string                `json:"directory"`
 	Target            domain.CreationTarget `json:"target"`
@@ -60,7 +67,7 @@ type Receipt struct {
 	GuestBootVerified bool             `json:"guestBootVerified"`
 }
 
-func Register(service *app.Service) {
+func Register(service *app.Service, seedCacheDirectory string) {
 	backend, ok := service.Provider.(domain.CreationBackend)
 	if !ok {
 		return
@@ -69,7 +76,7 @@ func Register(service *app.Service) {
 	if !ok {
 		return
 	}
-	s := &Service{Engine: service.Engine, Store: service.Engine.Store, Backend: backend, Inventory: inventory, LoadSource: importing.Approved}
+	s := &Service{Engine: service.Engine, Store: service.Engine.Store, Backend: backend, Inventory: inventory, LoadSource: importing.Approved, SeedTool: seed.Tool{}, SeedCache: seedCacheDirectory}
 	service.InventoryVM = s.Ownership
 	service.Engine.Handlers["vm.create"] = s
 	service.Engine.Handlers["vm.create.resume"] = &resumeHandler{s: s}
@@ -107,7 +114,9 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		return empty, err
 	}
 	if err = validation.Schema("vm-creation-input", b); err != nil {
-		return empty, domain.Fail("INVALID_INPUT", err.Error())
+		// A schema error may quote rejected input (including a pasted private key).
+		// Never forward that formatter across the credential input boundary.
+		return empty, domain.Fail("INVALID_INPUT", "creation input does not match the bundled vm-creation-input schema; check the documented hardware and provisioning fields")
 	}
 	var req request
 	if err = wire.Decode(b, &req); err != nil {
@@ -154,12 +163,28 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		in.RequiredBytes += bound(uint64(source.VirtualBytes))
 		in.Volumes = append(in.Volumes, domain.VolumeIntent{PoolID: spec.PoolID, Name: fmt.Sprintf("virmill-%s-disk-%03d.qcow2", spec.UUID, i), SourceID: d.SourceID, VirtualBytes: uint64(source.VirtualBytes), FileBytes: uint64(source.FileBytes), SHA256: source.SHA256})
 	}
-	if len(spec.Media) != len(artifact.Media) {
+	preparedSeed, err := s.planSeed(ctx, req.Provisioning, spec, artifact)
+	if err != nil {
+		return empty, err
+	}
+	in.Seed = preparedSeed
+	expectedMedia := len(artifact.Media)
+	if preparedSeed != nil {
+		expectedMedia++
+	}
+	if len(spec.Media) != expectedMedia {
 		return empty, domain.Fail("INVALID_INPUT", "map every prepared read-only medium exactly once")
 	}
 	media := map[string]importing.PreparedMedia{}
 	for _, m := range artifact.Media {
 		media[m.SourceID] = m
+	}
+	if preparedSeed != nil {
+		id := preparedSeed.Config.MediaID
+		if seen[id] || media[id].SourceID != "" {
+			return empty, domain.Fail("INVALID_INPUT", "NoCloud medium must have a unique source ID")
+		}
+		media[id] = importing.PreparedMedia{SourceID: id, Path: "seed.iso", Format: "raw", FileBytes: preparedSeed.Artifact.FileBytes, SHA256: preparedSeed.Artifact.SHA256}
 	}
 	for i, m := range spec.Media {
 		source, ok := media[m.SourceID]
@@ -218,6 +243,14 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		acks = append(acks, "attach-readonly-media")
 		risks = append(risks, "Copies all selected media into independent managed read-only CD-ROM volumes; boot order is explicit and no unattended installation is inferred")
 	}
+	if preparedSeed != nil {
+		acks = append(acks, "guest-root-provisioning", "rotate-guest-host-keys")
+		risks = append(risks, "First boot asks the explicitly declared cloud-init/Netplan image to create the selected user, install public SSH keys, set hostname and apply the reviewed per-NIC network intent", "A fresh per-VM NoCloud instance ID and guest SSH host-key rotation are requested; existing image credentials and machine identity are not proven generalized", "Source digest matches the selected original file; the declared HTTPS provenance is not fetched or signature-verified", "Seed content and public keys persist in the managed media and may persist inside the guest; guest completion, routes and isolation remain unverified")
+		if preparedSeed.Config.PasswordlessSudo {
+			acks = append(acks, "guest-passwordless-sudo")
+			risks = append(risks, "The selected guest account receives passwordless sudo root authority")
+		}
+	}
 	return s.Engine.Plan(ctx, uid, r.Connection, "vm.create", resources, before, in, []domain.Step{step}, acks, risks)
 }
 func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[string]any, error) {
@@ -225,7 +258,11 @@ func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[stri
 	if err := wire.Decode(b, &in); err != nil {
 		return nil, err
 	}
-	return map[string]any{"sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
+	staging := ""
+	if in.Seed != nil {
+		staging = filepath.Join(in.Seed.CacheDirectory, seedStage(p))
+	}
+	return map[string]any{"seedStagingDirectory": staging, "provisioning": in.Seed, "sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
 }
 func (s *Service) checkSource(ctx context.Context, p domain.Plan, in input) error {
 	artifact, directory, err := s.LoadSource(ctx, s.Store, p.ActorUID, in.SourceOperationID)
@@ -266,6 +303,9 @@ func (s *Service) checkSpace(ctx context.Context, p domain.Plan, in input, alrea
 func (s *Service) Validate(ctx context.Context, p domain.Plan, b []byte) error {
 	var in input
 	if err := wire.Decode(b, &in); err != nil {
+		return err
+	}
+	if err := s.checkSeed(ctx, in); err != nil {
 		return err
 	}
 	if err := s.checkSource(ctx, p, in); err != nil {
@@ -309,7 +349,7 @@ func (s *Service) load(planID string) (Receipt, error) {
 	}
 	return out, nil
 }
-func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step domain.Step) error {
+func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step domain.Step) (result error) {
 	var in input
 	if err := wire.Decode(b, &in); err != nil {
 		return err
@@ -341,6 +381,15 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 	for _, m := range in.Artifact.Media {
 		sources[m.SourceID] = m.Path
 	}
+	seedRoot, removeSeed, err := s.executeSeed(ctx, p, in)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := removeSeed(); err != nil {
+			result = fmt.Errorf("creation temporary seed cleanup requires attention: %w", err)
+		}
+	}()
 	var written uint64
 	for i, v := range in.Volumes {
 		cancel, err := operations.CancellationRequested(ctx, s.Store)
@@ -382,7 +431,11 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		if err = operations.Note(ctx, s.Store, "Intent persisted: upload verified source artifact "+v.SourceID+" into its new volume"); err != nil {
 			return err
 		}
-		f, err := root.OpenFile(sources[v.SourceID], os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+		sourceRoot, sourcePath := root, sources[v.SourceID]
+		if in.Seed != nil && v.SourceID == in.Seed.Config.MediaID {
+			sourceRoot, sourcePath = seedRoot, in.Seed.Artifact.Path
+		}
+		f, err := sourceRoot.OpenFile(sourcePath, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
 		if err != nil {
 			return err
 		}

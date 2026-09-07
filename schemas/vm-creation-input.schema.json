@@ -256,6 +256,9 @@
           }
         }
       }
+    },
+    "provisioning": {
+      "$ref": "nocloud-config.schema.json"
     }
   }
 }

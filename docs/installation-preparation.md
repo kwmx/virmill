@@ -3,7 +3,7 @@
 `import prepare-install` copies selected ISO media and creates independent empty
 qcow2 disks through the shared CLI/TUI service. This development workflow verifies
 local artifacts. It does not install an OS, start a VM, prove that an ISO boots or
-supply unattended configuration. Full ISO installation, cloud/NoCloud provisioning,
+supply unattended configuration. Full ISO installation, cloud/NoCloud guest verification,
 console/media-ejection workflows and guest qualification remain required for 1.0.
 
 Keep the selected ordinary media file offline. The service refuses symlinks,

@@ -1,0 +1,57 @@
+{
+  "identityMode": "clone",
+  "hardware": {
+    "name": "Reviewed NoCloud guest",
+    "poolID": "00000000-0000-4000-8000-000000000001",
+    "architecture": "x86_64",
+    "machine": "pc-q35-10.2",
+    "vcpus": 2,
+    "memoryMiB": 2048,
+    "cpu": {
+      "mode": "host-passthrough"
+    },
+    "firmware": {
+      "mode": "bios",
+      "secureBoot": false,
+      "tpm": false
+    },
+    "clock": "utc",
+    "graphics": "vnc-unix",
+    "disks": [
+      {
+        "sourceID": "boot",
+        "bus": "sata",
+        "bootOrder": 1
+      },
+      {
+        "sourceID": "data",
+        "bus": "scsi",
+        "bootOrder": 2
+      }
+    ],
+    "nics": [],
+    "media": [
+      {
+        "sourceID": "cloud-init",
+        "bus": "sata",
+        "bootOrder": 0
+      }
+    ]
+  },
+  "provisioning": {
+    "profile": "nocloud-netplan-ipv4-v1",
+    "cloudInitCompatible": true,
+    "sourceDiskID": "boot",
+    "sourceSHA256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "sourceReference": "https://example.invalid/replace-with-declared-source",
+    "hostname": "cloud-guest",
+    "userName": "operator",
+    "authorizedKeys": [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJC"
+    ],
+    "passwordlessSudo": false,
+    "ipv6": "disabled",
+    "mediaID": "cloud-init",
+    "interfaces": []
+  }
+}

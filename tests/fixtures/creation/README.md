@@ -54,3 +54,22 @@ changes simulated inventory; explicit os.Remove calls affect generated fixtures.
 held-file identity with no backing directory exposure. Enable these real file and
 namespace probes with `VIRMILL_TEST_DISK_TOOLS=1`; an ordinary skipped run is not
 passing confinement evidence. No guest media is downloaded or booted.
+
+## NoCloud seed fixtures
+
+`internal/backend/seed` uses fixed installed xorriso 1.5.8.pl02 to create two
+separate temporary ISO files with identical generated public configuration. Fixed
+ISO dates produce byte-identical output; CIDATA and exact meta-data, user-data and
+network-config contents are read back in confinement. No cloud-init process or
+bootable guest is involved. The fixture digest is logged and the generator's exact
+package/hash is pinned in the dependency contract.
+
+`TestRealNoCloudGeneratorThroughCreationCoordinator` uses that actual generator
+for preview and execution, with a deliberately synthetic storage/VM backend. It
+proves seed binding, readback and phase ordering, not native upload or first boot.
+Separate phase tests deliberately return non-ISO bytes and prove journal semantics
+only: no host allocation on seed failure/cancel, distinct clone UUID/MACs, source/
+tool/cache drift, rejected-secret error hygiene and definition recovery without
+regenerating an already verified seed. Actual CLI/private-daemon tests perform
+seed preview from generated nonbootable prepared disks, then stop at production
+creation's explicit test-URI refusal before any host connection.

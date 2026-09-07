@@ -202,5 +202,12 @@
         "sha256": "dd519a797a45e0cbc0587cccc8912ce865927ca92072aad55179480958144ef7"
       }
     ]
+  },
+  "runtimeSeedGenerator": {
+    "path": "/usr/bin/xorriso",
+    "version": "xorriso 1.5.8.pl02",
+    "package": "xorriso-1.5.8-2.fc44.x86_64",
+    "sha256": "47455ea176c7dcc1afb2006e0c774e2d37db7e9be0b88e27383b29eea2c1e22b",
+    "purpose": "Confined deterministic NoCloud ISO construction and exact file readback; no guest compatibility claim"
   }
 }

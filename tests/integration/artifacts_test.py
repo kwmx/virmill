@@ -199,6 +199,18 @@ class Artifacts(unittest.TestCase):
         self.assertEqual(error['code'],'UNSUPPORTED_CAPABILITY')
         self.assertIn('only explicit local qemu:///system or qemu:///session',error['message'])
         self.assertEqual(invoke('operation','list'),before)
+        cloud = json.loads((ROOT/'examples/creation/nocloud.json').read_text())
+        cloud['provisioning']['sourceSHA256'] = originals['disks/boot.qcow2']
+        cloud_rejected = subprocess.run(command+['vm','create',job['operationID'],'--connection','test:///default',
+                                       '--input',json.dumps(cloud),'--plan','--output','json','--non-interactive'],
+                                       cwd=root,env=env,capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(cloud_rejected.returncode,0)
+        cloud_error = json.loads(cloud_rejected.stdout)['error']
+        self.assertEqual(cloud_error['code'],'UNSUPPORTED_CAPABILITY')
+        self.assertIn('only explicit local qemu:///system or qemu:///session',cloud_error['message'])
+        self.assertEqual(invoke('operation','list'),before)
+        self.assertFalse(any((root/'cache/virmill').glob('seed-preview-*')))
+        print('Native CLI/daemon NoCloud preview: actual identity-bound seed built/read back in confinement and preview files cleaned; declared generated source is nonbootable; native test URI refused without a host effect')
         print('Native CLI/daemon selected-file preparation: source hashes',originals,
               'output disk hashes',[d['sha256'] for d in artifact['disks']],
               '; private receipt accepted by creation; native test-URI refused; no host storage effect or VM boot')

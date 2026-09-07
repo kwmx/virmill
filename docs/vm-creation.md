@@ -3,6 +3,8 @@
 This development adapter defines a powered-off VM from a successful local OVA or
 [existing-disk preparation](existing-disk-preparation.md), or
 [ISO preparation](installation-preparation.md) operation.
+Optional [NoCloud provisioning](cloud-provisioning.md) can attach an identity-bound
+seed to an explicitly declared compatible cloud-image disk set.
 Native disk streaming and guest behavior are not qualified.
 Use an explicitly authorized disposable libvirt environment for application tests.
 The complete release checklist remains open.

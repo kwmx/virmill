@@ -16,7 +16,7 @@ func Doctor() []domain.Capability {
 	} else {
 		out = append(out, domain.Capability{ID: "kvm", Status: "supported-with-prerequisites", ReasonCode: "KVM_UNVERIFIED", Reason: "device exists; access and guest execution require separate qualification", Alternatives: []string{}, EvidenceClass: "read-only-probe"})
 	}
-	for _, name := range []string{"qemu-img", "bwrap", "restic", "virt-v2v", "remote-viewer", "swtpm", "cloud-localds"} {
+	for _, name := range []string{"qemu-img", "bwrap", "restic", "virt-v2v", "remote-viewer", "swtpm", "xorriso", "prlimit"} {
 		p, e := exec.LookPath(name)
 		status, code, reason := "supported-with-prerequisites", "DEPENDENCY_PRESENT_UNVERIFIED", p
 		if e != nil {

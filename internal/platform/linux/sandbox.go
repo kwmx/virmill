@@ -25,6 +25,12 @@ func ConfinedCommand(ctx context.Context, executable, workspace string, args []s
 	return confinedCommand(ctx, executable, workspace, args, "", "", "", nil, nil, 64<<20)
 }
 
+// ConfinedSeedCommand limits the fixed ISO generator to a private workspace
+// and 16 MiB per output file. It receives no original source or device mounts.
+func ConfinedSeedCommand(ctx context.Context, workspace string, args []string) (*exec.Cmd, func(), error) {
+	return confinedCommand(ctx, "/usr/bin/xorriso", workspace, args, "", "", "", nil, nil, 16<<20)
+}
+
 // ConfinedPackageCommand exposes only a previously verified private package tree.
 // The caller retains ownership of the tree for the entire process lifetime.
 func ConfinedPackageCommand(ctx context.Context, directory, entrypoint, workspace string) (*exec.Cmd, func(), error) {
