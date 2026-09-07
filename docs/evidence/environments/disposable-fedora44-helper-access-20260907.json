@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-09-07",
+  "baseEnvironment": "disposable-fedora44-multidisk-20260907.json",
+  "runtimeRevision": "b7fe053f59593d0223828d8a1003e7f418620908",
+  "sourceDigest": "c7071d1aaaf146058986ec06b887d8d59f8e33072dbec44cfb4596bcccf617f0",
+  "additionalObservedPackages": [
+    "openssl-3.5.8-1.fc44.x86_64",
+    "libvirt-libs-12.0.0-3.fc44.x86_64",
+    "acl-2.4.0-1.fc44.x86_64"
+  ],
+  "SELinux": "Enforcing",
+  "helperPolicySHA256": "1ec86a37a44cac12e7fa7c16c542ec83e552e348ea2f2cec841597dc999d6ed4",
+  "socketDropInSHA256": "bd9b6ae22e039a382bc9f26c41ffe342c905584bfb18840b746ffed898d1a20f",
+  "limitations": [
+    "One Fedora44 nested-KVM host and one actual stopped BIOS probe volume; no firmware/TPM, USB, routing or complete permissions-matrix qualification.",
+    "Private key remains on the disposable host; only public identity is recorded.",
+    "Helper socket and service stopped after tests; never enabled."
+  ]
+}

@@ -1,0 +1,5 @@
+{"transcriptSHA256": "f7f1487c030137a74362e9aa77892b8230cc3a3e0b9a68ce54ef022877abf2e8", "operationID": null, "noAutomaticFallbackACLWrite": true}
+Traceback (most recent call last):
+  File "<stdin>", line 36, in <module>
+  File "<stdin>", line 29, in wait_for
+AssertionError: TUI marker absent: b'Preview is immutable'

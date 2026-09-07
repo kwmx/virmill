@@ -42,16 +42,20 @@ type frameResult struct {
 var workerSlots = make(chan struct{}, 4)
 
 type Session struct {
-	cmd      *exec.Cmd
-	input    io.WriteCloser
-	frames   chan frameResult
-	cleanup  func()
-	cancel   context.CancelFunc
-	mu       sync.Mutex
-	sequence int
-	closed   bool
-	done     chan error
-	log      *boundedLog
+	cmd         *exec.Cmd
+	input       io.WriteCloser
+	frames      chan frameResult
+	cleanup     func()
+	cancel      context.CancelFunc
+	mu          sync.Mutex
+	sequence    int
+	closed      bool
+	terminalErr error
+	stopped     <-chan struct{}
+	closeOnce   sync.Once
+	initialized bool
+	done        chan error
+	log         *boundedLog
 }
 
 func Start(ctx context.Context, exe, workspace string) (*Session, error) {
@@ -107,7 +111,7 @@ func startSession(ctx context.Context, exe, workspace, directory, entrypoint str
 		return nil, e
 	}
 	cleanupWorker := func() { cleanup(); <-workerSlots }
-	s := &Session{cmd: cmd, input: input, frames: make(chan frameResult, 2), cleanup: cleanupWorker, cancel: cancel, done: make(chan error, 1), log: log}
+	s := &Session{stopped: ctx.Done(), cmd: cmd, input: input, frames: make(chan frameResult, 2), cleanup: cleanupWorker, cancel: cancel, done: make(chan error, 1), log: log}
 	release = false
 	readerDone := make(chan struct{})
 	go func() {
@@ -130,26 +134,50 @@ func startSession(ctx context.Context, exe, workspace, directory, entrypoint str
 	return s, nil
 }
 func (s *Session) Close() {
-	s.mu.Lock()
-	if s.closed {
+	s.closeOnce.Do(func() {
+		// Wake Call before taking its serialization mutex. Reader shutdown may
+		// drop EOF after context cancellation, so Call observes stopped directly.
+		s.cancel()
+		_ = s.input.Close()
+		s.mu.Lock()
+		s.closed = true
 		s.mu.Unlock()
-		return
-	}
-	s.closed = true
-	s.mu.Unlock()
-	s.input.Close()
-	s.cancel()
-	select {
-	case <-s.done:
-	case <-time.After(5 * time.Second):
-	}
-	s.cleanup()
+		select {
+		case <-s.done:
+		case <-time.After(5 * time.Second):
+		}
+		s.cleanup()
+	})
 }
+
+// failLocked permanently retires a transport after an ambiguous or invalid wire
+// exchange. Close still owns cleanup and releasing the worker slot.
+func (s *Session) failLocked(err error) (json.RawMessage, error) {
+	s.terminalErr = err
+	s.cancel()
+	_ = s.input.Close()
+	return nil, err
+}
+
 func (s *Session) Call(ctx context.Context, method string, params any) (json.RawMessage, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closed {
 		return nil, errors.New("plugin session closed")
+	}
+	if s.terminalErr != nil {
+		return nil, fmt.Errorf("plugin session failed: %w", s.terminalErr)
+	}
+	select {
+	case <-s.stopped:
+		return s.failLocked(errors.New("plugin session stopped"))
+	default:
+	}
+	if !s.initialized && method != "initialize" {
+		return nil, errors.New("plugin initialization required")
+	}
+	if s.initialized && method == "initialize" {
+		return nil, errors.New("plugin already initialized")
 	}
 	s.sequence++
 	id := fmt.Sprintf("h-%d", s.sequence)
@@ -161,21 +189,21 @@ func (s *Session) Call(ctx context.Context, method string, params any) (json.Raw
 		return nil, errors.New("request size limit")
 	}
 	if e = s.write(ctx, append(b, '\n')); e != nil {
-		return nil, e
+		return s.failLocked(e)
 	}
 	for {
 		select {
 		case <-ctx.Done():
-			s.cancel()
-			return nil, ctx.Err()
+			return s.failLocked(ctx.Err())
+		case <-s.stopped:
+			return s.failLocked(errors.New("plugin session stopped"))
 		case result := <-s.frames:
 			if result.err != nil {
-				return nil, fmt.Errorf("plugin process/framing failure: %w", result.err)
+				return s.failLocked(fmt.Errorf("plugin process/framing failure: %w", result.err))
 			}
 			frame := result.data
 			if e = wire.Validate(frame); e != nil {
-				s.cancel()
-				return nil, e
+				return s.failLocked(e)
 			}
 			var response struct {
 				JSONRPC string          `json:"jsonrpc"`
@@ -186,42 +214,53 @@ func (s *Session) Call(ctx context.Context, method string, params any) (json.Raw
 				Error   json.RawMessage `json:"error"`
 			}
 			if e = wire.Decode(frame, &response); e != nil {
-				s.cancel()
-				return nil, e
+				return s.failLocked(e)
 			}
 			if response.JSONRPC != "2.0" {
-				return nil, errors.New("wrong protocol envelope")
+				return s.failLocked(errors.New("wrong protocol envelope"))
 			}
 			if response.Method != "" {
 				if len(response.Result) > 0 || len(response.Error) > 0 {
-					return nil, errors.New("plugin request/notification contains response fields")
+					return s.failLocked(errors.New("plugin request/notification contains response fields"))
+				}
+				if response.ID != nil && !s.initialized {
+					return s.failLocked(errors.New("plugin called host API before initialization succeeded"))
 				}
 				if response.ID != nil { // Host mediation currently denies all plugin-origin API requests; no implicit grants.
 					if !strings.HasPrefix(*response.ID, "p-") {
-						return nil, errors.New("plugin-origin request ID must use p- prefix")
+						return s.failLocked(errors.New("plugin-origin request ID must use p- prefix"))
 					}
 					reply, _ := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": *response.ID, "error": map[string]any{"code": -32010, "message": "Host API unavailable in conformance invocation", "data": map[string]any{"code": "PERMISSION_DENIED"}}})
 					if e = s.write(ctx, append(reply, '\n')); e != nil {
-						return nil, e
+						return s.failLocked(e)
 					}
 					continue
 				}
 				if response.Method != "plugin.heartbeat" && response.Method != "plugin.progress" {
-					return nil, errors.New("unknown plugin notification")
+					return s.failLocked(errors.New("unknown plugin notification"))
 				}
 				continue
 			}
 			if response.ID == nil || *response.ID != id {
-				return nil, errors.New("unsolicited or wrong plugin response ID")
+				return s.failLocked(errors.New("unsolicited or wrong plugin response ID"))
 			}
 			if len(response.Result) > 0 && len(response.Error) > 0 && string(response.Error) != "null" {
-				return nil, errors.New("plugin response contains both result and error")
+				return s.failLocked(errors.New("plugin response contains both result and error"))
 			}
 			if len(response.Error) > 0 && string(response.Error) != "null" {
 				return nil, fmt.Errorf("plugin returned application error: %s", response.Error)
 			}
 			if len(response.Result) == 0 {
-				return nil, errors.New("result missing")
+				return s.failLocked(errors.New("result missing"))
+			}
+			if method == "initialize" {
+				var negotiated struct {
+					ProtocolVersion string `json:"protocolVersion"`
+				}
+				if err := json.Unmarshal(response.Result, &negotiated); err != nil || negotiated.ProtocolVersion != "1.0" {
+					return s.failLocked(errors.New("unsupported plugin protocol version"))
+				}
+				s.initialized = true
 			}
 			return response.Result, nil
 		}

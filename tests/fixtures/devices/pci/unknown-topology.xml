@@ -1,0 +1,9 @@
+<device>
+  <name>pci_0000_03_00_0</name>
+  <parent>computer</parent>
+  <capability type='pci'>
+    <domain>0</domain><bus>3</bus><slot>0</slot><function>0</function>
+    <product id='0x0001'/>
+    <vendor id='0x1234'/>
+  </capability>
+</device>

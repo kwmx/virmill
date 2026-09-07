@@ -1,0 +1,52 @@
+=== RUN   TestPythonProtocolFaultTransport
+    runner_faults_test.go:273: TEST-ONLY TRANSPORT SEAM: actual Python peer, production Call; no sandbox or host-security evidence
+=== RUN   TestPythonProtocolFaultTransport/partial-exit
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: unterminated frame
+=== RUN   TestPythonProtocolFaultTransport/unterminated-exit
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: unterminated frame
+=== RUN   TestPythonProtocolFaultTransport/duplicate-key
+    runner_faults_test.go:129: observable protocol rejection: duplicate JSON key "result"
+=== RUN   TestPythonProtocolFaultTransport/oversized-line
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: oversized frame
+=== RUN   TestPythonProtocolFaultTransport/wrong-id
+    runner_faults_test.go:129: observable protocol rejection: unsolicited or wrong plugin response ID
+=== RUN   TestPythonProtocolFaultTransport/invalid-utf8
+    runner_faults_test.go:129: observable protocol rejection: invalid UTF-8
+=== RUN   TestPythonProtocolFaultTransport/stdout-log
+    runner_faults_test.go:129: observable protocol rejection: invalid character 'T' looking for beginning of value
+=== RUN   TestPythonProtocolFaultTransport/request-response-hybrid
+    runner_faults_test.go:129: observable protocol rejection: plugin request/notification contains response fields
+=== RUN   TestPythonProtocolFaultTransport/wrong-version
+    runner_faults_test.go:129: observable protocol rejection: wrong protocol envelope
+=== RUN   TestPythonProtocolFaultTransport/unknown-notification
+    runner_faults_test.go:129: observable protocol rejection: unknown plugin notification
+=== RUN   TestPythonProtocolFaultTransport/stderr-flood
+    runner_faults_test.go:129: observable protocol rejection: duplicate JSON key "result"
+=== RUN   TestPythonProtocolFaultTransport/host-call-before-initialize
+=== RUN   TestPythonProtocolFaultTransport/read-scope-is-not-mutation-authority
+=== RUN   TestPythonProtocolFaultTransport/deadline-initialize
+=== RUN   TestPythonProtocolFaultTransport/deadline-action.execute
+=== RUN   TestPythonProtocolFaultTransport/cancel-active-execution
+=== RUN   TestPythonProtocolFaultTransport/cancel-blocked-write
+=== RUN   TestPythonProtocolFaultTransport/close-flooding-stdout
+--- PASS: TestPythonProtocolFaultTransport (3.62s)
+    --- PASS: TestPythonProtocolFaultTransport/partial-exit (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/unterminated-exit (0.02s)
+    --- PASS: TestPythonProtocolFaultTransport/duplicate-key (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/oversized-line (2.38s)
+    --- PASS: TestPythonProtocolFaultTransport/wrong-id (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/invalid-utf8 (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/stdout-log (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/request-response-hybrid (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/wrong-version (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/unknown-notification (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/stderr-flood (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/host-call-before-initialize (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/read-scope-is-not-mutation-authority (0.02s)
+    --- PASS: TestPythonProtocolFaultTransport/deadline-initialize (0.26s)
+    --- PASS: TestPythonProtocolFaultTransport/deadline-action.execute (0.28s)
+    --- PASS: TestPythonProtocolFaultTransport/cancel-active-execution (0.04s)
+    --- PASS: TestPythonProtocolFaultTransport/cancel-blocked-write (0.28s)
+    --- PASS: TestPythonProtocolFaultTransport/close-flooding-stdout (0.02s)
+PASS
+ok  	virmill.local/core/internal/plugins	4.662s

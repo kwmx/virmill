@@ -1,0 +1,64 @@
+=== RUN   TestPythonProtocolFaultTransport
+    runner_faults_test.go:273: TEST-ONLY TRANSPORT SEAM: actual Python peer, production Call; no sandbox or host-security evidence
+=== RUN   TestPythonProtocolFaultTransport/partial-exit
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: unterminated frame
+=== RUN   TestPythonProtocolFaultTransport/unterminated-exit
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: unterminated frame
+=== RUN   TestPythonProtocolFaultTransport/duplicate-key
+    runner_faults_test.go:129: observable protocol rejection: duplicate JSON key "result"
+=== RUN   TestPythonProtocolFaultTransport/oversized-line
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: oversized frame
+    runner_faults_test.go:130: failed protocol worker remains alive after the call returned
+=== RUN   TestPythonProtocolFaultTransport/wrong-id
+    runner_faults_test.go:129: observable protocol rejection: unsolicited or wrong plugin response ID
+    runner_faults_test.go:130: failed protocol worker remains alive after the call returned
+    runner_faults_test.go:142: poisoned session reused successfully: result bytes=17, error=<nil>
+=== RUN   TestPythonProtocolFaultTransport/invalid-utf8
+    runner_faults_test.go:129: observable protocol rejection: invalid UTF-8
+=== RUN   TestPythonProtocolFaultTransport/stdout-log
+    runner_faults_test.go:129: observable protocol rejection: invalid character 'T' looking for beginning of value
+=== RUN   TestPythonProtocolFaultTransport/request-response-hybrid
+    runner_faults_test.go:129: observable protocol rejection: plugin request/notification contains response fields
+    runner_faults_test.go:130: failed protocol worker remains alive after the call returned
+    runner_faults_test.go:142: poisoned session reused successfully: result bytes=17, error=<nil>
+=== RUN   TestPythonProtocolFaultTransport/wrong-version
+    runner_faults_test.go:129: observable protocol rejection: wrong protocol envelope
+    runner_faults_test.go:130: failed protocol worker remains alive after the call returned
+    runner_faults_test.go:142: poisoned session reused successfully: result bytes=17, error=<nil>
+=== RUN   TestPythonProtocolFaultTransport/unknown-notification
+    runner_faults_test.go:129: observable protocol rejection: unknown plugin notification
+    runner_faults_test.go:130: failed protocol worker remains alive after the call returned
+    runner_faults_test.go:142: poisoned session reused successfully: result bytes=17, error=<nil>
+=== RUN   TestPythonProtocolFaultTransport/stderr-flood
+    runner_faults_test.go:129: observable protocol rejection: duplicate JSON key "result"
+=== RUN   TestPythonProtocolFaultTransport/host-call-before-initialize
+    runner_faults_test.go:152: host call before initialization left a usable session: result bytes=149, error=<nil>
+    runner_faults_test.go:154: failed protocol worker remains alive after the call returned
+=== RUN   TestPythonProtocolFaultTransport/read-scope-is-not-mutation-authority
+=== RUN   TestPythonProtocolFaultTransport/deadline-initialize
+=== RUN   TestPythonProtocolFaultTransport/deadline-action.execute
+=== RUN   TestPythonProtocolFaultTransport/cancel-active-execution
+=== RUN   TestPythonProtocolFaultTransport/cancel-blocked-write
+=== RUN   TestPythonProtocolFaultTransport/close-flooding-stdout
+--- FAIL: TestPythonProtocolFaultTransport (7.53s)
+    --- PASS: TestPythonProtocolFaultTransport/partial-exit (0.02s)
+    --- PASS: TestPythonProtocolFaultTransport/unterminated-exit (0.02s)
+    --- PASS: TestPythonProtocolFaultTransport/duplicate-key (0.04s)
+    --- FAIL: TestPythonProtocolFaultTransport/oversized-line (1.37s)
+    --- FAIL: TestPythonProtocolFaultTransport/wrong-id (1.02s)
+    --- PASS: TestPythonProtocolFaultTransport/invalid-utf8 (0.03s)
+    --- PASS: TestPythonProtocolFaultTransport/stdout-log (0.03s)
+    --- FAIL: TestPythonProtocolFaultTransport/request-response-hybrid (1.02s)
+    --- FAIL: TestPythonProtocolFaultTransport/wrong-version (1.02s)
+    --- FAIL: TestPythonProtocolFaultTransport/unknown-notification (1.02s)
+    --- PASS: TestPythonProtocolFaultTransport/stderr-flood (0.03s)
+    --- FAIL: TestPythonProtocolFaultTransport/host-call-before-initialize (1.02s)
+    --- PASS: TestPythonProtocolFaultTransport/read-scope-is-not-mutation-authority (0.02s)
+    --- PASS: TestPythonProtocolFaultTransport/deadline-initialize (0.26s)
+    --- PASS: TestPythonProtocolFaultTransport/deadline-action.execute (0.28s)
+    --- PASS: TestPythonProtocolFaultTransport/cancel-active-execution (0.04s)
+    --- PASS: TestPythonProtocolFaultTransport/cancel-blocked-write (0.28s)
+    --- PASS: TestPythonProtocolFaultTransport/close-flooding-stdout (0.02s)
+FAIL
+FAIL	virmill.local/core/internal/plugins	7.542s
+FAIL

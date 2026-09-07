@@ -214,6 +214,29 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill host pci list`
+
+Discover native PCI identity, drivers and observed IOMMU groups without detachment or passthrough authority
+
+```text
+Usage:
+  virmill host pci list [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill import inspect`
 
 Inspect bounded OVA packaging; no extraction or guest execution
@@ -362,6 +385,29 @@ Validate declarative schema, network intent and dependency graph
 ```text
 Usage:
   virmill lab validate PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill network cidr check`
+
+Check candidate CIDRs against host addresses, every route table, defined networks and explicit planned allocations
+
+```text
+Usage:
+  virmill network cidr check [flags]
 
 Flags:
       --after int      Event cursor

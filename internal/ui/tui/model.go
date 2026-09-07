@@ -114,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "storage.access.grant" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || a.Method == "vm.creation.accept" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
+				if a.Argument == "parameters" || a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "storage.access.grant" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || a.Method == "vm.creation.accept" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
 					var form struct {
 						ID    string         `json:"id"`
 						Path  string         `json:"path"`
@@ -249,7 +249,7 @@ func (m Model) View() string {
 		if len(lines) > 3 {
 			lines = append([]string{"… earlier input hidden"}, lines[len(lines)-2:]...)
 		}
-		b.WriteString("Input: path/ID; VM creation/edits, import and plugin plans use JSON {id/path,input}. Esc cancels:\n> " + strings.Join(lines, "\n  ") + "\n")
+		b.WriteString("Input: path/ID, or JSON {id/path,input} for parameter forms (CIDR checks use {input}). Esc cancels:\n> " + strings.Join(lines, "\n  ") + "\n")
 	}
 	if m.Confirm {
 		fmt.Fprintf(&b, "Approve plan %s. Required acknowledgements: %s\nType the full plan digest to authorize these exact effects; Esc cancels:\n%s\n> %s\n", m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, validation.SafeText(m.Input))

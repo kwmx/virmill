@@ -53,9 +53,10 @@
   for cooperative QEMU guards. Acceptance preflight refuses missing access.
   One native acceptance passed under an explicitly recorded temporary fixture ACL,
   which was restored exactly. The explicit signed-helper grant/restoration slice
-  now exists with kernel ACL/peer tests and durable CLI/TUI access. Immutable
-  installed native qualification remains pending in this checkpoint; external
-  fixture setup and synthetic VM observations do not qualify that workflow.
+  now exists with kernel ACL/peer tests and durable CLI/TUI access. Clean `b7fe053` packages passed two actual CLI/TUI grant/restoration cycles on
+  the stopped probe disk, with exact original access restored and bytes unchanged.
+  See `evidence/managed-access-run.md`. Full permissions, storage types, distro
+  and crash coverage remain required; synthetic mapping tests are separate.
 
 Unimplemented code is tracked separately in the requirements tracker and is not
 classified as a hardware limitation. None of these unknowns reduces 1.0 scope.

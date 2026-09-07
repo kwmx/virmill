@@ -308,7 +308,15 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/domain/host_inventory.go",
+        "internal/backend/libvirt/pci_inventory_linux.go",
+        "internal/app/service.go",
+        "docs/host-network-discovery.md",
+        "internal/platform/linux/network_prefixes_linux.go",
+        "internal/app/host_inventory.go",
+        "internal/app/network/prefixes.go",
+        "schemas/network-cidr-input.schema.json"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-06",
@@ -321,7 +329,14 @@
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/backend/libvirt/pci_inventory_linux_test.go",
+        "internal/app/pci_inventory_test.go",
+        "internal/ui/cli/host_inventory_test.go",
+        "internal/ui/tui/host_inventory_test.go",
+        "internal/platform/linux/network_prefixes_linux_test.go",
+        "internal/app/host_inventory_test.go",
+        "internal/app/network/prefixes_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -335,7 +350,9 @@
         "native-first-capabilities-002"
       ],
       "outstanding": [
-        "Connection allowlist implemented; full session capability probes and actual restrictions remain."
+        "Connection allowlist implemented; full session capability probes and actual restrictions remain.",
+        "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
+        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1075,18 +1092,28 @@
       "gate": 4,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/app/network/intent.go"
+        "internal/app/network/intent.go",
+        "internal/platform/linux/network_prefixes_linux.go",
+        "internal/app/host_inventory.go",
+        "internal/app/network/prefixes.go",
+        "schemas/network-cidr-input.schema.json",
+        "docs/host-network-discovery.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-06",
       "tests": [
-        "internal/app/network/intent_test.go"
+        "internal/app/network/intent_test.go",
+        "internal/platform/linux/network_prefixes_linux_test.go",
+        "internal/app/host_inventory_test.go",
+        "internal/app/network/prefixes_test.go",
+        "internal/ui/cli/host_inventory_test.go",
+        "internal/ui/tui/host_inventory_test.go"
       ],
       "evidence": [
         "core-tests-001"
       ],
       "outstanding": [
-        "Allocator excludes default host routes and detects occupied prefixes; actual route/VPN/backend collection remains."
+        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1265,11 +1292,16 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "helper-access-native-grant-001",
+        "helper-access-native-tui-revoke-resume-001",
+        "helper-access-native-tui-grant-cli-revoke-001",
+        "helper-access-native-auth-preserve-001"
       ],
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill pool creation, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1594,14 +1626,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 5,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/domain/host_inventory.go",
+        "internal/backend/libvirt/pci_inventory_linux.go",
+        "internal/app/service.go",
+        "docs/host-network-discovery.md"
+      ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/integration/devices/DEV-03",
-      "tests": [],
+      "tests": [
+        "internal/backend/libvirt/pci_inventory_linux_test.go",
+        "internal/app/pci_inventory_test.go",
+        "internal/ui/cli/host_inventory_test.go",
+        "internal/ui/tui/host_inventory_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "PCI/IOMMU discovery is read-only; unsupported passthrough never changes bootloader or host drivers."
+        "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1851,13 +1893,18 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "helper-access-upgrade-001",
+        "helper-access-native-grant-001",
+        "helper-access-native-tui-grant-cli-revoke-001",
+        "helper-access-native-auth-preserve-001"
       ],
       "outstanding": [
         "A real PTY import approval detached while the coordinator completed two-disk conversion; CLI reconnection returned coherent persisted result/events. Additional client disconnects, all handlers and multi-client transport faults remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2020,7 +2067,9 @@
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
         "helper-access-root-tests-001",
-        "storage-access-recovery-context-001"
+        "storage-access-recovery-context-001",
+        "storage-access-clean-core-001",
+        "helper-access-root-tests-clean-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -2031,7 +2080,7 @@
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2178,7 +2227,11 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "helper-access-native-tui-revoke-001",
+        "helper-access-native-tui-revoke-resume-001",
+        "helper-access-native-tui-grant-cli-revoke-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -2186,7 +2239,7 @@
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2225,11 +2278,19 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "storage-access-clean-static-001",
+        "helper-access-setup-001",
+        "helper-access-native-grant-001",
+        "helper-access-native-tui-revoke-resume-001",
+        "helper-access-root-tests-clean-001",
+        "helper-access-native-tui-grant-cli-revoke-001",
+        "helper-access-native-auth-preserve-001"
       ],
       "outstanding": [
         "Peer/socket/grant unit checks pass; cross-UID and actual privileged helper integration remain unexecuted.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2321,11 +2382,18 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "storage-access-clean-static-001",
+        "helper-access-setup-001",
+        "helper-access-native-grant-001",
+        "helper-access-root-tests-clean-001",
+        "helper-access-native-tui-grant-cli-revoke-001",
+        "helper-access-native-auth-preserve-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2340,24 +2408,32 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/platform/linux/sandbox.go",
-        "internal/plugins/runner.go"
+        "internal/plugins/runner.go",
+        "docs/plugin-protocol-fault-fixtures.md",
+        "docs/adr/0019-discovery-and-plugin-session-failure.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-04",
       "tests": [
         "internal/platform/linux/sandbox_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "internal/backend/image/metadata_linux_test.go"
+        "internal/backend/image/metadata_linux_test.go",
+        "internal/plugins/runner_faults_test.go",
+        "internal/plugins/runner_close_test.go",
+        "tests/fixtures/plugins/protocol-faults/main.py"
       ],
       "evidence": [
         "sandbox-tests-001",
         "import-sandbox-regression-001",
         "cleanup-core-001",
         "cleanup-confinement-001",
-        "disk-set-confinement-001"
+        "disk-set-confinement-001",
+        "plugin-fault-regressions-001",
+        "plugin-fault-fix-001"
       ],
       "outstanding": [
-        "Real generated-file single-FD sandbox probes preserve read-only access, close the inherited source FD and hide siblings/sockets. Plugin namespace tests remain scoped; full grant/network/security-framework qualification remains."
+        "Real generated-file single-FD sandbox probes preserve read-only access, close the inherited source FD and hide siblings/sockets. Plugin namespace tests remain scoped; full grant/network/security-framework qualification remains.",
+        "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2379,7 +2455,10 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "internal/plugins/runner.go",
+        "docs/plugin-protocol-fault-fixtures.md",
+        "docs/adr/0019-discovery-and-plugin-session-failure.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
@@ -2391,18 +2470,30 @@
         "internal/helper/access_linux_test.go",
         "internal/backend/fileaccess/acl_linux_test.go",
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/plugins/runner_faults_test.go",
+        "internal/plugins/runner_close_test.go",
+        "tests/fixtures/plugins/protocol-faults/main.py"
       ],
       "evidence": [
         "core-tests-001",
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "plugin-fault-regressions-001",
+        "plugin-fault-fix-001",
+        "plugin-close-regression-001",
+        "plugin-close-fix-001",
+        "helper-access-setup-001",
+        "helper-access-root-tests-clean-001",
+        "helper-access-native-auth-preserve-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2487,14 +2578,19 @@
         "sdk/go/server.go",
         "internal/wire/json.go",
         "internal/plugins/runner.go",
-        "internal/plugins/actions.go"
+        "internal/plugins/actions.go",
+        "docs/plugin-protocol-fault-fixtures.md",
+        "docs/adr/0019-discovery-and-plugin-session-failure.md"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-03",
       "tests": [
         "sdk/go/server_test.go",
         "internal/wire/json_test.go",
-        "internal/plugins/actions_test.go"
+        "internal/plugins/actions_test.go",
+        "internal/plugins/runner_faults_test.go",
+        "internal/plugins/runner_close_test.go",
+        "tests/fixtures/plugins/protocol-faults/main.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2507,10 +2603,15 @@
         "disk-set-confinement-001",
         "disk-set-static-portable-001",
         "installation-confinement-001",
-        "nocloud-confinement-001"
+        "nocloud-confinement-001",
+        "plugin-fault-regressions-001",
+        "plugin-fault-fix-001",
+        "plugin-close-regression-001",
+        "plugin-close-fix-001"
       ],
       "outstanding": [
-        "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains."
+        "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains.",
+        "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2636,7 +2737,15 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "internal/domain/host_inventory.go",
+        "internal/backend/libvirt/pci_inventory_linux.go",
+        "internal/app/service.go",
+        "docs/host-network-discovery.md",
+        "internal/platform/linux/network_prefixes_linux.go",
+        "internal/app/host_inventory.go",
+        "internal/app/network/prefixes.go",
+        "schemas/network-cidr-input.schema.json"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2673,7 +2782,14 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-retain-tui.py",
         "internal/storageaccess/service_linux_test.go",
         "internal/helper/access_linux_test.go",
-        "internal/backend/fileaccess/acl_linux_test.go"
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/backend/libvirt/pci_inventory_linux_test.go",
+        "internal/app/pci_inventory_test.go",
+        "internal/ui/cli/host_inventory_test.go",
+        "internal/ui/tui/host_inventory_test.go",
+        "internal/platform/linux/network_prefixes_linux_test.go",
+        "internal/app/host_inventory_test.go",
+        "internal/app/network/prefixes_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2712,7 +2828,13 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-clean-core-001",
+        "storage-access-artifacts-001",
+        "helper-access-native-grant-001",
+        "helper-access-native-tui-revoke-001",
+        "helper-access-native-tui-revoke-resume-001",
+        "helper-access-native-tui-grant-cli-revoke-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -2724,7 +2846,9 @@
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
+        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2922,11 +3046,14 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-repro-001",
+        "storage-access-artifacts-001",
+        "helper-access-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2973,7 +3100,10 @@
         "result-progress-artifacts-001",
         "acceptance-portable-001",
         "acceptance-build-001",
-        "acceptance-artifacts-001"
+        "acceptance-artifacts-001",
+        "storage-access-cross-001",
+        "storage-access-repro-001",
+        "storage-access-clean-static-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -3039,7 +3169,18 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "internal/domain/host_inventory.go",
+        "internal/backend/libvirt/pci_inventory_linux.go",
+        "internal/app/service.go",
+        "docs/host-network-discovery.md",
+        "internal/platform/linux/network_prefixes_linux.go",
+        "internal/app/host_inventory.go",
+        "internal/app/network/prefixes.go",
+        "schemas/network-cidr-input.schema.json",
+        "internal/plugins/runner.go",
+        "docs/plugin-protocol-fault-fixtures.md",
+        "docs/adr/0019-discovery-and-plugin-session-failure.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -3076,7 +3217,17 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py",
         "internal/storageaccess/service_linux_test.go",
         "internal/helper/access_linux_test.go",
-        "internal/backend/fileaccess/acl_linux_test.go"
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/backend/libvirt/pci_inventory_linux_test.go",
+        "internal/app/pci_inventory_test.go",
+        "internal/ui/cli/host_inventory_test.go",
+        "internal/ui/tui/host_inventory_test.go",
+        "internal/platform/linux/network_prefixes_linux_test.go",
+        "internal/app/host_inventory_test.go",
+        "internal/app/network/prefixes_test.go",
+        "internal/plugins/runner_faults_test.go",
+        "internal/plugins/runner_close_test.go",
+        "tests/fixtures/plugins/protocol-faults/main.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3142,7 +3293,10 @@
         "storage-access-core-001",
         "storage-access-static-001",
         "storage-access-peer-kernel-001",
-        "helper-access-root-tests-001"
+        "helper-access-root-tests-001",
+        "storage-access-repro-001",
+        "storage-access-artifacts-001",
+        "helper-access-upgrade-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3153,7 +3307,10 @@
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
-        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
+        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
+        "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance."
       ],
       "hardwareVerified": false,
       "released": false

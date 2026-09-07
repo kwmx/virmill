@@ -14,7 +14,7 @@ type Action struct {
 	Method   string
 	Section  string
 	Summary  string
-	Argument string
+	Argument string // id/path positional argument, parameters JSON form, or empty
 	Mutation string
 }
 
@@ -45,6 +45,8 @@ var Actions = []Action{
 	{"storage access result", "storage.access.result", "Storage", "Read the durable helper observation for an access operation", "id", ""},
 	{"host helper identity", "host.helper.identity", "Settings", "Show the coordinator's public helper key fingerprint and administrator-policy status", "", ""},
 	{"network list", "network.list", "Networks", "List existing libvirt networks; no isolation verification implied", "", ""},
+	{"network cidr check", "network.cidr.check", "Networks", "Check candidate CIDRs against host addresses, every route table, defined networks and explicit planned allocations", "parameters", ""},
+	{"host pci list", "host.pci.list", "Devices", "Discover native PCI identity, drivers and observed IOMMU groups without detachment or passthrough authority", "", ""},
 	{"network show", "network.get", "Networks", "Inspect live/persistent network configuration by stable UUID", "id", ""},
 	{"vm list", "inventory.list", "VMs", "List native libvirt inventory without adoption", "", ""},
 	{"vm show", "inventory.get", "VMs", "Inspect live and persistent state by UUID", "id", ""},

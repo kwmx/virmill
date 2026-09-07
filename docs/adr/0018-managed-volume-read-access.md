@@ -1,6 +1,6 @@
 # ADR 0018 — Reviewed managed-volume read access
 
-Status: implementation in progress; not release-qualified.
+Status: implemented and exercised on one disposable native configuration; not release-qualified.
 
 Native acceptance exposed U011: qemu file volumes can be root-owned mode 0600.
 Libvirt download authority does not confer filesystem read permission for the

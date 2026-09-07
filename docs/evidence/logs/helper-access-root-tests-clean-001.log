@@ -1,0 +1,17 @@
+{"testBinarySHA256": "be028c2f7cd78815de2679998859a9dfba4229a5cc4bf7c3c51dd4ccd51fa62a", "sourceRevision": "b7fe053", "sourceDigest": "c7071d1aaaf146058986ec06b887d8d59f8e33072dbec44cfb4596bcccf617f0", "scope": "generated temporary ACL files and helper journals only; native mapping is synthetic"}
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/normal
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/lost-completion
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/stale-before
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/native-drift
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/revoke-drift
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/nested-grant
+--- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement (0.01s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/normal (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/lost-completion (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/stale-before (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/native-drift (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/revoke-drift (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/nested-grant (0.00s)
+PASS
+

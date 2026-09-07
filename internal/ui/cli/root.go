@@ -137,7 +137,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		a := item
 		parts := strings.Split(a.Command, " ")
 		use := parts[len(parts)-1]
-		if a.Argument != "" {
+		if a.Argument != "" && a.Argument != "parameters" {
 			use += " " + strings.ToUpper(a.Argument)
 		}
 		var input string
@@ -145,7 +145,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		var hard, planOnly bool
 		pluginFlags := map[string]*string{}
 		cmd := &cobra.Command{Use: use, Short: a.Summary, Long: a.Summary + ". Calls the shared coordinator service. Mutations return an immutable preview; apply it with plan apply and exact acknowledgements. No privilege is implied by --yes.", Args: cobra.NoArgs}
-		if a.Argument != "" {
+		if a.Argument != "" && a.Argument != "parameters" {
 			cmd.Args = cobra.ExactArgs(1)
 		}
 		cmd.Flags().StringVar(&input, "input", "{}", "JSON parameters; secrets must be references")

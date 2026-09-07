@@ -28,3 +28,7 @@ privileged work belongs to `virmill-host-helper`. No publication destination has
 been selected. Local module names make no repository or domain ownership claim.
 
 CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-configuration.md).
+
+Managed-volume read access: [reviewed helper workflow](docs/managed-volume-access.md)
+and [native evidence](docs/evidence/managed-access-run.md).
+Read-only device and subnet facts: [PCI and CIDR discovery](docs/host-network-discovery.md).

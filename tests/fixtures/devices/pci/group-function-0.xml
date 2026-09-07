@@ -1,0 +1,21 @@
+<device>
+  <name>pci_0000_02_00_0</name>
+  <path>/sys/devices/pci0000:00/0000:00:04.0/0000:02:00.0</path>
+  <parent>pci_0000_00_04_0</parent>
+  <driver><name>fixture_net</name></driver>
+  <capability type='pci'>
+    <class>0x020000</class>
+    <domain>0</domain><bus>2</bus><slot>0</slot><function>0</function>
+    <product id='0x10c9'>Fixture multi-function network device</product>
+    <vendor id='0x8086'>Fixture vendor</vendor>
+    <capability type='virt_functions'>
+      <address domain='0x0000' bus='0x02' slot='0x10' function='0x0'/>
+    </capability>
+    <iommuGroup number='12'>
+      <address domain='0x0000' bus='0x02' slot='0x00' function='0x1'/>
+      <address domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
+    </iommuGroup>
+    <numa node='0'/>
+    <pci-express><link validity='cap' port='1' speed='2.5' width='1'/></pci-express>
+  </capability>
+</device>

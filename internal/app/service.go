@@ -35,11 +35,12 @@ type Response struct {
 	Error      *domain.Error `json:"error"`
 }
 type Service struct {
-	Provider    domain.ComputeProvider
-	Engine      *operations.Engine
-	Inspector   func() []domain.Capability
-	Extensions  map[string]func(context.Context, uint32, Request) (any, error)
-	InventoryVM func(context.Context, domain.VM) (domain.VM, error)
+	Provider     domain.ComputeProvider
+	Engine       *operations.Engine
+	Inspector    func() []domain.Capability
+	HostPrefixes func(context.Context) (domain.HostNetworkPrefixes, error)
+	Extensions   map[string]func(context.Context, uint32, Request) (any, error)
+	InventoryVM  func(context.Context, domain.VM) (domain.VM, error)
 }
 
 func New(p domain.ComputeProvider, e *operations.Engine) *Service {
@@ -77,6 +78,14 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "host inspection adapter unavailable")
 		}
 		return s.Inspector(), nil
+	case "host.pci.list":
+		inventory, ok := s.Provider.(domain.PCIInventoryProvider)
+		if !ok {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "selected backend does not expose PCI discovery")
+		}
+		return inventory.InspectPCI(ctx, r.Connection)
+	case "network.cidr.check":
+		return s.checkCIDRs(ctx, r)
 	case "host.capabilities":
 		suite, err := contracts.Capabilities()
 		if err != nil {

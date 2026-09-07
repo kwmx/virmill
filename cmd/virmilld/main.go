@@ -38,6 +38,7 @@ func run() error {
 	defer engine.Close()
 	service := app.New(&backend.Provider{}, engine)
 	service.Inspector = platform.Doctor
+	service.HostPrefixes = platform.ObserveHostNetworkPrefixes
 	importing.Register(service)
 	creating.Register(service, p.Cache)
 	storageaccess.Register(service, p.Config)

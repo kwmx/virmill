@@ -1,0 +1,8 @@
+=== RUN   TestProtocolCloseInterruptsActiveCall
+    runner_close_test.go:22: TEST-ONLY TRANSPORT SEAM: active-call shutdown and process reaping; no confinement evidence
+--- PASS: TestProtocolCloseInterruptsActiveCall (0.03s)
+=== RUN   TestProtocolConcurrentCloseReleasesWorkerOnce
+    runner_close_test.go:74: TEST-ONLY TRANSPORT SEAM: concurrent Close, one cleanup callback, and process reaping; no confinement evidence
+--- PASS: TestProtocolConcurrentCloseReleasesWorkerOnce (0.02s)
+PASS
+ok  	virmill.local/core/internal/plugins	1.075s

@@ -34,3 +34,6 @@ Prior development checkpoint: [fixed CPU/RAM configuration](configuration-slice.
 Its native in-memory preservation tests and synthetic recovery remain separate
 from real VM, guest sizing and concurrent external-writer qualification. The prior
 [NoCloud checkpoint](nocloud-slice.md) records actual confined seed construction.
+
+Latest managed access: [signed-helper CLI/TUI native cycles](managed-access-run.md).
+Parallel discovery and plugin work: [integration record](discovery-plugin-run.md).
