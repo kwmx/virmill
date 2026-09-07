@@ -384,14 +384,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 4,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/domain/inventory.go",
+        "internal/backend/libvirt/inventory_linux.go",
+        "internal/app/service.go",
+        "internal/ui/registry.go"
+      ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-01",
-      "tests": [],
+      "tests": [
+        "internal/backend/libvirt/inventory_linux_test.go",
+        "internal/app/service_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "NAT guest has configured DNS/internet; a static target remains on its designated lab network."
+        "Read-only network observation preserves live/persistent distinction; installed test driver lacks inactive XML support. NAT guest has configured DNS/internet; a static target remains on its designated lab network. Actual creation/mutation and host/guest qualification remain."
       ],
       "hardwareVerified": false,
       "released": false
@@ -631,14 +641,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 5,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/domain/inventory.go",
+        "internal/backend/libvirt/inventory_linux.go",
+        "internal/app/service.go",
+        "internal/ui/registry.go"
+      ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
-      "tests": [],
+      "tests": [
+        "internal/backend/libvirt/inventory_linux_test.go",
+        "internal/app/service_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data."
+        "Read-only pool observation and nullable space counters implemented; Pool creation, disk allocation/growth/move and space accounting preserve permissions/labels and guest data. Actual creation/mutation and host/guest qualification remain."
       ],
       "hardwareVerified": false,
       "released": false

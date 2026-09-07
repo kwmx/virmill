@@ -88,6 +88,27 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return s.Provider.List(ctx, r.Connection)
 	case "inventory.get":
 		return s.Provider.Get(ctx, r.Connection, r.ID)
+	case "storage.pool.list", "storage.pool.get", "network.list", "network.get":
+		inventory, ok := s.Provider.(domain.ResourceInventory)
+		if !ok {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "selected backend does not expose storage/network inventory")
+		}
+		switch method {
+		case "storage.pool.list":
+			return inventory.ListStoragePools(ctx, r.Connection)
+		case "network.list":
+			return inventory.ListNetworks(ctx, r.Connection)
+		case "storage.pool.get":
+			if r.ID == "" {
+				return nil, domain.Fail("INVALID_INPUT", "stable storage pool UUID required")
+			}
+			return inventory.GetStoragePool(ctx, r.Connection, r.ID)
+		default:
+			if r.ID == "" {
+				return nil, domain.Fail("INVALID_INPUT", "stable network UUID required")
+			}
+			return inventory.GetNetwork(ctx, r.Connection, r.ID)
+		}
 	case "vm.plan":
 		return s.planVM(ctx, uid, r)
 	case "operation.apply":

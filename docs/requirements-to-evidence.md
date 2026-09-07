@@ -20,7 +20,7 @@ Each ledger entry records its own revision, source digest, fixture hashes and li
 | IMP-06 | [import-conversion-001](evidence/logs/import-conversion-001.log) (passed / confined-image-and-coordinator-fixtures); [import-unit-001](evidence/logs/import-unit-001.log) (passed / unit-and-simulated-contract); [import-cli-daemon-001](evidence/logs/import-cli-daemon-001.log) (passed / staged-packaging-and-confined-image-service-integration) | Real backend | in-progress; not accepted |
 | IMP-07 | [import-conversion-001](evidence/logs/import-conversion-001.log) (passed / confined-image-and-coordinator-fixtures); [import-cli-daemon-001](evidence/logs/import-cli-daemon-001.log) (passed / staged-packaging-and-confined-image-service-integration) | Real backend | in-progress; not accepted |
 | IMP-08 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract); [safety-recheck-001](evidence/logs/safety-recheck-001.log) (passed / unit-and-simulated-contract); [import-conversion-001](evidence/logs/import-conversion-001.log) (passed / confined-image-and-coordinator-fixtures); [import-unit-001](evidence/logs/import-unit-001.log) (passed / unit-and-simulated-contract) | Fixtures + real backend | in-progress; not accepted |
-| NET-01 | None recorded | Real packet/guest tests | not-implemented; not accepted |
+| NET-01 | None recorded | Real packet/guest tests | in-progress; not accepted |
 | NET-02 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Real guest tests | in-progress; not accepted |
 | NET-03 | None recorded | Real packet tests | not-implemented; not accepted |
 | NET-04 | None recorded | Real packet tests | not-implemented; not accepted |
@@ -32,7 +32,7 @@ Each ledger entry records its own revision, source digest, fixture hashes and li
 | NET-10 | None recorded | Physical Wi-Fi host | not-implemented; not accepted |
 | NET-11 | None recorded | Real packet tests | not-implemented; not accepted |
 | NET-12 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Real backend | in-progress; not accepted |
-| STO-01 | None recorded | Real backend | not-implemented; not accepted |
+| STO-01 | None recorded | Real backend | in-progress; not accepted |
 | STO-02 | None recorded | Real backend | not-implemented; not accepted |
 | STO-03 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Unit + real backend | in-progress; not accepted |
 | SNAP-01 | [core-tests-001](evidence/logs/core-tests-001.log) (passed / unit-and-simulated-contract) | Real backend + guest | in-progress; not accepted |

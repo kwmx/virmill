@@ -20,9 +20,11 @@ Available Commands:
   host        Manage host
   import      Manage import
   lab         Manage lab
+  network     Manage network
   operation   Manage operation
   plan        Manage plan
   plugin      Manage plugin
+  storage     Manage storage
   tui         Open the keyboard interface
   version     Show application and build contracts
   vm          Manage vm
@@ -289,6 +291,52 @@ Validate declarative schema, network intent and dependency graph
 ```text
 Usage:
   virmill lab validate PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill network list`
+
+List existing libvirt networks; no isolation verification implied
+
+```text
+Usage:
+  virmill network list [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill network show`
+
+Inspect live/persistent network configuration by stable UUID
+
+```text
+Usage:
+  virmill network show ID [flags]
 
 Flags:
       --after int      Event cursor
@@ -866,6 +914,52 @@ Validate a development manifest; no trust or signature claim
 ```text
 Usage:
   virmill plugin validate PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill storage pool list`
+
+List existing local libvirt pools without adoption or activation
+
+```text
+Usage:
+  virmill storage pool list [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill storage pool show`
+
+Inspect pool XML and available capacity by stable UUID
+
+```text
+Usage:
+  virmill storage pool show ID [flags]
 
 Flags:
       --after int      Event cursor

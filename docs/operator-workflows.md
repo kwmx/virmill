@@ -1,5 +1,32 @@
 # Operator workflows and current boundaries
 
+## Inspect existing storage pools and networks
+
+Use `storage pool list` and `network list` with an explicit `--connection
+qemu:///system` or `--connection qemu:///session`. `storage pool show UUID` and
+`network show UUID` return the selected resource's configuration and stable key.
+The TUI exposes the same commands in **Storage** and **Networks**. Names remain
+labels; system and session resources keep separate connection identities.
+
+These are read-only native libvirt calls. They do not adopt, activate, refresh,
+create or delete resources. Pools show the backend type, configuration XML,
+active/persistent/autostart state and observed capacity when active. Capacity fields
+are null when unavailable, rather than fabricated zero space. Pool fingerprints
+bind the returned XML and activation settings; any XML change invalidates that
+fingerprint, including dynamic fields a backend includes in its XML.
+
+Network observations keep live and persistent XML separate and explicitly report
+`isolationVerification: not-run`. A NAT/isolated declaration is not packet evidence.
+If a backend cannot read persistent configuration, the command reports its error
+instead of copying live XML into that field. Large inventories fail at the protocol
+response bound; bounded pagination remains required. Read-only commands have no
+durable side effects to recover; detach or retry a failed observation as needed.
+
+The installed libvirt test driver exercises pool reads but rejects the inactive
+network XML flag. Tests preserve that error and use separately labeled synthetic
+records for network state separation. Actual system/session resource inventory and
+the complete storage/network mutation workflows remain unqualified.
+
 ## OVA inspection and configuration preservation
 
 `import inspect FILE.ova` reads a bounded, uncompressed tar appliance without

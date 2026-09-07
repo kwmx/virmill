@@ -16,6 +16,8 @@ JSON-RPC error codes. Successful submission is queued/accepted, not completed.
 | host.capabilities | connection | native connection capabilities |
 | inventory.list | connection | observed VMs, external ownership |
 | inventory.get | connection, id | VM live/persistent XML and fingerprint |
+| storage.pool.list, storage.pool.get | connection / connection, id (pool UUID) | observed pools / one pool; unknown capacity is null |
+| network.list, network.get | connection / connection, id (network UUID) | live/persistent network XML; isolationVerification=not-run |
 | vm.plan | connection, id, action, input | immutable operation plan |
 | plan.show | id | the immutable plan |
 | operation.apply | apply: planID, planDigest, idempotencyKey, acknowledgements | durable Job |

@@ -87,3 +87,21 @@ func TestImportPreparationUsesSharedService(t *testing.T) {
 		t.Fatal("import preview bypassed shared service", r)
 	}
 }
+
+func TestResourceInventoryCommandsPreserveExplicitConnection(t *testing.T) {
+	for _, test := range []struct {
+		args   []string
+		method string
+	}{{[]string{"storage", "pool", "list"}, "storage.pool.list"}, {[]string{"storage", "pool", "show", "pool-uuid"}, "storage.pool.get"}, {[]string{"network", "list"}, "network.list"}, {[]string{"network", "show", "network-uuid"}, "network.get"}} {
+		r := &recorder{}
+		var out bytes.Buffer
+		c := New(r, &out, &out)
+		c.SetArgs(append(test.args, "--connection", "qemu:///session", "--output", "json", "--non-interactive"))
+		if err := c.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		if r.method != test.method || r.request.Connection != "qemu:///session" {
+			t.Fatal("inventory connection/method drift", r)
+		}
+	}
+}

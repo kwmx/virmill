@@ -49,3 +49,46 @@ func TestMissingManagedSaveAndUnknownInputFailBeforeEffect(t *testing.T) {
 		t.Fatal("invalid input journaled", count, e)
 	}
 }
+
+type resourceFixture struct {
+	fixtureProvider
+	connection, id string
+}
+
+func (p *resourceFixture) ListStoragePools(ctx context.Context, uri string) ([]domain.StoragePool, error) {
+	p.connection = uri
+	return []domain.StoragePool{}, nil
+}
+func (p *resourceFixture) GetStoragePool(ctx context.Context, uri, id string) (domain.StoragePool, error) {
+	p.connection = uri
+	p.id = id
+	return domain.StoragePool{}, nil
+}
+func (p *resourceFixture) ListNetworks(ctx context.Context, uri string) ([]domain.VirtualNetwork, error) {
+	p.connection = uri
+	return []domain.VirtualNetwork{}, nil
+}
+func (p *resourceFixture) GetNetwork(ctx context.Context, uri, id string) (domain.VirtualNetwork, error) {
+	p.connection = uri
+	p.id = id
+	return domain.VirtualNetwork{}, nil
+}
+func TestResourceInventoryDoesNotPlanAdoptOrMutate(t *testing.T) {
+	p := &resourceFixture{}
+	s := &Service{Provider: p}
+	for _, method := range []string{"storage.pool.list", "storage.pool.get", "network.list", "network.get"} {
+		r := s.Call(context.Background(), 1000, method, Request{Connection: "qemu:///session", ID: "resource-uuid"})
+		if r.Error != nil || p.connection != "qemu:///session" || p.calls != 0 {
+			t.Fatal("wrong connection or side effect", method, r, p)
+		}
+	}
+	for _, method := range []string{"storage.pool.get", "network.get"} {
+		if r := s.Call(context.Background(), 1000, method, Request{}); r.Error == nil || r.Error.Code != "INVALID_INPUT" {
+			t.Fatal("missing UUID accepted", r)
+		}
+	}
+	s.Provider = &fixtureProvider{}
+	if r := s.Call(context.Background(), 1000, "storage.pool.list", Request{}); r.Error == nil || r.Error.Code != "UNSUPPORTED_CAPABILITY" {
+		t.Fatal("unsupported inventory fabricated", r)
+	}
+}

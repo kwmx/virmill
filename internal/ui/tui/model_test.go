@@ -119,3 +119,23 @@ func TestImportFormDispatchesCompleteMappingToSharedService(t *testing.T) {
 		t.Fatal("TUI import mapping lost", r)
 	}
 }
+
+func TestStorageAndNetworkInventoryAreReachableWithoutApproval(t *testing.T) {
+	for _, test := range []struct{ section, method string }{{"Storage", "storage.pool.list"}, {"Networks", "network.list"}} {
+		r := &recorder{}
+		m := New(r, "qemu:///session")
+		for i, name := range sections {
+			if name == test.section {
+				m.Section = i
+			}
+		}
+		_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		if cmd == nil {
+			t.Fatal("inventory not reachable", test.section)
+		}
+		cmd()
+		if r.method != test.method || r.request.Connection != "qemu:///session" {
+			t.Fatal("TUI inventory changed connection or method", r)
+		}
+	}
+}
