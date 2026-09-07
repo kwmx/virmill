@@ -12,6 +12,8 @@ An executable build or simulated test does not establish hardware support.
 Build and run the current development tools using [getting started](docs/getting-started.md).
 The [OVA preparation workflow](docs/import-preparation.md) converts complete disk
 sets into verified independent artifacts through the CLI or TUI. The
+[existing-disk preparation workflow](docs/existing-disk-preparation.md) copies
+explicitly selected files with guarded backing/extent access. The
 [VM creation adapter](docs/vm-creation.md) adds explicit hardware mappings,
 define-last storage phases and reviewed definition recovery.
 [Failed-creation cleanup](docs/creation-cleanup.md) adds explicit retention or

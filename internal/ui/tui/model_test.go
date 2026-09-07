@@ -120,6 +120,36 @@ func TestImportFormDispatchesCompleteMappingToSharedService(t *testing.T) {
 	}
 }
 
+func TestSelectedDiskPreparationFormUsesSharedService(t *testing.T) {
+	r := &recorder{}
+	m := New(r, "qemu:///system")
+	for i, name := range sections {
+		if name == "VMs" {
+			m.Section = i
+		}
+	}
+	found := false
+	for i, a := range m.actions() {
+		if a.Command == "import prepare-disks" {
+			m.Selected, found = i, true
+		}
+	}
+	if !found {
+		t.Fatal("selected disk preparation inaccessible in TUI")
+	}
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = model.(Model)
+	m.Input = `{"path":"/tmp/selected-disks","input":{"destination":"/tmp/private/prepared","offlineSources":true,"files":[{"path":"boot.qcow2"},{"path":"base.raw"}],"disks":[{"id":"boot","path":"boot.qcow2","format":"qcow2","maximumVirtualBytes":16777216}]}}`
+	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("selected file form not submitted")
+	}
+	cmd()
+	if r.method != "import.prepare-disks" || r.request.Path != "/tmp/selected-disks" || len(r.request.Input["files"].([]any)) != 2 {
+		t.Fatal("selected file form lost input", r)
+	}
+}
+
 func TestStorageAndNetworkInventoryAreReachableWithoutApproval(t *testing.T) {
 	for _, test := range []struct{ section, method string }{{"Storage", "storage.pool.list"}, {"Networks", "network.list"}} {
 		r := &recorder{}

@@ -24,14 +24,26 @@ func Approved(ctx context.Context, db *store.Store, uid uint32, operationID stri
 	if err != nil {
 		return empty, "", err
 	}
-	if p.ActorUID != uid || p.Operation != "import.prepare" || j.State != "succeeded" {
+	if p.ActorUID != uid || (p.Operation != "import.prepare" && p.Operation != "import.prepare-disks") || j.State != "succeeded" {
 		return empty, "", domain.Fail("INVALID_INPUT", "source must be your successful local import preparation operation")
 	}
-	var in stageInput
-	if err = wire.Decode(input, &in); err != nil {
-		return empty, "", err
+	var destination, kind string
+	if p.Operation == "import.prepare-disks" {
+		var in diskSetInput
+		if err = wire.Decode(input, &in); err != nil {
+			return empty, "", err
+		}
+		destination = in.Destination
+		kind = "PreparedDiskSet"
+	} else {
+		var in stageInput
+		if err = wire.Decode(input, &in); err != nil {
+			return empty, "", err
+		}
+		destination = in.Destination
+		kind = "PreparedImport"
 	}
-	actual, err := Verify(ctx, in.Destination)
+	actual, err := Verify(ctx, destination)
 	if err != nil {
 		return empty, "", err
 	}
@@ -51,8 +63,8 @@ func Approved(ctx context.Context, db *store.Store, uid uint32, operationID stri
 	if err != nil {
 		return empty, "", err
 	}
-	if !bytes.Equal(a, b) || actual.PlanID != p.ID || actual.OperationID != operationID || actual.InputDigest != p.InputDigest {
+	if !bytes.Equal(a, b) || actual.Kind != kind || actual.PlanID != p.ID || actual.OperationID != operationID || actual.InputDigest != p.InputDigest {
 		return empty, "", domain.Fail("SOURCE_CHANGED", "prepared artifact differs from its durable conversion receipt")
 	}
-	return actual, in.Destination, nil
+	return actual, destination, nil
 }

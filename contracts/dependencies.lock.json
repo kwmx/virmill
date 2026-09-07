@@ -168,5 +168,32 @@
       "path": "libvirt.org/go/libvirt",
       "version": "v1.12007.0"
     }
-  ]
+  ],
+  "testTools": [
+    {
+      "path": "/usr/bin/qemu-io",
+      "version": "qemu-io version 10.2.2 (qemu-10.2.2-1.fc44)",
+      "package": "qemu-img-10.2.2-1.fc44.x86_64",
+      "sha256": "628a2c8566346bc9bc9fa9610d7245f3f18ef2a80f54caf2c3ad501b3576da11",
+      "purpose": "Generated-file QEMU writer permission fixtures; no guest execution"
+    }
+  ],
+  "qemuSourceLockProtocol": {
+    "id": "qemu-file-ofd-permissions-v1",
+    "qualifiedToolVersion": "10.2.2",
+    "sources": [
+      {
+        "url": "https://github.com/qemu/qemu/blob/v10.2.2/block/file-posix.c",
+        "sha256": "5bb3d7d7329adf775f616478aad0d416a3aeec3a4f43c8881dff914fdda6f205"
+      },
+      {
+        "url": "https://github.com/qemu/qemu/blob/v10.2.2/qemu-img.c",
+        "sha256": "12c057ab631231d45b8e02d942d7ed1f6c84ac35dcdb77a252272af299a31f21"
+      },
+      {
+        "url": "https://github.com/qemu/qemu/blob/v10.2.2/include/block/block-common.h",
+        "sha256": "dd519a797a45e0cbc0587cccc8912ce865927ca92072aad55179480958144ef7"
+      }
+    ]
+  }
 }

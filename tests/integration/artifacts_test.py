@@ -84,6 +84,7 @@ class Artifacts(unittest.TestCase):
                 self.assertTrue((root/'generated/sdk/server.go').is_file())
                 if os.environ.get('VIRMILL_TEST_DISK_TOOLS') == '1':
                     self.prepare_fixture_through_cli(root, env, command)
+                    self.prepare_disk_fixture_through_cli(root, env, command)
             finally:
                 daemon.terminate()
                 daemon.wait(timeout=5)
@@ -151,6 +152,55 @@ class Artifacts(unittest.TestCase):
         # The completed import uses another connection and is not a creation;
         # authority validation must reject it before any host backend access.
         print('Creation CLI/daemon source validation reached native test-URI refusal; no creation job, native storage effect or guest boot occurred')
+
+    def prepare_disk_fixture_through_cli(self, root, env, command):
+        source = root/'selected-disks'
+        (source/'disks').mkdir(parents=True,mode=0o700)
+        (source/'base.raw').write_bytes(b'Virmill selected base fixture'.ljust(1048576,b'\0'))
+        (source/'data.raw').write_bytes(b'Virmill selected data fixture'.ljust(1048576,b'\0'))
+        subprocess.run(['/usr/bin/qemu-img','create','-f','qcow2','-F','raw','-b','../base.raw',
+                        str(source/'disks/boot.qcow2'),'1M'],check=True,capture_output=True)
+        names = ['base.raw','data.raw','disks/boot.qcow2']
+        originals = {name:hashlib.sha256((source/name).read_bytes()).hexdigest() for name in names}
+        def invoke(*args):
+            result = subprocess.run(command+list(args)+['--output','json','--non-interactive'],cwd=root,env=env,check=True,capture_output=True,text=True,timeout=30)
+            response = json.loads(result.stdout)
+            self.assertIsNone(response['error'])
+            return response['data']
+        inputs = dict(destination='./prepared-disks',offlineSources=True,
+                      files=[dict(path=name,sha256=originals[name]) for name in names],
+                      disks=[dict(id='boot',path='disks/boot.qcow2',format='qcow2',maximumVirtualBytes=1048576),
+                             dict(id='data',path='data.raw',format='raw',maximumVirtualBytes=1048576)])
+        plan = invoke('import','prepare-disks','./selected-disks','--input',json.dumps(inputs),'--plan')
+        self.assertFalse((root/'prepared-disks').exists())
+        self.assertEqual(plan['review']['sourceDirectory'],str(source))
+        self.assertEqual(plan['review']['sourceLockProtocol'],'qemu-file-ofd-permissions-v1')
+        job = invoke('plan','apply',plan['planID'],'--digest',plan['planDigest'],
+                     '--idempotency-key','selected-disk-fixture','--ack','write-import-artifacts',
+                     '--ack','offline-source-files','--wait')
+        self.assertEqual(job['state'],'succeeded')
+        result = invoke('import','result',job['operationID'])
+        artifact = invoke('import','verify','./prepared-disks')
+        self.assertEqual(artifact,result['artifact'])
+        self.assertEqual(artifact['kind'],'PreparedDiskSet')
+        self.assertEqual([d['sourceID'] for d in artifact['disks']],['boot','data'])
+        self.assertEqual(artifact['system']['hardware'],[])
+        self.assertFalse(artifact['vmDefined'])
+        self.assertFalse(artifact['guestBootVerified'])
+        self.assertEqual({name:hashlib.sha256((source/name).read_bytes()).hexdigest() for name in names},originals)
+        creation = json.loads((ROOT/'examples/creation/prepared-disks.json').read_text())
+        before = invoke('operation','list')
+        rejected = subprocess.run(command+['vm','create',job['operationID'],'--connection','test:///default',
+                                  '--input',json.dumps(creation),'--plan','--output','json','--non-interactive'],
+                                  cwd=root,env=env,capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(rejected.returncode,0)
+        error = json.loads(rejected.stdout)['error']
+        self.assertEqual(error['code'],'UNSUPPORTED_CAPABILITY')
+        self.assertIn('only explicit local qemu:///system or qemu:///session',error['message'])
+        self.assertEqual(invoke('operation','list'),before)
+        print('Native CLI/daemon selected-file preparation: source hashes',originals,
+              'output disk hashes',[d['sha256'] for d in artifact['disks']],
+              '; private receipt accepted by creation; native test-URI refused; no host storage effect or VM boot')
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

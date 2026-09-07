@@ -1,7 +1,8 @@
-# Creating a VM from a prepared appliance
+# Creating a VM from prepared disks
 
-This development adapter defines a powered-off VM from a successful local OVA
-preparation operation. Native disk streaming and guest behavior are not qualified.
+This development adapter defines a powered-off VM from a successful local OVA or
+[existing-disk preparation](existing-disk-preparation.md) operation.
+Native disk streaming and guest behavior are not qualified.
 Use an explicitly authorized disposable libvirt environment for application tests.
 The complete release checklist remains open.
 
@@ -22,6 +23,9 @@ disk ID once, with a supported bus and unique boot order covering every disk.
 Map every original NIC by its zero-based order among the descriptor's NIC items.
 Use `sourceIndex: -1` only for an additional adapter. To keep an original adapter
 initially disconnected, select its intended network and set `link: down`.
+Disk-only sources have no known original NICs or hardware configuration. Use
+[the disk-only example](../examples/creation/prepared-disks.json), make every
+hardware assumption explicitly, and use `sourceIndex: -1` for every new NIC.
 
 The current adapter accepts explicit x86_64 KVM Q35/i440fx machine versions,
 1–64 disks and up to 32 NICs. Disk buses are SATA (at most six), virtio and

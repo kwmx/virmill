@@ -171,14 +171,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 4,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/backend/image/tool_linux.go",
+        "internal/platform/linux/sandbox.go"
+      ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
-      "tests": [],
+      "tests": [
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
+      ],
       "evidence": [],
       "outstanding": [
-        "ISO install, cloud image and existing disk creation each reach their declared verification level."
+        "Standalone disk-set preparation feeds the existing creation adapter with explicit hardware assumptions; generated-file conversion, OFD exclusion, journal recovery and CLI dispatch are tested. ISO/cloud/NoCloud workflows, native storage/definition and declared guest verification levels remain incomplete or unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -280,7 +290,10 @@
         "internal/creating/recovery_linux.go",
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -289,7 +302,11 @@
         "internal/backend/image/tool_linux_test.go",
         "internal/creating/service_linux_test.go",
         "internal/creating/recovery_linux_test.go",
-        "internal/backend/libvirt/creation_linux_test.go"
+        "internal/backend/libvirt/creation_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -315,21 +332,28 @@
         "internal/app/importer/ova.go",
         "internal/wire/json.go",
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-05",
       "tests": [
         "internal/app/importer/ova_test.go",
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
         "import-conversion-001"
       ],
       "outstanding": [
-        "Archive traversal/type/entity bounds plus confined image graph/extent validation implemented. Broader malicious format corpus, encrypted fixtures and full security qualification remain."
+        "Archive bounds plus selected-file Openat2/FD confinement, complete backing/extent validation and cooperative QEMU OFD guards implemented. Broader malicious format corpus, encrypted fixtures and full security/hardware qualification remain."
       ],
       "hardwareVerified": false,
       "released": false
@@ -354,7 +378,10 @@
         "internal/domain/creation_cleanup.go",
         "internal/backend/libvirt/creation_cleanup_linux.go",
         "internal/backend/fileidentity/file_linux.go",
-        "internal/backend/image/metadata_linux.go"
+        "internal/backend/image/metadata_linux.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-06",
@@ -367,7 +394,11 @@
         "internal/creating/cleanup_linux_test.go",
         "internal/backend/libvirt/creation_cleanup_linux_test.go",
         "internal/backend/fileidentity/file_linux_test.go",
-        "internal/backend/image/metadata_linux_test.go"
+        "internal/backend/image/metadata_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -399,7 +430,10 @@
         "internal/creating/recovery_linux.go",
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -408,7 +442,11 @@
         "internal/backend/image/tool_linux_test.go",
         "internal/creating/service_linux_test.go",
         "internal/creating/recovery_linux_test.go",
-        "internal/backend/libvirt/creation_linux_test.go"
+        "internal/backend/libvirt/creation_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -433,14 +471,21 @@
       "implementationPaths": [
         "internal/app/importer/ova.go",
         "internal/importing/stage_linux.go",
-        "internal/backend/image/tool_linux.go"
+        "internal/backend/image/tool_linux.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-08",
       "tests": [
         "internal/app/importer/ova_test.go",
         "internal/importing/stage_linux_test.go",
-        "internal/backend/image/tool_linux_test.go"
+        "internal/backend/image/tool_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -799,7 +844,11 @@
         "internal/domain/creation_cleanup.go",
         "internal/backend/libvirt/creation_cleanup_linux.go",
         "internal/backend/fileidentity/file_linux.go",
-        "internal/backend/image/metadata_linux.go"
+        "internal/backend/image/metadata_linux.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/backend/image/tool_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-03",
@@ -808,7 +857,11 @@
         "internal/creating/cleanup_linux_test.go",
         "internal/backend/libvirt/creation_cleanup_linux_test.go",
         "internal/backend/fileidentity/file_linux_test.go",
-        "internal/backend/image/metadata_linux_test.go"
+        "internal/backend/image/metadata_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1298,7 +1351,11 @@
         "internal/domain/creation_cleanup.go",
         "internal/backend/libvirt/creation_cleanup_linux.go",
         "internal/backend/fileidentity/file_linux.go",
-        "internal/backend/image/metadata_linux.go"
+        "internal/backend/image/metadata_linux.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/backend/image/tool_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1311,7 +1368,11 @@
         "internal/creating/cleanup_linux_test.go",
         "internal/backend/libvirt/creation_cleanup_linux_test.go",
         "internal/backend/fileidentity/file_linux_test.go",
-        "internal/backend/image/metadata_linux_test.go"
+        "internal/backend/image/metadata_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1380,7 +1441,11 @@
         "internal/backend/libvirt/creation_cleanup_linux.go",
         "internal/backend/fileidentity/file_linux.go",
         "internal/backend/image/metadata_linux.go",
-        "internal/store/recovery.go"
+        "internal/store/recovery.go",
+        "internal/importing/disks_linux.go",
+        "internal/backend/image/guard_linux.go",
+        "internal/backend/image/tool_linux.go",
+        "internal/platform/linux/sandbox.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -1392,7 +1457,11 @@
         "internal/creating/cleanup_linux_test.go",
         "internal/backend/libvirt/creation_cleanup_linux_test.go",
         "internal/backend/fileidentity/file_linux_test.go",
-        "internal/backend/image/metadata_linux_test.go"
+        "internal/backend/image/metadata_linux_test.go",
+        "internal/importing/disks_linux_test.go",
+        "internal/backend/image/files_linux_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "tests/integration/artifacts_test.py"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -1400,7 +1469,7 @@
         "cleanup-core-001"
       ],
       "outstanding": [
-        "Cleanup inherits all original locks, adds observed pool/domain locks and rechecks generations/graphs/references before deletion. Synthetic contention/drift fixtures pass; actual concurrent native/external writer matrix remains."
+        "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains."
       ],
       "hardwareVerified": false,
       "released": false

@@ -114,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "vm.create" || a.Method=="vm.creation.cleanup" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
+				if a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
 					var form struct {
 						ID    string         `json:"id"`
 						Path  string         `json:"path"`

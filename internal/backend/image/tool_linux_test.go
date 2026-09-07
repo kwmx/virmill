@@ -37,6 +37,30 @@ func TestBackingGraphRejectsUnapprovedDependencies(t *testing.T) {
 	}
 }
 
+func TestContainedBackingNamesNormalizeWithoutEscapeOrCycles(t *testing.T) {
+	members := map[string]bool{"disks/top.qcow2": true, "base.raw": true}
+	valid := []Info{{Filename: "/source/disks/top.qcow2", Format: "qcow2", VirtualSize: 4096, Backing: "../base.raw", FullBacking: "/source/disks/../base.raw", BackingFormat: "raw"}, {Filename: "/source/disks/../base.raw", Format: "raw", VirtualSize: 4096}}
+	if err := CheckChain(valid, "qcow2", "disks/top.qcow2", 8192, members); err != nil {
+		t.Fatal("contained parent reference refused", err)
+	}
+	for _, edit := range []func([]Info){
+		func(v []Info) { v[0].Backing = "../../source/base.raw" },
+		func(v []Info) { v[0].FullBacking = "/source/../source/base.raw" },
+		func(v []Info) { v[1].Filename = "/source/disks/../../source/base.raw" },
+		func(v []Info) {
+			v[0].Backing, v[0].BackingFormat = "../disks/top.qcow2", "qcow2"
+			v[0].FullBacking = "/source/disks/../disks/top.qcow2"
+			v[1].Filename, v[1].Format = v[0].FullBacking, "qcow2"
+		},
+	} {
+		bad := append([]Info{}, valid...)
+		edit(bad)
+		if err := CheckChain(bad, "qcow2", "disks/top.qcow2", 8192, members); err == nil {
+			t.Fatal("escape/reentry or normalized alias cycle accepted", bad)
+		}
+	}
+}
+
 func privateTemp(t *testing.T) string {
 	t.Helper()
 	p := t.TempDir()

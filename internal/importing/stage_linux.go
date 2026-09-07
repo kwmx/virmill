@@ -91,10 +91,14 @@ type Artifact struct {
 	ReportSHA256      string          `json:"reportSHA256"`
 	VMDefined         bool            `json:"vmDefined"`
 	GuestBootVerified bool            `json:"guestBootVerified"`
+	SourceFiles       []DiskSetFile   `json:"sourceFiles,omitempty"`
 }
 
 func Register(appService *app.Service) {
 	s := &Service{Engine: appService.Engine, Store: appService.Engine.Store, Tool: image.Tool{}}
+	disks := &DiskSetService{Service: s, FilesTool: image.Tool{}}
+	appService.Engine.Handlers["import.prepare-disks"] = disks
+	appService.Extensions["import.prepare-disks"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return disks.Plan(ctx, uid, r) }
 	appService.Engine.Handlers["import.prepare"] = s
 	appService.Extensions["import.prepare"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.Plan(ctx, uid, r) }
 	appService.Extensions["import.result"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) {
@@ -105,6 +109,12 @@ func Register(appService *app.Service) {
 		p, input, err := s.Store.Plan(job.PlanID)
 		if err != nil {
 			return nil, err
+		}
+		if p.ActorUID != uid {
+			return nil, domain.Fail("PERMISSION_DENIED", "not your preparation operation")
+		}
+		if p.Operation == "import.prepare-disks" {
+			return disks.Result(ctx, uid, r.ID)
 		}
 		if p.Operation != "import.prepare" {
 			return nil, domain.Fail("INVALID_INPUT", "operation is not an import preparation")
@@ -760,19 +770,35 @@ func Verify(ctx context.Context, directory string) (Artifact, error) {
 	if err != nil {
 		return artifact, err
 	}
-	if err = validation.Schema("prepared-import", b); err != nil {
-		return artifact, err
-	}
 	if err = wire.Decode(b, &artifact); err != nil {
 		return artifact, err
 	}
-	if artifact.APIVersion != domain.APIVersion || artifact.Kind != "PreparedImport" || artifact.PlanID == "" || artifact.VMDefined || artifact.GuestBootVerified || len(artifact.Disks) == 0 || len(artifact.Disks) > 64 {
+	schema := "prepared-import"
+	if artifact.Kind == "PreparedDiskSet" {
+		schema = "prepared-disk-set"
+	}
+	if err = validation.Schema(schema, b); err != nil {
+		return artifact, err
+	}
+	if artifact.APIVersion != domain.APIVersion || (artifact.Kind != "PreparedImport" && artifact.Kind != "PreparedDiskSet") || artifact.PlanID == "" || artifact.VMDefined || artifact.GuestBootVerified || len(artifact.Disks) == 0 || len(artifact.Disks) > 64 {
 		return artifact, domain.Fail("INVALID_INPUT", "invalid prepared-import manifest")
 	}
 	files := map[string]struct {
 		digest string
 		size   int64
 	}{"source.ovf": {artifact.DescriptorSHA256, importer.DescriptorLimit}, "import-report.json": {artifact.ReportSHA256, wire.MaxFrame}}
+	if artifact.Kind == "PreparedDiskSet" {
+		digest, err := sourceSetDigest(artifact.SourceFiles)
+		if err != nil || digest != artifact.SourceSHA256 {
+			return artifact, domain.Fail("SOURCE_CHANGED", "disk-set source proof digest differs from its manifest")
+		}
+		delete(files, "source.ovf")
+		delete(files, "import-report.json")
+		files["disk-source-report.json"] = struct {
+			digest string
+			size   int64
+		}{artifact.ReportSHA256, wire.MaxFrame}
+	}
 	for i, disk := range artifact.Disks {
 		if disk.Path != fmt.Sprintf("disks/disk-%03d.qcow2", i) || disk.Format != "qcow2" || disk.FileBytes < 0 || disk.FileBytes > outputBound(512<<30) {
 			return artifact, domain.Fail("INVALID_INPUT", "invalid converted disk member")

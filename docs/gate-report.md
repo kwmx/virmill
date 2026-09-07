@@ -10,7 +10,7 @@ matching; missing kickoff document recorded in ADR 0001. No scope was reduced.
 | 1 spike | Native official binding builds with dlopen and runs libvirt test driver; OVA/XML/USB/manifest/network-intent fixtures implemented | Actual system/session/event/import/USB/packet/rollback/cold-restore matrix and guest versions |
 | 2 foundations | SQLite WAL/FULL, schema-3 migration backup/barrier, atomic recovery lock transfer, strict RPC, UID checks, immutable plan/dedup and crash observation | Full state/step schema, all recovery adapters, schedules, independent guardians and real effect faults |
 | 3 VM operations | Shared CLI/TUI, native inventory/lifecycle subset, prepared-appliance define-last creation and catalog identity, reviewed definition recovery and explicit failed-creation disposition | All creation entry paths/full forms/configuration/retained-pin release/console/guest paths and real VM evidence |
-| 4 import/network | Bounded package inspection, confined all-disk OVA conversion/atomic artifact publication, explicit disk/NIC mapping, native pool/network reads and topology validation | Guest adaptation and registration/boot qualification; all network mutation/policy/rollback/packet flows |
+| 4 import/network | Bounded package inspection, confined all-disk OVA and selected-file disk-set preparation/atomic publication, OFD read guards, explicit disk/NIC mapping, native pool/network reads and topology validation | ISO/cloud provisioning, guest adaptation and registration/boot qualification; all network mutation/policy/rollback/packet flows |
 | 5 protection/devices | Confined generation-bound failed-creation graph/deletion adapter; manifest and USB selector libraries | Actual capture/restic/restore/templates/snapshots/USB/sharing integrations |
 | 6 labs/automation | Schema, reference and DAG validation | Actual DAG apply/reconcile/teardown, provisioning, scheduling and coordinated restore |
 | 7 plugins | SDK, shared scaffold/pack/install/version/grant plans, confined read-only actions, two-language and persistent simulated provider fixtures | Unsigned/development override, quarantine, brokers, structured forms and full extension/provider matrix |
@@ -48,6 +48,12 @@ generations, and schema-1/2 migration to schema 3. Generated-file metadata and
 native simulated-inventory tests protect backing references and replacements;
 coordinator fixtures cover partial deletion, cancellation, old-job references
 and restart observation. Actual native deletion remains unqualified.
-The next dependency-ready work includes other VM creation entry paths,
+ADR 0008 adds standalone disk-set preparation with explicit file selection, source
+proofs, cooperative QEMU OFD guards, shared CLI/TUI access and durable independent
+publication. A raw metadata-sharing regression was found and its corrected guard
+was tested with real generated-file QEMU writers in both acquisition orders.
+New preparation and cleanup share file-path concurrency locks; old delete plans
+without that contract require fresh review. This does not qualify live VM behavior.
+The next dependency-ready work includes ISO/cloud/NoCloud creation entry paths,
 lifecycle/configuration completion, retained-pin release and protection handlers.
 The root release checklist and requirements matrix must pass before version 1.0.

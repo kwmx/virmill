@@ -21,17 +21,45 @@ drift, conversion failure, cancellation and lost-acknowledgement recovery. Those
 tests validate coordinator behavior only, and their bytes are not valid qcow2.
 There is no runtime fixture provider in the application.
 
+`internal/backend/image/files_linux_test.go` passes explicitly selected held files
+through the real descriptor sandbox: nested relative qcow2 backing, split VMDK
+extents, missing selection and incorrect declared format. The raw-writer fixture
+demonstrates that an unguarded QEMU metadata probe can succeed on a writable source;
+the production OFD guard must refuse it. Raw/qcow2 tests also attempt a writer
+after taking the guard and verify release after its independent descriptor closes.
+These use `qemu-io 10.2.2 (qemu-10.2.2-1.fc44)` from the recorded qemu-img package.
+No VM process is created. Namespace fixtures additionally check read-only selected
+files, hidden siblings/original directory/sockets and closed inherited descriptors.
+
+`internal/importing/disks_linux_test.go` publishes a two-root disk set with a
+nested qcow2 backing file and split VMDK through the production conversion adapter.
+It hashes originals, verifies the new receipt, then removes only its generated
+source fixture and verifies that the published copies remain independent. Separate
+synthetic phase tests cover source drift (including restored mtime/content),
+directory/symlink substitution, failure, safe cancellation, and actual SQLite
+reopen after lost publication acknowledgement. Their synthetic output bytes do
+not validate an image format. Source-file locks and old cleanup-plan refusal have
+coordinator tests in `internal/creating/cleanup_linux_test.go`.
+
 Run file integration on a host supporting ordinary-user bubblewrap namespaces:
 
 ```sh
 VIRMILL_TEST_DISK_TOOLS=1 ./scripts/go test -count=1 -race \
-  -tags libvirt_dlopen -v ./internal/backend/image ./internal/importing
+  -tags libvirt_dlopen -v ./internal/backend/image ./internal/importing ./internal/platform/linux
 ```
 
 The private daemon integration in `tests/integration/artifacts_test.py` generates
 a second two-disk raw OVA using Python's standard library and submits the real CLI
 preview, apply, result and verify commands. Its marker contents and zero tar
-timestamps are reproducible. Build the development binaries/packages first, then:
+timestamps are reproducible.
+
+The same private daemon test now prepares a selected raw/qcow2 set with a relative
+backing file through CLI plan/apply/result/verify. Both preparation kinds reach the
+real creation service's approved-source validation and then the intentional native
+`test:///default` refusal. This confirms dispatch and authority without entering
+a host libvirt connection, uploading storage or defining a guest.
+
+Build the development binaries/packages first, then run:
 
 ```sh
 VIRMILL_TEST_REQUIRE_IPC=1 VIRMILL_TEST_DISK_TOOLS=1 \

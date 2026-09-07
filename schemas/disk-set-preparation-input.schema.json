@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/disk-set-preparation-input.schema.json",
+  "title": "Explicit selected-file disk preparation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "destination": {
+      "type": "string",
+      "pattern": "^/",
+      "maxLength": 4096
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    },
+    "disks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "format": {
+            "enum": [
+              "raw",
+              "qcow2",
+              "vmdk",
+              "vdi",
+              "vpc",
+              "vhdx"
+            ]
+          },
+          "maximumVirtualBytes": {
+            "type": "integer",
+            "minimum": 1048576,
+            "maximum": 549755813888
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "format",
+          "maximumVirtualBytes"
+        ]
+      }
+    },
+    "offlineSources": {
+      "const": true
+    }
+  },
+  "required": [
+    "destination",
+    "files",
+    "disks",
+    "offlineSources"
+  ]
+}

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"virmill.local/core/internal/app"
 	"virmill.local/core/internal/domain"
@@ -103,6 +104,49 @@ func planCleanup(t *testing.T, h *cleanupHandler, parent domain.Job, disposition
 		t.Fatal(err)
 	}
 	return p
+}
+
+func TestCleanupSharesSourceFileLocksAndRefusesOlderDeletePlans(t *testing.T) {
+	h, b, original, parent, _ := cleanupFixture(t, "define")
+	p := planCleanup(t, h, parent, "delete")
+	_, encoded, err := h.s.Store.Plan(p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var selected string
+	old := p
+	old.ResourceIDs = []string{}
+	for _, resource := range p.ResourceIDs {
+		if strings.HasPrefix(resource, "local-file|") {
+			selected = resource
+		} else {
+			old.ResourceIDs = append(old.ResourceIDs, resource)
+		}
+	}
+	if selected == "" {
+		t.Fatal("cleanup omitted selected-source concurrency keys")
+	}
+	if err = h.Validate(context.Background(), old, encoded); err == nil {
+		t.Fatal("old delete plan accepted without file lock contract")
+	}
+	// A queued generated source-reader job holds the same coordinator resource.
+	reader := p
+	reader.ID = domain.ID()
+	reader.Operation = "fixture.source-reader"
+	reader.ResourceIDs = []string{selected}
+	if err = h.s.Store.SavePlan(reader, []byte(`{"fixture":"queued source reader"}`)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = h.s.Store.Accept(reader, domain.ID(), reader.Digest); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = h.s.Engine.Apply(context.Background(), 1000, operations.ApplyRequest{PlanID: p.ID, PlanDigest: p.Digest, IdempotencyKey: domain.ID(), Acknowledgements: p.Acknowledgements}); err == nil {
+		t.Fatal("cleanup ignored queued source reader lock")
+	}
+	if b.deleteCalls != 0 {
+		t.Fatal("source-reader conflict caused deletion")
+	}
+	checkCleanupLocks(t, h.s, original, parent.ID)
 }
 func checkCleanupLocks(t *testing.T, s *Service, p domain.Plan, owner string) {
 	t.Helper()

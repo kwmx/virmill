@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/prepared-disk-set.schema.json",
+  "title": "Independent existing-disk preparation receipt (no hardware or guest claim)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "$ref": "prepared-import.schema.json#/properties/apiVersion"
+    },
+    "planID": {
+      "$ref": "prepared-import.schema.json#/properties/planID"
+    },
+    "operationID": {
+      "$ref": "prepared-import.schema.json#/properties/operationID"
+    },
+    "inputDigest": {
+      "$ref": "prepared-import.schema.json#/properties/inputDigest"
+    },
+    "createdAt": {
+      "$ref": "prepared-import.schema.json#/properties/createdAt"
+    },
+    "sourceSHA256": {
+      "$ref": "prepared-import.schema.json#/properties/sourceSHA256"
+    },
+    "system": {
+      "$ref": "prepared-import.schema.json#/properties/system"
+    },
+    "tool": {
+      "$ref": "prepared-import.schema.json#/properties/tool"
+    },
+    "disks": {
+      "$ref": "prepared-import.schema.json#/properties/disks"
+    },
+    "reportSHA256": {
+      "$ref": "prepared-import.schema.json#/properties/reportSHA256"
+    },
+    "vmDefined": {
+      "$ref": "prepared-import.schema.json#/properties/vmDefined"
+    },
+    "guestBootVerified": {
+      "$ref": "prepared-import.schema.json#/properties/guestBootVerified"
+    },
+    "kind": {
+      "const": "PreparedDiskSet"
+    },
+    "descriptorSHA256": {
+      "const": ""
+    },
+    "sourceFiles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "identity": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "device": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              "inode": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 687211544576
+              },
+              "modifiedNS": {
+                "type": "string",
+                "pattern": "^-?[0-9]+$"
+              }
+            },
+            "required": [
+              "device",
+              "inode",
+              "size",
+              "modifiedNS"
+            ]
+          },
+          "changed": {
+            "type": "string",
+            "pattern": "^-?[0-9]+:[0-9]{9}$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "providedDigest": {
+            "type": "boolean"
+          },
+          "originalPath": {
+            "type": "string",
+            "pattern": "^/",
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "path",
+          "identity",
+          "changed",
+          "sha256",
+          "providedDigest",
+          "originalPath"
+        ]
+      }
+    }
+  },
+  "required": [
+    "apiVersion",
+    "planID",
+    "operationID",
+    "inputDigest",
+    "createdAt",
+    "sourceSHA256",
+    "system",
+    "tool",
+    "disks",
+    "reportSHA256",
+    "vmDefined",
+    "guestBootVerified",
+    "kind",
+    "descriptorSHA256",
+    "sourceFiles"
+  ]
+}

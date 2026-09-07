@@ -88,6 +88,19 @@ func TestImportPreparationUsesSharedService(t *testing.T) {
 	}
 }
 
+func TestExistingDiskPreparationUsesSharedService(t *testing.T) {
+	r := &recorder{}
+	var out bytes.Buffer
+	c := New(r, &out, &out)
+	c.SetArgs([]string{"import", "prepare-disks", "/tmp/selected-disks", "--input", `{"destination":"/tmp/private/prepared","offlineSources":true,"files":[{"path":"boot.qcow2"},{"path":"base.raw"}],"disks":[{"id":"boot","path":"boot.qcow2","format":"qcow2","maximumVirtualBytes":16777216}]}`, "--plan", "--output", "json", "--non-interactive"})
+	if err := c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "import.prepare-disks" || r.request.Path != "/tmp/selected-disks" || r.request.Action != "prepare-disks" || len(r.request.Input["files"].([]any)) != 2 {
+		t.Fatal("selected file request bypassed shared service or lost input", r)
+	}
+}
+
 func TestResourceInventoryCommandsPreserveExplicitConnection(t *testing.T) {
 	for _, test := range []struct {
 		args   []string

@@ -114,7 +114,15 @@ func (h *cleanupHandler) Plan(ctx context.Context, uid uint32, r app.Request) (d
 		return empty, err
 	}
 	resources := append([]string{}, prior.ResourceIDs...)
-	for _, resource := range in.Observation.ResourceIDs {
+	additional := append([]string{}, in.Observation.ResourceIDs...)
+	if in.Disposition == "delete" {
+		for _, v := range candidatesOf(receipt) {
+			if v.Allocated != nil && v.Allocated.Path != "" {
+				additional = append(additional, "local-file|"+v.Allocated.Path)
+			}
+		}
+	}
+	for _, resource := range additional {
 		found := false
 		for _, old := range resources {
 			found = found || old == resource
@@ -223,6 +231,20 @@ func (h *cleanupHandler) Validate(ctx context.Context, p domain.Plan, b []byte) 
 	}
 	if err = h.checkLocks(ctx, p, in); err != nil {
 		return err
+	}
+	if in.Disposition == "delete" {
+		for _, v := range candidatesOf(receipt) {
+			if v.Allocated == nil || v.Allocated.Path == "" {
+				continue
+			}
+			found := false
+			for _, resource := range p.ResourceIDs {
+				found = found || resource == "local-file|"+v.Allocated.Path
+			}
+			if !found {
+				return domain.Fail("STALE_PLAN", "cleanup needs source-file concurrency locks; review a fresh plan")
+			}
+		}
 	}
 	current, err := h.backend.InspectCreationCleanup(ctx, p.ConnectionID, recipe.Target.Spec, candidatesOf(receipt), in.Disposition == "delete")
 	if err != nil {

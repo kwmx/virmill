@@ -1,0 +1,29 @@
+{
+  "offlineSources": true,
+  "destination": "/replace/with/private-parent/prepared-disks",
+  "files": [
+    {
+      "path": "base.raw"
+    },
+    {
+      "path": "disks/boot.qcow2"
+    },
+    {
+      "path": "data.raw"
+    }
+  ],
+  "disks": [
+    {
+      "id": "boot",
+      "path": "disks/boot.qcow2",
+      "format": "qcow2",
+      "maximumVirtualBytes": 34359738368
+    },
+    {
+      "id": "data",
+      "path": "data.raw",
+      "format": "raw",
+      "maximumVirtualBytes": 34359738368
+    }
+  ]
+}

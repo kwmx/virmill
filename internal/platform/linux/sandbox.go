@@ -12,14 +12,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
+	"strings"
 	"syscall"
+	"virmill.local/core/internal/app/importer"
 	"virmill.local/core/internal/domain"
 )
 
 // ConfinedCommand mounts only runtime code, the chosen executable and a private
 // workspace. Sockets, home, credentials and host /dev are never exposed.
 func ConfinedCommand(ctx context.Context, executable, workspace string, args []string) (*exec.Cmd, func(), error) {
-	return confinedCommand(ctx, executable, workspace, args, "", "", "", nil, 64<<20)
+	return confinedCommand(ctx, executable, workspace, args, "", "", "", nil, nil, 64<<20)
 }
 
 // ConfinedPackageCommand exposes only a previously verified private package tree.
@@ -31,7 +34,7 @@ func ConfinedPackageCommand(ctx context.Context, directory, entrypoint, workspac
 	if e := PrivateDir(directory); e != nil {
 		return nil, nil, e
 	}
-	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint), "", nil, 64<<20)
+	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint), "", nil, nil, 64<<20)
 }
 
 // ConfinedDiskCommand gives the fixed system image tool read-only access to a
@@ -44,7 +47,7 @@ func ConfinedDiskCommand(ctx context.Context, source, workspace string, args []s
 	if e := PrivateDir(source); e != nil {
 		return nil, nil, e
 	}
-	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", source, nil, maximumFileBytes)
+	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", source, nil, nil, maximumFileBytes)
 }
 
 // ConfinedDiskFileCommand exposes one held read-only regular file at /source/image.
@@ -54,10 +57,65 @@ func ConfinedDiskFileCommand(ctx context.Context, source *os.File, workspace str
 	if source == nil {
 		return nil, nil, errors.New("held source file required")
 	}
-	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", "", source, 64<<20)
+	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", "", source, nil, 64<<20)
 }
 
-func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint, sourceDirectory string, sourceFile *os.File, maximumFileBytes int64) (*exec.Cmd, func(), error) {
+type DiskSourceFile struct {
+	Path string
+	File *os.File
+}
+
+// ConfinedDiskFilesCommand exposes exactly the selected held files, under their
+// reviewed relative names. It neither copies nor mounts the original directory.
+// Keep all descriptors open until Wait returns. Plugin mounts are unchanged.
+func ConfinedDiskFilesCommand(ctx context.Context, sources []DiskSourceFile, workspace string, args []string, maximumFileBytes int64) (*exec.Cmd, func(), error) {
+	if len(sources) == 0 || maximumFileBytes < 1 || maximumFileBytes > 1<<40 {
+		return nil, nil, errors.New("bounded disk sources and output required")
+	}
+	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", "", nil, sources, maximumFileBytes)
+}
+
+func validateDiskSources(sources []DiskSourceFile) ([]string, error) {
+	if len(sources) > 10000 {
+		return nil, errors.New("too many selected image files")
+	}
+	names, parents := map[string]bool{}, map[string]bool{}
+	bytes := 0
+	for _, source := range sources {
+		bytes += len(source.Path)
+		if source.File == nil || importer.SafePath(source.Path) != nil || filepath.Clean(source.Path) != source.Path || names[source.Path] || bytes > 1<<20 {
+			return nil, errors.New("unique bounded local source names and open files required")
+		}
+		names[source.Path] = true
+		st, err := source.File.Stat()
+		flags, flagErr := unix.FcntlInt(source.File.Fd(), unix.F_GETFL, 0)
+		if err != nil || flagErr != nil || !st.Mode().IsRegular() || flags&unix.O_ACCMODE != unix.O_RDONLY || flags&unix.O_PATH != 0 {
+			return nil, errors.New("selected source must be a held read-only regular file")
+		}
+		parent := filepath.Dir(source.Path)
+		for parent != "." {
+			parents[parent] = true
+			parent = filepath.Dir(parent)
+		}
+	}
+	paths := []string{}
+	for parent := range parents {
+		if names[parent] {
+			return nil, errors.New("selected file collides with a source directory")
+		}
+		paths = append(paths, parent)
+	}
+	sort.Slice(paths, func(i, j int) bool {
+		a, b := strings.Count(paths[i], "/"), strings.Count(paths[j], "/")
+		if a != b {
+			return a < b
+		}
+		return paths[i] < paths[j]
+	})
+	return paths, nil
+}
+
+func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint, sourceDirectory string, sourceFile *os.File, sourceFiles []DiskSourceFile, maximumFileBytes int64) (*exec.Cmd, func(), error) {
 	if os.Getuid() == 0 {
 		return nil, nil, errors.New("untrusted workers must never run as root")
 	}
@@ -82,6 +140,16 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 		flags, flagErr := unix.FcntlInt(sourceFile.Fd(), unix.F_GETFL, 0)
 		if err != nil || flagErr != nil || !st.Mode().IsRegular() || flags&unix.O_ACCMODE != unix.O_RDONLY || flags&unix.O_PATH != 0 || sourceDirectory != "" || packageDirectory != "" {
 			return nil, nil, domain.Fail("INVALID_INPUT", "single-file image confinement requires one held read-only regular file")
+		}
+	}
+	var sourceParents []string
+	if len(sourceFiles) > 0 {
+		if sourceFile != nil || sourceDirectory != "" || packageDirectory != "" {
+			return nil, nil, errors.New("one source exposure mode required")
+		}
+		sourceParents, e = validateDiskSources(sourceFiles)
+		if e != nil {
+			return nil, nil, e
 		}
 	}
 	st, e := os.Lstat(executable)
@@ -126,9 +194,18 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 	if sourceFile != nil {
 		argv = append(argv, "--dir", "/source", "--ro-bind-fd", "4", "/source/image")
 	}
+	if len(sourceFiles) > 0 {
+		argv = append(argv, "--dir", "/source")
+		for _, parent := range sourceParents {
+			argv = append(argv, "--dir", "/source/"+parent)
+		}
+		for i, source := range sourceFiles {
+			argv = append(argv, "--ro-bind-fd", fmt.Sprint(4+i), "/source/"+source.Path)
+		}
+	}
 	cpuSeconds := 60
 	openFiles := 64
-	if sourceDirectory != "" {
+	if sourceDirectory != "" || len(sourceFiles) > 0 {
 		cpuSeconds = 1800
 		openFiles = 1024 // split-image descriptors may hold hundreds of extents
 	}
@@ -139,6 +216,9 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 	cmd.ExtraFiles = []*os.File{f}
 	if sourceFile != nil {
 		cmd.ExtraFiles = append(cmd.ExtraFiles, sourceFile)
+	}
+	for _, source := range sourceFiles {
+		cmd.ExtraFiles = append(cmd.ExtraFiles, source.File)
 	}
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error {

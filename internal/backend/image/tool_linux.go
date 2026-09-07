@@ -117,6 +117,18 @@ func (b *boundedBuffer) Bytes() []byte {
 var workerSlots = make(chan struct{}, 2)
 
 func run(ctx context.Context, source, workspace string, bound int64, args ...string) ([]byte, error) {
+	return runCommand(ctx, args, func(worker context.Context) (*exec.Cmd, func(), error) {
+		return platform.ConfinedDiskCommand(worker, source, workspace, args, bound)
+	})
+}
+
+func runFiles(ctx context.Context, sources []platform.DiskSourceFile, workspace string, bound int64, args ...string) ([]byte, error) {
+	return runCommand(ctx, args, func(worker context.Context) (*exec.Cmd, func(), error) {
+		return platform.ConfinedDiskFilesCommand(worker, sources, workspace, args, bound)
+	})
+}
+
+func runCommand(ctx context.Context, args []string, makeCommand func(context.Context) (*exec.Cmd, func(), error)) ([]byte, error) {
 	select {
 	case workerSlots <- struct{}{}:
 	case <-ctx.Done():
@@ -125,7 +137,7 @@ func run(ctx context.Context, source, workspace string, bound int64, args ...str
 	defer func() { <-workerSlots }()
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
 	defer cancel()
-	cmd, cleanup, err := platform.ConfinedDiskCommand(ctx, source, workspace, args, bound)
+	cmd, cleanup, err := makeCommand(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,12 +152,37 @@ func run(ctx context.Context, source, workspace string, bound int64, args ...str
 	return stdout.Bytes(), nil
 }
 
-func approvedFile(filename string, members map[string]bool) bool {
+// QEMU may report contained backing names without cleaning their ../ segments.
+// The source namespace contains only regular files and ordinary directories;
+// normalize those names without allowing a traversal above /source, even if a
+// later segment would re-enter it. Keep the original report unchanged for audit.
+func canonicalSourceName(filename string) string {
 	if !strings.HasPrefix(filename, "/source/") {
-		return false
+		return ""
 	}
 	rel := strings.TrimPrefix(filename, "/source/")
-	return importer.SafePath(rel) == nil && members[rel]
+	depth := 0
+	for _, part := range strings.Split(rel, "/") {
+		switch part {
+		case "", ".":
+		case "..":
+			depth--
+			if depth < 0 {
+				return ""
+			}
+		default:
+			depth++
+		}
+	}
+	rel = path.Clean(rel)
+	if importer.SafePath(rel) != nil {
+		return ""
+	}
+	return "/source/" + rel
+}
+func approvedFile(filename string, members map[string]bool) bool {
+	canonical := canonicalSourceName(filename)
+	return canonical != "" && members[strings.TrimPrefix(canonical, "/source/")]
 }
 
 func CheckChain(chain []Info, format, sourcePath string, maxVirtual int64, members map[string]bool) error {
@@ -171,10 +208,11 @@ func CheckChain(chain []Info, format, sourcePath string, maxVirtual int64, membe
 		if !Format(v.Format) || v.Encrypted || v.VirtualSize <= 0 || v.VirtualSize > maxVirtual {
 			return domain.Fail("UNSUPPORTED_CAPABILITY", "encrypted, unsupported or oversized disk image")
 		}
-		if !approvedFile(v.Filename, members) || seen[v.Filename] {
+		canonical := canonicalSourceName(v.Filename)
+		if !approvedFile(v.Filename, members) || seen[canonical] {
 			return domain.Fail("PERMISSION_DENIED", "image references an unapproved file or a backing cycle")
 		}
-		seen[v.Filename] = true
+		seen[canonical] = true
 		if err := checkChildren(v); err != nil {
 			return err
 		}
@@ -185,8 +223,8 @@ func CheckChain(chain []Info, format, sourcePath string, maxVirtual int64, membe
 			if v.Backing == "" || path.IsAbs(v.Backing) || strings.ContainsAny(v.Backing, ":\\") || v.BackingFormat == "" {
 				return domain.Fail("PERMISSION_DENIED", "backing files need an explicit format and a contained relative reference")
 			}
-			resolved := path.Clean(path.Join(path.Dir(v.Filename), v.Backing))
-			if !approvedFile(resolved, members) || resolved != chain[i+1].Filename || (v.FullBacking != "" && v.FullBacking != resolved) || v.BackingFormat != chain[i+1].Format {
+			resolved := canonicalSourceName(path.Dir(v.Filename) + "/" + v.Backing)
+			if !approvedFile(resolved, members) || resolved != canonicalSourceName(chain[i+1].Filename) || (v.FullBacking != "" && canonicalSourceName(v.FullBacking) != resolved) || v.BackingFormat != chain[i+1].Format {
 				return domain.Fail("PERMISSION_DENIED", "backing chain differs from approved source members")
 			}
 		} else if v.Backing != "" || v.FullBacking != "" {
@@ -251,16 +289,57 @@ func (Tool) Inspect(ctx context.Context, source, workspace, filename, format str
 }
 
 func (Tool) Convert(ctx context.Context, source, workspace, filename, format string, virtualSize, maxOutput int64) error {
+	return convert(workspace, filename, format, virtualSize, maxOutput, func(args ...string) ([]byte, error) { return run(ctx, source, workspace, maxOutput, args...) })
+}
+
+// InspectFiles detects the root format and inspects all declared backing nodes
+// using only the selected held file set. There is no force-share option.
+func (Tool) InspectFiles(ctx context.Context, sources []platform.DiskSourceFile, workspace, filename, format string, maxVirtual int64) ([]Info, error) {
+	guarded, closeGuards, err := guardedSources(sources)
+	if err != nil {
+		return nil, err
+	}
+	defer closeGuards()
+	sources = guarded
+	members := map[string]bool{}
+	for _, source := range sources {
+		members[source.Path] = true
+	}
+	if !Format(format) || importer.SafePath(filename) != nil || !members[filename] {
+		return nil, domain.Fail("INVALID_INPUT", "selected file and explicit supported format required")
+	}
+	b, err := runFiles(ctx, sources, workspace, 64<<20, "info", "--output=json", "--backing-chain", "/source/"+filename)
+	if err != nil {
+		return nil, err
+	}
+	var chain []Info
+	if err = wire.Decode(b, &chain); err != nil {
+		return nil, err
+	}
+	return chain, CheckChain(chain, format, filename, maxVirtual, members)
+}
+
+func (Tool) ConvertFiles(ctx context.Context, sources []platform.DiskSourceFile, workspace, filename, format string, virtualSize, maxOutput int64) error {
+	guarded, closeGuards, err := guardedSources(sources)
+	if err != nil {
+		return err
+	}
+	defer closeGuards()
+	sources = guarded
+	return convert(workspace, filename, format, virtualSize, maxOutput, func(args ...string) ([]byte, error) { return runFiles(ctx, sources, workspace, maxOutput, args...) })
+}
+
+func convert(workspace, filename, format string, virtualSize, maxOutput int64, runTool func(...string) ([]byte, error)) error {
 	if !Format(format) || importer.SafePath(filename) != nil || virtualSize <= 0 || maxOutput < virtualSize {
 		return domain.Fail("INVALID_INPUT", "invalid conversion mapping or bound")
 	}
 	if _, err := os.Lstat(workspace + "/disk.qcow2"); !os.IsNotExist(err) {
 		return domain.Fail("STALE_PLAN", "conversion destination already exists")
 	}
-	if _, err := run(ctx, source, workspace, maxOutput, "convert", "-f", format, "-O", "qcow2", "-o", "compat=1.1", "-t", "writethrough", "/source/"+filename, "/work/disk.qcow2"); err != nil {
+	if _, err := runTool("convert", "-f", format, "-O", "qcow2", "-o", "compat=1.1", "-t", "writethrough", "/source/"+filename, "/work/disk.qcow2"); err != nil {
 		return err
 	}
-	b, err := run(ctx, source, workspace, maxOutput, "info", "--output=json", "-f", "qcow2", "/work/disk.qcow2")
+	b, err := runTool("info", "--output=json", "-f", "qcow2", "/work/disk.qcow2")
 	if err != nil {
 		return err
 	}
@@ -271,9 +350,9 @@ func (Tool) Convert(ctx context.Context, source, workspace, filename, format str
 	if out.Format != "qcow2" || out.VirtualSize != virtualSize || out.Encrypted || out.Backing != "" || out.FullBacking != "" {
 		return domain.Fail("SOURCE_CHANGED", "converted disk has unexpected size, encryption or backing dependency")
 	}
-	if _, err = run(ctx, source, workspace, maxOutput, "check", "--output=json", "-f", "qcow2", "/work/disk.qcow2"); err != nil {
+	if _, err = runTool("check", "--output=json", "-f", "qcow2", "/work/disk.qcow2"); err != nil {
 		return err
 	}
-	_, err = run(ctx, source, workspace, maxOutput, "compare", "-f", format, "-F", "qcow2", "/source/"+filename, "/work/disk.qcow2")
+	_, err = runTool("compare", "-f", format, "-F", "qcow2", "/source/"+filename, "/work/disk.qcow2")
 	return err
 }

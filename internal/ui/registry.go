@@ -58,6 +58,7 @@ var Actions = []Action{
 	{"vm set", "vm.plan", "VMs", "Plan a lossless powered-off vCPU edit", "id", "set"},
 	{"import inspect", "import.inspect", "VMs", "Inspect bounded OVA packaging; no extraction or guest execution", "path", ""},
 	{"import prepare", "import.prepare", "VMs", "Plan independent conversion of every selected OVA disk; no VM is defined", "path", "prepare"},
+	{"import prepare-disks", "import.prepare-disks", "VMs", "Plan independent copies of an explicitly selected existing disk set and its backing files", "path", "prepare-disks"},
 	{"import result", "import.result", "VMs", "Show prepared artifact paths and verification by operation ID", "id", ""},
 	{"import verify", "import.verify", "VMs", "Verify declared prepared-import artifact hashes; no guest boot claim", "path", ""},
 	{"lab validate", "lab.validate", "Labs", "Validate declarative schema, network intent and dependency graph", "path", ""},
