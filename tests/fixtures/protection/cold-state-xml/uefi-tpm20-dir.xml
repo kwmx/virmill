@@ -1,0 +1,23 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <name>cold-layout-tpm20-directory-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <metadata><fixture:state xmlns:fixture='urn:virmill:fixture' keep='yes'><fixture:secret uuid='not-a-native-secret-reference'/></fixture:state></metadata>
+  <memory unit='KiB'>262144</memory>
+  <vcpu>1</vcpu>
+  <os>
+    <type arch='x86_64'>hvm</type>
+    <loader type='pflash' readonly='yes' secure='yes' format='raw' stateless='no'>/fixture/firmware/CODE.fd</loader>
+    <nvram format='raw' template='/fixture/firmware/VARS.fd' templateFormat='raw'>/fixture/cold/guest_VARS.fd</nvram>
+  </os>
+  <devices>
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0' persistent_state='yes' debug='1'>
+        <source type='dir' path='/fixture/cold/tpm-state'/>
+        <encryption secret='11111111-2222-4333-8444-555555555555'/>
+        <profile source='local:restricted' name='custom:restricted' removeDisabled='check'/>
+        <active_pcr_banks><sha256/><sha384/></active_pcr_banks>
+      </backend>
+      <alias name='tpm0'/>
+    </tpm>
+  </devices>
+</domain>

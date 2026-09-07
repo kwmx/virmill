@@ -32,3 +32,7 @@ CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-co
 Managed-volume read access: [reviewed helper workflow](docs/managed-volume-access.md)
 and [native evidence](docs/evidence/managed-access-run.md).
 Read-only device and subnet facts: [PCI and CIDR discovery](docs/host-network-discovery.md).
+
+Recovery prerequisites: [native firmware/TPM inspection](docs/cold-state-layout.md)
+and [declared manifest verification](docs/recovery-manifest-verification.md).
+These observations do not establish complete capture or independent recovery.

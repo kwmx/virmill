@@ -44,7 +44,7 @@ Use "virmill [command] --help" for more information about a command.
 
 ## `virmill backup verify-manifest`
 
-Check recovery member completeness; not a boot test
+Check declared recovery metadata and optional member integrity; no complete-capture or boot proof
 
 ```text
 Usage:
@@ -1403,6 +1403,29 @@ Flags:
       --after int      Event cursor
       --input string   JSON parameters; secrets must be references (default "{}")
       --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm recovery inspect`
+
+Inspect configured firmware, NVRAM, TPM and secret dependencies without reading confidential state
+
+```text
+Usage:
+  virmill vm recovery inspect ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

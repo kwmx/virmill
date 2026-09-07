@@ -10,6 +10,16 @@ import (
 // NormalizeRequest resolves user-entered paths on the client. The detached
 // coordinator's working directory is unrelated to the terminal's directory.
 func NormalizeRequest(method string, r app.Request) (app.Request, error) {
+	// Recovery verification rejects lexical aliases before Abs can clean away
+	// a symlink/parent traversal. Canonical relative paths still resolve locally.
+	if method == "backup.verify-manifest" {
+		root, _ := r.Input["root"].(string)
+		for _, value := range []string{r.Path, root} {
+			if value != "" && filepath.Clean(value) != value {
+				return r, domain.Fail("INVALID_INPUT", "canonical recovery manifest and member-root paths required")
+			}
+		}
+	}
 	if method == "plugin.develop" && r.Action == "new" && r.Path == "" {
 		id, _ := r.Input["id"].(string)
 		if id == "" {

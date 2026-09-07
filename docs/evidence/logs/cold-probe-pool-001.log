@@ -1,0 +1,14 @@
+Pool virmill-cold-probe-v1 defined
+
+Pool virmill-cold-probe-v1 started
+
+{"name": "virmill-cold-probe-v1", "target": "/var/lib/libvirt/images/virmill-cold-probe-v1", "connection": "qemu:///system", "createdBy": "external disposable fixture setup; not Virmill storage workflow", "autostart": false, "preservedGuestXML": {"2ec994ce-2950-498c-8b19-d2f7dbb53a78": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408", "ae630461-91d3-4f07-ad88-e6842c3dc3ea": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824", "a19bf9ee-cd7f-4921-baac-39ce1694eb35": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2", "b9496482-2eeb-40e1-892b-4e291c108c52": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e"}, "noGuestStart": true, "uuid": "95b94843-0db0-46ac-9bbf-a2fa3c183818", "poolXMLSHA256": "bc10bf183704611a6ed82a4db6daa429409efe8f959fa3bc944e60eee8747919"}
+Name:           virmill-cold-probe-v1
+UUID:           95b94843-0db0-46ac-9bbf-a2fa3c183818
+State:          running
+Persistent:     yes
+Autostart:      no
+Capacity:       253.35 GiB
+Allocation:     135.21 GiB
+Available:      118.14 GiB
+

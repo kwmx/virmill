@@ -1,0 +1,27 @@
+<domain type='kvm'>
+  <name>cold-layout-tpm20-file-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='KiB'>262144</memory>
+  <vcpu>1</vcpu>
+  <os>
+    <type arch='x86_64'>hvm</type>
+    <loader type='pflash' readonly='yes' format='qcow2'>/fixture/firmware/CODE.qcow2</loader>
+    <nvram type='file' format='qcow2' template='/fixture/firmware/VARS.fd' templateFormat='raw'>
+      <source file='/fixture/cold/guest_VARS.qcow2'/>
+    </nvram>
+  </os>
+  <devices>
+    <tpm model='tpm-tis'>
+      <backend type='emulator' version='2.0' persistent_state='no'>
+        <source type='file' path='/fixture/cold/tpm-state.bin'/>
+        <profile name='custom' removeDisabled='fips-host'/>
+      </backend>
+    </tpm>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/fixture/cold/system.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+      <encryption format='luks'><secret type='passphrase' uuid='99999999-aaaa-4bbb-8ccc-dddddddddddd'/></encryption>
+    </disk>
+  </devices>
+</domain>

@@ -1,0 +1,8 @@
+<domain type='kvm'>
+  <name>cold-layout-bios-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='KiB'>262144</memory>
+  <vcpu>1</vcpu>
+  <os><type arch='x86_64'>hvm</type></os>
+  <devices/>
+</domain>

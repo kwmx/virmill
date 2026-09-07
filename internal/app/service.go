@@ -16,7 +16,6 @@ import (
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/operations"
 	"virmill.local/core/internal/validation"
-	"virmill.local/core/internal/wire"
 )
 
 type Request struct {
@@ -113,6 +112,28 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return vms, nil
 	case "inventory.get":
 		return s.GetVM(ctx, r.Connection, r.ID)
+	case "vm.recovery.inspect":
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		if r.ID == "" || r.Path != "" || r.Action != "" || len(r.Input) != 0 || r.After != 0 || r.Apply != nil {
+			return nil, domain.Fail("INVALID_INPUT", "recovery inspection requires only a stable VM UUID and local connection")
+		}
+		if r.Connection != "qemu:///system" && r.Connection != "qemu:///session" {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "recovery inspection requires an explicit local libvirt connection")
+		}
+		inspector, ok := s.Provider.(domain.ColdStateInspector)
+		if !ok {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "native auxiliary-state layout inspection unavailable")
+		}
+		inspection, err := inspector.InspectColdState(ctx, r.Connection, r.ID)
+		if err != nil {
+			return nil, err
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		return inspection, nil
 	case "vm.boot.get":
 		if r.ID == "" {
 			return nil, domain.Fail("INVALID_INPUT", "stable VM UUID required for boot inspection")
@@ -204,21 +225,36 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			return map[string]any{"schemaValid": true, "semanticValidation": "not-implemented"}, domain.Fail("NOT_IMPLEMENTED", "backup policy semantic validation is not yet integrated")
 		}
 	case "backup.verify-manifest":
-		b, e := os.ReadFile(r.Path)
+		if r.Path == "" || r.ID != "" || r.Action != "" || r.Apply != nil || r.After != 0 {
+			return nil, domain.Fail("INVALID_INPUT", "manifest path and optional member root required")
+		}
+		root := ""
+		for key, value := range r.Input {
+			if key != "root" {
+				return nil, domain.Fail("INVALID_INPUT", "unknown manifest verification parameter")
+			}
+			var ok bool
+			root, ok = value.(string)
+			if !ok || root == "" {
+				return nil, domain.Fail("INVALID_INPUT", "member root must be a nonempty path")
+			}
+		}
+		m, e := protection.ReadManifestContext(ctx, r.Path)
 		if e != nil {
 			return nil, e
 		}
-		var m protection.Manifest
-		if e = wire.Decode(b, &m); e != nil {
-			return nil, domain.Fail("INVALID_INPUT", e.Error())
-		}
-		root, _ := r.Input["root"].(string)
 		if root == "" {
 			e = m.Validate()
 		} else {
-			e = m.Verify(root)
+			e = m.VerifyContext(ctx, root)
 		}
-		return map[string]any{"verification": "manifest-checked", "bootTested": false}, e
+		if e != nil {
+			return nil, e
+		}
+		if e = ctx.Err(); e != nil {
+			return nil, e
+		}
+		return map[string]any{"verification": "manifest-checked", "membersChecked": root != "", "completeCaptureVerified": false, "independentRecoveryVerified": false, "bootTested": false}, nil
 	default:
 		if extension, ok := s.Extensions[method]; ok {
 			return extension(ctx, uid, r)

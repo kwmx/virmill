@@ -1,0 +1,29 @@
+{
+  "observedDate": "2026-09-07",
+  "scope": "Local compilation, synthetic byte tests and regular-file image generation only; no guest, host firmware or TPM execution",
+  "architecture": "x86_64",
+  "tools": {
+    "gcc": "gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)",
+    "ld": "GNU ld version 2.46.1-1.fc44; i386pep emulation present",
+    "objcopy": "GNU objcopy version 2.46.1-1.fc44",
+    "objdump": "GNU objdump version 2.46.1-1.fc44",
+    "mkfs.fat": "mkfs.fat 4.2 (2021-01-31)",
+    "mmd": "mmd (GNU mtools) 4.0.49",
+    "mcopy": "mcopy (GNU mtools) 4.0.49",
+    "python": "Python 3.14.7 (/usr/bin/python3)"
+  },
+  "optionalToolsObservedButNotUsed": {
+    "mformat": "mformat (GNU mtools) 4.0.49",
+    "xorriso": "xorriso 1.5.8.pl02; version timestamp 2026.05.22.150001"
+  },
+  "unavailableAndNotDownloaded": [
+    "clang",
+    "lld-link",
+    "GNU-EFI SDK headers and startup objects",
+    "/usr/lib64/libasan.so.8.0.0",
+    "/usr/lib64/libubsan.so.1.0.0"
+  ],
+  "defaultNativeTests": "GCC undefined-behavior trap instrumentation; no sanitizer shared runtime required",
+  "optionalNativeTests": "--sanitize requires address/undefined sanitizer shared runtimes and fails explicitly if unavailable",
+  "dependencyPolicy": "No network fetch, installation, firmware discovery or TPM discovery. Per-build manifest records actual selected paths, versions and artifact/source hashes."
+}

@@ -1,0 +1,13 @@
+<domain type='kvm'>
+  <name>cold-layout-tpm12-fixture</name>
+  <uuid>aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee</uuid>
+  <memory unit='KiB'>262144</memory>
+  <vcpu>1</vcpu>
+  <os>
+    <type arch='x86_64'>hvm</type>
+    <loader type='rom' readonly='yes' secure='no' format='raw'>/fixture/firmware/bios.bin</loader>
+  </os>
+  <devices>
+    <tpm model='tpm-tis'><backend type='emulator' version='1.2'/></tpm>
+  </devices>
+</domain>

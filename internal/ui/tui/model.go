@@ -58,14 +58,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Height = v.Height
 	case resultMsg:
 		m.Busy = false
+		m.Plan = nil
+		m.Confirm = false
+		m.Offset = 0
 		if v.err != nil {
 			m.Output = validation.SafeText(v.err.Error())
 			break
 		}
 		b, _ := json.MarshalIndent(v.response, "", "  ")
 		m.Output = validation.SafeText(string(b))
-		m.Offset = 0
-		m.Plan = nil
 		if v.response.Error == nil {
 			raw, _ := json.Marshal(v.response.Data)
 			var p domain.Plan
@@ -114,7 +115,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Argument == "parameters" || a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "storage.access.grant" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || a.Method == "vm.creation.accept" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
+				if a.Argument == "parameters" || a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "storage.access.grant" || a.Method == "backup.verify-manifest" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || a.Method == "vm.creation.accept" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
 					var form struct {
 						ID    string         `json:"id"`
 						Path  string         `json:"path"`
