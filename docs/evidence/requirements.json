@@ -2464,7 +2464,8 @@
         "nocloud-release-gate-001",
         "configuration-build-001",
         "configuration-release-gate-001",
-        "native-first-release-gate-001"
+        "native-first-release-gate-001",
+        "native-first-release-gate-002"
       ],
       "outstanding": [
         "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. First disposable-host run is recorded; native creation remains blocked by unreviewed Q35 device defaults."
