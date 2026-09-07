@@ -1555,7 +1555,18 @@
         "docs/adr/0021-creation-nvram-declaration-binding.md",
         "docs/creation-nvram-binding.md",
         "docs/evidence/nvram-binding-run.md",
-        "internal/creating/recovery_linux.go"
+        "internal/creating/recovery_linux.go",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md",
+        "docs/reviews/swtpm-cold-writer-exclusion.md",
+        "docs/reviews/libvirt-swtpm-lock-selection.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-01",
@@ -1601,7 +1612,15 @@
         "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-001.py",
         "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-002.py",
         "internal/app/protection/cold_point_adversarial_test.go",
-        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go",
+        "tests/fixtures/protection/swtpm-lock-probe/probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1659,7 +1678,9 @@
         "nvram-binding-native-002",
         "cold-point-adversarial-001",
         "nvram-binding-tui-fixture-003",
-        "nvram-binding-tui-003"
+        "nvram-binding-tui-003",
+        "auxiliary-inventory-core-001",
+        "auxiliary-swtpm-lock-probe-001"
       ],
       "outstanding": [
         "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
@@ -1667,7 +1688,8 @@
         "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
         "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
-        "Additional generated-data race tests verify explicit-empty completeness, distinct secret/TPM role bindings, aggregate source limits and refusal to promote forged auxiliary content to verified capture/recovery/boot. This remains declaration/member-integrity checking; authenticated provenance and actual complete recovery are still required."
+        "Additional generated-data race tests verify explicit-empty completeness, distinct secret/TPM role bindings, aggregate source limits and refusal to promote forged auxiliary content to verified capture/recovery/boot. This remains declaration/member-integrity checking; authenticated provenance and actual complete recovery are still required.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2737,7 +2759,18 @@
         "internal/helper/sealed_linux.go",
         "docs/evidence/cold-prerequisites-run.md",
         "docs/evidence/environments/local-cold-24858d4.json",
-        "internal/backend/coldfiles/source_linux.go"
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md",
+        "docs/reviews/swtpm-cold-writer-exclusion.md",
+        "docs/reviews/libvirt-swtpm-lock-selection.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -2757,7 +2790,15 @@
         "internal/app/protection/manifest_test.go",
         "internal/helper/sealed_linux_test.go",
         "internal/backend/coldfiles/source_linux_test.go",
-        "internal/backend/coldfiles/source_qemu_linux_test.go"
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go",
+        "tests/fixtures/protection/swtpm-lock-probe/probe.py"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -2781,12 +2822,16 @@
         "cold-state-fuzz-001",
         "cold-sealed-sandbox-observation-001",
         "cold-required-ipc-approval-blocked-001",
-        "cold-source-required-ipc-001"
+        "cold-source-required-ipc-001",
+        "auxiliary-inventory-core-001",
+        "auxiliary-inventory-vet-001",
+        "auxiliary-swtpm-lock-probe-001"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required."
+        "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2865,7 +2910,16 @@
         "schemas/cold-recovery-point.schema.json",
         "docs/cold-source-layout.md",
         "docs/cold-source-files.md",
-        "docs/cold-capture-manifest.md"
+        "docs/cold-capture-manifest.md",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-03",
@@ -2888,7 +2942,14 @@
         "internal/app/capture_verification_test.go",
         "internal/ui/cli/capture_verification_test.go",
         "internal/ui/tui/capture_verification_test.go",
-        "internal/validation/cold_capture_test.go"
+        "internal/validation/cold_capture_test.go",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2908,12 +2969,15 @@
         "helper-access-native-auth-preserve-001",
         "cold-source-required-ipc-001",
         "cold-source-manifest-fuzz-001",
-        "cold-source-xml-fuzz-001"
+        "cold-source-xml-fuzz-001",
+        "auxiliary-inventory-core-001",
+        "auxiliary-inventory-vet-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3332,7 +3396,16 @@
         "schemas/cold-recovery-point.schema.json",
         "docs/cold-source-layout.md",
         "docs/cold-source-files.md",
-        "docs/cold-capture-manifest.md"
+        "docs/cold-capture-manifest.md",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -3391,7 +3464,14 @@
         "internal/app/capture_verification_test.go",
         "internal/ui/cli/capture_verification_test.go",
         "internal/ui/tui/capture_verification_test.go",
-        "internal/validation/cold_capture_test.go"
+        "internal/validation/cold_capture_test.go",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3443,7 +3523,8 @@
         "discovery-native-observation-002",
         "cold-prerequisites-core-sandbox-001",
         "cold-source-required-ipc-001",
-        "cold-source-packaging-001"
+        "cold-source-packaging-001",
+        "auxiliary-inventory-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -3458,7 +3539,8 @@
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
-        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3474,22 +3556,40 @@
       "implementationPaths": [
         "internal/ui/tui/model.go",
         "internal/ui/registry.go",
-        "docs/vm-creation.md"
+        "docs/vm-creation.md",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
       "tests": [
         "internal/ui/tui/model_test.go",
         "internal/ui/cli/root_test.go",
-        "internal/creating/compatibility_linux_test.go"
+        "internal/creating/compatibility_linux_test.go",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go"
       ],
       "evidence": [
         "core-tests-001",
         "creation-core-001",
-        "native-first-tui-001"
+        "native-first-tui-001",
+        "auxiliary-inventory-core-001"
       ],
       "outstanding": [
-        "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains."
+        "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3539,7 +3639,16 @@
         "docs/adr/0021-creation-nvram-declaration-binding.md",
         "docs/creation-nvram-binding.md",
         "docs/evidence/nvram-binding-run.md",
-        "internal/creating/recovery_linux.go"
+        "internal/creating/recovery_linux.go",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -3575,7 +3684,14 @@
         "internal/ui/tui/creation_nvram_test.go",
         "internal/creating/nvram_result_recovery_linux_test.go",
         "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-002.py",
-        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3608,13 +3724,15 @@
         "nvram-binding-frozen-core-001",
         "nvram-binding-tui-fixture-002",
         "nvram-binding-tui-fixture-003",
-        "nvram-binding-tui-003"
+        "nvram-binding-tui-003",
+        "auxiliary-inventory-core-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
-        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore."
+        "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3923,7 +4041,16 @@
         "docs/reviews/reconcile-integrity-compatibility.md",
         "scripts/package.py",
         "scripts/reproducibility.py",
-        "docs/reviews/repository-hygiene-20260908.md"
+        "docs/reviews/repository-hygiene-20260908.md",
+        "internal/auxiliary/service.go",
+        "internal/auxiliary/register_linux.go",
+        "internal/helper/auxiliary.go",
+        "internal/helper/auxiliary_inventory_linux.go",
+        "internal/helper/auxiliary_client_linux.go",
+        "internal/helper/auxiliary_server_linux.go",
+        "docs/adr/0022-authenticated-auxiliary-inventory.md",
+        "docs/auxiliary-state-inspection.md",
+        "docs/evidence/auxiliary-inventory-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -4010,7 +4137,14 @@
         "internal/operations/reconcile_compatibility_test.go",
         "tests/integration/package_inputs_test.py",
         "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-002.py",
-        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py",
+        "internal/auxiliary/service_test.go",
+        "internal/helper/auxiliary_authorization_test.go",
+        "internal/helper/auxiliary_inventory_linux_test.go",
+        "internal/helper/auxiliary_transport_linux_test.go",
+        "internal/helper/auxiliary_server_linux_test.go",
+        "internal/ui/cli/auxiliary_test.go",
+        "internal/ui/tui/auxiliary_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4141,7 +4275,9 @@
         "nvram-binding-upgrade-001",
         "nvram-binding-tui-fixture-002",
         "nvram-binding-tui-fixture-003",
-        "nvram-binding-tui-003"
+        "nvram-binding-tui-003",
+        "auxiliary-inventory-core-001",
+        "auxiliary-inventory-vet-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -4159,7 +4295,8 @@
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
-        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence."
+        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence.",
+        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false

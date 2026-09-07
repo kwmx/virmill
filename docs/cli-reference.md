@@ -1415,6 +1415,29 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill vm recovery auxiliary inspect`
+
+Inspect complete explicit firmware/TPM member metadata through VM-specific administrator policy; no state bytes are read or captured
+
+```text
+Usage:
+  virmill vm recovery auxiliary inspect ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill vm recovery inspect`
 
 Inspect configured disks, backing sources, firmware, TPM and unresolved dependencies without reading source bytes

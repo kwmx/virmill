@@ -37,6 +37,11 @@ whose path is not resolved retains a non-null layout with an empty path. The
 inspection result is never a completeness claim, even when all projected paths
 are present.
 
+The separate [auxiliary member inspection](auxiliary-state-inspection.md) uses
+VM-specific administrator policy to observe protected filesystem metadata for
+explicit native state paths. It requires stopped persistent state and still
+reads no NVRAM or TPM content.
+
 NVRAM supports a text path or a plain local-file `<source file='…'/>`, with
 explicit `type='file'` or the native schema's implicit file type. Mixed text and
 source declarations, multiple sources, descriptors, source encryption, slices,

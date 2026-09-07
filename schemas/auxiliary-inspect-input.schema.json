@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/auxiliary-inspect-input.schema.json",
+  "title": "Native auxiliary metadata inspection input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rootID"],
+  "properties": {
+    "rootID": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$"}
+  }
+}

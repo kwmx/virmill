@@ -160,6 +160,13 @@ func SendSealedSnapshot(ctx context.Context, conn *net.UnixConn, envelope []byte
 // received FDs on every failure. MSG_CMSG_CLOEXEC prevents inheritance races.
 // The caller still checks the root peer and the typed operation/digest binding.
 func ReceiveSealedSnapshot(ctx context.Context, conn *net.UnixConn) ([]byte, *os.File, error) {
+	return receiveSnapshotFrame(ctx, conn, false)
+}
+
+// permitNoFD is private: only the typed auxiliary response validator may accept
+// an error or metadata-only response without a descriptor. Existing transport
+// callers still require exactly one sealed object.
+func receiveSnapshotFrame(ctx context.Context, conn *net.UnixConn, permitNoFD bool) ([]byte, *os.File, error) {
 	if conn == nil {
 		return nil, nil, errors.New("dedicated auxiliary connection required")
 	}
@@ -237,11 +244,18 @@ func ReceiveSealedSnapshot(ctx context.Context, conn *net.UnixConn) ([]byte, *os
 			return nil, nil, errors.New("auxiliary metadata size limit")
 		}
 		if end := bytes.IndexByte(data, '\n'); end >= 0 {
-			if end != len(data)-1 || len(files) != 1 {
+			if end != len(data)-1 || (len(files) != 1 && !(permitNoFD && len(files) == 0)) {
 				return nil, nil, errors.New("one metadata frame and one snapshot descriptor required")
 			}
 			if err := wire.Validate(data[:end]); err != nil {
 				return nil, nil, err
+			}
+			if len(files) == 0 {
+				if err := ctx.Err(); err != nil {
+					return nil, nil, err
+				}
+				success = true
+				return data[:end], nil, nil
 			}
 			f := os.NewFile(uintptr(files[0]), "received auxiliary snapshot")
 			if err := validateSealed(f); err != nil {

@@ -150,11 +150,16 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 				err = policyErr
 			}
 			if err == nil {
-				err = Authorize(cred.Uid, r, p, time.Now())
+				if authErr := Authorize(cred.Uid, r, p, time.Now()); authErr != nil {
+					err = domain.Fail("PERMISSION_DENIED", authErr.Error())
+				}
 			}
 			var access json.RawMessage
+			var auxiliary *AuxiliaryResponse
 			if err == nil {
-				if r.Operation == "storage.prepare-directory" {
+				if r.Operation == "state.auxiliary" {
+					auxiliary, err = inspectAuxiliaryRequest(ctx, backend, r, p)
+				} else if r.Operation == "storage.prepare-directory" {
 					err = Execute(r, p)
 				} else {
 					var result AccessResult
@@ -164,9 +169,15 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 					}
 				}
 			}
-			result := Response{APIVersion: "virmill/v1", Success: err == nil, Access: access}
+			result := Response{APIVersion: "virmill/v1", Success: err == nil, Access: access, Auxiliary: auxiliary}
 			if err != nil {
+				result.Access, result.Auxiliary = nil, nil
 				result.Error = err.Error()
+				result.ErrorCode = "OPERATION_FAILED"
+				var typed *domain.Error
+				if errors.As(err, &typed) {
+					result.ErrorCode = typed.Code
+				}
 			}
 			json.NewEncoder(conn).Encode(result)
 		}()

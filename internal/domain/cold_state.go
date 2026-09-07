@@ -5,6 +5,7 @@ import "context"
 type ColdStateInspection struct {
 	Resource       ResourceKey       `json:"resource"`
 	State          string            `json:"state"`
+	Persistent     bool              `json:"persistent"`
 	HasManagedSave bool              `json:"hasManagedSave"`
 	Autostart      bool              `json:"autostart"`
 	Fingerprint    string            `json:"fingerprint"`

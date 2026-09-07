@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"syscall"
 	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/auxiliary"
 	backend "virmill.local/core/internal/backend/libvirt"
 	"virmill.local/core/internal/creating"
 	"virmill.local/core/internal/importing"
@@ -42,6 +43,7 @@ func run() error {
 	importing.Register(service)
 	creating.Register(service, p.Cache)
 	storageaccess.Register(service, p.Config)
+	auxiliary.Register(service, p.Config)
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e
 	}

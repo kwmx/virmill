@@ -13,18 +13,19 @@ import (
 )
 
 type Request struct {
-	APIVersion string         `json:"apiVersion"`
-	ActorUID   uint32         `json:"actorUID"`
-	Operation  string         `json:"operation"`
-	ResourceID string         `json:"resourceID"`
-	RootID     string         `json:"rootID"`
-	PlanDigest string         `json:"planDigest"`
-	JobID      string         `json:"jobID"`
-	ExpiresAt  time.Time      `json:"expiresAt"`
-	KeyID      string         `json:"keyID"`
-	Signature  string         `json:"signature"`
-	Mode       string         `json:"mode,omitempty"`
-	Access     *AccessRequest `json:"access,omitempty"`
+	APIVersion string            `json:"apiVersion"`
+	ActorUID   uint32            `json:"actorUID"`
+	Operation  string            `json:"operation"`
+	ResourceID string            `json:"resourceID"`
+	RootID     string            `json:"rootID"`
+	PlanDigest string            `json:"planDigest"`
+	JobID      string            `json:"jobID"`
+	ExpiresAt  time.Time         `json:"expiresAt"`
+	KeyID      string            `json:"keyID"`
+	Signature  string            `json:"signature"`
+	Mode       string            `json:"mode,omitempty"`
+	Access     *AccessRequest    `json:"access,omitempty"`
+	Auxiliary  *AuxiliaryRequest `json:"auxiliary,omitempty"`
 }
 type AccessRequest struct {
 	Mapping            domain.ManagedFileVolume `json:"mapping"`
@@ -34,16 +35,19 @@ type AccessRequest struct {
 	OriginalGrantJobID string                   `json:"originalGrantJobID,omitempty"`
 }
 type Response struct {
-	APIVersion string          `json:"apiVersion"`
-	Success    bool            `json:"success"`
-	Error      string          `json:"error,omitempty"`
-	Access     json.RawMessage `json:"access,omitempty"`
+	APIVersion string             `json:"apiVersion"`
+	Success    bool               `json:"success"`
+	Error      string             `json:"error,omitempty"`
+	Access     json.RawMessage    `json:"access,omitempty"`
+	Auxiliary  *AuxiliaryResponse `json:"auxiliary,omitempty"`
+	ErrorCode  string             `json:"errorCode,omitempty"`
 }
 type Policy struct {
-	APIVersion string            `json:"apiVersion"`
-	Keys       map[string]string `json:"keys"`
-	Roots      map[string]string `json:"roots"`
-	Actors     []uint32          `json:"actors"`
+	APIVersion string                `json:"apiVersion"`
+	Keys       map[string]string     `json:"keys"`
+	Roots      map[string]string     `json:"roots"`
+	Actors     []uint32              `json:"actors"`
+	Auxiliary  []AuxiliaryPermission `json:"auxiliary,omitempty"`
 }
 
 var uuid = regexp.MustCompile(`^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
@@ -66,12 +70,16 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 		return errors.New("peer not allowed by administrator policy")
 	}
 	switch r.Operation {
+	case "state.auxiliary":
+		if err := authorizeAuxiliary(r, p); err != nil {
+			return err
+		}
 	case "storage.prepare-directory":
-		if r.Mode != "" || r.Access != nil {
+		if r.Mode != "" || r.Access != nil || r.Auxiliary != nil {
 			return errors.New("legacy directory operation cannot carry access authority")
 		}
 	case "storage.grant-read", "storage.revoke-read":
-		if r.Access == nil || (r.Mode != "check" && r.Mode != "apply" && r.Mode != "observe") {
+		if r.Auxiliary != nil || r.Access == nil || (r.Mode != "check" && r.Mode != "apply" && r.Mode != "observe") {
 			return errors.New("typed access request and explicit mode required")
 		}
 		if r.Access.Mapping.VMID != r.ResourceID || !uuid.MatchString(r.Access.Mapping.PoolID) {
@@ -94,7 +102,7 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 	default:
 		return errors.New("helper operation not implemented or allowlisted")
 	}
-	if !uuid.MatchString(r.ResourceID) || !uuid.MatchString(r.JobID) {
+	if (!(r.Operation == "state.auxiliary" && auxiliaryID(r.ResourceID)) && !uuid.MatchString(r.ResourceID)) || !uuid.MatchString(r.JobID) {
 		return errors.New("resource/job must be stable UUIDs")
 	}
 	digest, e := hex.DecodeString(r.PlanDigest)

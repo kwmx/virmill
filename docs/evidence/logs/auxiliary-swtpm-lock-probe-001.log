@@ -1,0 +1,74 @@
+{
+  "allOwnedChildrenReaped": true,
+  "binarySHA256": {
+    "/usr/bin/swtpm": "bebe173c8305178c21c6ae7cb75ee43eca5405fa384d6eef422d99dd21671e18",
+    "/usr/bin/swtpm_ioctl": "9e053690c8d074b68a05a24892b6793ca7aef9ce895413e484c60686e04a49ee",
+    "/usr/lib64/libtpms.so.0.10.2": "d6f88b903d975e106b01e36e100806fcdee237dc89b91a67bfc27705f37f349b",
+    "/usr/lib64/swtpm/libswtpm_libtpms.so.0.0.0": "5ac6156459945433c289263ab36a893304a569c169cc08c201e61d99aba10c25"
+  },
+  "checks": [
+    {
+      "backend": "dir",
+      "bsdFlockDoesNotExclude": true,
+      "exitAndCrashReleaseLock": true,
+      "name": "directory default lock lifetime",
+      "ofdReaderExcludesProducerAcrossDupClose": true,
+      "passed": true,
+      "producerLock": "POSIX whole-file F_WRLCK",
+      "staleObjectRetained": true,
+      "stopRetainsLock": true,
+      "testedRefusalsPreserveStateMemberMetadata": true
+    },
+    {
+      "backend": "file",
+      "bsdFlockDoesNotExclude": true,
+      "exitAndCrashReleaseLock": true,
+      "name": "file explicit lock lifetime",
+      "ofdReaderExcludesProducerAcrossDupClose": true,
+      "passed": true,
+      "producerLock": "POSIX whole-file F_WRLCK",
+      "staleObjectRetained": true,
+      "stopRetainsLock": true,
+      "testedRefusalsPreserveStateMemberMetadata": true
+    },
+    {
+      "backend": "dir",
+      "name": "directory explicit locking disabled",
+      "passed": true,
+      "runningWithoutConflictingLock": true
+    },
+    {
+      "backend": "file",
+      "name": "file default locking disabled",
+      "passed": true,
+      "runningWithoutConflictingLock": true
+    },
+    {
+      "incomingProducerAliveWhileGuardHeld": true,
+      "name": "incoming migration defers writer locking",
+      "passed": true
+    },
+    {
+      "differentLockInodeBypassesOldGuard": true,
+      "generationMismatchDetected": true,
+      "name": "replacing directory lock defeats old inode guard",
+      "passed": true
+    },
+    {
+      "closingAnySameInodeFDReleasesProcessLock": true,
+      "name": "POSIX lock lost on duplicate close",
+      "passed": true
+    }
+  ],
+  "childrenStarted": 16,
+  "completeCaptureVerified": false,
+  "failures": [],
+  "fixture": "swtpm-lock-probe-v1",
+  "generatedTemporaryTreeRemoved": true,
+  "hardwareVerified": false,
+  "kernel": "7.1.13-200.fc44.x86_64",
+  "passed": true,
+  "python": "3.14.6",
+  "swtpmVersion": "TPM emulator version 0.10.2, Copyright (c) 2014-2022 IBM Corp. and others",
+  "uid": 1000
+}

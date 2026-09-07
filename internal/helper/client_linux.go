@@ -93,17 +93,19 @@ func (c Client) Root(id string) (string, error) {
 	}
 	return root, nil
 }
-func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
-	var result AccessResult
+func (c Client) connectRequest(ctx context.Context, r Request) (*net.UnixConn, Request, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, r, err
+	}
 	if r.ActorUID != uint32(os.Getuid()) || r.ActorUID == 0 {
-		return result, domain.Fail("PERMISSION_DENIED", "helper client requires its ordinary-user actor")
+		return nil, r, domain.Fail("PERMISSION_DENIED", "helper client requires its ordinary-user actor")
 	}
 	key, id, err := c.key()
 	if err != nil {
-		return result, err
+		return nil, r, err
 	}
 	if r.KeyID != "" && r.KeyID != id {
-		return result, domain.Fail("SOURCE_CHANGED", "helper key differs from the reviewed identity")
+		return nil, r, domain.Fail("SOURCE_CHANGED", "helper key differs from the reviewed identity")
 	}
 	r.KeyID = id
 	if r.ExpiresAt.IsZero() {
@@ -111,54 +113,82 @@ func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
 	}
 	data, err := SignedBytes(r)
 	if err != nil {
-		return result, err
+		return nil, r, err
 	}
 	r.Signature = hex.EncodeToString(ed25519.Sign(key, data))
 	p, err := loadPolicy()
 	if err != nil {
-		return result, err
+		return nil, r, err
 	}
 	if err = Authorize(r.ActorUID, r, p, time.Now()); err != nil {
-		return result, domain.Fail("PERMISSION_DENIED", err.Error())
+		return nil, r, domain.Fail("PERMISSION_DENIED", err.Error())
 	}
 	if err = ownedRoot(filepath.Dir(SocketPath), true); err != nil {
-		return result, err
+		return nil, r, err
 	}
 	st, err := os.Lstat(SocketPath)
 	if err != nil {
-		return result, err
+		return nil, r, err
 	}
 	if st.Mode()&os.ModeSocket == 0 {
-		return result, errors.New("helper endpoint is not a Unix socket")
+		return nil, r, errors.New("helper endpoint is not a Unix socket")
 	}
 	var socketStat unix.Stat_t
 	if err = unix.Lstat(SocketPath, &socketStat); err != nil {
-		return result, err
+		return nil, r, err
 	}
 	if socketStat.Uid != 0 {
-		return result, errors.New("helper endpoint is not root-owned")
+		return nil, r, errors.New("helper endpoint is not root-owned")
 	}
 	dialer := net.Dialer{}
 	conn, err := dialer.DialContext(ctx, "unix", SocketPath)
 	if err != nil {
-		return result, err
+		return nil, r, err
 	}
-	defer conn.Close()
+	success := false
+	defer func() {
+		if !success {
+			_ = conn.Close()
+		}
+	}()
+	stop := context.AfterFunc(ctx, func() { _ = conn.SetDeadline(time.Now()) })
+	defer stop()
 	deadline := time.Now().Add(10 * time.Second)
 	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
 		deadline = d
 	}
-	conn.SetDeadline(deadline)
+	if err = conn.SetDeadline(deadline); err != nil {
+		return nil, r, err
+	}
 	peer, _, err := PeerGroups(conn.(*net.UnixConn))
+	if err != nil {
+		return nil, r, err
+	}
+	if peer.Uid != 0 {
+		return nil, r, errors.New("helper peer is not kernel-authenticated root")
+	}
+	if err = json.NewEncoder(conn).Encode(r); err != nil {
+		return nil, r, err
+	}
+	if err = ctx.Err(); err != nil {
+		return nil, r, err
+	}
+	success = true
+	return conn.(*net.UnixConn), r, nil
+}
+
+func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
+	var result AccessResult
+	if r.Operation == "state.auxiliary" || r.Auxiliary != nil {
+		return result, domain.Fail("INVALID_INPUT", "auxiliary requests require the dedicated typed client")
+	}
+	conn, r, err := c.connectRequest(ctx, r)
 	if err != nil {
 		return result, err
 	}
-	if peer.Uid != 0 {
-		return result, errors.New("helper peer is not kernel-authenticated root")
-	}
-	if err = json.NewEncoder(conn).Encode(r); err != nil {
-		return result, err
-	}
+	defer conn.Close()
+	stop := context.AfterFunc(ctx, func() { _ = conn.SetDeadline(time.Now()) })
+	defer stop()
 	frame, err := wire.ReadFrame(bufio.NewReader(conn))
 	if err != nil {
 		return result, err
@@ -167,7 +197,7 @@ func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
 	if err = wire.Decode(frame, &response); err != nil {
 		return result, err
 	}
-	if response.APIVersion != domain.APIVersion || !response.Success {
+	if response.APIVersion != domain.APIVersion || !response.Success || response.Auxiliary != nil {
 		return result, domain.Fail("OPERATION_FAILED", "host helper refused or could not confirm the operation: "+response.Error)
 	}
 	if err = wire.Decode(response.Access, &result); err != nil {

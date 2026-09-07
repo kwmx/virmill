@@ -38,7 +38,7 @@ func coldStateInspection(ctx context.Context, vm domain.VM) (domain.ColdStateIns
 	if layout.VMID != vm.Key.UUID {
 		return out, domain.Fail("INVALID_STATE", "persistent XML identity differs from native VM identity")
 	}
-	out = domain.ColdStateInspection{Resource: vm.Key, State: vm.State, HasManagedSave: vm.HasManagedSave, Autostart: vm.Autostart, Fingerprint: vm.Fingerprint, Layout: layout, Warnings: []string{"Configuration observation only. No disk, NVRAM, TPM or secret bytes have been captured or verified."}}
+	out = domain.ColdStateInspection{Resource: vm.Key, State: vm.State, Persistent: true, HasManagedSave: vm.HasManagedSave, Autostart: vm.Autostart, Fingerprint: vm.Fingerprint, Layout: layout, Warnings: []string{"Configuration observation only. No disk, NVRAM, TPM or secret bytes have been captured or verified."}}
 	out.Source = &source
 	if len(source.External) > 0 {
 		out.Warnings = append(out.Warnings, "Unresolved storage or runtime dependencies are listed in source.externalDependencies. A capture adapter must resolve every dependency before publishing a complete set.")

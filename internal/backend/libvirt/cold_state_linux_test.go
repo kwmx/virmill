@@ -19,7 +19,7 @@ func TestColdStateInspectionDoesNotReadOrInferCapturedState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v.Fingerprint != vm.Fingerprint || v.State != "running" || v.Layout.TPM == nil || v.Layout.TPM.SourcePath != "" || len(v.Warnings) < 4 {
+	if v.Fingerprint != vm.Fingerprint || !v.Persistent || v.State != "running" || v.Layout.TPM == nil || v.Layout.TPM.SourcePath != "" || len(v.Warnings) < 4 {
 		t.Fatal("capture or path inferred", v)
 	}
 	if !strings.Contains(strings.Join(v.Warnings, " "), "No disk, NVRAM, TPM or secret bytes") {
