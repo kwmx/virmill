@@ -52,7 +52,7 @@ generated UUID/MACs, pinned capabilities/firmware, space budget and risks. Clone
 identity does not change hostname, machine ID, SSH keys, passwords or application
 identity inside the copied disks. Guest adaptation is reported `not-run`.
 
-`plan apply PLAN_ID` requires `--plan-digest`, `--idempotency-key` and every
+`plan apply PLAN_ID` requires `--digest`, `--idempotency-key` and every
 `--ack` listed by that exact plan. Creation always requires `host-mutation`,
 `copy-managed-volumes` and `new-vm-identity`; NICs add `network-attachment` and
 UEFI adds `new-firmware-state`. Apply repeats preflight. No VM starts automatically.

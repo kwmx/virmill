@@ -120,5 +120,28 @@ class Artifacts(unittest.TestCase):
         self.assertEqual(hashlib.sha256(archive.read_bytes()).hexdigest(),original)
         print('Native CLI/daemon OVA preparation: original SHA-256', original, 'output disk hashes', [d['sha256'] for d in artifact['disks']], '; no guest boot')
 
+        # Exercise the real daemon's creation registration and approved-source
+        # path, then deliberately stop at the production provider's test-URI
+        # refusal. No call reaches a host libvirt daemon or mutates its storage.
+        creation = json.loads((ROOT/'examples/creation/prepared-ova.json').read_text())
+        creation['hardware']['nics'] = []  # This OVF has no original NICs.
+        before_jobs = invoke('operation','list')
+        rejected = subprocess.run(command+['vm','create',job['operationID'],
+            '--connection','test:///default','--input',json.dumps(creation),
+            '--plan','--output','json','--non-interactive'],cwd=root,env=env,
+            capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(rejected.returncode,0)
+        error = json.loads(rejected.stdout)['error']
+        self.assertEqual(error['code'],'UNSUPPORTED_CAPABILITY')
+        self.assertIn('only explicit local qemu:///system or qemu:///session',error['message'])
+        self.assertEqual(invoke('operation','list'),before_jobs)
+        self.assertEqual(invoke('import','verify','./prepared'),artifact)
+        wrong_result = subprocess.run(command+['vm','creation','result',job['operationID'],
+            '--output','json','--non-interactive'],cwd=root,env=env,
+            capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(wrong_result.returncode,0)
+        self.assertEqual(json.loads(wrong_result.stdout)['error']['code'],'INVALID_INPUT')
+        print('Creation CLI/daemon source validation reached native test-URI refusal; no creation job, native storage effect or guest boot occurred')
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
