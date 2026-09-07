@@ -37,3 +37,10 @@ For a fresh reproduction:
 See `docs/evidence/disposable-first-run.md` for results and remaining work. No
 VM boot or hardware qualification is asserted by replaying the captured XML or
 reading these scripts.
+
+The later `device-policy-*` programs and related setup/upgrade/boot/stop programs
+record the c7f8b76 run documented in `docs/evidence/device-policy-run.md`. These
+include actual creation, boot and graceful shutdown of a separate guest, plus
+external QMP/screenshot inspection. The first TUI harness failed on coalesced key
+input before any mutation; its corrected retry is retained separately. Old plan
+IDs/digests expire and must never be replayed as a fresh authorization.

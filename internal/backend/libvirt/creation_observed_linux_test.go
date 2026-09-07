@@ -98,3 +98,33 @@ func TestObservedQ35RequiresExactReviewedDevicePolicy(t *testing.T) {
 	}
 	t.Log("captured XML replay only; no hardware, VM, volume or firmware operation executed")
 }
+
+func TestObservedQ35DisabledDevicePolicyMatchesNativeDefinition(t *testing.T) {
+	target, volumes, _ := observedQ35Creation(t)
+	target.Spec.UUID = "a19bf9ee-cd7f-4921-baac-39ce1694eb35"
+	target.Spec.Name = "Virmill policy Kali QCOW2"
+	target.Spec.PoolID = "eede6ba7-13a9-48d6-8cba-b8611d36513b"
+	target.PoolName = "virmill-policy-c7f8b76"
+	var err error
+	target.Spec.DevicePolicy, err = domain.DefaultCreationDevices(target.Spec.Machine)
+	if err != nil {
+		t.Fatal(err)
+	}
+	volumes[0].Intent.PoolID = target.Spec.PoolID
+	volumes[0].Intent.Name = "virmill-a19bf9ee-cd7f-4921-baac-39ce1694eb35-disk-000.qcow2"
+	wanted, err := creationXML(target, volumes, "d0259f2030c6a956841b3e494fc3cbbbcf8e3fdf7778b4344e174a67a06133c8")
+	if err != nil {
+		t.Fatal(err)
+	}
+	captured, err := os.ReadFile("../../../tests/fixtures/creation/qemu12-q35-reviewed.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = matchesCreationPolicy(wanted, string(captured), target.Spec.DevicePolicy); err != nil {
+		t.Fatal(err)
+	}
+	if matchesCreationPolicy(wanted, strings.Replace(string(captured), "action='none'", "action='reset'", 1), target.Spec.DevicePolicy) == nil {
+		t.Fatal("native watchdog action changed silently")
+	}
+	t.Log("regression replay of exact native XML; separate evidence records the actual disposable run")
+}

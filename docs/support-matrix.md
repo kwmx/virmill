@@ -39,3 +39,10 @@ normalization, file-label behavior, streams under interruption, firmware
 initialization and guest boot remain unqualified.
 Unsupported normalization fails reconciliation rather than certifying an altered
 definition. See ADR 0006 and `tests/fixtures/creation/README.md` for the boundary.
+
+The [device-policy run](evidence/device-policy-run.md) subsequently confirmed one
+explicit Q35/BIOS Kali clone: full native volume verification and definition,
+actual TUI authorization, KVM-enabled boot to the graphical login screen, and
+graceful shutdown. It had no NICs, USB, UEFI or TPM. This is observed support for
+that exact test, not certification of a guest family or completion of any entire
+acceptance scenario. The earlier uncertain VM remains stopped and unresolved.

@@ -1,0 +1,14 @@
+{"apiVersion":"virmill/v1","data":[{"cancelRequested":false,"createdAt":"2026-09-07T11:33:56.679052192Z","error":{"code":"RECOVERY_REQUIRED","message":"defined configuration differs from reviewed creation intent","operationID":"b5983e68-bfcc-42f0-bf4e-3877029b756b","resource":"","retryable":false,"safeNextActions":[]},"operationID":"b5983e68-bfcc-42f0-bf4e-3877029b756b","planID":"1a386ed9-6d7d-4395-a990-15ac1ffacb46","state":"recovery-required","step":0},{"cancelRequested":false,"createdAt":"2026-09-07T11:18:59.191466795Z","error":null,"operationID":"9b0fafe3-fc03-42bb-88fe-6ca70247a177","planID":"4aac67c5-2603-4a6c-87ec-edde57ef6cc6","state":"succeeded","step":0}],"warnings":[],"error":null}
+
+Verifying...                          ########################################
+Preparing...                          ########################################
+Updating / installing...
+virmill-0.0.0-0.dev                   ########################################
+Cleaning up / removing...
+virmill-0.0.0-0.dev                   ########################################
+{"apiVersion":"virmill/v1","data":{"apiVersion":"virmill/v1","architecture":"amd64","buildTime":"0","go":"go1.27.1","os":"linux","pluginProtocol":"1.0","product":"Virmill","releaseQualified":false,"revision":"c7f8b76a94e16e973684ad69a52e1be9f8b07bd5","version":"0.0.0-dev"},"warnings":[],"error":null}
+
+{"apiVersion":"virmill/v1","data":[{"cancelRequested":false,"createdAt":"2026-09-07T11:33:56.679052192Z","error":{"code":"RECOVERY_REQUIRED","message":"defined configuration differs from reviewed creation intent","operationID":"b5983e68-bfcc-42f0-bf4e-3877029b756b","resource":"","retryable":false,"safeNextActions":[]},"operationID":"b5983e68-bfcc-42f0-bf4e-3877029b756b","planID":"1a386ed9-6d7d-4395-a990-15ac1ffacb46","state":"recovery-required","step":0},{"cancelRequested":false,"createdAt":"2026-09-07T11:18:59.191466795Z","error":null,"operationID":"9b0fafe3-fc03-42bb-88fe-6ca70247a177","planID":"4aac67c5-2603-4a6c-87ec-edde57ef6cc6","state":"succeeded","step":0}],"warnings":[],"error":null}
+
+{"upgrade": "passed", "retainedXMLSHA256": {"2ec994ce-2950-498c-8b19-d2f7dbb53a78": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408", "ae630461-91d3-4f07-ad88-e6842c3dc3ea": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824"}, "newUnit": "virmill-test-c7f8b76.service", "existingJobsPreserved": true, "guestBootTested": false}
+Running as unit: virmill-test-c7f8b76.service; invocation ID: ec52c8b2db8740709f95d5a250e8da5e

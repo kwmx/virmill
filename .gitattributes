@@ -2,3 +2,4 @@
 docs/evidence/logs/** -whitespace
 # This native XML capture retains exact virsh output for hash comparison.
 tests/fixtures/creation/qemu12-q35-unreviewed.xml -whitespace
+tests/fixtures/creation/qemu12-q35-reviewed.xml -whitespace

@@ -12,7 +12,8 @@
       "implementationPaths": [
         "internal/backend/libvirt/provider_linux.go",
         "internal/creating/ownership_linux.go",
-        "internal/backend/libvirt/creation_probes_linux.go"
+        "internal/backend/libvirt/creation_probes_linux.go",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-01",
@@ -25,7 +26,8 @@
         "core-tests-001",
         "creation-core-001",
         "native-first-tui-001",
-        "native-first-preservation-001"
+        "native-first-preservation-001",
+        "device-policy-native-preservation-001"
       ],
       "outstanding": [
         "Read-only native inventory and created-VM catalog binding exist; actual system/session inventories, event reconnection and explicit adoption remain unqualified/incomplete."
@@ -44,14 +46,19 @@
       "implementationPaths": [
         "internal/app/service.go",
         "internal/backend/libvirt/provider_linux.go",
-        "internal/ui/registry.go"
+        "internal/ui/registry.go",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
       "tests": [],
-      "evidence": [],
+      "evidence": [
+        "device-policy-native-start-001",
+        "device-policy-native-stop-001",
+        "device-policy-native-preservation-001"
+      ],
       "outstanding": [
-        "Subset of lifecycle adapters only; reboot, safe removal and full real-backend state/disk preservation tests remain."
+        "Start and graceful shutdown passed for one isolated Kali Q35/BIOS clone on the authorized test VM. Full lifecycle/state/disk-preservation coverage, reboot and safe removal remain incomplete."
       ],
       "hardwareVerified": false,
       "released": false
@@ -247,7 +254,8 @@
         "internal/domain/creation_devices.go",
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
-        "docs/adr/0013-reviewed-creation-device-policy.md"
+        "docs/adr/0013-reviewed-creation-device-policy.md",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -280,12 +288,18 @@
         "native-first-qcow2-001",
         "native-first-capabilities-001",
         "native-first-capabilities-002",
-        "native-first-creation-001"
+        "native-first-creation-001",
+        "device-policy-core-001",
+        "device-policy-static-001",
+        "device-policy-native-preview-001",
+        "device-policy-native-creation-001",
+        "device-policy-native-definition-001",
+        "device-policy-native-boot-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Full installer console/ejection, native storage streaming and all declared guest boot/provisioning levels remain incomplete or unqualified.",
         "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
-        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -405,7 +419,8 @@
         "internal/domain/creation_devices.go",
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
-        "docs/adr/0013-reviewed-creation-device-policy.md"
+        "docs/adr/0013-reviewed-creation-device-policy.md",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -436,11 +451,14 @@
         "installation-core-001",
         "installation-confinement-001",
         "nocloud-core-001",
-        "nocloud-confinement-001"
+        "nocloud-confinement-001",
+        "device-policy-core-001",
+        "device-policy-native-preview-001",
+        "device-policy-native-definition-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
-        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -520,7 +538,8 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-06",
@@ -564,7 +583,8 @@
         "nocloud-confinement-001",
         "nocloud-artifacts-001",
         "native-first-qcow2-001",
-        "native-first-preservation-001"
+        "native-first-preservation-001",
+        "device-policy-native-preservation-001"
       ],
       "outstanding": [
         "Prepared-source preservation and creation retention/guarded deletion, partial effects, cancellation and restart are tested with generated/synthetic fixtures. Native streaming, space faults, deletion/durability and disposal of uninspectable partial images still need qualified recovery adapters/evidence."
@@ -601,7 +621,8 @@
         "internal/domain/creation_devices.go",
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
-        "docs/adr/0013-reviewed-creation-device-policy.md"
+        "docs/adr/0013-reviewed-creation-device-policy.md",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -644,12 +665,18 @@
         "native-first-creation-001",
         "native-first-preservation-001",
         "native-first-recovery-001",
-        "native-first-defaults-regression-001"
+        "native-first-defaults-regression-001",
+        "device-policy-core-001",
+        "device-policy-native-preview-001",
+        "device-policy-native-creation-001",
+        "device-policy-native-definition-001",
+        "device-policy-native-start-001",
+        "device-policy-native-boot-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required.",
         "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
-        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -991,7 +1018,8 @@
         "internal/creating/recovery_linux.go",
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -1007,7 +1035,8 @@
       "evidence": [
         "resource-inventory-001",
         "resource-inventory-core-001",
-        "creation-core-001"
+        "creation-core-001",
+        "device-policy-native-creation-001"
       ],
       "outstanding": [
         "Native active-file-pool allocation/upload/readback adapter and space preflight implemented but not run on a disposable qemu backend. Pool creation, growth/move, labels and guest data qualification remain."
@@ -1028,7 +1057,8 @@
         "internal/creating/recovery_linux.go",
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-02",
@@ -1038,7 +1068,8 @@
         "internal/backend/libvirt/creation_linux_test.go"
       ],
       "evidence": [
-        "creation-core-001"
+        "creation-core-001",
+        "device-policy-native-creation-001"
       ],
       "outstanding": [
         "Prepared source bytes are copied into independent volume intents and verified before definition in coordinator fixtures; actual native independent clone and linked-base lifecycle remain unqualified."
@@ -1562,7 +1593,8 @@
         "installation-artifacts-001",
         "nocloud-artifacts-001",
         "native-first-upgrade-001",
-        "native-first-tui-001"
+        "native-first-tui-001",
+        "device-policy-native-tui-002"
       ],
       "outstanding": [
         "Coordinator separation implemented; long-running actual VM job client-detach/reconnect drill remains."
@@ -1610,7 +1642,8 @@
         "internal/domain/creation_devices.go",
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
-        "docs/adr/0013-reviewed-creation-device-policy.md"
+        "docs/adr/0013-reviewed-creation-device-policy.md",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1660,11 +1693,15 @@
         "nocloud-core-001",
         "nocloud-confinement-001",
         "configuration-core-001",
-        "native-first-recovery-001"
+        "native-first-recovery-001",
+        "device-policy-core-001",
+        "device-policy-static-001",
+        "device-policy-native-upgrade-001",
+        "device-policy-native-preservation-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
-        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2186,11 +2223,15 @@
         "installation-core-001",
         "nocloud-core-001",
         "configuration-core-001",
-        "native-first-tui-001"
+        "native-first-tui-001",
+        "device-policy-core-001",
+        "device-policy-artifacts-001",
+        "device-policy-native-tui-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
-        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged.",
+        "Native TUI plan review/digest authorization/detach passed for creation; guided forms and complete action parity remain required. Active creation result queries still suggest premature recovery (U009)."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2310,7 +2351,8 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "docs/evidence/device-policy-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -2350,7 +2392,11 @@
         "native-first-build-001",
         "native-first-artifacts-001",
         "native-first-upgrade-001",
-        "native-first-preservation-001"
+        "native-first-preservation-001",
+        "device-policy-build-001",
+        "device-policy-artifacts-001",
+        "device-policy-native-upgrade-001",
+        "device-policy-native-preservation-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
@@ -2473,11 +2519,14 @@
         "nocloud-artifacts-001",
         "configuration-static-portable-001",
         "configuration-build-001",
-        "configuration-artifacts-001"
+        "configuration-artifacts-001",
+        "device-policy-core-001",
+        "device-policy-build-001",
+        "device-policy-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
-        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
+        "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Other profiles and safe reviewed acceptance of the retained legacy definition remain outstanding; legacy semantics are unchanged."
       ],
       "hardwareVerified": false,
       "released": false

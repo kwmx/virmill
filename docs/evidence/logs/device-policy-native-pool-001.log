@@ -1,0 +1,24 @@
+Pool virmill-policy-c7f8b76 defined
+
+Pool virmill-policy-c7f8b76 started
+
+qemu:///system
+
+Name:           virmill-policy-c7f8b76
+UUID:           eede6ba7-13a9-48d6-8cba-b8611d36513b
+State:          running
+Persistent:     yes
+Autostart:      no
+Capacity:       253.35 GiB
+Allocation:     107.67 GiB
+Available:      145.68 GiB
+
+{
+  "name": "virmill-policy-c7f8b76",
+  "target": "/var/lib/libvirt/images/virmill-policy-c7f8b76",
+  "connection": "qemu:///system",
+  "createdBy": "external disposable-test setup, not Virmill storage workflow",
+  "autostart": false,
+  "deleteExisting": false,
+  "uuid": "eede6ba7-13a9-48d6-8cba-b8611d36513b"
+}
