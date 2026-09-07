@@ -326,7 +326,10 @@ func (p *Provider) PreflightCreation(ctx context.Context, uri string, s domain.C
 	if err := ctx.Err(); err != nil {
 		return out, err
 	}
-	c, err := connect(uri, false)
+	// The QEMU driver rejects GetDomainCapabilities on a read-only handle.
+	// This preview only observes capabilities/resources; a writable connection
+	// grants API access but does not authorize allocation or domain definition.
+	c, err := connect(uri, true)
 	if err != nil {
 		return out, err
 	}

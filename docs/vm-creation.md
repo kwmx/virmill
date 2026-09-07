@@ -19,6 +19,13 @@ the same explicit `--connection` throughout. Select an already active file-based
 pool (`dir`, `fs` or `netfs`) and existing active networks. Creation does not
 activate these resources. Pool space must meet the displayed conservative budget.
 
+Creation preflight needs permission to open a writable libvirt connection: the
+native QEMU driver refuses its domain-capability query on a read-only handle.
+The preview still performs only observations and capability probes. Allocation,
+upload and domain definition require a separately accepted durable operation.
+The coordinator remains an ordinary-user process; denied access is not retried
+as root. See [ADR 0012](adr/0012-native-domain-capability-access.md).
+
 Copy [the example input](../examples/creation/prepared-ova.json) and replace its
 placeholder pool/network UUIDs and hardware choices. It illustrates two original
 disks and two original NICs; it is not ready to apply unchanged. Map each prepared
