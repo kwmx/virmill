@@ -11,7 +11,13 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest native evidence: [multi-disk import and active upload crash](multidisk-crash-run.md).
+Latest native evidence: [firmware reconciliation and TPM/NVRAM persistence](cold-fixes-native-run.md).
+A distinct 4 MiB firmware probe reported SEEDED then PRESERVED across two KVM
+boots; the retained 2 MiB probe failed TCG2 lookup. CLI/TUI inspection continues
+to report unresolved TPM storage. Complete capture and independent restore remain
+unverified. Failed observer attempts and both firmware outcomes are retained.
+
+Earlier native evidence: [multi-disk import and active upload crash](multidisk-crash-run.md).
 The generated split-VMDK probe passed preparation, an actual interrupted native
 upload, TUI retention, fresh two-disk creation and a KVM second-disk read. It does
 not qualify an OS family or the full recovery matrix. The same installed build

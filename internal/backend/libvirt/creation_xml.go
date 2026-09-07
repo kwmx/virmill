@@ -297,7 +297,26 @@ func matchesNodeAt(want, got *xmlNode, parent string) bool {
 			return false
 		}
 	}
-	if text := strings.TrimSpace(want.text); text != strings.TrimSpace(got.text) && !(path == "/domain/os/nvram" && text == "" && strings.HasPrefix(strings.TrimSpace(got.text), "/")) {
+	if path == "/domain/os/nvram" {
+		// Keep this strictness local to NVRAM; attribute lookup above alone does
+		// not distinguish duplicate names or ignored namespace declarations.
+		seen := map[xml.Name]bool{}
+		for _, a := range got.attrs {
+			if a.Name.Space != "" || a.Name.Local == "xmlns" || seen[a.Name] {
+				return false
+			}
+			seen[a.Name] = true
+		}
+		// Empty-to-empty is unresolved structural equality, not an assigned file.
+		// Validate raw decoded text so whitespace cannot hide an invalid path,
+		// including when a nonempty wanted path happens to match it exactly.
+		if got.text != "" && coldPath(got.text) != nil {
+			return false
+		}
+		if want.text != "" && want.text != got.text {
+			return false
+		}
+	} else if strings.TrimSpace(want.text) != strings.TrimSpace(got.text) {
 		return false
 	}
 	used := map[int]bool{}

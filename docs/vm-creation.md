@@ -65,8 +65,13 @@ forms; unknown normalization stops confirmation. See [ADR 0013](adr/0013-reviewe
 UEFI requires absolute installed code/template paths and their explicit `raw` or
 `qcow2` format. The selected system descriptor and libvirt capabilities must match.
 Secure Boot requires an enrolled-key template. `tpm: true` requires advertised
-TPM 2.0 emulator/CRB support. Fresh NVRAM/TPM state is for clone creation, not
-restoration of an encrypted guest's keys. The backend refuses silent substitutions.
+TPM 2.0 emulator/CRB support. This clone path does not restore an existing guest's
+keys. The first assigned NVRAM path and fresh auxiliary-state initialization are
+not yet durably verified; encrypted-guest recovery remains unqualified. Matching
+code/template declarations does not establish instance freshness. The backend
+refuses changes to the reviewed firmware mapping; see the
+[NVRAM binding review](reviews/creation-nvram-binding-review.md) for the remaining
+initialization and recovery boundaries.
 
 Preview with the reviewed JSON input:
 

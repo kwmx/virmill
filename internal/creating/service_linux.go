@@ -248,7 +248,7 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 	risks := []string{"Creates new independent managed volumes and defines a powered-off VM; original source remains unchanged", "Guest drivers, boot, provisioning, routes and isolation are not verified by definition", "Failed allocation/upload/definition retains partial resources and the journal; no automatic deletion", "New UUID and MAC identities; guest OS identities/credentials remain in copied disks and need explicit guest adaptation"}
 	if spec.Firmware.Mode == "uefi" {
 		acks = append(acks, "new-firmware-state")
-		risks = append(risks, "Fresh NVRAM/TPM state is for clone creation, not recovery of an encrypted guest; old keys are not restored")
+		risks = append(risks, "UEFI/TPM clone creation does not restore existing guest keys. The first assigned NVRAM path and fresh auxiliary-state initialization are not yet durably verified; encrypted-guest recovery is unqualified")
 	}
 	if len(spec.NICs) > 0 {
 		acks = append(acks, "network-attachment")

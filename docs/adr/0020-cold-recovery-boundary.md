@@ -80,8 +80,21 @@ resource mapping, root-policy and pre/post-copy checks. Cooperative QEMU locks
 do not stop arbitrary writers and do not create privileged read authority. This
 utility is not yet connected to a capture endpoint or durable publication job.
 
-An original UEFI guest fixture will record benign TPM NV state and distinguish
-first initialization from subsequent persistence. It runs only in an explicitly
-created disposable guest. Actual restored marker reads can establish the tested
-auxiliary identity behavior; they cannot qualify Windows encryption recovery,
-guest readiness, full snapshot semantics or the complete acceptance matrix.
+The original UEFI guest fixture now records benign TPM NV state and distinguishes
+first initialization from subsequent persistence. One exact 4 MiB QCOW2 firmware
+tuple reported SEEDED then PRESERVED across two native disposable boots; a separate
+2 MiB raw tuple failed TCG2 lookup. Neither set was captured or restored. See the
+[native evidence](../evidence/cold-fixes-native-run.md). Actual restored marker
+reads can later establish the tested auxiliary identity behavior; they cannot
+qualify Windows encryption recovery, guest readiness, full snapshot semantics or
+the complete acceptance matrix.
+
+The [native TPM resolver review](../reviews/native-tpm-state-resolution.md) found
+that upstream libvirt 12.0.0 intentionally omits implicit emulator storage from
+public XML even after initialization. Alternate XML flags are not a complete
+inventory API. Explicit state placement for new guests and verified resolution
+of existing implicit state are separate integration paths. Neither permits
+rebinding the seeded guest to a guessed location. A native launch/process record
+can be candidate mapping evidence only when independently tied to its domain,
+run, executable, transport and generation; complete stopped membership and
+confidential transfer still require the typed host boundary selected above.

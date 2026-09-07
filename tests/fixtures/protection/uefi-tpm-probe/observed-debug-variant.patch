@@ -1,0 +1,45 @@
+--- observe_console.py
++++ observe_console.py
+@@ -39,10 +39,9 @@
+     b"NV_DEFINE_RESPONSE", b"NV_WRITE", b"NV_WRITE_RESPONSE", b"SET_VARIABLE",
+     b"SEED_READBACK",
+ ))
+-RETRYABLE_DIAGNOSTICS = frozenset((
+-    b"error: The domain is not running\n",
+-    b"error: Requested operation is not valid: domain is not running\n",
+-    b"error: operation failed: PTY device is not yet assigned\n",
++NOT_RUNNING = frozenset((
++    b"error: The domain is not running",
++    b"error: Requested operation is not valid: domain is not running",
+ ))
+ 
+ 
+@@ -182,9 +181,7 @@
+     # An explicit local URI and disabled pkttyagent prohibit a hidden privilege
+     # prompt. Keep user libvirt authentication/config available; do not alter it.
+     env = os.environ.copy()
+-    env.update({"LC_ALL": "C", "TERM": "dumb"})
+-    # Level 0 enables virsh option tracing; absence disables ambient tracing.
+-    env.pop("VIRSH_DEBUG", None)
++    env.update({"LC_ALL": "C", "TERM": "dumb", "VIRSH_DEBUG": "0"})
+     env.pop("VIRSH_LOG_FILE", None)
+ 
+     try:
+@@ -307,7 +304,7 @@
+                         status = "observed"
+                     break
+                 retryable = (not attempt_raw and attempt["returncode"] != 0 and
+-                             bytes(error_raw) in RETRYABLE_DIAGNOSTICS)
++                             bytes(error_raw).strip() in NOT_RUNNING)
+                 if not retryable:
+                     status = "console_error" if attempt["returncode"] != 0 else "no_result"
+                     break
+@@ -334,7 +331,7 @@
+     parser.add_argument("--expect", required=True, choices=("SEEDED", "PRESERVED"), help="expected observed marker")
+     parser.add_argument("--log", required=True, type=Path, help="new raw log in an existing private artifact directory")
+     parser.add_argument("--timeout", type=float, default=30, help="overall seconds including cleanup, 1..120 (default 30)")
+-    parser.add_argument("--retry-interval", type=float, default=0.1, help="seconds between console-not-ready retries, 0.05..1")
++    parser.add_argument("--retry-interval", type=float, default=0.1, help="seconds between stopped-VM retries, 0.05..1")
+     parser.add_argument("--attempts", type=int, default=MAX_ATTEMPTS, help="maximum console attempts, 1..100")
+     args = parser.parse_args(argv)
+     cancel = threading.Event()

@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-09-07",
+  "runtimeRevision": "ad608076cd928e6c6c270e6442cbc2d8047e6e0c",
+  "sourceDigest": "1949f2b27ee3389d4e6287d44c1d43d7397acd35f50c8780e253eed3be91d712",
+  "baseEnvironment": "disposable-fedora44-20260907.json",
+  "nativePackages": [
+    "libvirt-daemon-kvm-12.0.0-3.fc44.x86_64",
+    "qemu-kvm-10.2.2-1.fc44.x86_64",
+    "edk2-ovmf-20260812-4.fc44.noarch",
+    "swtpm-0.10.2-1.fc44.x86_64",
+    "restic-0.19.1-1.fc44.x86_64"
+  ],
+  "SELinux": "Enforcing",
+  "privateCoordinatorUnit": "virmill-test-ad60807.service",
+  "privilegedHelper": "inactive",
+  "limitations": [
+    "One owner-authorized disposable Fedora 44 nested-KVM host; no full firmware/TPM capture, restore, USB or network qualification."
+  ]
+}

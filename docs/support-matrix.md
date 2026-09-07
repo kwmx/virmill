@@ -63,3 +63,11 @@ refused replay, and TUI retention committed pins before releasing locks. A fresh
 creation booted successfully and ended stopped with unchanged disk hashes. This
 is one generated probe and one stream boundary, not a supported Linux/Windows
 appliance, multi-NIC test, power-loss test or firmware/TPM recovery qualification.
+
+The [firmware probe run](evidence/cold-fixes-native-run.md) adds same-guest TPM NV
+and EFI-variable public-marker persistence across two native boots for one exact
+4 MiB QCOW2 non-Secure-Boot firmware tuple. A separate 2 MiB raw tuple did not
+expose TCG2 to the original probe. Both guests remain stopped and retained. No
+general firmware/guest support, auxiliary capture, encrypted-guest recovery or
+independent restore is certified. Native CLI/TUI inspection keeps the missing
+TPM storage mapping explicit.
