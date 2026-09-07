@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-creation-cleanup-input.schema.json",
+  "title": "Explicit failed-creation resource disposition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["disposition"],
+  "properties": {
+    "disposition": {"enum": ["retain", "delete"]}
+  }
+}

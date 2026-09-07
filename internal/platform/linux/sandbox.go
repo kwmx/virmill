@@ -19,7 +19,7 @@ import (
 // ConfinedCommand mounts only runtime code, the chosen executable and a private
 // workspace. Sockets, home, credentials and host /dev are never exposed.
 func ConfinedCommand(ctx context.Context, executable, workspace string, args []string) (*exec.Cmd, func(), error) {
-	return confinedCommand(ctx, executable, workspace, args, "", "", "", 64<<20)
+	return confinedCommand(ctx, executable, workspace, args, "", "", "", nil, 64<<20)
 }
 
 // ConfinedPackageCommand exposes only a previously verified private package tree.
@@ -31,7 +31,7 @@ func ConfinedPackageCommand(ctx context.Context, directory, entrypoint, workspac
 	if e := PrivateDir(directory); e != nil {
 		return nil, nil, e
 	}
-	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint), "", 64<<20)
+	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint), "", nil, 64<<20)
 }
 
 // ConfinedDiskCommand gives the fixed system image tool read-only access to a
@@ -44,10 +44,20 @@ func ConfinedDiskCommand(ctx context.Context, source, workspace string, args []s
 	if e := PrivateDir(source); e != nil {
 		return nil, nil, e
 	}
-	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", source, maximumFileBytes)
+	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", source, nil, maximumFileBytes)
 }
 
-func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint, sourceDirectory string, maximumFileBytes int64) (*exec.Cmd, func(), error) {
+// ConfinedDiskFileCommand exposes one held read-only regular file at /source/image.
+// It never exposes the parent directory or follows dependencies outside that file.
+// The caller must retain the descriptor until cmd.Wait returns.
+func ConfinedDiskFileCommand(ctx context.Context, source *os.File, workspace string, args []string) (*exec.Cmd, func(), error) {
+	if source == nil {
+		return nil, nil, errors.New("held source file required")
+	}
+	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", "", source, 64<<20)
+}
+
+func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint, sourceDirectory string, sourceFile *os.File, maximumFileBytes int64) (*exec.Cmd, func(), error) {
 	if os.Getuid() == 0 {
 		return nil, nil, errors.New("untrusted workers must never run as root")
 	}
@@ -66,6 +76,13 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 	}
 	if e = PrivateDir(workspace); e != nil {
 		return nil, nil, e
+	}
+	if sourceFile != nil {
+		st, err := sourceFile.Stat()
+		flags, flagErr := unix.FcntlInt(sourceFile.Fd(), unix.F_GETFL, 0)
+		if err != nil || flagErr != nil || !st.Mode().IsRegular() || flags&unix.O_ACCMODE != unix.O_RDONLY || flags&unix.O_PATH != 0 || sourceDirectory != "" || packageDirectory != "" {
+			return nil, nil, domain.Fail("INVALID_INPUT", "single-file image confinement requires one held read-only regular file")
+		}
 	}
 	st, e := os.Lstat(executable)
 	if e != nil || !st.Mode().IsRegular() {
@@ -106,6 +123,9 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 	if sourceDirectory != "" {
 		argv = append(argv, "--ro-bind", sourceDirectory, "/source")
 	}
+	if sourceFile != nil {
+		argv = append(argv, "--dir", "/source", "--ro-bind-fd", "4", "/source/image")
+	}
 	cpuSeconds := 60
 	openFiles := 64
 	if sourceDirectory != "" {
@@ -117,6 +137,9 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 	cmd := exec.CommandContext(ctx, bwrap, argv...)
 	cmd.Env = []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8"}
 	cmd.ExtraFiles = []*os.File{f}
+	if sourceFile != nil {
+		cmd.ExtraFiles = append(cmd.ExtraFiles, sourceFile)
+	}
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error {
 		if cmd.Process == nil {

@@ -44,6 +44,19 @@ func TestCreationInputCompatibilityAndExplicitIdentityBoundary(t *testing.T) {
 	}
 }
 
+func TestCleanupInputSchemaCompatibility(t *testing.T) {
+	for _, input := range []string{`{"disposition":"retain"}`, `{"disposition":"delete"}`} {
+		if err := validation.Schema("vm-creation-cleanup-input", []byte(input)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, input := range []string{`{}`, `{"disposition":"automatic"}`, `{"disposition":"delete","overwrite":true}`, `{"disposition":"retain","disposition":"delete"}`, `{"disposition":null}`} {
+		if err := validation.Schema("vm-creation-cleanup-input", []byte(input)); err == nil {
+			t.Fatal("ambiguous/future input accepted", input)
+		}
+	}
+}
+
 func TestCreationReceiptRoundTripAndFutureVersionRefusal(t *testing.T) {
 	s, _, request, _ := creationFixture(t)
 	p, err := s.Plan(context.Background(), 1000, request)

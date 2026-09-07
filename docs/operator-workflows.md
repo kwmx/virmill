@@ -101,8 +101,9 @@ are provided as if they were validated procedures.
 The coordinator socket is `$XDG_RUNTIME_DIR/virmill/control.sock`, mode 0600 in a
 0700 directory. The journal lives in `$XDG_STATE_HOME/virmill/journal.db`, with WAL,
 FULL synchronization and a singleton lock. Database versions newer than the
-application are refused. Schema 1 upgrades to schema 2 after a private, flushed
-consistent backup; the new version guards recovery lock-transfer semantics.
+application are refused. Schemas 1 and 2 upgrade to schema 3 after a private, flushed
+consistent backup; the new version guards inherited locks, retained-volume pins
+and closed creation recipes. See [creation cleanup](creation-cleanup.md).
 Generated fixture tests cover migration, retained locks and rollback. Production
 package upgrade qualification and scheduled credential-store access remain incomplete.
 

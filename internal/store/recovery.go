@@ -8,7 +8,22 @@ import (
 // PendingJobs is separate from the bounded recent-jobs UI query. Recovery must
 // include old unfinished operations even after many newer jobs.
 func (s *Store) PendingJobs() ([]domain.Job, error) {
-	rows, err := s.DB.Query("SELECT body FROM jobs WHERE json_extract(body,'$.state') NOT IN ('succeeded','failed','partial','canceled') ORDER BY rowid")
+	return s.jobsForRecovery(false)
+}
+
+// StorageReferenceJobs includes every unresolved or partial operation, even
+// those older than the UI's recent-job limit. Partial recovery ancestors may
+// still describe retained disks; callers exclude only their own exact ancestry.
+func (s *Store) StorageReferenceJobs() ([]domain.Job, error) {
+	return s.jobsForRecovery(true)
+}
+
+func (s *Store) jobsForRecovery(includePartial bool) ([]domain.Job, error) {
+	query := "SELECT body FROM jobs WHERE json_extract(body,'$.state') NOT IN ('succeeded','failed','canceled')"
+	if !includePartial {
+		query += " AND json_extract(body,'$.state')!='partial'"
+	}
+	rows, err := s.DB.Query(query + " ORDER BY rowid")
 	if err != nil {
 		return nil, err
 	}

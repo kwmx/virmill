@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"sort"
 	"syscall"
+	"virmill.local/core/internal/backend/fileidentity"
 	"virmill.local/core/internal/backend/xmlpatch"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/validation"
@@ -318,6 +319,19 @@ func (p *Provider) PreflightCreation(ctx context.Context, uri string, s domain.C
 		return out, domain.Fail("UNSUPPORTED_CAPABILITY", "creation requires an already active file-based libvirt pool; no pool is activated automatically")
 	}
 	out.PoolName = observed.Name
+	var poolTarget struct {
+		Target struct {
+			Path string `xml:"path"`
+		} `xml:"target"`
+	}
+	if err = xml.Unmarshal([]byte(observed.XML), &poolTarget); err != nil {
+		return out, err
+	}
+	poolIdentity, err := fileidentity.Observe(poolTarget.Target.Path, true)
+	if err != nil {
+		return out, domain.Fail("UNSUPPORTED_CAPABILITY", "target pool filesystem identity is unavailable: "+err.Error())
+	}
+	out.PoolGeneration = poolIdentity.Generation
 	out.PoolFingerprint, err = poolCreationFingerprint(observed)
 	if err != nil {
 		return out, err
@@ -458,6 +472,14 @@ func (p *Provider) AllocateVolume(ctx context.Context, uri string, in domain.Vol
 		return out, err
 	}
 	out.Path, err = v.GetPath()
+	if err != nil {
+		return out, err
+	}
+	identity, err := fileidentity.Observe(out.Path, false)
+	if err != nil {
+		return out, err
+	}
+	out.Generation = identity.Generation
 	return out, err
 }
 func lookupCreated(c *native.Connect, expected domain.CreatedVolume) (*native.StorageVol, error) {
@@ -483,6 +505,17 @@ func lookupCreated(c *native.Connect, expected domain.CreatedVolume) (*native.St
 	if key != expected.BackendKey || path != expected.Path {
 		v.Free()
 		return nil, domain.Fail("SOURCE_CHANGED", "managed volume identity differs from allocation receipt")
+	}
+	if expected.Generation != "" {
+		identity, err := fileidentity.Observe(path, false)
+		if err != nil {
+			v.Free()
+			return nil, err
+		}
+		if identity.Generation != expected.Generation {
+			v.Free()
+			return nil, domain.Fail("SOURCE_CHANGED", "managed file was replaced after allocation; no action attempted")
+		}
 	}
 	return v, nil
 }

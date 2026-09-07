@@ -25,7 +25,7 @@ CREATE TABLE dedup(key TEXT PRIMARY KEY,request_digest TEXT NOT NULL,job_id TEXT
 CREATE TABLE locks(resource TEXT PRIMARY KEY,job_id TEXT NOT NULL REFERENCES jobs(id));
 CREATE TABLE events(job_id TEXT NOT NULL REFERENCES jobs(id),seq INTEGER NOT NULL,body BLOB NOT NULL,PRIMARY KEY(job_id,seq));
 CREATE TABLE metadata(kind TEXT NOT NULL,id TEXT NOT NULL,body BLOB NOT NULL,PRIMARY KEY(kind,id));
-PRAGMA user_version=2;`
+PRAGMA user_version=3;`
 
 func Open(filename string) (*Store, error) {
 	dir := filepath.Dir(filename)
@@ -70,7 +70,7 @@ func Open(filename string) (*Store, error) {
 		db.Close()
 		return nil, e
 	}
-	if v > 2 {
+	if v > 3 {
 		db.Close()
 		return nil, errors.New("database schema newer than application; use compatible binary")
 	}
@@ -90,16 +90,16 @@ func Open(filename string) (*Store, error) {
 			return nil, e
 		}
 	}
-	if v == 1 {
-		// Version 2 adds recovery-link/lock-transfer semantics to job JSON. The
-		// barrier is essential: an old binary must not cancel an inherited job
-		// as though it had no uncertain predecessor and release those locks.
-		backup := filename + ".pre-v2-" + domain.ID() + ".db"
+	if v == 1 || v == 2 {
+		// Version 3 also makes creation disposition and retention pins mandatory.
+		// Earlier binaries must not resume a closed recipe or ignore its pins.
+		// This includes version 2's inherited recovery-lock semantics.
+		backup := filename + ".pre-v3-" + domain.ID() + ".db"
 		if e = s.Backup(backup); e != nil {
 			db.Close()
 			return nil, fmt.Errorf("pre-migration backup: %w", e)
 		}
-		if _, e = db.Exec("PRAGMA user_version=2"); e != nil {
+		if _, e = db.Exec("PRAGMA user_version=3"); e != nil {
 			db.Close()
 			return nil, e
 		}

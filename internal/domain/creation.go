@@ -48,6 +48,7 @@ type CreationSpec struct {
 type CreationTarget struct {
 	Spec               CreationSpec     `json:"spec"`
 	PoolName           string           `json:"poolName"`
+	PoolGeneration     string           `json:"poolGeneration,omitempty"`
 	PoolFingerprint    string           `json:"poolFingerprint"`
 	Networks           []VirtualNetwork `json:"networks"`
 	Emulator           string           `json:"emulator"`
@@ -67,6 +68,7 @@ type CreatedVolume struct {
 	Intent     VolumeIntent `json:"intent"`
 	BackendKey string       `json:"backendKey"`
 	Path       string       `json:"path"`
+	Generation string       `json:"generation,omitempty"`
 }
 
 // CreationBackend accepts typed reviewed intent. No method executes guest media

@@ -47,6 +47,7 @@ var Actions = []Action{
 	{"vm create", "vm.create", "VMs", "Plan managed copies and a new powered-off VM from a completed import operation", "id", "create"},
 	{"vm creation result", "vm.creation.result", "VMs", "Inspect durable volume/definition stages by creation operation ID", "id", ""},
 	{"vm creation resume", "vm.creation.resume", "VMs", "Plan definition recovery using complete reverified retained volumes; never allocate or upload again", "id", "resume-definition"},
+	{"vm creation cleanup", "vm.creation.cleanup", "VMs", "Plan explicit retention or guarded deletion of failed-creation volumes and close the original recipe", "id", "cleanup"},
 	{"vm start", "vm.plan", "VMs", "Plan VM start", "id", "start"},
 	{"vm stop", "vm.plan", "VMs", "Plan graceful stop; never escalate on timeout", "id", "stop"},
 	{"vm pause", "vm.plan", "VMs", "Plan pause", "id", "pause"},

@@ -71,7 +71,12 @@ func (f *fixtureBackend) AllocateVolume(ctx context.Context, uri string, in doma
 		return domain.CreatedVolume{}, errors.New("synthetic allocation failure")
 	}
 	f.volumes[in.Name] = nil
-	return domain.CreatedVolume{Intent: in, BackendKey: "fixture:" + in.Name, Path: "/synthetic/" + in.Name}, nil
+	out := domain.CreatedVolume{Intent: in, BackendKey: "fixture:" + in.Name, Path: "/synthetic/" + in.Name, Generation: "synthetic-generation:" + in.Name}
+	if f.fail == "allocation-identity" {
+		out.Generation = ""
+		return out, errors.New("synthetic generation observation failed after allocation")
+	}
+	return out, nil
 }
 func (f *fixtureBackend) PopulateVolume(ctx context.Context, uri string, v domain.CreatedVolume, r io.Reader) error {
 	f.mu.Lock()

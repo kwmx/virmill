@@ -141,6 +141,15 @@ class Artifacts(unittest.TestCase):
             capture_output=True,text=True,timeout=30)
         self.assertNotEqual(wrong_result.returncode,0)
         self.assertEqual(json.loads(wrong_result.stdout)['error']['code'],'INVALID_INPUT')
+        cleanup = subprocess.run(command+['vm','creation','cleanup',job['operationID'],
+            '--connection','qemu:///session','--input','{"disposition":"retain"}',
+            '--plan','--output','json','--non-interactive'],cwd=root,env=env,
+            capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(cleanup.returncode,0)
+        self.assertEqual(json.loads(cleanup.stdout)['error']['code'],'PERMISSION_DENIED')
+        self.assertEqual(invoke('operation','list'),before_jobs)
+        # The completed import uses another connection and is not a creation;
+        # authority validation must reject it before any host backend access.
         print('Creation CLI/daemon source validation reached native test-URI refusal; no creation job, native storage effect or guest boot occurred')
 
 if __name__ == '__main__':

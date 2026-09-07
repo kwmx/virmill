@@ -39,3 +39,18 @@ guest setup and connectivity as separate evidence. UEFI/Secure Boot/TPM needs
 actual enrollment, persistent state and independent recovery checks; definition
 XML and metadata probes cannot establish those results. Keep routing/isolation
 packet tests separate from network model and source-name checks.
+
+Failed-creation cleanup recipes are in `internal/creating/cleanup_linux_test.go`.
+They use a synthetic volume backend, generated source files and a private SQLite
+journal to inject partial deletion, cancellation, identity/graph drift, lost
+acknowledgement and journal reopen. They do not execute host storage deletion.
+`internal/backend/libvirt/creation_cleanup_linux_test.go` additionally combines
+process-local libvirt test inventory with real generated raw/qcow2 files and
+confined QEMU metadata inspection. It verifies backing protection, stale graph,
+unlisted entry and replacement-file refusal. The test driver's Delete only
+changes simulated inventory; explicit os.Remove calls affect generated fixtures.
+`internal/platform/linux/sandbox_file_test.go` and
+`internal/backend/image/metadata_linux_test.go` probe single-file confinement and
+held-file identity with no backing directory exposure. Enable these real file and
+namespace probes with `VIRMILL_TEST_DISK_TOOLS=1`; an ordinary skipped run is not
+passing confinement evidence. No guest media is downloaded or booted.

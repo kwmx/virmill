@@ -144,6 +144,7 @@ func TestCreationAndDefinitionRecoveryHaveSharedTUIAccess(t *testing.T) {
 	for _, test := range []struct{ command, input, method, id string }{
 		{"vm create", `{"id":"prepared-operation","input":{"identityMode":"clone","hardware":{"disks":[{"sourceID":"boot","bus":"sata","bootOrder":1}],"nics":[]}}}`, "vm.create", "prepared-operation"},
 		{"vm creation resume", "failed-operation", "vm.creation.resume", "failed-operation"},
+		{"vm creation cleanup", `{"id":"failed-operation","input":{"disposition":"retain"}}`, "vm.creation.cleanup", "failed-operation"},
 		{"vm creation result", "creation-operation", "vm.creation.result", "creation-operation"},
 	} {
 		r := &recorder{}

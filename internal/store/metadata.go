@@ -6,6 +6,31 @@ import (
 	"virmill.local/core/internal/domain"
 )
 
+type MetadataRecord struct {
+	Kind string          `json:"kind"`
+	ID   string          `json:"id"`
+	Body json.RawMessage `json:"body"`
+}
+
+// MetadataRecords provides one ordered SQLite snapshot for conservative storage
+// reference reconciliation. The caller must hold resource locks during mutation.
+func (s *Store) MetadataRecords() ([]MetadataRecord, error) {
+	rows, err := s.DB.Query("SELECT kind,id,body FROM metadata ORDER BY kind,id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []MetadataRecord{}
+	for rows.Next() {
+		var r MetadataRecord
+		if err = rows.Scan(&r.Kind, &r.ID, &r.Body); err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
 // Metadata lists versioned application records without exposing the database to plugins.
 func (s *Store) Metadata(kind string) ([]json.RawMessage, error) {
 	rows, err := s.DB.Query("SELECT body FROM metadata WHERE kind=? ORDER BY id", kind)

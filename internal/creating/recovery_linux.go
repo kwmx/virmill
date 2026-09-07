@@ -69,8 +69,30 @@ func (s *Service) PlanResume(ctx context.Context, uid uint32, r app.Request) (do
 }
 
 func (h *resumeHandler) original(p domain.Plan, in resumeInput) (domain.Plan, input, Receipt, error) {
+	original, recipe, receipt, err := h.s.originalReceipt(p, in)
+	if err == nil {
+		err = h.s.requireUndisposed(original.ID)
+	}
+	if err == nil {
+		_, err = readyVolumes(receipt, recipe)
+	}
+	return original, recipe, receipt, err
+}
+
+func (s *Service) requireUndisposed(id string) error {
+	b, err := s.Store.MetadataBytes("vm-creation-disposition", id)
+	if err != nil {
+		return err
+	}
+	if b != nil {
+		return domain.Fail("RECOVERY_REQUIRED", "creation has a durable recovery disposition; its old recipe cannot be resumed or reconciled as a created VM")
+	}
+	return nil
+}
+
+func (s *Service) originalReceipt(p domain.Plan, in resumeInput) (domain.Plan, input, Receipt, error) {
 	var recipe input
-	original, encoded, err := h.s.Store.Plan(in.CreationPlanID)
+	original, encoded, err := s.Store.Plan(in.CreationPlanID)
 	if err != nil {
 		return original, recipe, Receipt{}, err
 	}
@@ -92,7 +114,7 @@ func (h *resumeHandler) original(p domain.Plan, in resumeInput) (domain.Plan, in
 	if err = wire.Decode(encoded, &recipe); err != nil {
 		return original, recipe, Receipt{}, err
 	}
-	receipt, err := h.s.load(original.ID)
+	receipt, err := s.load(original.ID)
 	if err != nil {
 		return original, recipe, receipt, err
 	}
@@ -108,15 +130,22 @@ func (h *resumeHandler) original(p domain.Plan, in resumeInput) (domain.Plan, in
 	if receipt.PlanID != original.ID || receipt.Binding != binding || receipt.VMID != recipe.Target.Spec.UUID || receipt.Connection != original.ConnectionID {
 		return original, recipe, receipt, domain.Fail("RECOVERY_REQUIRED", "original creation receipt binding differs")
 	}
-	job, err := h.s.Store.Job(receipt.OperationID)
+	job, err := s.Store.Job(receipt.OperationID)
 	if err != nil {
 		return original, recipe, receipt, err
 	}
 	if job.PlanID != original.ID {
 		return original, recipe, receipt, domain.Fail("RECOVERY_REQUIRED", "creation receipt operation differs")
 	}
-	_, err = readyVolumes(receipt, recipe)
-	return original, recipe, receipt, err
+	if len(receipt.Volumes) != len(recipe.Volumes) || receipt.GuestBootVerified {
+		return original, recipe, receipt, domain.Fail("RECOVERY_REQUIRED", "creation volume receipt is incomplete or has incompatible semantics")
+	}
+	for i, v := range receipt.Volumes {
+		if !same(v.Intent, recipe.Volumes[i]) || (v.Allocated != nil && !same(v.Allocated.Intent, v.Intent)) {
+			return original, recipe, receipt, domain.Fail("RECOVERY_REQUIRED", "creation volume receipt differs from original intent")
+		}
+	}
+	return original, recipe, receipt, nil
 }
 func (h *resumeHandler) RecoveryParent(ctx context.Context, p domain.Plan, b []byte) (string, error) {
 	var in resumeInput

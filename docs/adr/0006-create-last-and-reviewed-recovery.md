@@ -1,6 +1,8 @@
 # ADR 0006 — Define-last creation and reviewed recovery
 
 Status: accepted implementation decisions under documents 03, 05, 11, 12 and 14.
+ADR 0007 supersedes the partial-disposition and schema-2 migration paragraphs
+below; they describe the state when this creation slice was introduced.
 This does not reduce the locked 1.0 scope or certify a host/guest combination.
 
 The first VM creation adapter consumes a successful local `import.prepare`

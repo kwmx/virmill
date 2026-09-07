@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -115,12 +116,17 @@ func TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit(t *testing.T) {
 	}
 }
 
-func TestVersionOneMigrationPreservesUncertainStateAndPrivateBackup(t *testing.T) {
+func TestOldVersionsPreserveUncertainStateAndPrivateBackup(t *testing.T) {
+	for _, oldVersion := range []int{1, 2} {
+		t.Run(fmt.Sprint(oldVersion), func(t *testing.T) { testMigrationPreservesUncertainState(t, oldVersion) })
+	}
+}
+func testMigrationPreservesUncertainState(t *testing.T, oldVersion int) {
 	s, prior, parent, path := uncertainStoreJob(t)
 	if err := s.Put("vm-creation", prior.ID, map[string]any{"schemaVersion": 1, "fixture": true}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.DB.Exec("PRAGMA user_version=1"); err != nil {
+	if _, err := s.DB.Exec(fmt.Sprintf("PRAGMA user_version=%d", oldVersion)); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.Close(); err != nil {
@@ -132,7 +138,7 @@ func TestVersionOneMigrationPreservesUncertainStateAndPrivateBackup(t *testing.T
 	}
 	defer migrated.Close()
 	var version int
-	if err = migrated.DB.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 2 {
+	if err = migrated.DB.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 3 {
 		t.Fatal("semantic version barrier missing", version, err)
 	}
 	got, err := migrated.Job(parent.ID)
@@ -147,7 +153,7 @@ func TestVersionOneMigrationPreservesUncertainStateAndPrivateBackup(t *testing.T
 			t.Fatal("migration dropped retained lock", owners, err)
 		}
 	}
-	backups, err := filepath.Glob(path + ".pre-v2-*.db")
+	backups, err := filepath.Glob(path + ".pre-v3-*.db")
 	if err != nil || len(backups) != 1 {
 		t.Fatal("consistent pre-migration backup missing", backups, err)
 	}
@@ -160,7 +166,7 @@ func TestVersionOneMigrationPreservesUncertainStateAndPrivateBackup(t *testing.T
 		t.Fatal(err)
 	}
 	defer backup.Close()
-	if err = backup.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 1 {
+	if err = backup.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != oldVersion {
 		t.Fatal("backup is not the old version", version, err)
 	}
 	var check string

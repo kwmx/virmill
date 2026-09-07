@@ -1062,6 +1062,30 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill vm creation cleanup`
+
+Plan explicit retention or guarded deletion of failed-creation volumes and close the original recipe
+
+```text
+Usage:
+  virmill vm creation cleanup ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill vm creation result`
 
 Inspect durable volume/definition stages by creation operation ID

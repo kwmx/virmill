@@ -94,15 +94,16 @@ for result, cancellation and reconciliation; another failed recovery can itself
 be the parent of a new reviewed recovery. No volume is reallocated or reuploaded.
 
 An incomplete or unverified disk set is refused by this resume adapter. Those
-resources and locks remain retained pending an explicit partial-resource recovery
-or cleanup workflow, which is not yet implemented. Changed original capabilities,
+resources can use the explicit [creation cleanup disposition](creation-cleanup.md):
+retain and pin them, or preview guarded deletion of proven new generations.
+Changed original capabilities,
 firmware, source or network settings also require resolution before this exact
 definition can resume. These are implementation limitations, not passed recovery
 acceptance scenarios. ISO/cloud/existing-disk entry paths, full configuration and
 guest verification remain mandatory work.
 
-On first opening an older schema-1 application database, this build writes a
-private, consistent `journal.db.pre-v2-UUID.db` backup and upgrades to schema 2.
-Keep that backup for operator recovery. Older binaries must refuse schema 2;
+On first opening an older schema-1 or schema-2 application database, this build
+writes a private, consistent `journal.db.pre-v3-UUID.db` backup and upgrades to
+schema 3. Keep that backup for operator recovery. Older binaries must refuse schema 3;
 replacing the live database with a pre-migration backup can lose later operation
 history and must not be used as an automatic downgrade.

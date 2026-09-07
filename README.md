@@ -13,7 +13,9 @@ Build and run the current development tools using [getting started](docs/getting
 The [OVA preparation workflow](docs/import-preparation.md) converts complete disk
 sets into verified independent artifacts through the CLI or TUI. The
 [VM creation adapter](docs/vm-creation.md) adds explicit hardware mappings,
-define-last storage phases and reviewed definition recovery. Native storage,
+define-last storage phases and reviewed definition recovery.
+[Failed-creation cleanup](docs/creation-cleanup.md) adds explicit retention or
+guarded deletion with durable recovery. Native storage,
 guest qualification and other required creation sources remain in progress.
 
 The public executable is `virmill`, the user coordinator is `virmilld`, and bounded

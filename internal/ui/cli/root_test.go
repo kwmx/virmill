@@ -114,6 +114,7 @@ func TestCreationAndRecoveryCommandsUseSharedService(t *testing.T) {
 	}{
 		{[]string{"vm", "create", "prepared-operation", "--input", `{"identityMode":"clone","hardware":{"name":"fixture","disks":[{"sourceID":"boot","bus":"sata","bootOrder":1}],"nics":[]}}`, "--plan"}, "vm.create", "prepared-operation"},
 		{[]string{"vm", "creation", "resume", "failed-operation", "--plan"}, "vm.creation.resume", "failed-operation"},
+		{[]string{"vm", "creation", "cleanup", "failed-operation", "--input", `{"disposition":"retain"}`, "--plan"}, "vm.creation.cleanup", "failed-operation"},
 		{[]string{"vm", "creation", "result", "creation-operation"}, "vm.creation.result", "creation-operation"},
 	} {
 		r := &recorder{}

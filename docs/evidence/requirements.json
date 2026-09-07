@@ -348,7 +348,12 @@
         "internal/creating/recovery_linux.go",
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/creating/cleanup_linux.go",
+        "internal/domain/creation_cleanup.go",
+        "internal/backend/libvirt/creation_cleanup_linux.go",
+        "internal/backend/fileidentity/file_linux.go",
+        "internal/backend/image/metadata_linux.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-06",
@@ -357,7 +362,11 @@
         "internal/backend/image/tool_linux_test.go",
         "internal/creating/service_linux_test.go",
         "internal/creating/recovery_linux_test.go",
-        "internal/backend/libvirt/creation_linux_test.go"
+        "internal/backend/libvirt/creation_linux_test.go",
+        "internal/creating/cleanup_linux_test.go",
+        "internal/backend/libvirt/creation_cleanup_linux_test.go",
+        "internal/backend/fileidentity/file_linux_test.go",
+        "internal/backend/image/metadata_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -366,7 +375,7 @@
         "creation-core-001"
       ],
       "outstanding": [
-        "Preparation cancellation/failure preserves sources in fixtures. Creation retains partial volumes and locks; complete sets have reviewed definition-only recovery. Native stream interruption, low-space failure and partial-volume disposition remain unqualified/incomplete."
+        "Prepared-source preservation and creation retention/guarded deletion, partial effects, cancellation and restart are tested with generated/synthetic fixtures. Native streaming, space faults, deletion/durability and disposal of uninspectable partial images still need qualified recovery adapters/evidence."
       ],
       "hardwareVerified": false,
       "released": false
@@ -781,18 +790,27 @@
       "gate": 5,
       "status": "in-progress",
       "implementationPaths": [
-        "internal/app/storage/graph.go"
+        "internal/app/storage/graph.go",
+        "internal/creating/cleanup_linux.go",
+        "internal/domain/creation_cleanup.go",
+        "internal/backend/libvirt/creation_cleanup_linux.go",
+        "internal/backend/fileidentity/file_linux.go",
+        "internal/backend/image/metadata_linux.go"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-03",
       "tests": [
-        "internal/app/storage/graph_test.go"
+        "internal/app/storage/graph_test.go",
+        "internal/creating/cleanup_linux_test.go",
+        "internal/backend/libvirt/creation_cleanup_linux_test.go",
+        "internal/backend/fileidentity/file_linux_test.go",
+        "internal/backend/image/metadata_linux_test.go"
       ],
       "evidence": [
         "core-tests-001"
       ],
       "outstanding": [
-        "Graph guards tested; backend reconciliation, disk operations and actual base protection remain."
+        "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1267,7 +1285,12 @@
         "internal/store/recovery.go",
         "internal/importing/stage_linux.go",
         "internal/store/recovery_accept.go",
-        "internal/creating/recovery_linux.go"
+        "internal/creating/recovery_linux.go",
+        "internal/creating/cleanup_linux.go",
+        "internal/domain/creation_cleanup.go",
+        "internal/backend/libvirt/creation_cleanup_linux.go",
+        "internal/backend/fileidentity/file_linux.go",
+        "internal/backend/image/metadata_linux.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1276,7 +1299,11 @@
         "internal/importing/stage_linux_test.go",
         "internal/store/recovery_accept_test.go",
         "internal/operations/recovery_test.go",
-        "internal/creating/recovery_linux_test.go"
+        "internal/creating/recovery_linux_test.go",
+        "internal/creating/cleanup_linux_test.go",
+        "internal/backend/libvirt/creation_cleanup_linux_test.go",
+        "internal/backend/fileidentity/file_linux_test.go",
+        "internal/backend/image/metadata_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1287,7 +1314,7 @@
         "creation-core-001"
       ],
       "outstanding": [
-        "Synthetic crash/acknowledgement-loss recovery and jobs older than recent-list limit tested; actual backend/reboot fault matrix remains."
+        "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1336,7 +1363,13 @@
         "internal/store/store.go",
         "internal/operations/engine.go",
         "internal/store/recovery_accept.go",
-        "internal/creating/recovery_linux.go"
+        "internal/creating/recovery_linux.go",
+        "internal/creating/cleanup_linux.go",
+        "internal/domain/creation_cleanup.go",
+        "internal/backend/libvirt/creation_cleanup_linux.go",
+        "internal/backend/fileidentity/file_linux.go",
+        "internal/backend/image/metadata_linux.go",
+        "internal/store/recovery.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -1344,14 +1377,18 @@
         "internal/transport/local/socket_linux_test.go",
         "internal/store/recovery_accept_test.go",
         "internal/operations/recovery_test.go",
-        "internal/creating/recovery_linux_test.go"
+        "internal/creating/recovery_linux_test.go",
+        "internal/creating/cleanup_linux_test.go",
+        "internal/backend/libvirt/creation_cleanup_linux_test.go",
+        "internal/backend/fileidentity/file_linux_test.go",
+        "internal/backend/image/metadata_linux_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
         "creation-core-001"
       ],
       "outstanding": [
-        "Database/socket singleton and persisted locks exist; multi-client resource contention/backend drift matrix remains."
+        "Cleanup inherits all original locks, adds observed pool/domain locks and rechecks generations/graphs/references before deletion. Synthetic contention/drift fixtures pass; actual concurrent native/external writer matrix remains."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1448,14 +1485,16 @@
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-04",
       "tests": [
-        "internal/platform/linux/sandbox_test.go"
+        "internal/platform/linux/sandbox_test.go",
+        "internal/platform/linux/sandbox_file_test.go",
+        "internal/backend/image/metadata_linux_test.go"
       ],
       "evidence": [
         "sandbox-tests-001",
         "import-sandbox-regression-001"
       ],
       "outstanding": [
-        "Successful namespace checks and unavailable-sandbox refusal; full file-grant/network/FD/security-framework matrix remains."
+        "Real generated-file single-FD sandbox probes preserve read-only access, close the inherited source FD and hide siblings/sockets. Plugin namespace tests remain scoped; full grant/network/security-framework qualification remains."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1768,7 +1807,8 @@
         "internal/store/store.go",
         "internal/store/recovery_accept.go",
         "internal/operations/engine.go",
-        "internal/creating/recovery_linux.go"
+        "internal/creating/recovery_linux.go",
+        "internal/store/recovery.go"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -1791,7 +1831,7 @@
         "creation-artifacts-001"
       ],
       "outstanding": [
-        "Development packages and staged preservation tested; clean Fedora/Ubuntu/Debian install/upgrade/uninstall and actual migration matrix remain."
+        "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
       ],
       "hardwareVerified": false,
       "released": false

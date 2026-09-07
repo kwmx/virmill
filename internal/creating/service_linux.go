@@ -73,6 +73,11 @@ func Register(service *app.Service) {
 	service.InventoryVM = s.Ownership
 	service.Engine.Handlers["vm.create"] = s
 	service.Engine.Handlers["vm.create.resume"] = &resumeHandler{s: s}
+	if cleanup, ok := service.Provider.(domain.CreationCleanupBackend); ok {
+		h := &cleanupHandler{s: s, backend: cleanup}
+		service.Engine.Handlers["vm.create.cleanup"] = h
+		service.Extensions["vm.creation.cleanup"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return h.Plan(ctx, uid, r) }
+	}
 	service.Extensions["vm.create"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.Plan(ctx, uid, r) }
 	service.Extensions["vm.creation.result"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.Result(ctx, uid, r.ID) }
 	service.Extensions["vm.creation.resume"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.PlanResume(ctx, uid, r) }
@@ -334,16 +339,22 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		if err = operations.Note(ctx, s.Store, "Intent persisted: allocate new managed volume "+v.Name); err != nil {
 			return err
 		}
-		allocated, err := s.Backend.AllocateVolume(ctx, p.ConnectionID, v)
-		if err != nil {
-			return err
-		}
+		allocated, allocationErr := s.Backend.AllocateVolume(ctx, p.ConnectionID, v)
+		// An allocation may have happened even if a later identity observation
+		// failed. Preserve any returned exact key/path without claiming that its
+		// generation or contents were verified. Recovery must not delete it by name.
 		if !same(allocated.Intent, v) || allocated.BackendKey == "" || allocated.Path == "" {
+			if allocationErr != nil {
+				return allocationErr
+			}
 			return domain.Fail("RECOVERY_REQUIRED", "allocation identity differs; no upload attempted")
 		}
 		r.Volumes[i].Allocated = &allocated
 		if err = s.save(r, &previous); err != nil {
 			return err
+		}
+		if allocationErr != nil {
+			return allocationErr
 		}
 		if err = operations.Note(ctx, s.Store, "Intent persisted: upload verified source disk "+v.SourceID+" into its new volume"); err != nil {
 			return err
@@ -473,6 +484,9 @@ func readyVolumes(r Receipt, in input) ([]domain.CreatedVolume, error) {
 	return out, nil
 }
 func (s *Service) Reconcile(ctx context.Context, p domain.Plan, b []byte, step domain.Step) (bool, error) {
+	if err := s.requireUndisposed(p.ID); err != nil {
+		return false, err
+	}
 	var in input
 	if err := wire.Decode(b, &in); err != nil {
 		return false, err
@@ -520,8 +534,11 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	if err != nil {
 		return nil, err
 	}
-	if p.ActorUID != uid || (p.Operation != "vm.create" && p.Operation != "vm.create.resume") {
+	if p.ActorUID != uid || (p.Operation != "vm.create" && p.Operation != "vm.create.resume" && p.Operation != "vm.create.cleanup") {
 		return nil, domain.Fail("INVALID_INPUT", "not your VM creation operation")
+	}
+	if p.Operation == "vm.create.cleanup" {
+		return s.cleanupResult(j, p, encoded)
 	}
 	if p.Operation == "vm.create.resume" {
 		var recovery resumeInput
