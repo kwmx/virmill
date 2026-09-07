@@ -58,3 +58,38 @@ conflict cases, allocation/revalidation, network packet/isolation and rollback,
 USB reconnection, firmware/TPM capture/restore, full crash recovery and plugin
 confinement across the supported OS/MAC matrix. Unimplemented workflows are
 implementation work, not hardware skips. No release publication is authorized.
+
+Clean revision `def0b10` has source digest
+`95b50aaf89f33c30e0b1b1dcb851f1d6023d358c9926fc682b973df0fbef27ef`.
+The parent recorded passing `discovery-clean-core-001` (full race-enabled suite),
+`discovery-clean-static-001`, `discovery-cross-001`, `discovery-confined-001`,
+`discovery-artifacts-001` and `discovery-repro-001`. The two reproducibility runs
+matched all three binaries and four unsigned development packages. Staged
+installer/uninstaller tests and private ordinary-user coordinator checks passed.
+The production confined launcher passed all 21 Python fault cases and the actual
+local generated-file/socket/environment boundary probe with the race detector.
+Optional or unavailable full-suite paths remain unqualified, even when the suite
+command succeeds. Cross-builds do not qualify another operating system's runtime.
+
+`discovery-native-upgrade-001` installed the exact clean RPMs on the authorized
+VM, preserving all 24 existing jobs and four stopped guest definitions. The first
+read-only harness failed on its own `uuid` versus `resourceUUID` field mistake;
+`discovery-native-observation-001` preserves that failure. It performed no guest,
+network or journal mutation. `discovery-native-observation-002` used fresh evidence
+filenames and passed both commands through actual CLI and TUI. Native comparison
+matched 27 PCI devices and 21 driver observations. No IOMMU groups were reported,
+so physical topology/assignment remains unqualified. CIDR results detected the
+host subnet, two live/persistent native network IP observations, and explicit
+IPv4/IPv6 planned overlaps, while excluding two host default routes. Invalid CIDR
+and nonlocal connection input were refused. This was not a real VPN or injected
+policy-table test.
+
+The successful run verified complete plans/jobs/events/locks unchanged, all four
+VMs still stopped with identical XML, all four multidisk test files byte-identical,
+network inventory unchanged and helper service/socket still inactive. SELinux
+remained enforcing. Private raw inventories and PTY transcripts stayed on the
+host; only their hashes and bounded result summaries entered the ledger.
+
+`discovery-release-gate-001` correctly failed: all 71 scenarios still lack full
+acceptance, and the shipping checklist has open items. No mandatory requirement
+was removed, no complete case was promoted and no release was published.

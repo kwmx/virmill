@@ -1,0 +1,60 @@
+=== RUN   TestPythonProtocolFaultConfined
+=== RUN   TestPythonProtocolFaultConfined/partial-exit
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: unterminated frame
+=== RUN   TestPythonProtocolFaultConfined/unterminated-exit
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: unterminated frame
+=== RUN   TestPythonProtocolFaultConfined/duplicate-key
+    runner_faults_test.go:129: observable protocol rejection: duplicate JSON key "result"
+=== RUN   TestPythonProtocolFaultConfined/oversized-line
+    runner_faults_test.go:129: observable protocol rejection: plugin process/framing failure: oversized frame
+=== RUN   TestPythonProtocolFaultConfined/wrong-id
+    runner_faults_test.go:129: observable protocol rejection: unsolicited or wrong plugin response ID
+=== RUN   TestPythonProtocolFaultConfined/invalid-utf8
+    runner_faults_test.go:129: observable protocol rejection: invalid UTF-8
+=== RUN   TestPythonProtocolFaultConfined/stdout-log
+    runner_faults_test.go:129: observable protocol rejection: invalid character 'T' looking for beginning of value
+=== RUN   TestPythonProtocolFaultConfined/request-response-hybrid
+    runner_faults_test.go:129: observable protocol rejection: plugin request/notification contains response fields
+=== RUN   TestPythonProtocolFaultConfined/wrong-version
+    runner_faults_test.go:129: observable protocol rejection: wrong protocol envelope
+=== RUN   TestPythonProtocolFaultConfined/unknown-notification
+    runner_faults_test.go:129: observable protocol rejection: unknown plugin notification
+=== RUN   TestPythonProtocolFaultConfined/stderr-flood
+    runner_faults_test.go:129: observable protocol rejection: duplicate JSON key "result"
+=== RUN   TestPythonProtocolFaultConfined/negotiated-version-mismatch
+=== RUN   TestPythonProtocolFaultConfined/missing-protocol-version
+=== RUN   TestPythonProtocolFaultConfined/non-object-initialize-result
+=== RUN   TestPythonProtocolFaultConfined/host-call-before-initialize
+=== RUN   TestPythonProtocolFaultConfined/read-scope-is-not-mutation-authority
+=== RUN   TestPythonProtocolFaultConfined/deadline-initialize
+=== RUN   TestPythonProtocolFaultConfined/deadline-action.execute
+=== RUN   TestPythonProtocolFaultConfined/cancel-active-execution
+=== RUN   TestPythonProtocolFaultConfined/cancel-blocked-write
+=== RUN   TestPythonProtocolFaultConfined/close-flooding-stdout
+--- PASS: TestPythonProtocolFaultConfined (3.76s)
+    --- PASS: TestPythonProtocolFaultConfined/partial-exit (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/unterminated-exit (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/duplicate-key (0.04s)
+    --- PASS: TestPythonProtocolFaultConfined/oversized-line (2.31s)
+    --- PASS: TestPythonProtocolFaultConfined/wrong-id (0.04s)
+    --- PASS: TestPythonProtocolFaultConfined/invalid-utf8 (0.04s)
+    --- PASS: TestPythonProtocolFaultConfined/stdout-log (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/request-response-hybrid (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/wrong-version (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/unknown-notification (0.04s)
+    --- PASS: TestPythonProtocolFaultConfined/stderr-flood (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/negotiated-version-mismatch (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/missing-protocol-version (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/non-object-initialize-result (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/host-call-before-initialize (0.04s)
+    --- PASS: TestPythonProtocolFaultConfined/read-scope-is-not-mutation-authority (0.03s)
+    --- PASS: TestPythonProtocolFaultConfined/deadline-initialize (0.26s)
+    --- PASS: TestPythonProtocolFaultConfined/deadline-action.execute (0.28s)
+    --- PASS: TestPythonProtocolFaultConfined/cancel-active-execution (0.04s)
+    --- PASS: TestPythonProtocolFaultConfined/cancel-blocked-write (0.29s)
+    --- PASS: TestPythonProtocolFaultConfined/close-flooding-stdout (0.02s)
+=== RUN   TestPythonProtocolSandboxBoundaries
+    runner_faults_test.go:358: real confined Python worker: undeclared generated host file unavailable; AF_INET and AF_UNIX creation denied; no host connection or VM operation attempted
+--- PASS: TestPythonProtocolSandboxBoundaries (0.03s)
+PASS
+ok  	virmill.local/core/internal/plugins	4.835s

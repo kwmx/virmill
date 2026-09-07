@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-09-07",
+  "baseEnvironment": "disposable-fedora44-helper-access-20260907.json",
+  "runtimeRevision": "def0b10eac5b50c84e685030ce6c4f6b0a3e1eaf",
+  "sourceDigest": "95b50aaf89f33c30e0b1b1dcb851f1d6023d358c9926fc682b973df0fbef27ef",
+  "SELinux": "Enforcing",
+  "nativePCIcount": 27,
+  "reportedDrivers": 21,
+  "observedIOMMUGroups": 0,
+  "limitations": [
+    "Nested KVM inventory only, not physical PCI/IOMMU or assignment qualification.",
+    "Native LAN/network/planned-conflict observation only; no actual VPN, policy-routing mutation or packet/isolation tests.",
+    "Raw inventory and TUI transcripts remain private on the authorized host; no guest/media/network mutation."
+  ]
+}

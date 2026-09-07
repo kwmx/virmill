@@ -316,7 +316,8 @@
         "internal/platform/linux/network_prefixes_linux.go",
         "internal/app/host_inventory.go",
         "internal/app/network/prefixes.go",
-        "schemas/network-cidr-input.schema.json"
+        "schemas/network-cidr-input.schema.json",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-06",
@@ -347,7 +348,9 @@
         "configuration-core-001",
         "configuration-artifacts-001",
         "native-first-capabilities-001",
-        "native-first-capabilities-002"
+        "native-first-capabilities-002",
+        "discovery-clean-core-001",
+        "discovery-native-observation-002"
       ],
       "outstanding": [
         "Connection allowlist implemented; full session capability probes and actual restrictions remain.",
@@ -1097,7 +1100,8 @@
         "internal/app/host_inventory.go",
         "internal/app/network/prefixes.go",
         "schemas/network-cidr-input.schema.json",
-        "docs/host-network-discovery.md"
+        "docs/host-network-discovery.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-06",
@@ -1110,10 +1114,14 @@
         "internal/ui/tui/host_inventory_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "discovery-clean-static-001",
+        "discovery-clean-core-001",
+        "discovery-native-observation-001",
+        "discovery-native-observation-002"
       ],
       "outstanding": [
-        "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required."
+        "Shared native CLI/TUI observation passed actual host-subnet and live/persistent network conflict checks plus explicit IPv4/IPv6 planned ranges and default-route exclusion. Actual VPN/policy-table scenarios, durable application allocation/reservation and plan/apply revalidation remain required; separate dumps are non-atomic and no packet/isolation claim is made."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1631,7 +1639,8 @@
         "internal/domain/host_inventory.go",
         "internal/backend/libvirt/pci_inventory_linux.go",
         "internal/app/service.go",
-        "docs/host-network-discovery.md"
+        "docs/host-network-discovery.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/integration/devices/DEV-03",
@@ -1641,9 +1650,14 @@
         "internal/ui/cli/host_inventory_test.go",
         "internal/ui/tui/host_inventory_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "discovery-clean-static-001",
+        "discovery-clean-core-001",
+        "discovery-native-observation-001",
+        "discovery-native-observation-002"
+      ],
       "outstanding": [
-        "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required."
+        "Read-only CLI/TUI discovery matched 27 PCI devices and 21 drivers on one nested host, which reported no IOMMU groups. Physical-host PCI/IOMMU topology, unsafe assignment refusal and the full permission/configuration matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1863,7 +1877,8 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-01",
@@ -1898,7 +1913,8 @@
         "helper-access-upgrade-001",
         "helper-access-native-grant-001",
         "helper-access-native-tui-grant-cli-revoke-001",
-        "helper-access-native-auth-preserve-001"
+        "helper-access-native-auth-preserve-001",
+        "discovery-native-upgrade-001"
       ],
       "outstanding": [
         "A real PTY import approval detached while the coordinator completed two-disk conversion; CLI reconnection returned coherent persisted result/events. Additional client disconnects, all handlers and multi-client transport faults remain required.",
@@ -2259,7 +2275,8 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -2286,7 +2303,8 @@
         "helper-access-native-tui-revoke-resume-001",
         "helper-access-root-tests-clean-001",
         "helper-access-native-tui-grant-cli-revoke-001",
-        "helper-access-native-auth-preserve-001"
+        "helper-access-native-auth-preserve-001",
+        "discovery-clean-core-001"
       ],
       "outstanding": [
         "Peer/socket/grant unit checks pass; cross-UID and actual privileged helper integration remain unexecuted.",
@@ -2410,7 +2428,8 @@
         "internal/platform/linux/sandbox.go",
         "internal/plugins/runner.go",
         "docs/plugin-protocol-fault-fixtures.md",
-        "docs/adr/0019-discovery-and-plugin-session-failure.md"
+        "docs/adr/0019-discovery-and-plugin-session-failure.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-04",
@@ -2429,7 +2448,9 @@
         "cleanup-confinement-001",
         "disk-set-confinement-001",
         "plugin-fault-regressions-001",
-        "plugin-fault-fix-001"
+        "plugin-fault-fix-001",
+        "discovery-clean-core-001",
+        "discovery-confined-001"
       ],
       "outstanding": [
         "Real generated-file single-FD sandbox probes preserve read-only access, close the inherited source FD and hide siblings/sockets. Plugin namespace tests remain scoped; full grant/network/security-framework qualification remains.",
@@ -2458,7 +2479,8 @@
         "docs/adr/0018-managed-volume-read-access.md",
         "internal/plugins/runner.go",
         "docs/plugin-protocol-fault-fixtures.md",
-        "docs/adr/0019-discovery-and-plugin-session-failure.md"
+        "docs/adr/0019-discovery-and-plugin-session-failure.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
@@ -2488,7 +2510,9 @@
         "plugin-close-fix-001",
         "helper-access-setup-001",
         "helper-access-root-tests-clean-001",
-        "helper-access-native-auth-preserve-001"
+        "helper-access-native-auth-preserve-001",
+        "discovery-clean-core-001",
+        "discovery-confined-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -2580,7 +2604,8 @@
         "internal/plugins/runner.go",
         "internal/plugins/actions.go",
         "docs/plugin-protocol-fault-fixtures.md",
-        "docs/adr/0019-discovery-and-plugin-session-failure.md"
+        "docs/adr/0019-discovery-and-plugin-session-failure.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-03",
@@ -2607,7 +2632,11 @@
         "plugin-fault-regressions-001",
         "plugin-fault-fix-001",
         "plugin-close-regression-001",
-        "plugin-close-fix-001"
+        "plugin-close-fix-001",
+        "discovery-cross-001",
+        "discovery-clean-static-001",
+        "discovery-clean-core-001",
+        "discovery-confined-001"
       ],
       "outstanding": [
         "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains.",
@@ -2745,7 +2774,8 @@
         "internal/platform/linux/network_prefixes_linux.go",
         "internal/app/host_inventory.go",
         "internal/app/network/prefixes.go",
-        "schemas/network-cidr-input.schema.json"
+        "schemas/network-cidr-input.schema.json",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2834,7 +2864,11 @@
         "helper-access-native-grant-001",
         "helper-access-native-tui-revoke-001",
         "helper-access-native-tui-revoke-resume-001",
-        "helper-access-native-tui-grant-cli-revoke-001"
+        "helper-access-native-tui-grant-cli-revoke-001",
+        "discovery-clean-core-001",
+        "discovery-artifacts-001",
+        "discovery-native-observation-001",
+        "discovery-native-observation-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -2978,7 +3012,8 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -3049,7 +3084,10 @@
         "helper-access-root-tests-001",
         "storage-access-repro-001",
         "storage-access-artifacts-001",
-        "helper-access-upgrade-001"
+        "helper-access-upgrade-001",
+        "discovery-repro-001",
+        "discovery-artifacts-001",
+        "discovery-native-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -3180,7 +3218,8 @@
         "schemas/network-cidr-input.schema.json",
         "internal/plugins/runner.go",
         "docs/plugin-protocol-fault-fixtures.md",
-        "docs/adr/0019-discovery-and-plugin-session-failure.md"
+        "docs/adr/0019-discovery-and-plugin-session-failure.md",
+        "docs/evidence/discovery-plugin-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -3296,7 +3335,14 @@
         "helper-access-root-tests-001",
         "storage-access-repro-001",
         "storage-access-artifacts-001",
-        "helper-access-upgrade-001"
+        "helper-access-upgrade-001",
+        "discovery-cross-001",
+        "discovery-clean-static-001",
+        "discovery-clean-core-001",
+        "discovery-repro-001",
+        "discovery-artifacts-001",
+        "discovery-native-upgrade-001",
+        "discovery-native-observation-002"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3352,7 +3398,8 @@
         "result-progress-release-gate-001",
         "acceptance-release-gate-001",
         "multidisk-records-001",
-        "multidisk-release-gate-001"
+        "multidisk-release-gate-001",
+        "discovery-release-gate-001"
       ],
       "outstanding": [
         "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open."
