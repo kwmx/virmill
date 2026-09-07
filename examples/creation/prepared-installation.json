@@ -36,6 +36,17 @@
         "bus": "sata",
         "bootOrder": 1
       }
-    ]
+    ],
+    "devicePolicy": {
+      "version": 1,
+      "chipset": "q35",
+      "pciPlacement": "libvirt-auto",
+      "usbController": "none",
+      "memoryBalloon": "none",
+      "watchdogAction": "none",
+      "input": "ps2",
+      "audio": "none",
+      "serial": "isa-serial"
+    }
   }
 }

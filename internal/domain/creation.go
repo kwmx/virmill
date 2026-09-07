@@ -39,20 +39,35 @@ type CreationNIC struct {
 	MAC         string `json:"mac,omitempty"`
 }
 type CreationSpec struct {
-	UUID         string           `json:"uuid"`
-	Name         string           `json:"name"`
-	PoolID       string           `json:"poolID"`
-	Architecture string           `json:"architecture"`
-	Machine      string           `json:"machine"`
-	VCPUs        uint             `json:"vcpus"`
-	MemoryMiB    uint64           `json:"memoryMiB"`
-	CPU          CreationCPU      `json:"cpu"`
-	Firmware     CreationFirmware `json:"firmware"`
-	Clock        string           `json:"clock"`
-	Graphics     string           `json:"graphics"`
-	Disks        []CreationDisk   `json:"disks"`
-	Media        []CreationMedia  `json:"media,omitempty"`
-	NICs         []CreationNIC    `json:"nics"`
+	UUID         string                `json:"uuid"`
+	Name         string                `json:"name"`
+	PoolID       string                `json:"poolID"`
+	Architecture string                `json:"architecture"`
+	Machine      string                `json:"machine"`
+	VCPUs        uint                  `json:"vcpus"`
+	MemoryMiB    uint64                `json:"memoryMiB"`
+	CPU          CreationCPU           `json:"cpu"`
+	Firmware     CreationFirmware      `json:"firmware"`
+	Clock        string                `json:"clock"`
+	Graphics     string                `json:"graphics"`
+	Disks        []CreationDisk        `json:"disks"`
+	Media        []CreationMedia       `json:"media,omitempty"`
+	NICs         []CreationNIC         `json:"nics"`
+	DevicePolicy *CreationDevicePolicy `json:"devicePolicy,omitempty"`
+}
+
+// CreationDevicePolicy is versioned reviewed intent for chipset devices that
+// libvirt otherwise adds implicitly. A nil policy retains legacy plan semantics.
+type CreationDevicePolicy struct {
+	Version        int    `json:"version"`
+	Chipset        string `json:"chipset"`
+	PCIPlacement   string `json:"pciPlacement"`
+	USBController  string `json:"usbController"`
+	MemoryBalloon  string `json:"memoryBalloon"`
+	WatchdogAction string `json:"watchdogAction"`
+	Input          string `json:"input"`
+	Audio          string `json:"audio"`
+	Serial         string `json:"serial"`
 }
 type CreationTarget struct {
 	Spec               CreationSpec     `json:"spec"`

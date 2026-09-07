@@ -165,6 +165,7 @@ func creationFixture(t *testing.T) (*Service, *fixtureBackend, app.Request, stri
 	backend := &fixtureBackend{volumes: map[string][]byte{}, verified: map[string]bool{}, caps: "fixture-before"}
 	s := &Service{Engine: engine, Store: db, Backend: backend, Inventory: backend}
 	engine.Handlers["vm.create"] = s
+	engine.Handlers["vm.create.devices-v1"] = s
 	engine.Handlers["vm.create.resume"] = &resumeHandler{s: s}
 	t.Cleanup(func() { engine.Close(); db.Close() })
 	directory := t.TempDir()

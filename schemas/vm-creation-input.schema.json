@@ -254,6 +254,62 @@
               }
             }
           }
+        },
+        "devicePolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "chipset",
+            "pciPlacement",
+            "usbController",
+            "memoryBalloon",
+            "watchdogAction",
+            "input",
+            "audio",
+            "serial"
+          ],
+          "properties": {
+            "version": {
+              "const": 1
+            },
+            "chipset": {
+              "enum": [
+                "q35",
+                "i440fx"
+              ]
+            },
+            "pciPlacement": {
+              "const": "libvirt-auto"
+            },
+            "usbController": {
+              "enum": [
+                "none",
+                "qemu-xhci"
+              ]
+            },
+            "memoryBalloon": {
+              "enum": [
+                "none",
+                "virtio"
+              ]
+            },
+            "watchdogAction": {
+              "enum": [
+                "none",
+                "reset"
+              ]
+            },
+            "input": {
+              "const": "ps2"
+            },
+            "audio": {
+              "const": "none"
+            },
+            "serial": {
+              "const": "isa-serial"
+            }
+          }
         }
       }
     },

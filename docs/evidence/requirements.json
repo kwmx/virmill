@@ -243,7 +243,11 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/domain/creation_devices.go",
+        "internal/creating/devices_linux.go",
+        "internal/backend/libvirt/creation_pci.go",
+        "docs/adr/0013-reviewed-creation-device-policy.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -259,7 +263,9 @@
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
         "internal/creating/provision_linux_test.go",
-        "internal/backend/libvirt/creation_observed_linux_test.go"
+        "internal/backend/libvirt/creation_observed_linux_test.go",
+        "internal/creating/devices_linux_test.go",
+        "internal/backend/libvirt/creation_devices_linux_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -278,7 +284,8 @@
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Full installer console/ejection, native storage streaming and all declared guest boot/provisioning levels remain incomplete or unqualified.",
-        "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot."
+        "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
+        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -394,7 +401,11 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/domain/creation_devices.go",
+        "internal/creating/devices_linux.go",
+        "internal/backend/libvirt/creation_pci.go",
+        "docs/adr/0013-reviewed-creation-device-policy.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -410,7 +421,10 @@
         "tests/integration/artifacts_test.py",
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/creating/devices_linux_test.go",
+        "internal/backend/libvirt/creation_devices_linux_test.go",
+        "internal/backend/libvirt/creation_observed_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -425,7 +439,8 @@
         "nocloud-confinement-001"
       ],
       "outstanding": [
-        "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain."
+        "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
+        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -582,7 +597,11 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/domain/creation_devices.go",
+        "internal/creating/devices_linux.go",
+        "internal/backend/libvirt/creation_pci.go",
+        "docs/adr/0013-reviewed-creation-device-policy.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -603,7 +622,9 @@
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
         "internal/creating/provision_linux_test.go",
-        "internal/backend/libvirt/creation_observed_linux_test.go"
+        "internal/backend/libvirt/creation_observed_linux_test.go",
+        "internal/creating/devices_linux_test.go",
+        "internal/backend/libvirt/creation_devices_linux_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -627,7 +648,8 @@
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. Native registration and subsequent guest readiness evidence remain required.",
-        "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot."
+        "First disposable Q35 creation passed actual allocation/upload/readback but remains recovery-required because native device defaults were absent from reviewed intent. Explicit defaults and compatible recovery are required before guest boot.",
+        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1584,7 +1606,11 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/domain/creation_devices.go",
+        "internal/creating/devices_linux.go",
+        "internal/backend/libvirt/creation_pci.go",
+        "docs/adr/0013-reviewed-creation-device-policy.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1613,7 +1639,10 @@
         "internal/backend/xmlpatch/resources_test.go",
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
-        "internal/ui/tui/model_test.go"
+        "internal/ui/tui/model_test.go",
+        "internal/creating/devices_linux_test.go",
+        "internal/backend/libvirt/creation_devices_linux_test.go",
+        "internal/backend/libvirt/creation_observed_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1634,7 +1663,8 @@
         "native-first-recovery-001"
       ],
       "outstanding": [
-        "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains."
+        "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
+        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2117,7 +2147,11 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/domain/creation_devices.go",
+        "internal/creating/devices_linux.go",
+        "internal/backend/libvirt/creation_pci.go",
+        "docs/adr/0013-reviewed-creation-device-policy.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2136,7 +2170,10 @@
         "internal/app/resource_edit_test.go",
         "internal/backend/xmlpatch/resources_test.go",
         "internal/backend/libvirt/configuration_linux_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/creating/devices_linux_test.go",
+        "internal/backend/libvirt/creation_devices_linux_test.go",
+        "internal/backend/libvirt/creation_observed_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2152,7 +2189,8 @@
         "native-first-tui-001"
       ],
       "outstanding": [
-        "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete."
+        "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
+        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2382,7 +2420,11 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "internal/domain/creation_devices.go",
+        "internal/creating/devices_linux.go",
+        "internal/backend/libvirt/creation_pci.go",
+        "docs/adr/0013-reviewed-creation-device-policy.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2401,7 +2443,10 @@
         "internal/app/resource_edit_test.go",
         "internal/backend/xmlpatch/resources_test.go",
         "internal/backend/libvirt/configuration_linux_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/creating/devices_linux_test.go",
+        "internal/backend/libvirt/creation_devices_linux_test.go",
+        "internal/backend/libvirt/creation_observed_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2431,7 +2476,8 @@
         "configuration-artifacts-001"
       ],
       "outstanding": [
-        "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."
+        "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
+        "New creation plans explicitly review versioned chipset/USB/balloon/watchdog policy; native qualification and safe reviewed acceptance of the retained legacy definition remain outstanding. Legacy recipe semantics remain unchanged."
       ],
       "hardwareVerified": false,
       "released": false

@@ -175,6 +175,8 @@ func TestNoCloudCreationOptionsUseSharedService(t *testing.T) {
 	if r.method != "vm.create" || r.request.ID != "prepared-op" || r.request.Input["provisioning"].(map[string]any)["profile"] != "nocloud-netplan-ipv4-v1" {
 		t.Fatal("NoCloud request bypassed shared creation", r)
 	}
+ policy := r.request.Input["hardware"].(map[string]any)["devicePolicy"].(map[string]any)
+ if policy["watchdogAction"] != "none" || policy["usbController"] != "none" || policy["memoryBalloon"] != "none" { t.Fatal("reviewed device policy lost in client form", policy) }
 }
 
 func TestFixedResourcesUseSharedPlanning(t *testing.T) {

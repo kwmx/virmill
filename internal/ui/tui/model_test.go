@@ -295,6 +295,8 @@ func TestNoCloudCreationFormUsesSharedService(t *testing.T) {
 	if r.method != "vm.create" || r.request.ID != "prepared-op" || r.request.Input["provisioning"].(map[string]any)["mediaID"] != "cloud-init" {
 		t.Fatal("NoCloud mapping lost", r)
 	}
+ policy := r.request.Input["hardware"].(map[string]any)["devicePolicy"].(map[string]any)
+ if policy["watchdogAction"] != "none" || policy["usbController"] != "none" || policy["memoryBalloon"] != "none" { t.Fatal("reviewed device policy lost in client form", policy) }
 }
 
 func TestFixedResourceFormUsesSharedPlanning(t *testing.T) {

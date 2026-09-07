@@ -79,6 +79,7 @@ func Register(service *app.Service, seedCacheDirectory string) {
 	s := &Service{Engine: service.Engine, Store: service.Engine.Store, Backend: backend, Inventory: inventory, LoadSource: importing.Approved, SeedTool: seed.Tool{}, SeedCache: seedCacheDirectory}
 	service.InventoryVM = s.Ownership
 	service.Engine.Handlers["vm.create"] = s
+	service.Engine.Handlers["vm.create.devices-v1"] = s
 	service.Engine.Handlers["vm.create.resume"] = &resumeHandler{s: s}
 	if cleanup, ok := service.Provider.(domain.CreationCleanupBackend); ok {
 		h := &cleanupHandler{s: s, backend: cleanup}
@@ -126,6 +127,15 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		return empty, domain.Fail("INVALID_INPUT", "this creation path requires clone identity; recovery restores use a separate workflow")
 	}
 	spec := req.Hardware
+	if spec.DevicePolicy == nil {
+		spec.DevicePolicy, err = domain.DefaultCreationDevices(spec.Machine)
+		if err != nil {
+			return empty, err
+		}
+	}
+	if err = spec.DevicePolicy.Validate(spec.Machine); err != nil {
+		return empty, err
+	}
 	spec.UUID = domain.ID()
 	name, err := validation.DisplayName(spec.Name)
 	if err != nil {
@@ -251,11 +261,21 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 			risks = append(risks, "The selected guest account receives passwordless sudo root authority")
 		}
 	}
-	return s.Engine.Plan(ctx, uid, r.Connection, "vm.create", resources, before, in, []domain.Step{step}, acks, risks)
+	step.Action = "vm.create.devices-v1"
+	acks = append(acks, "creation-device-policy")
+	risks = append(risks, "The reviewed chipset policy fixes USB, balloon, watchdog, PS/2 input, disabled host audio and ISA serial settings; libvirt assigns bounded PCI addresses and bridge topology")
+	if spec.DevicePolicy.WatchdogAction == "reset" {
+		acks = append(acks, "watchdog-reset")
+		risks = append(risks, "The Q35 watchdog can forcefully reset the guest if its guest driver arms it and the timer expires")
+	}
+	return s.Engine.Plan(ctx, uid, r.Connection, "vm.create.devices-v1", resources, before, in, []domain.Step{step}, acks, risks)
 }
 func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[string]any, error) {
 	var in input
 	if err := wire.Decode(b, &in); err != nil {
+		return nil, err
+	}
+	if err := creationRecipeVersion(p, in); err != nil {
 		return nil, err
 	}
 	staging := ""
@@ -275,6 +295,9 @@ func (s *Service) checkSource(ctx context.Context, p domain.Plan, in input) erro
 	return nil
 }
 func (s *Service) checkTarget(ctx context.Context, p domain.Plan, in input) error {
+	if err := creationRecipeVersion(p, in); err != nil {
+		return err
+	}
 	target, err := s.Backend.PreflightCreation(ctx, p.ConnectionID, in.Target.Spec)
 	if err != nil {
 		return err
@@ -567,6 +590,9 @@ func (s *Service) Reconcile(ctx context.Context, p domain.Plan, b []byte, step d
 	if err := wire.Decode(b, &in); err != nil {
 		return false, err
 	}
+	if err := creationRecipeVersion(p, in); err != nil {
+		return false, err
+	}
 	r, err := s.load(p.ID)
 	if err != nil {
 		return false, err
@@ -610,7 +636,7 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	if err != nil {
 		return nil, err
 	}
-	if p.ActorUID != uid || (p.Operation != "vm.create" && p.Operation != "vm.create.resume" && p.Operation != "vm.create.cleanup") {
+	if p.ActorUID != uid || (!creationOperation(p.Operation) && p.Operation != "vm.create.resume" && p.Operation != "vm.create.cleanup") {
 		return nil, domain.Fail("INVALID_INPUT", "not your VM creation operation")
 	}
 	if p.Operation == "vm.create.cleanup" {

@@ -35,6 +35,20 @@ func probeCreationDevices(ctx context.Context, emulator string, s domain.Creatio
 		return "", err
 	}
 	models := map[string]bool{}
+	if p := s.DevicePolicy; p != nil {
+		if err := p.Validate(s.Machine); err != nil {
+			return "", err
+		}
+		if p.USBController == "qemu-xhci" {
+			models["qemu-xhci"] = true
+		}
+		if p.MemoryBalloon == "virtio" {
+			models["virtio-balloon-pci"] = true
+		}
+		if p.Chipset == "q35" {
+			models["pcie-root-port"] = true
+		}
+	}
 	for _, n := range s.NICs {
 		model := map[string]string{"virtio": "virtio-net-pci", "e1000e": "e1000e", "rtl8139": "rtl8139"}[n.Model]
 		if model == "" {

@@ -44,7 +44,7 @@ func (s *Service) PlanResume(ctx context.Context, uid uint32, r app.Request) (do
 	}
 	originalID := prior.ID
 	switch prior.Operation {
-	case "vm.create":
+	case "vm.create", "vm.create.devices-v1":
 	case "vm.create.resume":
 		var old resumeInput
 		if err = wire.Decode(encoded, &old); err != nil {
@@ -96,7 +96,7 @@ func (s *Service) originalReceipt(p domain.Plan, in resumeInput) (domain.Plan, i
 	if err != nil {
 		return original, recipe, Receipt{}, err
 	}
-	if original.Operation != "vm.create" || original.ActorUID != p.ActorUID || original.ConnectionID != p.ConnectionID {
+	if !creationOperation(original.Operation) || original.ActorUID != p.ActorUID || original.ConnectionID != p.ConnectionID {
 		return original, recipe, Receipt{}, domain.Fail("PERMISSION_DENIED", "recovery creation identity differs")
 	}
 	digest, err := operations.PlanDigest(original)
@@ -112,6 +112,9 @@ func (s *Service) originalReceipt(p domain.Plan, in resumeInput) (domain.Plan, i
 		return original, recipe, Receipt{}, domain.Fail("SOURCE_CHANGED", "original creation input changed")
 	}
 	if err = wire.Decode(encoded, &recipe); err != nil {
+		return original, recipe, Receipt{}, err
+	}
+	if err = creationRecipeVersion(original, recipe); err != nil {
 		return original, recipe, Receipt{}, err
 	}
 	receipt, err := s.load(original.ID)

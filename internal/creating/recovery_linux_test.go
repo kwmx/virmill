@@ -95,6 +95,7 @@ func TestFailedRecoveryRetainsLocksAndAllowsAnotherReviewedRecovery(t *testing.T
 	s.Engine.Close()
 	s.Engine = operations.New(s.Store)
 	s.Engine.Handlers["vm.create"] = s
+	s.Engine.Handlers["vm.create.devices-v1"] = s
 	s.Engine.Handlers["vm.create.resume"] = &resumeHandler{s: s}
 	t.Cleanup(s.Engine.Close)
 	if err = s.Engine.Recover(); err != nil {

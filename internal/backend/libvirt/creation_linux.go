@@ -30,6 +30,9 @@ var digestPattern = regexp.MustCompile(`^[0-9a-f]{64}$`)
 var macPattern = regexp.MustCompile(`^[0-9a-f]{2}(:[0-9a-f]{2}){5}$`)
 
 func validateCreationSpec(s domain.CreationSpec) error {
+	if err := s.DevicePolicy.Validate(s.Machine); err != nil {
+		return err
+	}
 	if !uuidPattern.MatchString(s.UUID) || !uuidPattern.MatchString(s.PoolID) || s.Architecture != "x86_64" || s.Machine == "" || len(s.Machine) > 128 || s.VCPUs < 1 || s.VCPUs > 512 || s.MemoryMiB < 128 || s.MemoryMiB > 1<<20 {
 		return domain.Fail("INVALID_INPUT", "explicit UUID, pool, x86_64 machine and bounded CPU/RAM required")
 	}
@@ -831,7 +834,7 @@ func (p *Provider) ObserveCreatedVM(ctx context.Context, uri string, t domain.Cr
 	if err != nil {
 		return v, false, err
 	}
-	if err = matchesCreation(wanted, v.PersistentXML); err != nil {
+	if err = matchesCreationPolicy(wanted, v.PersistentXML, t.Spec.DevicePolicy); err != nil {
 		return v, false, err
 	}
 	if err = checkCreationNetworks(c, uri, t.Networks); err != nil {

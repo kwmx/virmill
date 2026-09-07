@@ -34,6 +34,9 @@ func diskSuffix(n int) string {
 // existing domain or replace XML containing unknown configuration.
 func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, binding string) (string, error) {
 	s := t.Spec
+	if err := s.DevicePolicy.Validate(s.Machine); err != nil {
+		return "", err
+	}
 	if len(volumes) != len(s.Disks)+len(s.Media) {
 		return "", errors.New("complete volume set required")
 	}
@@ -74,7 +77,16 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 			scsi++
 		}
 	}
-	if sata > 0 {
+	if s.DevicePolicy != nil {
+		pci := "pci-root"
+		if s.DevicePolicy.Chipset == "q35" {
+			pci = "pcie-root"
+		} else {
+			b.WriteString(`<controller type="ide" index="0"/>`)
+		}
+		fmt.Fprintf(&b, `<controller type="pci" index="0" model="%s"/><controller type="usb" index="0" model="%s"/>`, pci, s.DevicePolicy.USBController)
+	}
+	if sata > 0 || (s.DevicePolicy != nil && s.DevicePolicy.Chipset == "q35") {
 		b.WriteString(`<controller type="sata" index="0"/>`)
 	}
 	if scsi > 0 {
@@ -136,7 +148,16 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 	if s.Graphics == "vnc-unix" {
 		b.WriteString(`<graphics type="vnc"><listen type="socket"/></graphics><video><model type="vga"/></video>`)
 	}
-	b.WriteString(`<serial type="pty"><target port="0"/></serial><console type="pty"><target type="serial" port="0"/></console></devices></domain>`)
+	if s.DevicePolicy != nil {
+		b.WriteString(`<input type="mouse" bus="ps2"/><input type="keyboard" bus="ps2"/><audio id="1" type="none"/><serial type="pty"><target type="isa-serial" port="0"><model name="isa-serial"/></target></serial>`)
+		if s.DevicePolicy.Chipset == "q35" {
+			fmt.Fprintf(&b, `<watchdog model="itco" action="%s"/>`, s.DevicePolicy.WatchdogAction)
+		}
+		fmt.Fprintf(&b, `<memballoon model="%s"/>`, s.DevicePolicy.MemoryBalloon)
+	} else {
+		b.WriteString(`<serial type="pty"><target port="0"/></serial>`)
+	}
+	b.WriteString(`<console type="pty"><target type="serial" port="0"/></console></devices></domain>`)
 	return b.String(), xmlpatch.Validate(b.String())
 }
 
@@ -371,6 +392,9 @@ func memoryKiB(n *xmlNode) error {
 	return nil
 }
 func matchesCreation(wanted, observed string) error {
+	return matchesCreationPolicy(wanted, observed, nil)
+}
+func matchesCreationPolicy(wanted, observed string, policy *domain.CreationDevicePolicy) error {
 	w, err := xmlTree(wanted)
 	if err != nil {
 		return err
@@ -384,6 +408,11 @@ func matchesCreation(wanted, observed string) error {
 	}
 	if err = memoryKiB(g); err != nil {
 		return err
+	}
+	if policy != nil {
+		if err = normalizeCreationPCI(w, g, policy); err != nil {
+			return err
+		}
 	}
 	if !matchesNode(w, g) {
 		return domain.Fail("RECOVERY_REQUIRED", "defined configuration differs from reviewed creation intent")

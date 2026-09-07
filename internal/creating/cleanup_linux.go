@@ -84,7 +84,7 @@ func (h *cleanupHandler) Plan(ctx context.Context, uid uint32, r app.Request) (d
 	}
 	originalID := prior.ID
 	switch prior.Operation {
-	case "vm.create":
+	case "vm.create", "vm.create.devices-v1":
 	case "vm.create.resume":
 		var old resumeInput
 		if err = wire.Decode(encoded, &old); err != nil {

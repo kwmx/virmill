@@ -25,8 +25,9 @@
   digest as a source requirement; never fetch-and-execute an unpinned replacement.
 - U008: Native Q35 creation adds unreviewed controllers, inputs, audio, balloon and
   reset-watchdog settings. Strict comparison retains the failed operation and
-  powered-off VM. Explicit device/default intent and compatible recovery are
-  required; do not broaden verification to silently accept changed semantics.
+  powered-off VM. Versioned explicit device intent is now implemented for new plans; its native
+  qualification and compatible acceptance of the retained definition remain
+  required. Old recipes still refuse changed semantics.
 
 Unimplemented code is tracked separately in the requirements tracker and is not
 classified as a hardware limitation. None of these unknowns reduces 1.0 scope.

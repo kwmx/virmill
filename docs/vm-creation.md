@@ -49,6 +49,16 @@ CPU mode, memory, UTC/local time, BIOS/UEFI and display choice are explicit.
 Serial devices are included. Interactive viewer/serial attachment is still a
 separate required workflow. A device definition does not prove guest reachability.
 
+`hardware.devicePolicy` makes chipset devices explicit. The examples select version
+1, the matching `q35` or `i440fx` chipset, `pciPlacement: libvirt-auto`,
+`usbController: none`, `memoryBalloon: none`, `watchdogAction: none`, `input: ps2`,
+`audio: none`, and `serial: isa-serial`. Omitting this object selects these values
+in the new plan; always review them. USB may instead be `qemu-xhci`, ballooning
+`virtio`, and the Q35 watchdog action `reset`. A reset watchdog can forcefully
+restart a guest that has armed it. Controller selection alone does not attach or
+qualify physical USB. Automatic PCI placement permits only known bounded bridge
+forms; unknown normalization stops confirmation. See [ADR 0013](adr/0013-reviewed-creation-device-policy.md).
+
 UEFI requires absolute installed code/template paths and their explicit `raw` or
 `qcow2` format. The selected system descriptor and libvirt capabilities must match.
 Secure Boot requires an enrolled-key template. `tpm: true` requires advertised
@@ -71,7 +81,8 @@ identity inside the copied disks. Guest adaptation is reported `not-run`.
 
 `plan apply PLAN_ID` requires `--digest`, `--idempotency-key` and every
 `--ack` listed by that exact plan. Creation always requires `host-mutation`,
-`copy-managed-volumes` and `new-vm-identity`; NICs add `network-attachment` and
+`copy-managed-volumes`, `new-vm-identity` and `creation-device-policy`; choosing
+a reset watchdog adds `watchdog-reset`; NICs add `network-attachment` and
 UEFI adds `new-firmware-state`; media adds `attach-readonly-media`.
 Apply repeats preflight. No VM starts automatically.
 
@@ -125,3 +136,9 @@ writes a private, consistent `journal.db.pre-v3-UUID.db` backup and upgrades to
 schema 3. Keep that backup for operator recovery. Older binaries must refuse schema 3;
 replacing the live database with a pre-migration backup can lose later operation
 history and must not be used as an automatic downgrade.
+
+Older stored `vm.create` operations keep their original device expectations. New
+plans use `vm.create.devices-v1`; do not downgrade a coordinator to execute these
+plans. An already-defined legacy VM with unreviewed devices remains uncertain.
+Resume/cleanup do not bypass that mismatch; safe reviewed acceptance of such a
+definition remains outstanding. Preserve its resources and locks.
