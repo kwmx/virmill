@@ -4,23 +4,40 @@ package helper
 import (
 	"crypto/ed25519"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"regexp"
 	"time"
+	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/operations"
 )
 
 type Request struct {
-	APIVersion string    `json:"apiVersion"`
-	ActorUID   uint32    `json:"actorUID"`
-	Operation  string    `json:"operation"`
-	ResourceID string    `json:"resourceID"`
-	RootID     string    `json:"rootID"`
-	PlanDigest string    `json:"planDigest"`
-	JobID      string    `json:"jobID"`
-	ExpiresAt  time.Time `json:"expiresAt"`
-	KeyID      string    `json:"keyID"`
-	Signature  string    `json:"signature"`
+	APIVersion string         `json:"apiVersion"`
+	ActorUID   uint32         `json:"actorUID"`
+	Operation  string         `json:"operation"`
+	ResourceID string         `json:"resourceID"`
+	RootID     string         `json:"rootID"`
+	PlanDigest string         `json:"planDigest"`
+	JobID      string         `json:"jobID"`
+	ExpiresAt  time.Time      `json:"expiresAt"`
+	KeyID      string         `json:"keyID"`
+	Signature  string         `json:"signature"`
+	Mode       string         `json:"mode,omitempty"`
+	Access     *AccessRequest `json:"access,omitempty"`
+}
+type AccessRequest struct {
+	Mapping            domain.ManagedFileVolume `json:"mapping"`
+	RelativePath       string                   `json:"relativePath"`
+	Before             json.RawMessage          `json:"before"`
+	ActorGroups        []uint32                 `json:"actorGroups"`
+	OriginalGrantJobID string                   `json:"originalGrantJobID,omitempty"`
+}
+type Response struct {
+	APIVersion string          `json:"apiVersion"`
+	Success    bool            `json:"success"`
+	Error      string          `json:"error,omitempty"`
+	Access     json.RawMessage `json:"access,omitempty"`
 }
 type Policy struct {
 	APIVersion string            `json:"apiVersion"`
@@ -48,7 +65,33 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 	if !allowed {
 		return errors.New("peer not allowed by administrator policy")
 	}
-	if r.Operation != "storage.prepare-directory" {
+	switch r.Operation {
+	case "storage.prepare-directory":
+		if r.Mode != "" || r.Access != nil {
+			return errors.New("legacy directory operation cannot carry access authority")
+		}
+	case "storage.grant-read", "storage.revoke-read":
+		if r.Access == nil || (r.Mode != "check" && r.Mode != "apply" && r.Mode != "observe") {
+			return errors.New("typed access request and explicit mode required")
+		}
+		if r.Access.Mapping.VMID != r.ResourceID || !uuid.MatchString(r.Access.Mapping.PoolID) {
+			return errors.New("native VM/pool identity differs")
+		}
+		if r.Operation == "storage.grant-read" && r.Access.OriginalGrantJobID != "" {
+			return errors.New("grant cannot reference another grant")
+		}
+		if r.Operation == "storage.revoke-read" && (!uuid.MatchString(r.Access.OriginalGrantJobID) || r.Access.OriginalGrantJobID == r.JobID) {
+			return errors.New("revoke requires a distinct original grant job")
+		}
+		if len(r.Access.ActorGroups) == 0 || len(r.Access.ActorGroups) > 4096 {
+			return errors.New("bounded actual peer groups required")
+		}
+		for i, g := range r.Access.ActorGroups {
+			if g == ^uint32(0) || (i > 0 && r.Access.ActorGroups[i-1] >= g) {
+				return errors.New("canonical peer group inventory required")
+			}
+		}
+	default:
 		return errors.New("helper operation not implemented or allowlisted")
 	}
 	if !uuid.MatchString(r.ResourceID) || !uuid.MatchString(r.JobID) {
@@ -58,7 +101,7 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 	if e != nil || len(digest) != 32 {
 		return errors.New("invalid plan digest")
 	}
-	if now.After(r.ExpiresAt) || r.ExpiresAt.Sub(now) > 15*time.Minute {
+	if !now.Before(r.ExpiresAt) || r.ExpiresAt.Sub(now) > 15*time.Minute {
 		return errors.New("grant expired or duration exceeds limit")
 	}
 	if p.Roots[r.RootID] == "" {

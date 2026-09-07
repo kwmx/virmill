@@ -1,9 +1,10 @@
-//go:build linux
+//go:build linux && amd64
 
 package helper
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"golang.org/x/sys/unix"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
+	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/wire"
 )
 
@@ -111,57 +113,60 @@ func Execute(r Request, p Policy) error {
 	done.Close()
 	return e
 }
-func Serve(listener net.Listener) error {
+func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error {
 	if os.Getuid() != 0 {
 		return errors.New("privileged helper requires authenticated system activation")
 	}
-	if e := ownedRoot(PolicyPath, false); e != nil {
-		return e
-	}
-	b, e := os.ReadFile(PolicyPath)
-	if e != nil {
-		return e
-	}
-	var p Policy
-	if e = wire.Decode(b, &p); e != nil {
-		return e
+	if _, err := loadPolicy(); err != nil {
+		return err
 	}
 	for {
-		conn, e := listener.Accept()
-		if e != nil {
-			return e
+		conn, err := listener.Accept()
+		if err != nil {
+			return err
 		}
 		func() {
 			defer conn.Close()
-			conn.SetDeadline(time.Now().Add(10 * time.Second))
+			deadline := time.Now().Add(10 * time.Second)
+			conn.SetDeadline(deadline)
+			ctx, cancel := context.WithDeadline(context.Background(), deadline)
+			defer cancel()
 			c, ok := conn.(*net.UnixConn)
 			if !ok {
 				return
 			}
-			raw, e := c.SyscallConn()
-			if e != nil {
+			cred, groups, err := PeerGroups(c)
+			if err != nil {
 				return
 			}
-			var cred *unix.Ucred
-			var inner error
-			e = raw.Control(func(fd uintptr) { cred, inner = unix.GetsockoptUcred(int(fd), unix.SOL_SOCKET, unix.SO_PEERCRED) })
-			if e != nil || inner != nil {
-				return
-			}
-			frame, e := wire.ReadFrame(bufio.NewReader(conn))
+			frame, err := wire.ReadFrame(bufio.NewReader(conn))
 			var r Request
-			if e == nil {
-				e = wire.Decode(frame, &r)
+			if err == nil {
+				err = wire.Decode(frame, &r)
 			}
-			if e == nil {
-				e = Authorize(cred.Uid, r, p, time.Now())
+			// Reload revocations from the administrator's held, validated policy file.
+			p, policyErr := loadPolicy()
+			if err == nil {
+				err = policyErr
 			}
-			if e == nil {
-				e = Execute(r, p)
+			if err == nil {
+				err = Authorize(cred.Uid, r, p, time.Now())
 			}
-			result := map[string]any{"apiVersion": "virmill/v1", "success": e == nil}
-			if e != nil {
-				result["error"] = e.Error()
+			var access json.RawMessage
+			if err == nil {
+				if r.Operation == "storage.prepare-directory" {
+					err = Execute(r, p)
+				} else {
+					var result AccessResult
+					result, err = (AccessExecutor{Backend: backend}).Execute(ctx, r, p, groups)
+					if err == nil {
+						access, err = json.Marshal(result)
+					}
+				}
+			}
+			result := Response{APIVersion: "virmill/v1", Success: err == nil, Access: access}
+			if err != nil {
+				result.Error = err.Error()
 			}
 			json.NewEncoder(conn).Encode(result)
 		}()

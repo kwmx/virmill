@@ -1,0 +1,5 @@
+--- FAIL: TestReadGrantPreservesMaskedSubjectsAndPriorActorRights (0.00s)
+    acl_linux_test.go:43: non-idempotent derivation: ACL mask differs from file mode
+FAIL
+FAIL	virmill.local/core/internal/backend/fileaccess	0.017s
+FAIL

@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	backend "virmill.local/core/internal/backend/libvirt"
 	"virmill.local/core/internal/helper"
 )
 
@@ -24,7 +25,7 @@ func main() {
 	listener, e := net.FileListener(f)
 	f.Close()
 	if e == nil {
-		e = helper.Serve(listener)
+		e = helper.Serve(listener, &backend.Provider{})
 	}
 	if e != nil {
 		fmt.Fprintln(os.Stderr, e)

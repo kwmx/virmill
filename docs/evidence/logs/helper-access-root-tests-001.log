@@ -1,0 +1,15 @@
+{"testBinarySHA256": "4274a74f26196ee0aa6415e06f50b96c9f58bae9cbded257d9c1e7ff39defcbf", "scope": "generated temporary ACL files and helper journals only; native mapping is synthetic"}
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/normal
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/lost-completion
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/stale-before
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/native-drift
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/revoke-drift
+--- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement (0.01s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/normal (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/lost-completion (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/stale-before (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/native-drift (0.00s)
+    --- PASS: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement/revoke-drift (0.00s)
+PASS
+

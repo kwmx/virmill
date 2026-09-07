@@ -292,6 +292,9 @@ func (e *Engine) Reconcile(ctx context.Context, id string) (domain.Job, error) {
 	if j.Step >= len(p.Steps) {
 		return j, errors.New("journal step invalid")
 	}
+	// Recovery is another execution boundary for this same accepted job. Bind its
+	// identity exactly as run does, so helper observations cannot invent a job ID.
+	ctx = context.WithValue(ctx, operationContextKey{}, j.ID)
 	ok, err = h.Reconcile(ctx, p, input, p.Steps[j.Step])
 	if err != nil || !ok {
 		if err == nil {

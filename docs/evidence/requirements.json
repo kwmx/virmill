@@ -1230,7 +1230,12 @@
         "internal/backend/libvirt/creation_linux.go",
         "internal/backend/libvirt/creation_xml.go",
         "docs/evidence/device-policy-run.md",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -1244,7 +1249,10 @@
         "internal/backend/libvirt/creation_linux_test.go",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-pool-setup.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-active-upload-crash.py",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-fresh-create.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-fresh-create.py",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -1253,10 +1261,15 @@
         "device-policy-native-creation-001",
         "multidisk-native-pool-001",
         "multidisk-native-crash-001",
-        "multidisk-native-fresh-create-001"
+        "multidisk-native-fresh-create-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
-        "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill pool creation, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required."
+        "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill pool creation, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1803,7 +1816,12 @@
         "internal/creating/cleanup_linux.go",
         "docs/evidence/result-progress-run.md",
         "docs/evidence/creation-acceptance-run.md",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-01",
@@ -1812,7 +1830,10 @@
         "internal/creating/result_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-import-tui.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-import-tui.py",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -1826,12 +1847,17 @@
         "creation-progress-core-001",
         "result-progress-core-001",
         "acceptance-native-tui-001",
-        "multidisk-native-import-tui-001"
+        "multidisk-native-import-tui-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
         "A real PTY import approval detached while the coordinator completed two-disk conversion; CLI reconnection returned coherent persisted result/events. Additional client disconnects, all handlers and multi-client transport faults remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
-        "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified."
+        "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1894,7 +1920,12 @@
         "docs/creation-acceptance.md",
         "docs/adr/0017-reviewed-creation-acceptance.md",
         "docs/evidence/creation-acceptance-run.md",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -1936,7 +1967,10 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-active-upload-crash.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-recovery-refusals.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-retain-tui.py",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1981,7 +2015,12 @@
         "multidisk-native-crash-001",
         "multidisk-native-recovery-001",
         "multidisk-native-retain-tui-001",
-        "multidisk-native-preservation-001"
+        "multidisk-native-preservation-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001",
+        "storage-access-recovery-context-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -1991,7 +2030,8 @@
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
-        "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified."
+        "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2074,7 +2114,12 @@
         "docs/creation-acceptance.md",
         "docs/adr/0017-reviewed-creation-acceptance.md",
         "docs/evidence/creation-acceptance-run.md",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -2102,7 +2147,10 @@
         "internal/app/estimates_test.go",
         "internal/operations/estimates_test.go",
         "internal/creating/result_linux_test.go",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-recovery-refusals.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-recovery-refusals.py",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -2126,14 +2174,19 @@
         "acceptance-core-001",
         "acceptance-native-permission-refusal-001",
         "acceptance-native-tui-001",
-        "multidisk-native-recovery-001"
+        "multidisk-native-recovery-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2148,20 +2201,35 @@
       "status": "in-progress",
       "implementationPaths": [
         "internal/transport/local/socket_linux.go",
-        "internal/helper/authorization.go"
+        "internal/helper/authorization.go",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
       "tests": [
         "internal/transport/local/socket_linux_test.go",
-        "internal/helper/authorization_test.go"
+        "internal/helper/authorization_test.go",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
-        "core-tests-001"
+        "core-tests-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
-        "Peer/socket/grant unit checks pass; cross-UID and actual privileged helper integration remain unexecuted."
+        "Peer/socket/grant unit checks pass; cross-UID and actual privileged helper integration remain unexecuted.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2225,7 +2293,12 @@
         "internal/wire/json.go",
         "internal/validation/validate.go",
         "internal/app/importer/ova.go",
-        "internal/backend/xmlpatch/resources.go"
+        "internal/backend/xmlpatch/resources.go",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-03",
@@ -2233,16 +2306,26 @@
         "internal/wire/json_test.go",
         "internal/app/importer/ova_test.go",
         "internal/validation/validate_test.go",
-        "internal/backend/xmlpatch/resources_test.go"
+        "internal/backend/xmlpatch/resources_test.go",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
         "core-tests-001",
         "import-conversion-001",
         "nocloud-key-fuzz-001",
-        "configuration-xml-fuzz-001"
+        "configuration-xml-fuzz-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
-        "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain."
+        "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2291,20 +2374,35 @@
         "internal/operations/canonical.go",
         "internal/operations/engine.go",
         "internal/helper/authorization.go",
-        "internal/plugins/package.go"
+        "internal/plugins/package.go",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
       "tests": [
         "internal/operations/engine_test.go",
         "internal/helper/authorization_test.go",
-        "internal/plugins/package_test.go"
+        "internal/plugins/package_test.go",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/ui/cli/root_test.go",
+        "internal/ui/tui/model_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
-        "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains."
+        "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2533,7 +2631,12 @@
         "docs/creation-acceptance.md",
         "docs/adr/0017-reviewed-creation-acceptance.md",
         "docs/evidence/creation-acceptance-run.md",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -2567,7 +2670,10 @@
         "internal/creating/result_linux_test.go",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-inspect-plan.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-import-tui.py",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-retain-tui.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-retain-tui.py",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2602,7 +2708,11 @@
         "acceptance-native-readback-001",
         "multidisk-native-inspect-harness-001",
         "multidisk-native-import-tui-001",
-        "multidisk-native-retain-tui-001"
+        "multidisk-native-retain-tui-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -2613,7 +2723,8 @@
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2738,7 +2849,12 @@
         "docs/evidence/boot-media-run.md",
         "docs/evidence/downtime-estimates-run.md",
         "docs/evidence/result-progress-run.md",
-        "docs/evidence/creation-acceptance-run.md"
+        "docs/evidence/creation-acceptance-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -2753,7 +2869,10 @@
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "artifact-tests-001",
@@ -2799,10 +2918,15 @@
         "acceptance-artifacts-001",
         "acceptance-native-access-001",
         "acceptance-native-tools-001",
-        "acceptance-native-upgrade-001"
+        "acceptance-native-upgrade-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
-        "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
+        "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2910,7 +3034,12 @@
         "docs/creation-acceptance.md",
         "docs/adr/0017-reviewed-creation-acceptance.md",
         "docs/evidence/creation-acceptance-run.md",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/storageaccess/service_linux.go",
+        "internal/helper/access_linux.go",
+        "internal/backend/libvirt/storage_access_linux.go",
+        "docs/managed-volume-access.md",
+        "docs/adr/0018-managed-volume-read-access.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -2944,7 +3073,10 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-import-tui.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-pool-setup.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-retain-tui.py",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py",
+        "internal/storageaccess/service_linux_test.go",
+        "internal/helper/access_linux_test.go",
+        "internal/backend/fileaccess/acl_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3006,7 +3138,11 @@
         "multidisk-native-pool-001",
         "multidisk-native-retain-tui-001",
         "multidisk-native-preservation-001",
-        "multidisk-records-001"
+        "multidisk-records-001",
+        "storage-access-core-001",
+        "storage-access-static-001",
+        "storage-access-peer-kernel-001",
+        "helper-access-root-tests-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3016,7 +3152,8 @@
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
+        "Reviewed per-volume read grants/restoration now have a shared signed-helper workflow, ACL/credential tests and deterministic lost-acknowledgement recovery. Initial root temporary-file tests use synthetic native mapping and a development binary; immutable native CLI/TUI qualification and the complete permission/crash/distro matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false

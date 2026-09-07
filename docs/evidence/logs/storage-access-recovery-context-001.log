@@ -1,0 +1,5 @@
+--- FAIL: TestLostAcknowledgementReconcilesWithoutReplay (0.01s)
+    service_linux_test.go:173: {2c818853-193e-4275-a14d-c34cb8cd9bcc a1b93ea7-ea6b-488f-9f2e-dfa67cc2b627 recovery-required 0 2026-09-07 16:32:03.170551068 +0000 UTC OPERATION_FAILED: synthetic lost helper acknowledgement false  } INVALID_INPUT: durable operation context required
+FAIL
+FAIL	virmill.local/core/internal/storageaccess	0.146s
+FAIL

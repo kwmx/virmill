@@ -13,6 +13,7 @@ import (
 	"virmill.local/core/internal/operations"
 	platform "virmill.local/core/internal/platform/linux"
 	"virmill.local/core/internal/plugins"
+	"virmill.local/core/internal/storageaccess"
 	"virmill.local/core/internal/store"
 	"virmill.local/core/internal/transport/local"
 )
@@ -39,6 +40,7 @@ func run() error {
 	service.Inspector = platform.Doctor
 	importing.Register(service)
 	creating.Register(service, p.Cache)
+	storageaccess.Register(service, p.Config)
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e
 	}

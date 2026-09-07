@@ -16,6 +16,32 @@ type recorder struct {
 	request app.Request
 }
 
+func TestManagedVolumeAccessUsesSharedService(t *testing.T) {
+	for _, spec := range []struct {
+		args       []string
+		method, id string
+	}{
+		{[]string{"storage", "access", "grant", "vm-id", "--input", `{"target":"vda","rootID":"images"}`, "--plan"}, "storage.access.grant", "vm-id"},
+		{[]string{"storage", "access", "revoke", "grant-job", "--plan"}, "storage.access.revoke", "grant-job"},
+		{[]string{"storage", "access", "result", "access-job"}, "storage.access.result", "access-job"},
+		{[]string{"host", "helper", "identity"}, "host.helper.identity", ""},
+	} {
+		r := &recorder{}
+		var out bytes.Buffer
+		c := New(r, &out, &out)
+		c.SetArgs(append(spec.args, "--output", "json", "--non-interactive"))
+		if err := c.Execute(); err != nil {
+			t.Fatal(err)
+		}
+		if r.method != spec.method || r.request.ID != spec.id {
+			t.Fatal("access command bypassed shared service", r)
+		}
+		if spec.method == "storage.access.grant" && (r.request.Input["target"] != "vda" || r.request.Input["rootID"] != "images") {
+			t.Fatal("grant input lost")
+		}
+	}
+}
+
 func (r *recorder) Call(ctx context.Context, method string, p app.Request) (app.Response, error) {
 	r.method = method
 	r.request = p

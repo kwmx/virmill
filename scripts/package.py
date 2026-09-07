@@ -60,7 +60,7 @@ helper = {
     'usr/share/doc/virmill-host-helper/helper-policy.example.json': content('packaging/policy/helper-policy.example.json'),
     'usr/share/licenses/virmill-host-helper/LICENSE': content('LICENSE'),
 }
-for name, files, dependencies in [('virmill',core,'libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, util-linux, xorriso'),('virmill-host-helper',helper,'libc6')]:
+for name, files, dependencies in [('virmill',core,'libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, util-linux, xorriso'),('virmill-host-helper',helper,'libc6, libvirt0')]:
     description = 'Virmill development build; incomplete and not release-qualified'
     control = f'Package: {name}\nVersion: 0.0.0~dev\nArchitecture: amd64\nMaintainer: Virmill contributors\nSection: admin\nPriority: optional\nDepends: {dependencies}\nDescription: {description}\n'
     ar(DIST/f'{name}_0.0.0~dev_amd64.deb', [('debian-binary',b'2.0\n'),('control.tar.xz',tar_bytes({'control':(control.encode(),0o644)})),('data.tar.xz',tar_bytes(files))])
@@ -77,7 +77,7 @@ for name, files, dependencies in [('virmill',core,'libc6, libvirt0, qemu-system-
     for folder in ('BUILD','BUILDROOT','SPECS','SOURCES','RPMS','SRPMS'):
         (rpm/folder).mkdir(parents=True,exist_ok=True)
     filelist = '\n'.join('/'+p for p in sorted(files))
-    requirements = 'Requires: libvirt-libs, qemu-kvm, qemu-img, bubblewrap, util-linux, xorriso\n' if name == 'virmill' else ''
+    requirements = 'Requires: libvirt-libs, qemu-kvm, qemu-img, bubblewrap, util-linux, xorriso\n' if name == 'virmill' else 'Requires: libvirt-libs\n'
     spec = f'''Name: {name}
 Version: 0.0.0
 Release: 0.dev

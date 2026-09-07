@@ -1,0 +1,5 @@
+--- FAIL: TestKernelACLGrantAndAtomicModeOnlyRestoration (0.00s)
+    file_linux_test.go:43: invalid argument
+FAIL
+FAIL	virmill.local/core/internal/backend/fileaccess	0.020s
+FAIL

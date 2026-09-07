@@ -1,0 +1,16 @@
+--- FAIL: TestReadAccessPlansAndRevocationUseDurableEngine (0.00s)
+    service_linux_test.go:109: journal directory must be private mode 0700
+--- FAIL: TestLostAcknowledgementReconcilesWithoutReplay (0.00s)
+    service_linux_test.go:156: journal directory must be private mode 0700
+--- FAIL: TestChangedMappingGroupsAndPolicyFailBeforeEffect (0.00s)
+    --- FAIL: TestChangedMappingGroupsAndPolicyFailBeforeEffect/mapping (0.00s)
+        service_linux_test.go:179: journal directory must be private mode 0700
+    --- FAIL: TestChangedMappingGroupsAndPolicyFailBeforeEffect/groups (0.00s)
+        service_linux_test.go:179: journal directory must be private mode 0700
+    --- FAIL: TestChangedMappingGroupsAndPolicyFailBeforeEffect/policy (0.00s)
+        service_linux_test.go:179: journal directory must be private mode 0700
+--- FAIL: TestAccessSchemaAndRecipeFailClosed (0.00s)
+    service_linux_test.go:200: journal directory must be private mode 0700
+FAIL
+FAIL	virmill.local/core/internal/storageaccess	0.026s
+FAIL

@@ -1,5 +1,9 @@
 # Operator workflows and current boundaries
 
+Managed file permissions now have an explicit [grant and restoration workflow](managed-volume-access.md)
+through the signed helper, CLI and TUI. Administrator setup and the current
+stopped-VM/file-identity limits are documented there.
+
 ## Inspect existing storage pools and networks
 
 Use `storage pool list` and `network list` with an explicit `--connection

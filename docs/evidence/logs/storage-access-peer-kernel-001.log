@@ -1,0 +1,17 @@
+=== RUN   TestAccessAuthorityBindsEveryReviewedField
+--- PASS: TestAccessAuthorityBindsEveryReviewedField (0.01s)
+=== RUN   TestAccessPathRejectsAliasesAndUnrelatedFiles
+--- PASS: TestAccessPathRejectsAliasesAndUnrelatedFiles (0.00s)
+=== RUN   TestAccessBindingAllowsOnlyFreshAuthentication
+--- PASS: TestAccessBindingAllowsOnlyFreshAuthentication (0.00s)
+=== RUN   TestPrivateHelperKeyRejectsPublicModesAndLinks
+--- PASS: TestPrivateHelperKeyRejectsPublicModesAndLinks (0.00s)
+=== RUN   TestKernelPeerGroupsMatchConnectionCredentials
+--- PASS: TestKernelPeerGroupsMatchConnectionCredentials (0.00s)
+=== RUN   TestDisposableRootAccessGrantRevokeAndLostAcknowledgement
+    access_linux_test.go:210: BLOCKED: requires explicitly authorized disposable root fixture
+--- SKIP: TestDisposableRootAccessGrantRevokeAndLostAcknowledgement (0.00s)
+=== RUN   TestGrantBindsPeerActionResourcesAndPlan
+--- PASS: TestGrantBindsPeerActionResourcesAndPlan (0.00s)
+PASS
+ok  	virmill.local/core/internal/helper	1.032s

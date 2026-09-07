@@ -52,8 +52,10 @@
   download authorization does not grant the coordinator filesystem read access
   for cooperative QEMU guards. Acceptance preflight refuses missing access.
   One native acceptance passed under an explicitly recorded temporary fixture ACL,
-  which was restored exactly. Bounded helper integration for managed-storage access
-  remains implementation work; external fixture setup does not qualify that workflow.
+  which was restored exactly. The explicit signed-helper grant/restoration slice
+  now exists with kernel ACL/peer tests and durable CLI/TUI access. Immutable
+  installed native qualification remains pending in this checkpoint; external
+  fixture setup and synthetic VM observations do not qualify that workflow.
 
 Unimplemented code is tracked separately in the requirements tracker and is not
 classified as a hardware limitation. None of these unknowns reduces 1.0 scope.

@@ -16,6 +16,46 @@ type recorder struct {
 	request app.Request
 }
 
+func TestManagedVolumeAccessFormUsesSharedService(t *testing.T) {
+	for _, spec := range []struct{ command, section, input, method, id string }{
+		{"storage access grant", "Storage", `{"id":"vm-id","input":{"target":"vda","rootID":"images"}}`, "storage.access.grant", "vm-id"},
+		{"storage access revoke", "Storage", "grant-job", "storage.access.revoke", "grant-job"},
+		{"storage access result", "Storage", "access-job", "storage.access.result", "access-job"},
+	} {
+		r := &recorder{}
+		m := New(r, "qemu:///system")
+		for i, name := range sections {
+			if name == spec.section {
+				m.Section = i
+			}
+		}
+		found := false
+		for i, a := range m.actions() {
+			if a.Command == spec.command {
+				m.Selected = i
+				found = true
+			}
+		}
+		if !found {
+			t.Fatal("access action not reachable", spec.command)
+		}
+		model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		m = model.(Model)
+		m.Input = spec.input
+		_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		if cmd == nil {
+			t.Fatal("form did not dispatch", spec.command)
+		}
+		cmd()
+		if r.method != spec.method || r.request.ID != spec.id {
+			t.Fatal("TUI access differs from CLI", r)
+		}
+		if spec.method == "storage.access.grant" && (r.request.Input["target"] != "vda" || r.request.Input["rootID"] != "images") {
+			t.Fatal("grant input lost")
+		}
+	}
+}
+
 func (r *recorder) Call(ctx context.Context, method string, p app.Request) (app.Response, error) {
 	r.method = method
 	r.request = p

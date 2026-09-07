@@ -1,0 +1,10 @@
+{"argv": ["id"], "exitCode": 0, "output": "uid=1000(virmill-test) gid=1000(virmill-test) groups=1000(virmill-test) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023\n"}
+{"argv": ["sudo", "-n", "true"], "exitCode": 0, "output": ""}
+{"argv": ["date", "-u", "+%FT%TZ"], "exitCode": 0, "output": "2026-09-07T16:33:46Z\n"}
+{"argv": ["systemctl", "--user", "show", "virmill-test-12d7bba.service", "-p", "ActiveState", "-p", "SubState"], "exitCode": 0, "output": "ActiveState=active\nSubState=running\n"}
+{"argv": ["sudo", "-n", "virsh", "-c", "qemu:///system", "list", "--all"], "exitCode": 0, "output": " Id   Name                               State\n---------------------------------------------------\n -    Virmill BIOS multi-disk probe      shut off\n -    Virmill policy Kali QCOW2          shut off\n -    Virmill qualification Kali QCOW2   shut off\n -    virmill-nested-fedora              shut off\n\n"}
+{"argv": ["rpm", "-q", "openssl", "libvirt-libs", "acl"], "exitCode": 0, "output": "openssl-3.5.8-1.fc44.x86_64\nlibvirt-libs-12.0.0-3.fc44.x86_64\nacl-2.4.0-1.fc44.x86_64\n"}
+{"argv": ["sudo", "-n", "systemctl", "is-active", "virmill-host-helper.socket", "virmill-host-helper.service"], "exitCode": 3, "output": "inactive\ninactive\n"}
+{"argv": ["sudo", "-n", "stat", "-c", "%F %a %u %g %n", "/etc/virmill/helper-policy.json"], "exitCode": 1, "output": "stat: cannot statx '/etc/virmill/helper-policy.json': No such file or directory\n"}
+{"argv": ["sudo", "-n", "stat", "-c", "%F %a %u %g %n", "/run/virmill-host-helper"], "exitCode": 1, "output": "stat: cannot statx '/run/virmill-host-helper': No such file or directory\n"}
+{"argv": ["sudo", "-n", "stat", "-c", "%F %a %u %g %n", "/var/lib/virmill-host-helper"], "exitCode": 1, "output": "stat: cannot statx '/var/lib/virmill-host-helper': No such file or directory\n"}

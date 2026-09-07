@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/storage-access-grant-input.schema.json",
+  "title": "Reviewed managed-volume read grant input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "rootID"],
+  "properties": {
+    "target": {"type": "string", "pattern": "^[a-z][a-z0-9]{0,31}$"},
+    "rootID": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$"}
+  }
+}

@@ -12,10 +12,12 @@ not release-qualified. Building a DEB on Fedora does not establish Debian/Ubuntu
 installation compatibility. No package is uploaded, signed or installed by the build.
 
 The helper package installs no authorization policy and its socket defaults to root
-access only. The example grants nothing. The implemented helper action prepares
-one UUID-named directory; network/auxiliary-state/labeling/watchdog adapters and
-normal authorization issuance are unfinished, so the helper is not operationally
-ready for production use. Service files never enable lingering or change host bridges.
+access only. The example grants nothing. In addition to UUID-named directory
+preparation, the helper supports explicit [managed-volume read grants and exact
+restoration](managed-volume-access.md), using an administrator-registered actor
+and Ed25519 key. It requires the native libvirt library for independent mapping
+checks. Network/auxiliary-state/labeling/watchdog adapters and full permission
+qualification remain unfinished; this is not production release qualification. Service files never enable lingering or change host bridges.
 
 The stage installer accepts an explicit `--stage build/package-stage/virmill`
 and `--destdir /absolute/disposable/root`. `plan` prints files; `install` refuses
