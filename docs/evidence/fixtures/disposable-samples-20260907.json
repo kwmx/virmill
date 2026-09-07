@@ -1,0 +1,47 @@
+{
+  "origin": "Owner supplied; source media is not redistributed.",
+  "samples": [
+    {
+      "name": "DFIR-Win11.ova",
+      "bytes": 36551735808,
+      "sha256": "dadaa2344caf0d9b170207d497e2ab3958d5fd5971b36dcd7b030dabe573efe7",
+      "origin": "owner-supplied; publisher authentication not established",
+      "listingExitCode": 2,
+      "notes": "7-Zip reports missing tar end markers. Members are complete; corrected Virmill inspection verifies all supplied SHA1 digests and warns about weak checksums. No extraction or guest boot performed."
+    },
+    {
+      "name": "kali-linux-2026.2-hyperv-amd64.7z",
+      "bytes": 3954335610,
+      "sha256": "d7cd667761b12c546e93262b4e9384d2fc450258ba69747ed71f3a5ab6e3380e",
+      "origin": "owner-supplied; publisher authentication not established",
+      "listingExitCode": 0
+    },
+    {
+      "name": "kali-linux-2026.2-installer-amd64.iso",
+      "bytes": 4802531328,
+      "sha256": "6dbefacc95e3b556c19c48e8bae39b8b505e2d3a1aba0bfb7ab62b036c3d2ba3",
+      "origin": "owner-supplied; publisher authentication not established"
+    },
+    {
+      "name": "kali-linux-2026.2-qemu-amd64.7z",
+      "bytes": 3892765566,
+      "sha256": "c7c35588d05277c482c908bf7a136d348f76ffa68700b04ff53c0b217e6bd071",
+      "origin": "owner-supplied; publisher authentication not established",
+      "listingExitCode": 0
+    },
+    {
+      "name": "kali-linux-2026.2-virtualbox-amd64.7z",
+      "bytes": 3922416160,
+      "sha256": "41ed7ec51cdd3a5ca663ec09492261ba81acb26625fdda85ce7acb16909f3cee",
+      "origin": "owner-supplied; publisher authentication not established",
+      "listingExitCode": 0
+    },
+    {
+      "name": "kali-linux-2026.2-vmware-amd64.7z",
+      "bytes": 3896419664,
+      "sha256": "c65145cef70166889e7283a230e88c832eaa8077e6e7cd37b47c0ccdc05685b0",
+      "origin": "owner-supplied; publisher authentication not established",
+      "listingExitCode": 0
+    }
+  ]
+}

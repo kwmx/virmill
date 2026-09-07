@@ -1,0 +1,14 @@
+{
+  "test": "already-uncertain native creation across coordinator SIGKILL and explicit reconcile",
+  "installedRevision": "c9aa310693c337a8908787f8b616262b3fa53faf",
+  "operationID": "b5983e68-bfcc-42f0-bf4e-3877029b756b",
+  "stateAfterRestartAndReconcile": "recovery-required",
+  "heldResourceLocks": 3,
+  "reconcileExitCode": 6,
+  "nativeDefinitionUnchanged": true,
+  "nativeVolumeIdentitySizeTimestampsUnchanged": true,
+  "nativeVolumeSHA256": "8eb9be4a9592ad8242fa4e99fbac2dd2eef474bb93e99f3699d17617c7d93c70",
+  "vmState": "shut off",
+  "allocationOrUploadReplayed": false,
+  "limitation": "Crash occurred after creation was already uncertain, not during active upload or definition. Full crash-boundary qualification remains required."
+}

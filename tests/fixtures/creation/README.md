@@ -92,3 +92,18 @@ The production provider continues to reject test/remote URIs.
 
 Run these fixtures with the pinned toolchain and `-tags libvirt_dlopen`.
 This is not a real VM, hardware or guest sizing certification.
+
+## First disposable QEMU-driver capture
+
+`qemu12-q35-unreviewed.xml` is the actual inactive definition returned by libvirt
+12.0.0/QEMU 10.2.2 on the owner-authorized Fedora 44 test VM, 2026-09-07. Native
+allocation, upload and complete disk readback passed. Q35 definition introduced
+controllers, PS/2 inputs, audio-none, a virtio balloon and an `itco` watchdog with
+action `reset` that were absent from the plan. Strict comparison refused completion.
+The VM remained powered off and its verified volume was retained with the journal.
+
+`TestObservedQEMUCreationDefaultsRemainUnconfirmed` replays this captured XML as
+a unit regression. It prevents silently broadening creation verification to accept
+those settings for an old plan. It does not reexecute native storage or prove
+guest boot. A future explicit, reviewed device/default policy and its recovery
+compatibility are required before this configuration can be qualified.

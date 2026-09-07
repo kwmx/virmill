@@ -1,0 +1,9 @@
+Verifying...                          ########################################
+Preparing...                          ########################################
+Updating / installing...
+virmill-0.0.0-0.dev                   ########################################
+Cleaning up / removing...
+virmill-0.0.0-0.dev                   ########################################
+{"apiVersion":"virmill/v1","data":{"apiVersion":"virmill/v1","architecture":"amd64","buildTime":"0","go":"go1.27.1","os":"linux","pluginProtocol":"1.0","product":"Virmill","releaseQualified":false,"revision":"c9aa310693c337a8908787f8b616262b3fa53faf","version":"0.0.0-dev"},"warnings":[],"error":null}
+
+Running as unit: virmill-test-c9aa310.service; invocation ID: 410bf062d7174b82bf1be5c063ede78a

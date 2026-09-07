@@ -1,0 +1,52 @@
+{
+  "hostAlias": "disposable-fedora44-01",
+  "kernel": "Linux 7.1.13-200.fc44.x86_64",
+  "architecture": "x86_64",
+  "virtualization": "kvm",
+  "selinux": "Enforcing",
+  "nativePackages": [
+    "libvirt-daemon-kvm-12.0.0-3.fc44.x86_64",
+    "libvirt-libs-12.0.0-3.fc44.x86_64",
+    "qemu-kvm-10.2.2-1.fc44.x86_64",
+    "qemu-img-10.2.2-1.fc44.x86_64",
+    "edk2-ovmf-20260812-4.fc44.noarch",
+    "swtpm-0.10.2-1.fc44.x86_64",
+    "bubblewrap-0.12.0-1.fc44.x86_64",
+    "xorriso-1.5.8-2.fc44.x86_64",
+    "7zip-26.02-1.fc44.x86_64",
+    "util-linux-2.41.5-1.fc44.x86_64",
+    "python3-3.14.7-1.fc44.x86_64",
+    "restic-0.19.1-1.fc44.x86_64",
+    "virt-v2v-2.12.0-1.fc44.x86_64"
+  ],
+  "installedRevision": "c9aa310693c337a8908787f8b616262b3fa53faf",
+  "installedPackageVerification": "rpm -V passed for core and helper",
+  "newVMID": "ae630461-91d3-4f07-ad88-e6842c3dc3ea",
+  "newVMState": "shut off",
+  "guestBootVerified": false,
+  "networkAdapters": 0,
+  "preexistingGuestUnchanged": true,
+  "originalQCOW2SHA256After": "4e24751faa18753ad5f854053c523481d1bc5efa9a45c3828071b7475d825104",
+  "creationState": "recovery-required",
+  "creationError": "defined configuration differs from reviewed creation intent",
+  "nativeXMLSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824",
+  "unexpectedDeviceTypes": [
+    "controller",
+    "controller",
+    "controller",
+    "controller",
+    "controller",
+    "controller",
+    "controller",
+    "input",
+    "input",
+    "audio",
+    "watchdog",
+    "memballoon"
+  ],
+  "watchdog": {
+    "model": "itco",
+    "action": "reset"
+  },
+  "cleanup": "No source media, existing guest, retained disk or uncertain definition deleted."
+}

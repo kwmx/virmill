@@ -13,7 +13,8 @@ of libvirt 12.0.0, QEMU 10.2.2, edk2-ovmf 20260812, swtpm 0.10.2, bubblewrap 0.1
 and xorriso 1.5.8. Exact package versions and connection details are retained in
 ignored `.virmill-local/test-host.json`. Its root filesystem was full and sudo
 required a password at intake; a subsequent read-only check confirmed passwordless
-sudo is ready. This inventory does not certify nested KVM, guest boot, firmware/TPM
+sudo is ready. The owner subsequently expanded root storage before the first
+installation/test run. This inventory does not certify nested KVM, guest boot, firmware/TPM
 or physical hardware behavior.
 
 Required qualification targets remain Fedora + NetworkManager/firewalld/SELinux,
@@ -22,14 +23,19 @@ Exact additional distro versions are **unfrozen pending available test images**.
 
 Required guest/source fixtures: Fedora Linux, Ubuntu/Debian cloud, generic Linux
 ISO, VMware-origin multi-disk Linux OVA, non-VMware OVF/OVA, BSD/appliance, and
-legitimately obtained Windows UEFI/TPM. One owner-supplied OVA was found on the
-remote VM; its content and digest are not yet verified. No guest image is certified.
+legitimately obtained Windows UEFI/TPM. Six owner-supplied samples now have recorded
+hashes; one Windows OVA passed checksum inspection and one Kali QCOW2 passed
+independent preparation/native volume readback. No guest image is certified.
 Track architecture, machine/CPU, firmware, controllers, drivers,
 provisioning transport and source digest separately for each future run.
 
-The creation adapter has synthetic coordinator and native **test-driver XML**
-evidence, plus read-only installed QEMU device-help metadata. Native qemu-driver
-volume allocation/upload/refresh/readback, XML normalization, file labels, streams
-under interruption, firmware initialization and guest boot are not verified.
+The [first disposable-host run](evidence/disposable-first-run.md) adds actual
+qemu-driver allocation/upload/refresh/readback for one independent Kali QCOW2.
+Definition verification refused unreviewed native device defaults; the guest
+remains powered off with a recovery-required operation. Its three locks survived
+coordinator SIGKILL and explicit reconciliation without replay. This supplements
+synthetic coordinator and native **test-driver XML** fixtures. General XML
+normalization, file-label behavior, streams under interruption, firmware
+initialization and guest boot remain unqualified.
 Unsupported normalization fails reconciliation rather than certifying an altered
 definition. See ADR 0006 and `tests/fixtures/creation/README.md` for the boundary.
