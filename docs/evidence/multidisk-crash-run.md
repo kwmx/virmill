@@ -5,7 +5,12 @@ source digest `1af76a2288eb7e735633c422dbd6a47b08fb6059e9fb2f52c605b955d5ba6f09`
 passed a bounded two-disk import, native upload interruption, explicit retention,
 and fresh KVM disk-read probe on the owner-authorized disposable Fedora host.
 This run adds fixture source and evidence; it changes no product runtime or schema.
-All 71 complete acceptance cases remain open.
+All 71 complete acceptance cases remain open. The local evidence-integrity check
+passed log/recipe hashes, 14 Python fixture syntax checks, source manifest hashes,
+tracked paths, documentation links and ignore rules. The complete release gate
+then failed on all 71 outstanding cases and the ship checklist; both checks are
+recorded against fixture/evidence commit `38c5931` with source digest
+`90e5fc2275d7238e2229f6fa7bd18ec772db4f80192678bd7d2a5453dd1a91ab`.
 
 The [source recipe](../../tests/fixtures/import/multidisk-probe/README.md),
 [exact executed programs](../../tests/fixtures/import/multidisk-probe/disposable-recorded-run/README.md)

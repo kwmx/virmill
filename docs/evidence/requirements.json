@@ -3005,7 +3005,8 @@
         "multidisk-native-import-tui-001",
         "multidisk-native-pool-001",
         "multidisk-native-retain-tui-001",
-        "multidisk-native-preservation-001"
+        "multidisk-native-preservation-001",
+        "multidisk-records-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3055,10 +3056,12 @@
         "device-policy-release-gate-001",
         "boot-media-release-gate-001",
         "result-progress-release-gate-001",
-        "acceptance-release-gate-001"
+        "acceptance-release-gate-001",
+        "multidisk-records-001",
+        "multidisk-release-gate-001"
       ],
       "outstanding": [
-        "Full release blocked: incomplete mandatory code and missing required host/guest/hardware/restore evidence. One versioned Q35/BIOS creation and narrow boot/configuration paths passed on the disposable host; the earlier creation now links to successful separate reviewed acceptance while its original plan/receipt stay unchanged and its job stays partial. All 71 complete acceptance cases remain open."
+        "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open."
       ],
       "hardwareVerified": false,
       "released": false
