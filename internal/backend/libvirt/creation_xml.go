@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path"
 	"strconv"
 	"strings"
 	"virmill.local/core/internal/backend/xmlpatch"
@@ -414,6 +415,7 @@ func matchesCreationPolicy(wanted, observed string, policy *domain.CreationDevic
 			return err
 		}
 	}
+	normalizeCreationNonSecureFirmware(w, g)
 	if !matchesNode(w, g) {
 		return domain.Fail("RECOVERY_REQUIRED", "defined configuration differs from reviewed creation intent")
 	}
@@ -438,4 +440,89 @@ func matchesCreationPolicy(wanted, observed string, policy *domain.CreationDevic
 		}
 	}
 	return nil
+}
+
+// Captured libvirt normalization adds EFI selection metadata to an already
+// pinned non-secure pflash mapping. Remove only that exact redundant cohort
+// from the private comparison tree. Rendering, the full observed XML and the
+// existing NVRAM path comparison remain unchanged. This proves no key state or
+// NVRAM freshness, and must not be generalized to Secure Boot enabled firmware.
+func normalizeCreationNonSecureFirmware(w, g *xmlNode) {
+	if w == nil || g == nil || w.name != (xml.Name{Local: "domain"}) || g.name != w.name || !creationFirmwareExactAttrs(w, map[string]string{"type": "kvm"}) || !creationFirmwareExactAttrs(g, map[string]string{"type": "kvm"}) {
+		return
+	}
+	unique := func(parent *xmlNode, name string) *xmlNode {
+		var found *xmlNode
+		for _, c := range parent.children {
+			if c.name.Local == name {
+				if found != nil || c.name.Space != "" {
+					return nil
+				}
+				found = c
+			}
+		}
+		return found
+	}
+	wos, gos := unique(w, "os"), unique(g, "os")
+	if wos == nil || gos == nil || !creationFirmwareExactAttrs(wos, nil) || !creationFirmwareExactAttrs(gos, map[string]string{"firmware": "efi"}) || strings.TrimSpace(wos.text) != "" || strings.TrimSpace(gos.text) != "" || len(wos.children) != 3 || len(gos.children) != 4 {
+		return
+	}
+	wt, gt := unique(wos, "type"), unique(gos, "type")
+	wl, gl := unique(wos, "loader"), unique(gos, "loader")
+	wn, gn := unique(wos, "nvram"), unique(gos, "nvram")
+	firmware := unique(gos, "firmware")
+	if wt == nil || gt == nil || wl == nil || gl == nil || wn == nil || gn == nil || firmware == nil {
+		return
+	}
+	typeAttrs := map[string]string{"arch": "x86_64", "machine": attr(wt, "machine")}
+	format := attr(wl, "format")
+	loaderAttrs := map[string]string{"readonly": "yes", "secure": "no", "type": "pflash", "format": format}
+	nvramAttrs := map[string]string{"template": attr(wn, "template"), "templateFormat": format, "format": format}
+	if attr(wt, "machine") == "" || strings.TrimSpace(wt.text) != "hvm" || strings.TrimSpace(gt.text) != "hvm" || !creationFirmwareExactAttrs(wt, typeAttrs) || !creationFirmwareExactAttrs(gt, typeAttrs) || len(wt.children) != 0 || len(gt.children) != 0 {
+		return
+	}
+	if format != "raw" && format != "qcow2" || !creationFirmwareExactAttrs(wl, loaderAttrs) || !creationFirmwareExactAttrs(gl, loaderAttrs) || len(wl.children) != 0 || len(gl.children) != 0 || !creationFirmwarePinnedPath(wl.text) || gl.text != wl.text {
+		return
+	}
+	if !creationFirmwareExactAttrs(wn, nvramAttrs) || !creationFirmwareExactAttrs(gn, nvramAttrs) || len(wn.children) != 0 || len(gn.children) != 0 || !creationFirmwarePinnedPath(attr(wn, "template")) || !matchesNodeAt(wn, gn, "/domain/os") {
+		return
+	}
+	if !creationFirmwareExactAttrs(firmware, nil) || strings.TrimSpace(firmware.text) != "" || len(firmware.children) != 2 {
+		return
+	}
+	features := map[string]bool{}
+	for _, feature := range firmware.children {
+		name := attr(feature, "name")
+		if feature.name != (xml.Name{Local: "feature"}) || name != "enrolled-keys" && name != "secure-boot" || features[name] || !creationFirmwareExactAttrs(feature, map[string]string{"name": name, "enabled": "no"}) || len(feature.children) != 0 || strings.TrimSpace(feature.text) != "" {
+			return
+		}
+		features[name] = true
+	}
+	gos.attrs = nil
+	kept := make([]*xmlNode, 0, 3)
+	for _, c := range gos.children {
+		if c != firmware {
+			kept = append(kept, c)
+		}
+	}
+	gos.children = kept
+}
+
+func creationFirmwareExactAttrs(n *xmlNode, expected map[string]string) bool {
+	if n == nil || n.name.Space != "" || len(n.attrs) != len(expected) {
+		return false
+	}
+	seen := map[string]bool{}
+	for _, a := range n.attrs {
+		value, ok := expected[a.Name.Local]
+		if a.Name.Space != "" || !ok || seen[a.Name.Local] || a.Value != value {
+			return false
+		}
+		seen[a.Name.Local] = true
+	}
+	return true
+}
+
+func creationFirmwarePinnedPath(value string) bool {
+	return value != "/" && path.IsAbs(value) && path.Clean(value) == value && strings.TrimSpace(value) == value
 }

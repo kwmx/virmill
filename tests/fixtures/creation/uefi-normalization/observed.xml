@@ -1,0 +1,67 @@
+<domain type='kvm'>
+  <name>Virmill UEFI TPM cold probe</name>
+  <uuid>f78674f3-bf3a-43e5-81f9-4283e2472024</uuid>
+  <metadata>
+    <virmill:creation xmlns:virmill="urn:virmill:v1" apiVersion="virmill/v1" binding="3fde7525e4b89e4acd513aa61dc7340841adc72c8ef10298252fe9ed319b6059"/>
+  </metadata>
+  <memory unit='KiB'>524288</memory>
+  <currentMemory unit='KiB'>524288</currentMemory>
+  <vcpu placement='static'>1</vcpu>
+  <os firmware='efi'>
+    <type arch='x86_64' machine='pc-q35-10.2'>hvm</type>
+    <firmware>
+      <feature enabled='no' name='enrolled-keys'/>
+      <feature enabled='no' name='secure-boot'/>
+    </firmware>
+    <loader readonly='yes' secure='no' type='pflash' format='raw'>/usr/share/edk2/ovmf/OVMF_CODE.fd</loader>
+    <nvram template='/usr/share/edk2/ovmf/OVMF_VARS.fd' templateFormat='raw' format='raw'>/var/lib/libvirt/qemu/nvram/Virmill UEFI TPM cold probe_VARS.fd</nvram>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <cpu mode='host-passthrough' check='none' migratable='on'/>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>preserve</on_crash>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type='volume' device='disk'>
+      <driver name='qemu' type='qcow2' cache='writethrough' error_policy='stop'/>
+      <source pool='virmill-cold-probe-v1' volume='virmill-f78674f3-bf3a-43e5-81f9-4283e2472024-disk-000.qcow2'/>
+      <target dev='sda' bus='sata'/>
+      <boot order='1'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+    <controller type='pci' index='0' model='pcie-root'/>
+    <controller type='usb' index='0' model='none'/>
+    <controller type='sata' index='0'>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x1f' function='0x2'/>
+    </controller>
+    <serial type='pty'>
+      <target type='isa-serial' port='0'>
+        <model name='isa-serial'/>
+      </target>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0' persistent_state='yes'/>
+    </tpm>
+    <graphics type='vnc'>
+      <listen type='socket'/>
+    </graphics>
+    <audio id='1' type='none'/>
+    <video>
+      <model type='vga' vram='16384' heads='1' primary='yes'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
+    </video>
+    <watchdog model='itco' action='none'/>
+    <memballoon model='none'/>
+  </devices>
+</domain>
+

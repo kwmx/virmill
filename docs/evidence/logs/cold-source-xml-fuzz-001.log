@@ -1,0 +1,8 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/79 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 79/79 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 54682 (18226/sec), new interesting: 7 (total: 86)
+fuzz: elapsed: 6s, execs: 54682 (0/sec), new interesting: 7 (total: 86)
+fuzz: elapsed: 9s, execs: 54682 (0/sec), new interesting: 7 (total: 86)
+fuzz: elapsed: 11s, execs: 54682 (0/sec), new interesting: 7 (total: 86)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	11.039s

@@ -1,0 +1,7 @@
+{"exitCode": 6, "creationResponse": {"apiVersion": "virmill/v1", "data": {"cancelRequested": false, "createdAt": "2026-09-07T19:35:32.583631096Z", "error": {"code": "RECOVERY_REQUIRED", "message": "defined configuration differs from reviewed creation intent", "operationID": "c809898c-e1be-45e2-b31d-644ad7bc75f0", "resource": "", "retryable": false, "safeNextActions": []}, "operationID": "c809898c-e1be-45e2-b31d-644ad7bc75f0", "planID": "a7232967-796b-4526-9423-e51a9b4bf9d2", "state": "recovery-required", "step": 0}, "warnings": [], "error": {"code": "RECOVERY_REQUIRED", "message": "defined configuration differs from reviewed creation intent", "resource": "", "operationID": "c809898c-e1be-45e2-b31d-644ad7bc75f0", "retryable": false, "safeNextActions": []}}}
+Traceback (most recent call last):
+  File "<stdin>", line 24, in <module>
+  File "/usr/lib64/python3.14/subprocess.py", line 509, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command '['virmill', 'plan', 'apply', 'a7232967-796b-4526-9423-e51a9b4bf9d2', '--digest', '14ecac25ba06dfdc36ae7f2d75615fb9caf76982cedbf2e4e6dec70492630be1', '--idempotency-key', 'cold-probe-create-a7232967-796b-4526-9423-e51a9b4bf9d2', '--ack', 'host-mutation', '--ack', 'copy-managed-volumes', '--ack', 'new-vm-identity', '--ack', 'new-firmware-state', '--ack', 'creation-device-policy', '--wait', '--output', 'json', '--non-interactive', '--timeout', '5m']' returned non-zero exit status 6.

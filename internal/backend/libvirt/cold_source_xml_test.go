@@ -261,6 +261,80 @@ func TestColdSourceXMLReviewedConfigurationDevices(t *testing.T) {
 	}
 }
 
+func TestColdSourceXMLFeatureACPIMarker(t *testing.T) {
+	base := coldSourceFixture(t, "configuration-only")
+	want, err := InspectColdSourceXML(base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ name, features string }{
+		{"empty native markers", `<features><acpi/><apic/></features>`},
+		{"expanded empty marker", "<features><acpi> \n\t</acpi><apic/></features>"},
+		{"ordinary native feature set", `<features><acpi/><apic/><pae/><hap state='on'/><vmport state='off'/><smm state='on'/><pmu state='on'/><hyperv mode='custom'><relaxed state='on'/><vapic state='on'/><spinlocks state='on' retries='8191'/></hyperv><kvm><hidden state='on'/></kvm></features>`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			raw := strings.Replace(base, "<devices>", tc.features+"<devices>", 1)
+			got, err := InspectColdSourceXML(raw)
+			if err != nil || !reflect.DeepEqual(got, want) || len(got.External) != 0 {
+				t.Fatal("empty native feature ACPI marker changed the disk/auxiliary inventory or introduced an external dependency", got, err)
+			}
+		})
+	}
+}
+
+func TestColdSourceXMLFeatureACPIExtensionsRemainDependencies(t *testing.T) {
+	for name, features := range map[string]string{
+		"unknown attribute":    `<features><acpi future='on'/><apic/></features>`,
+		"file attribute":       `<features><acpi file='/fixture/DO_NOT_ECHO'/></features>`,
+		"unknown child":        `<features><acpi><futureTable/></acpi></features>`,
+		"text content":         `<features><acpi>/fixture/DO_NOT_ECHO</acpi></features>`,
+		"table content":        `<features><acpi><table type='slic'>/fixture/DO_NOT_ECHO</table></acpi></features>`,
+		"foreign marker":       `<features><x:acpi xmlns:x='urn:fixture'/></features>`,
+		"foreign attribute":    `<features><acpi xmlns:x='urn:fixture' x:enabled='yes'/></features>`,
+		"foreign child":        `<features><acpi><x:table xmlns:x='urn:fixture'/></acpi></features>`,
+		"foreign sibling":      `<features><acpi/><x:runtime xmlns:x='urn:fixture'/></features>`,
+		"outside features":     `<cpu><acpi/></cpu>`,
+		"nested lookalike":     `<features><future><features><acpi/></features></future></features>`,
+		"attributed duplicate": `<features><acpi/><acpi future='on'/></features>`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			raw := strings.Replace(coldSourceTestDomain(coldSourceTestDisk), "</domain>", features+"</domain>", 1)
+			got, err := InspectColdSourceXML(raw)
+			want := []domain.ColdDependency{{Kind: "runtime-dependency", Target: "domain/element[4]"}}
+			if err != nil || !reflect.DeepEqual(got.External, want) || len(got.Disks) != 1 {
+				t.Fatal("non-marker ACPI configuration was dropped or lost its dependency location", got, err)
+			}
+			encoded, err := json.Marshal(got)
+			if err != nil || strings.Contains(string(encoded), "DO_NOT_ECHO") {
+				t.Fatal("opaque ACPI dependency content escaped the inventory", string(encoded), err)
+			}
+		})
+	}
+}
+
+func TestColdSourceXMLBootACPIFilesRemainDependencies(t *testing.T) {
+	for name, artifact := range map[string]string{
+		"ACPI table file": `<acpi><table type='slic'>/fixture/DO_NOT_ECHO</table></acpi>`,
+		"empty OS ACPI":   `<acpi/>`,
+		"kernel file":     `<kernel>/fixture/DO_NOT_ECHO</kernel>`,
+		"initrd file":     `<initrd>/fixture/DO_NOT_ECHO</initrd>`,
+		"DTB file":        `<dtb>/fixture/DO_NOT_ECHO</dtb>`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			raw := strings.Replace(coldSourceTestDomain(coldSourceTestDisk), "</os>", artifact+"</os><features><acpi/><apic/></features>", 1)
+			got, err := InspectColdSourceXML(raw)
+			want := []domain.ColdDependency{{Kind: "boot-runtime", Target: "domain/os/element[2]"}}
+			if err != nil || !reflect.DeepEqual(got.External, want) || len(got.Disks) != 1 {
+				t.Fatal("OS ACPI/direct-boot dependency was omitted or confused with the feature marker", got, err)
+			}
+			encoded, err := json.Marshal(got)
+			if err != nil || strings.Contains(string(encoded), "DO_NOT_ECHO") {
+				t.Fatal("boot artifact contents escaped the dependency projection", string(encoded), err)
+			}
+		})
+	}
+}
+
 func TestColdSourceXMLRejectsAmbiguousLayout(t *testing.T) {
 	base := coldSourceTestDomain(coldSourceTestDisk)
 	replace := func(old, next string) string { return strings.Replace(base, old, next, 1) }

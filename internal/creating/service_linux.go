@@ -289,6 +289,129 @@ func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[stri
 	}
 	return map[string]any{"seedStagingDirectory": staging, "provisioning": in.Seed, "sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
 }
+
+// Estimate describes the existing pool-space policy, without measuring physical
+// allocation or changing how creation allocates, copies or defines resources.
+// Both creation recipe versions register this same handler with the engine.
+func (s *Service) Estimate(ctx context.Context, p domain.Plan, b []byte) (domain.Estimates, error) {
+	var empty domain.Estimates
+	if err := ctx.Err(); err != nil {
+		return empty, err
+	}
+	var in input
+	if err := wire.Decode(b, &in); err != nil {
+		return empty, domain.Fail("RECOVERY_REQUIRED", "creation space estimate requires an unambiguous persisted recipe")
+	}
+	if err := creationRecipeVersion(p, in); err != nil {
+		return empty, err
+	}
+	required, copied, err := creationSpaceBudget(in)
+	if err != nil {
+		return empty, err
+	}
+	if err := ctx.Err(); err != nil {
+		return empty, err
+	}
+	notes := fmt.Sprintf("Target-pool worst-case disk/media free-space budget: %d bytes, including a 64 MiB reserve, each disk's virtual capacity plus 25%% and 16 MiB headroom, and exact ISO bytes. Copied volume payload: %d bytes. Initial physical allocation, filesystem overhead and firmware/TPM state are not separately measured. Existing prepared source files are already present and are excluded. Creates a new stopped VM without interrupting an existing guest; elapsed time is not estimated.", required, copied)
+	if in.Seed != nil {
+		cacheBudget := uint64(seed.MaxISOBytes + 3*seed.MaxContentBytes + (1 << 20))
+		notes += fmt.Sprintf(" Provisioning also requires a %d-byte free-space budget at the private seed-cache location, excluded from the target-pool figure. The seed ISO is counted once in the pool budget and copied payload; pool and cache locations may share a filesystem.", cacheBudget)
+	}
+	return domain.Estimates{AdditionalBytes: required, RequiresDowntime: false, Notes: notes}, nil
+}
+
+func creationSpaceBudget(in input) (uint64, uint64, error) {
+	invalid := func() (uint64, uint64, error) {
+		return 0, 0, domain.Fail("RECOVERY_REQUIRED", "creation space recipe has missing, contradictory or excessive size accounting")
+	}
+	spec := in.Target.Spec
+	if spec.UUID == "" || spec.PoolID == "" || len(spec.Disks) < 1 || len(spec.Disks) > 64 || len(spec.Media) > 4 || len(in.Artifact.Media) > 4 || len(in.Artifact.Disks) != len(spec.Disks) || len(in.Volumes) != len(spec.Disks)+len(spec.Media) {
+		return invalid()
+	}
+	disks := map[string]importing.PreparedDisk{}
+	seen := map[string]bool{}
+	for _, disk := range in.Artifact.Disks {
+		if disk.SourceID == "" || seen[disk.SourceID] || disk.VirtualBytes <= 0 || disk.VirtualBytes > 512<<30 || disk.FileBytes <= 0 {
+			return invalid()
+		}
+		seen[disk.SourceID] = true
+		disks[disk.SourceID] = disk
+	}
+	media := map[string]importing.PreparedMedia{}
+	for _, medium := range in.Artifact.Media {
+		if medium.SourceID == "" || seen[medium.SourceID] || medium.Format != "raw" {
+			return invalid()
+		}
+		seen[medium.SourceID] = true
+		media[medium.SourceID] = medium
+	}
+	if in.Seed != nil {
+		id, artifact := in.Seed.Config.MediaID, in.Seed.Artifact
+		if id == "" || seen[id] || artifact.FileBytes < 17*2048 || artifact.FileBytes > seed.MaxISOBytes || artifact.FileBytes%2048 != 0 {
+			return invalid()
+		}
+		media[id] = importing.PreparedMedia{SourceID: id, Format: "raw", FileBytes: artifact.FileBytes, SHA256: artifact.SHA256}
+	}
+	if len(media) != len(spec.Media) {
+		return invalid()
+	}
+	required, copied := uint64(64<<20), uint64(0)
+	for i, disk := range spec.Disks {
+		source, ok := disks[disk.SourceID]
+		if !ok {
+			return invalid()
+		}
+		v := in.Volumes[i]
+		budget, ok := creationDiskBudget(uint64(source.VirtualBytes))
+		if !ok || uint64(source.FileBytes) > budget || v.ContentType != "" || v.SourceID != source.SourceID || v.PoolID != spec.PoolID || v.Name != fmt.Sprintf("virmill-%s-disk-%03d.qcow2", spec.UUID, i) || v.VirtualBytes != uint64(source.VirtualBytes) || v.FileBytes != uint64(source.FileBytes) || v.SHA256 != source.SHA256 {
+			return invalid()
+		}
+		if required, ok = creationAddBytes(required, budget); !ok {
+			return invalid()
+		}
+		if copied, ok = creationAddBytes(copied, v.FileBytes); !ok {
+			return invalid()
+		}
+		delete(disks, disk.SourceID)
+	}
+	for i, medium := range spec.Media {
+		source, ok := media[medium.SourceID]
+		if !ok || source.FileBytes < 32768 || source.FileBytes > 64<<30 || source.FileBytes%2048 != 0 {
+			return invalid()
+		}
+		v := in.Volumes[len(spec.Disks)+i]
+		if v.ContentType != "cdrom-iso" || v.SourceID != source.SourceID || v.PoolID != spec.PoolID || v.Name != fmt.Sprintf("virmill-%s-media-%03d.iso", spec.UUID, i) || v.VirtualBytes != uint64(source.FileBytes) || v.FileBytes != uint64(source.FileBytes) || v.SHA256 != source.SHA256 {
+			return invalid()
+		}
+		if required, ok = creationAddBytes(required, v.FileBytes); !ok {
+			return invalid()
+		}
+		if copied, ok = creationAddBytes(copied, v.FileBytes); !ok {
+			return invalid()
+		}
+		delete(media, medium.SourceID)
+	}
+	if len(disks) != 0 || len(media) != 0 || required != in.RequiredBytes {
+		return invalid()
+	}
+	return required, copied, nil
+}
+
+func creationAddBytes(a, b uint64) (uint64, bool) {
+	if b > ^uint64(0)-a {
+		return 0, false
+	}
+	return a + b, true
+}
+
+func creationDiskBudget(size uint64) (uint64, bool) {
+	total, ok := creationAddBytes(size, size/4)
+	if !ok {
+		return 0, false
+	}
+	return creationAddBytes(total, 16<<20)
+}
+
 func (s *Service) checkSource(ctx context.Context, p domain.Plan, in input) error {
 	artifact, directory, err := s.LoadSource(ctx, s.Store, p.ActorUID, in.SourceOperationID)
 	if err != nil {

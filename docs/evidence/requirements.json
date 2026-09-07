@@ -410,7 +410,9 @@
         "schemas/vm-hardware-edit-input.schema.json",
         "docs/adr/0014-boot-order-and-retained-media-edits.md",
         "docs/vm-configuration.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "docs/evidence/cold-source-integration-run.md",
+        "docs/creation-firmware-normalization.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -436,7 +438,10 @@
         "internal/backend/libvirt/boot_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-prepare-plan-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-create-001.py",
+        "internal/backend/libvirt/creation_firmware_normalization_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -463,13 +468,16 @@
         "boot-media-native-fixture-001",
         "boot-media-native-iso-boot-001",
         "boot-media-native-eject-001",
-        "boot-media-native-disk-boot-001"
+        "boot-media-native-disk-boot-001",
+        "cold-probe-prepare-plan-001",
+        "cold-probe-create-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
         "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
-        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case."
+        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
+        "Actual UEFI/TPM probe definition on 44a46b6 returned RECOVERY_REQUIRED because libvirt added firmware-selection metadata. Guest remains stopped; verified disk and 3 locks retained. Narrow normalization correction and native reconcile/boot are in progress; no firmware/TPM persistence or complete recovery claim."
       ],
       "hardwareVerified": false,
       "released": false
@@ -524,7 +532,8 @@
         "multidisk-native-crash-001",
         "multidisk-native-fresh-plan-001",
         "multidisk-native-fresh-create-001",
-        "multidisk-native-boot-001"
+        "multidisk-native-boot-001",
+        "cold-source-packaging-001"
       ],
       "outstanding": [
         "One generated two-disk split-VMDK OVA passed actual confined preparation, native define-last creation and a BIOS second-disk read probe under KVM. It has no OS or NICs. VMware-origin supported Linux, multiple NIC mappings, guest adaptation, routes and the complete source/profile matrix remain unqualified."
@@ -762,7 +771,8 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-active-upload-crash.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-recovery-refusals.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-retain-tui.py",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-prepare-plan-001.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -790,7 +800,8 @@
         "multidisk-native-crash-001",
         "multidisk-native-recovery-001",
         "multidisk-native-retain-tui-001",
-        "multidisk-native-preservation-001"
+        "multidisk-native-preservation-001",
+        "cold-probe-prepare-plan-001"
       ],
       "outstanding": [
         "Actual two-disk source preservation, incomplete native upload retention, coordinator restart/reconcile refusal and TUI durable pin disposition passed on one disposable Q35/BIOS path. Guarded deletion, release of retained pins, ENOSPC, all source formats and the full cancellation/power-loss/dependency matrix remain incomplete or unqualified."
@@ -844,7 +855,10 @@
         "internal/backend/libvirt/creation_acceptance_linux.go",
         "docs/creation-acceptance.md",
         "docs/adr/0017-reviewed-creation-acceptance.md",
-        "docs/evidence/creation-acceptance-run.md"
+        "docs/evidence/creation-acceptance-run.md",
+        "docs/evidence/cold-source-integration-run.md",
+        "docs/creation-firmware-normalization.md",
+        "docs/reviews/creation-nvram-binding-review.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -876,7 +890,12 @@
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
         "internal/backend/xmlpatch/boot_captured_test.go",
-        "internal/creating/result_linux_test.go"
+        "internal/creating/result_linux_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-create-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-mismatch-observe-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-preboot-files-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-preboot-paths-001.py",
+        "internal/backend/libvirt/creation_firmware_normalization_test.go"
       ],
       "evidence": [
         "import-conversion-001",
@@ -914,7 +933,11 @@
         "result-progress-native-readback-001",
         "acceptance-core-001",
         "acceptance-native-tui-001",
-        "acceptance-native-readback-001"
+        "acceptance-native-readback-001",
+        "cold-probe-create-001",
+        "cold-probe-mismatch-observe-002",
+        "cold-probe-preboot-files-001",
+        "cold-probe-preboot-paths-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
@@ -924,7 +947,9 @@
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "Creation result reads now distinguish active progress with an optional receipt from complete definition and terminal uncertainty. Coordinator/UI tests cover the distinction without hardware claims; the full active-effect crash and guest-stage matrix remains required.",
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
-        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly."
+        "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
+        "Actual UEFI/TPM probe definition on 44a46b6 returned RECOVERY_REQUIRED because libvirt added firmware-selection metadata. Guest remains stopped; verified disk and 3 locks retained. Narrow normalization correction and native reconcile/boot are in progress; no firmware/TPM persistence or complete recovery claim.",
+        "Captured non-secure firmware metadata has a narrow match-only correction with adversarial replay tests. Native reconciliation is pending. First assigned NVRAM path/generation and initialization provenance remain unbound in creation receipts; no cold completeness or fresh-state guarantee follows from XML comparison."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1288,7 +1313,9 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "docs/evidence/cold-source-integration-run.md",
+        "docs/creation-space-estimates.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -1305,7 +1332,10 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-fresh-create.py",
         "internal/storageaccess/service_linux_test.go",
         "internal/helper/access_linux_test.go",
-        "internal/backend/fileaccess/acl_linux_test.go"
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "internal/creating/estimates_linux_test.go",
+        "internal/ui/cli/creation_estimates_test.go",
+        "internal/ui/tui/creation_estimates_test.go"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -1327,7 +1357,8 @@
       ],
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill pool creation, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
-        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Creation estimates now expose the reviewed pool budget and separate copied payload/cache notes through CLI/TUI, with canceled plan reads refusing success data. Synthetic shared-service/view regressions passed; native refreshed-plan observation and full space/failure/profile qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1445,7 +1476,11 @@
         "schemas/cold-recovery-point.schema.json",
         "docs/cold-source-layout.md",
         "docs/cold-source-files.md",
-        "docs/cold-capture-manifest.md"
+        "docs/cold-capture-manifest.md",
+        "docs/evidence/cold-source-integration-run.md",
+        "internal/backend/libvirt/creation_xml.go",
+        "docs/creation-firmware-normalization.md",
+        "docs/reviews/creation-nvram-binding-review.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-01",
@@ -1466,7 +1501,13 @@
         "internal/app/capture_verification_test.go",
         "internal/ui/cli/capture_verification_test.go",
         "internal/ui/tui/capture_verification_test.go",
-        "internal/validation/cold_capture_test.go"
+        "internal/validation/cold_capture_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-prepare-plan-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-create-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-mismatch-observe-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-preboot-files-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-preboot-paths-001.py",
+        "internal/backend/libvirt/creation_firmware_normalization_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1483,11 +1524,23 @@
         "cold-schema-fixtures-001",
         "cold-probe-build-b-001",
         "cold-sealed-sandbox-observation-001",
-        "cold-required-ipc-approval-blocked-001"
+        "cold-required-ipc-approval-blocked-001",
+        "cold-source-qemu-transfer-001",
+        "cold-source-vet-001",
+        "cold-source-required-ipc-001",
+        "cold-source-manifest-fuzz-001",
+        "cold-source-xml-fuzz-001",
+        "cold-probe-prepare-plan-001",
+        "cold-probe-create-001",
+        "cold-probe-mismatch-observe-002",
+        "cold-probe-preboot-files-001",
+        "cold-probe-preboot-paths-001"
       ],
       "outstanding": [
         "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
-        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
+        "Actual UEFI/TPM probe definition on 44a46b6 returned RECOVERY_REQUIRED because libvirt added firmware-selection metadata. Guest remains stopped; verified disk and 3 locks retained. Narrow normalization correction and native reconcile/boot are in progress; no firmware/TPM persistence or complete recovery claim.",
+        "Captured non-secure firmware metadata has a narrow match-only correction with adversarial replay tests. Native reconciliation is pending. First assigned NVRAM path/generation and initialization provenance remain unbound in creation receipts; no cold completeness or fresh-state guarantee follows from XML comparison."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1593,7 +1646,8 @@
         "schemas/cold-recovery-point.schema.json",
         "docs/cold-source-layout.md",
         "docs/cold-source-files.md",
-        "docs/cold-capture-manifest.md"
+        "docs/cold-capture-manifest.md",
+        "docs/evidence/cold-source-integration-run.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-01",
@@ -1614,7 +1668,8 @@
         "internal/app/capture_verification_test.go",
         "internal/ui/cli/capture_verification_test.go",
         "internal/ui/tui/capture_verification_test.go",
-        "internal/validation/cold_capture_test.go"
+        "internal/validation/cold_capture_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-mismatch-observe-002.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1632,7 +1687,13 @@
         "cold-schema-fixtures-001",
         "cold-probe-build-b-001",
         "cold-sealed-sandbox-observation-001",
-        "cold-required-ipc-approval-blocked-001"
+        "cold-required-ipc-approval-blocked-001",
+        "cold-source-qemu-transfer-001",
+        "cold-source-vet-001",
+        "cold-source-required-ipc-001",
+        "cold-source-manifest-fuzz-001",
+        "cold-source-xml-fuzz-001",
+        "cold-probe-mismatch-observe-002"
       ],
       "outstanding": [
         "Declared-member integrity checking and cold-state prerequisites are implemented. Complete capture, secret policy, encrypted restic repository operations and independent restore without original files/database remain incomplete.",
@@ -2160,7 +2221,8 @@
         "internal/helper/access_linux.go",
         "internal/backend/libvirt/storage_access_linux.go",
         "docs/managed-volume-access.md",
-        "docs/adr/0018-managed-volume-read-access.md"
+        "docs/adr/0018-managed-volume-read-access.md",
+        "docs/reviews/creation-nvram-binding-review.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -2205,7 +2267,9 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py",
         "internal/storageaccess/service_linux_test.go",
         "internal/helper/access_linux_test.go",
-        "internal/backend/fileaccess/acl_linux_test.go"
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-create-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-mismatch-observe-002.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2257,7 +2321,9 @@
         "helper-access-root-tests-001",
         "storage-access-recovery-context-001",
         "storage-access-clean-core-001",
-        "helper-access-root-tests-clean-001"
+        "helper-access-root-tests-clean-001",
+        "cold-probe-create-001",
+        "cold-probe-mismatch-observe-002"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -2268,7 +2334,8 @@
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified.",
-        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required."
+        "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
+        "Captured non-secure firmware metadata has a narrow match-only correction with adversarial replay tests. Native reconciliation is pending. First assigned NVRAM path/generation and initialization provenance remain unbound in creation receipts; no cold completeness or fresh-state guarantee follows from XML comparison."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2499,7 +2566,8 @@
         "cold-manifest-fuzz-001",
         "cold-state-fuzz-001",
         "cold-sealed-sandbox-observation-001",
-        "cold-required-ipc-approval-blocked-001"
+        "cold-required-ipc-approval-blocked-001",
+        "cold-source-required-ipc-001"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
@@ -2623,7 +2691,10 @@
         "helper-access-native-grant-001",
         "helper-access-root-tests-clean-001",
         "helper-access-native-tui-grant-cli-revoke-001",
-        "helper-access-native-auth-preserve-001"
+        "helper-access-native-auth-preserve-001",
+        "cold-source-required-ipc-001",
+        "cold-source-manifest-fuzz-001",
+        "cold-source-xml-fuzz-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
@@ -2751,7 +2822,9 @@
         "cold-prerequisites-core-sandbox-001",
         "cold-manifest-fuzz-001",
         "cold-sealed-sandbox-observation-001",
-        "cold-required-ipc-approval-blocked-001"
+        "cold-required-ipc-approval-blocked-001",
+        "cold-source-qemu-transfer-001",
+        "cold-source-required-ipc-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -2796,7 +2869,8 @@
         "boot-media-sdk-001",
         "downtime-portable-001",
         "cold-prerequisites-go-sdk-001",
-        "cold-sdk-traceability-correction-001"
+        "cold-sdk-traceability-correction-001",
+        "cold-source-go-sdk-001"
       ],
       "outstanding": [
         "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
@@ -3146,7 +3220,9 @@
         "discovery-artifacts-001",
         "discovery-native-observation-001",
         "discovery-native-observation-002",
-        "cold-prerequisites-core-sandbox-001"
+        "cold-prerequisites-core-sandbox-001",
+        "cold-source-required-ipc-001",
+        "cold-source-packaging-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -3231,7 +3307,11 @@
         "schemas/cold-recovery-point.schema.json",
         "docs/cold-source-layout.md",
         "docs/cold-source-files.md",
-        "docs/cold-capture-manifest.md"
+        "docs/cold-capture-manifest.md",
+        "docs/evidence/cold-source-integration-run.md",
+        "internal/creating/service_linux.go",
+        "internal/app/service.go",
+        "docs/creation-space-estimates.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -3256,7 +3336,10 @@
         "internal/app/capture_verification_test.go",
         "internal/ui/cli/capture_verification_test.go",
         "internal/ui/tui/capture_verification_test.go",
-        "internal/validation/cold_capture_test.go"
+        "internal/validation/cold_capture_test.go",
+        "internal/creating/estimates_linux_test.go",
+        "internal/ui/cli/creation_estimates_test.go",
+        "internal/ui/tui/creation_estimates_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3273,11 +3356,13 @@
         "installation-artifacts-001",
         "nocloud-artifacts-001",
         "configuration-core-001",
-        "configuration-artifacts-001"
+        "configuration-artifacts-001",
+        "cold-source-required-ipc-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
-        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
+        "Creation estimates now expose the reviewed pool budget and separate copied payload/cache notes through CLI/TUI, with canceled plan reads refusing success data. Synthetic shared-service/view regressions passed; native refreshed-plan observation and full space/failure/profile qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3331,7 +3416,8 @@
         "internal/backend/xmlpatch/boot_captured_test.go",
         "internal/storageaccess/service_linux_test.go",
         "internal/helper/access_linux_test.go",
-        "internal/backend/fileaccess/acl_linux_test.go"
+        "internal/backend/fileaccess/acl_linux_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-source-upgrade-001.py"
       ],
       "evidence": [
         "artifact-tests-001",
@@ -3389,7 +3475,10 @@
         "discovery-artifacts-001",
         "discovery-native-upgrade-001",
         "cold-prerequisites-repro-001",
-        "cold-prerequisites-packaging-001"
+        "cold-prerequisites-packaging-001",
+        "cold-source-repro-001",
+        "cold-source-packaging-001",
+        "cold-source-upgrade-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -3445,7 +3534,8 @@
         "storage-access-repro-001",
         "storage-access-clean-static-001",
         "cold-prerequisites-repro-001",
-        "cold-prerequisites-packaging-001"
+        "cold-prerequisites-packaging-001",
+        "cold-source-cross-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -3535,7 +3625,10 @@
         "schemas/cold-recovery-point.schema.json",
         "docs/cold-source-layout.md",
         "docs/cold-source-files.md",
-        "docs/cold-capture-manifest.md"
+        "docs/cold-capture-manifest.md",
+        "docs/evidence/cold-source-integration-run.md",
+        "docs/creation-firmware-normalization.md",
+        "docs/creation-space-estimates.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -3592,7 +3685,16 @@
         "internal/app/capture_verification_test.go",
         "internal/ui/cli/capture_verification_test.go",
         "internal/ui/tui/capture_verification_test.go",
-        "internal/validation/cold_capture_test.go"
+        "internal/validation/cold_capture_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/cold-source-upgrade-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-mismatch-observe-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-mismatch-observe-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-preboot-files-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-preboot-paths-001.py",
+        "internal/backend/libvirt/creation_firmware_normalization_test.go",
+        "internal/creating/estimates_linux_test.go",
+        "internal/ui/cli/creation_estimates_test.go",
+        "internal/ui/tui/creation_estimates_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3672,7 +3774,16 @@
         "cold-prerequisites-cross-001",
         "cold-prerequisites-repro-001",
         "cold-prerequisites-go-sdk-001",
-        "cold-prerequisites-packaging-001"
+        "cold-prerequisites-packaging-001",
+        "cold-source-vet-001",
+        "cold-source-go-sdk-001",
+        "cold-source-repro-001",
+        "cold-source-packaging-001",
+        "cold-source-upgrade-001",
+        "cold-probe-mismatch-observe-001",
+        "cold-probe-mismatch-observe-002",
+        "cold-probe-preboot-files-001",
+        "cold-probe-preboot-paths-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -3687,7 +3798,8 @@
         "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
         "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance.",
-        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks."
+        "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
+        "Creation estimates now expose the reviewed pool budget and separate copied payload/cache notes through CLI/TUI, with canceled plan reads refusing success data. Synthetic shared-service/view regressions passed; native refreshed-plan observation and full space/failure/profile qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false

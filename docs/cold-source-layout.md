@@ -87,6 +87,17 @@ configuration containers, are unresolved. Direct-boot artifacts are marked as
 boot/runtime dependencies. Application `<metadata>` stays opaque and does not
 create file or secret lookup authority.
 
+The direct native `domain/features/acpi` marker is configuration-only when it
+has no namespace, attributes, children or non-whitespace text, matching the
+[native ACPI feature shape](https://libvirt.org/formatdomain.html#hypervisor-features).
+This exception does not propagate into nested containers. Attributed ACPI,
+table/content-bearing ACPI and foreign extensions remain dependencies, as does
+every `os/acpi` declaration. In particular, the
+[OS ACPI table files](https://libvirt.org/formatdomain.html#operating-system-booting)
+and kernel, initrd and DTB artifacts retain their boot/runtime dependency
+locations without exposing their contents. An empty feature marker does not
+establish firmware or hardware compatibility.
+
 Disk encryption/authentication, shared/transient disks, mirrors, backend-domain
 and private runtime data are explicit unresolved dependencies. Local sources
 with encryption, slices, external data stores, FD groups or explicit volume mode
@@ -120,7 +131,7 @@ Generated fixtures and schema provenance are in
 with the pinned toolchain and offline dependencies:
 
 ```sh
-GOPROXY=off GOSUMDB=off ./scripts/go test -mod=vendor -tags libvirt_dlopen ./internal/backend/libvirt -run 'TestColdSourceXML|FuzzColdSourceXML' -count=1
+GOPROXY=off GOSUMDB=off ./scripts/go test -mod=vendor -race -tags libvirt_dlopen ./internal/backend/libvirt -run 'TestColdSourceXML|FuzzColdSourceXML' -count=1
 GOPROXY=off GOSUMDB=off ./scripts/go test -mod=vendor -tags libvirt_dlopen ./internal/backend/libvirt -run '^$' -fuzz '^FuzzColdSourceXML$' -fuzztime=5s -parallel=2
 ```
 

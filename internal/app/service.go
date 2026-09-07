@@ -182,8 +182,17 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		}
 		return s.Engine.Apply(ctx, uid, *r.Apply)
 	case "plan.show":
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		p, _, e := s.Engine.Store.Plan(r.ID)
-		return p, e
+		if e != nil {
+			return nil, e
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		return p, nil
 	case "operation.get":
 		return s.Engine.Store.Job(r.ID)
 	case "operation.list":

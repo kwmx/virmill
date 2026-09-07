@@ -122,7 +122,7 @@ func InspectColdSourceXML(raw string) (domain.ColdSourceLayout, error) {
 			if n.name.Space == "http://libvirt.org/schemas/domain/qemu/1.0" && n.name.Local == "commandline" {
 				kind = "qemu-commandline"
 			}
-		} else if coldSourceContainsExternal(n) {
+		} else if coldSourceContainsExternal(n, n.name.Local == "features") {
 			kind = "runtime-dependency"
 		} else if !coldEnum(n.name.Local, "name", "uuid", "hwuuid", "genid", "title", "description", "memory", "currentMemory", "maxMemory", "memoryBacking", "vcpu", "vcpus", "cpu", "cputune", "numatune", "blkiotune", "memtune", "resource", "sysinfo", "features", "clock", "on_poweroff", "on_reboot", "on_crash", "on_lockfailure", "pm", "launchSecurity", "seclabel", "idmap", "keywrap", "perf", "iothreadids", "iothreads", "defaultiothread", "throttlegroups") {
 			kind = "runtime-extension"
@@ -137,7 +137,7 @@ func InspectColdSourceXML(raw string) (domain.ColdSourceLayout, error) {
 		if n.name.Local == "type" || n.name.Local == "loader" || n.name.Local == "nvram" {
 			continue
 		}
-		if n.name.Space != "" || coldSourceContainsExternal(n) || !coldEnum(n.name.Local, "boot", "bootmenu", "bios", "smbios", "firmware") {
+		if n.name.Space != "" || coldSourceContainsExternal(n, false) || !coldEnum(n.name.Local, "boot", "bootmenu", "bios", "smbios", "firmware") {
 			if err := add("boot-runtime", "domain/os/element["+strconv.Itoa(i+1)+"]"); err != nil {
 				return empty, err
 			}
@@ -160,7 +160,10 @@ func coldSourceIdentifier(value string, limit int) error {
 
 // Presence of these fields requires an adapter outside disk-chain extraction.
 // Recursion also notices extensions nested in native configuration containers.
-func coldSourceContainsExternal(n *xmlNode) bool {
+// domainFeatures is true only for the direct native domain/features container.
+// Its empty ACPI feature marker is configuration; OS ACPI tables and every other
+// ACPI shape still require an adapter. This context never propagates recursively.
+func coldSourceContainsExternal(n *xmlNode, domainFeatures bool) bool {
 	if n.name.Space != "" {
 		return true
 	}
@@ -174,7 +177,10 @@ func coldSourceContainsExternal(n *xmlNode) bool {
 		}
 	}
 	for _, c := range n.children {
-		if coldSourceContainsExternal(c) {
+		if domainFeatures && c.name.Space == "" && c.name.Local == "acpi" && coldSourceEmpty(c) {
+			continue
+		}
+		if coldSourceContainsExternal(c, false) {
 			return true
 		}
 	}
@@ -230,7 +236,7 @@ func coldSourceDisk(n *xmlNode, add func(string, string) error) (domain.ColdDisk
 				return out, err
 			}
 		case "alias", "address", "boot", "serial", "wwn", "vendor", "product", "geometry", "blockio", "iotune", "throttlefilters", "acpi":
-			if coldSourceContainsExternal(c) {
+			if coldSourceContainsExternal(c, false) {
 				return out, coldUnsupported("external disk configuration requires a separate adapter")
 			}
 		default:
@@ -325,7 +331,7 @@ func coldSourceFormat(parent *xmlNode, element string) (string, error) {
 		return "", coldInvalid("text in disk format declaration")
 	}
 	for _, c := range n.children {
-		if c.name.Space != "" || c.name.Local != "metadata_cache" && !(element == "driver" && c.name.Local == "iothreads") || coldSourceContainsExternal(c) {
+		if c.name.Space != "" || c.name.Local != "metadata_cache" && !(element == "driver" && c.name.Local == "iothreads") || coldSourceContainsExternal(c, false) {
 			return "", coldUnsupported("unrecognized disk driver or format structure")
 		}
 		if _, err := coldChild(n, c.name.Local, false); err != nil {

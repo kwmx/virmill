@@ -1,0 +1,126 @@
+=== RUN   TestReadPinnedBytesAndExactIdentity
+--- PASS: TestReadPinnedBytesAndExactIdentity (0.00s)
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/links
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/mode
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/partial
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/generation
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/size
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/modified
+=== RUN   TestRefuseMissingOrDifferentExpectedIdentity/changed
+--- PASS: TestRefuseMissingOrDifferentExpectedIdentity (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/links (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/mode (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/partial (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/generation (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/size (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/modified (0.00s)
+    --- PASS: TestRefuseMissingOrDifferentExpectedIdentity/changed (0.00s)
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/#00
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/.
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/..
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/../disk.raw
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks//disk.raw
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/sub/../disk.raw
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/sub//disk.raw
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/disk.raw/
+=== RUN   TestRefuseNoncanonicalPathsAndSymlinks/disk.raw\x00other
+--- PASS: TestRefuseNoncanonicalPathsAndSymlinks (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/#00 (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/. (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/.. (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/../disk.raw (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks//disk.raw (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/sub/../disk.raw (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/sub//disk.raw (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/disk.raw/ (0.00s)
+    --- PASS: TestRefuseNoncanonicalPathsAndSymlinks/disk.raw\x00other (0.00s)
+=== RUN   TestFIFOIsRejectedBeforeReadableOpen
+--- PASS: TestFIFOIsRejectedBeforeReadableOpen (0.00s)
+=== RUN   TestRecheckRejectsSourceAndRootDrift
+=== RUN   TestRecheckRejectsSourceAndRootDrift/write-same-inode
+=== RUN   TestRecheckRejectsSourceAndRootDrift/truncate
+=== RUN   TestRecheckRejectsSourceAndRootDrift/chmod
+=== RUN   TestRecheckRejectsSourceAndRootDrift/unlink
+=== RUN   TestRecheckRejectsSourceAndRootDrift/new-hardlink
+=== RUN   TestRecheckRejectsSourceAndRootDrift/sibling-created
+=== RUN   TestRecheckRejectsSourceAndRootDrift/root-chmod
+=== RUN   TestRecheckRejectsSourceAndRootDrift/replace-same-bytes
+--- PASS: TestRecheckRejectsSourceAndRootDrift (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/write-same-inode (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/truncate (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/chmod (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/unlink (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/new-hardlink (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/sibling-created (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/root-chmod (0.00s)
+    --- PASS: TestRecheckRejectsSourceAndRootDrift/replace-same-bytes (0.00s)
+=== RUN   TestPathReplacementNeverRedirectsBytes
+--- PASS: TestPathReplacementNeverRedirectsBytes (0.00s)
+=== RUN   TestRootPathReplacementIsRejected
+--- PASS: TestRootPathReplacementIsRejected (0.00s)
+=== RUN   TestTransferredGuardSurvivesSourceCloseAndStaysReadOnly
+--- PASS: TestTransferredGuardSurvivesSourceCloseAndStaysReadOnly (0.00s)
+=== RUN   TestBusyOpenReleasesItsPartialResources
+--- PASS: TestBusyOpenReleasesItsPartialResources (0.00s)
+=== RUN   TestCancellationAndConcurrentClose
+--- PASS: TestCancellationAndConcurrentClose (0.00s)
+=== RUN   TestRealQEMUSourceTransferRetainsReadGuard
+    source_qemu_linux_test.go:30: exact /usr/bin/qemu-img --version output:
+        qemu-img version 10.2.2 (qemu-10.2.2-1.fc44)
+        Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+    source_qemu_linux_test.go:30: exact /usr/bin/qemu-io --version output:
+        qemu-io version 10.2.2 (qemu-10.2.2-1.fc44)
+        Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+=== RUN   TestRealQEMUSourceTransferRetainsReadGuard/raw
+    source_qemu_linux_test.go:43: QEMU writer-open control succeeded before guard:
+        format name: raw
+        cluster size: 0 bytes
+        vm state offset: 0 bytes
+    source_qemu_linux_test.go:62: QEMU specifically refused its write lock source and transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2091542277/001/source.raw: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2091542277/001/source.raw]?
+    source_qemu_linux_test.go:72: QEMU specifically refused its write lock only transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2091542277/001/source.raw: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2091542277/001/source.raw]?
+    source_qemu_linux_test.go:76: QEMU writer-open control succeeded after last transferred descriptor closed:
+        format name: raw
+        cluster size: 0 bytes
+        vm state offset: 0 bytes
+    source_qemu_linux_test.go:77: PASS native QEMU software/file qualification of Source.Open and DupForTransfer lock lifetime; no VM or hardware claim
+=== RUN   TestRealQEMUSourceTransferRetainsReadGuard/qcow2
+    source_qemu_linux_test.go:43: QEMU writer-open control succeeded before guard:
+        format name: qcow2
+        cluster size: 64 KiB
+        vm state offset: 512 MiB
+        Format specific information:
+            compat: 1.1
+            compression type: zlib
+            lazy refcounts: false
+            refcount bits: 16
+            corrupt: false
+            extended l2: false
+    source_qemu_linux_test.go:62: QEMU specifically refused its write lock source and transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow22061529439/001/source.qcow2: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow22061529439/001/source.qcow2]?
+    source_qemu_linux_test.go:72: QEMU specifically refused its write lock only transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow22061529439/001/source.qcow2: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow22061529439/001/source.qcow2]?
+    source_qemu_linux_test.go:76: QEMU writer-open control succeeded after last transferred descriptor closed:
+        format name: qcow2
+        cluster size: 64 KiB
+        vm state offset: 512 MiB
+        Format specific information:
+            compat: 1.1
+            compression type: zlib
+            lazy refcounts: false
+            refcount bits: 16
+            corrupt: false
+            extended l2: false
+    source_qemu_linux_test.go:77: PASS native QEMU software/file qualification of Source.Open and DupForTransfer lock lifetime; no VM or hardware claim
+--- PASS: TestRealQEMUSourceTransferRetainsReadGuard (0.06s)
+    --- PASS: TestRealQEMUSourceTransferRetainsReadGuard/raw (0.02s)
+    --- PASS: TestRealQEMUSourceTransferRetainsReadGuard/qcow2 (0.02s)
+PASS
+ok  	virmill.local/core/internal/backend/coldfiles	1.081s

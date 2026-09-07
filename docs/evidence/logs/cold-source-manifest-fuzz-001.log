@@ -1,0 +1,8 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/13 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 13/13 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 42469 (14155/sec), new interesting: 8 (total: 21)
+fuzz: elapsed: 6s, execs: 51622 (3050/sec), new interesting: 31 (total: 44)
+fuzz: elapsed: 9s, execs: 51622 (0/sec), new interesting: 31 (total: 44)
+fuzz: elapsed: 11s, execs: 51622 (0/sec), new interesting: 31 (total: 44)
+PASS
+ok  	virmill.local/core/internal/app/protection	11.026s
