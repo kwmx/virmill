@@ -1,0 +1,367 @@
+?   	virmill.local/core/cmd/virmill	[no test files]
+?   	virmill.local/core/cmd/virmill-dev	[no test files]
+?   	virmill.local/core/cmd/virmill-host-helper	[no test files]
+?   	virmill.local/core/cmd/virmilld	[no test files]
+?   	virmill.local/core/contracts	[no test files]
+=== RUN   TestMissingManagedSaveAndUnknownInputFailBeforeEffect
+--- PASS: TestMissingManagedSaveAndUnknownInputFailBeforeEffect (0.00s)
+=== RUN   TestResourceInventoryDoesNotPlanAdoptOrMutate
+--- PASS: TestResourceInventoryDoesNotPlanAdoptOrMutate (0.00s)
+PASS
+ok  	virmill.local/core/internal/app	1.041s
+=== RUN   TestUSBReconnectionAmbiguityAndHostUse
+--- PASS: TestUSBReconnectionAmbiguityAndHostUse (0.00s)
+PASS
+ok  	virmill.local/core/internal/app/devices	1.011s
+=== RUN   TestMultiDiskMultiSystemInspection
+--- PASS: TestMultiDiskMultiSystemInspection (0.00s)
+=== RUN   TestArchiveAttacks
+--- PASS: TestArchiveAttacks (0.01s)
+=== RUN   FuzzArchive
+=== RUN   FuzzArchive/seed#0
+--- PASS: FuzzArchive (0.00s)
+    --- PASS: FuzzArchive/seed#0 (0.00s)
+PASS
+ok  	virmill.local/core/internal/app/importer	1.022s
+?   	virmill.local/core/internal/app/lab	[no test files]
+=== RUN   TestRouteOverlapAndDefaultRoute
+--- PASS: TestRouteOverlapAndDefaultRoute (0.00s)
+=== RUN   TestLabDHCPAndGuestOnly
+--- PASS: TestLabDHCPAndGuestOnly (0.00s)
+PASS
+ok  	virmill.local/core/internal/app/network	1.017s
+=== RUN   TestFirmwareTPMCompletenessAndIndependentArtifactChecks
+--- PASS: TestFirmwareTPMCompletenessAndIndependentArtifactChecks (0.00s)
+PASS
+ok  	virmill.local/core/internal/app/protection	1.018s
+=== RUN   TestGraphRefusesReferencedUncertainAndCyclicBases
+--- PASS: TestGraphRefusesReferencedUncertainAndCyclicBases (0.00s)
+PASS
+ok  	virmill.local/core/internal/app/storage	1.018s
+=== RUN   TestIdentityDetectsPathReplacementAndPreservesOpenObject
+--- PASS: TestIdentityDetectsPathReplacementAndPreservesOpenObject (0.00s)
+=== RUN   TestIdentityRefusesSymlinkComponentsAndSpecialFiles
+--- PASS: TestIdentityRefusesSymlinkComponentsAndSpecialFiles (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/fileidentity	1.016s
+=== RUN   TestRealSingleFileMetadataDoesNotFollowBackingAndPinsOpenFile
+    metadata_linux_test.go:15: explicit generated-file confined metadata test required
+--- SKIP: TestRealSingleFileMetadataDoesNotFollowBackingAndPinsOpenFile (0.00s)
+=== RUN   TestSingleFileMetadataRejectsUnsafeInfo
+--- PASS: TestSingleFileMetadataRejectsUnsafeInfo (0.00s)
+=== RUN   TestBackingGraphRejectsUnapprovedDependencies
+--- PASS: TestBackingGraphRejectsUnapprovedDependencies (0.00s)
+=== RUN   TestRealConfinedFormatConversions
+    tool_linux_test.go:58: explicit disk-tool fixture run required; this is file conversion, not VM boot
+--- SKIP: TestRealConfinedFormatConversions (0.00s)
+=== RUN   TestRealMissingAndEscapingVMDKExtents
+    tool_linux_test.go:107: explicit confined image fixture execution required
+--- SKIP: TestRealMissingAndEscapingVMDKExtents (0.00s)
+=== RUN   TestRealContainedBackingChainFlattensAndMissingBaseFails
+    tool_linux_test.go:149: explicit isolated disk-tool fixture execution required
+--- SKIP: TestRealContainedBackingChainFlattensAndMissingBaseFails (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/image	1.017s
+=== RUN   TestCleanupXMLProtectsAllReferencedStorage
+--- PASS: TestCleanupXMLProtectsAllReferencedStorage (0.00s)
+=== RUN   TestRealFileCleanupGraphWithNativeSimulatedInventory
+    creation_cleanup_linux_test.go:58: explicit generated files, native test-driver inventory and confined QEMU metadata required
+--- SKIP: TestRealFileCleanupGraphWithNativeSimulatedInventory (0.00s)
+=== RUN   TestCreationXMLNativeSimulatedRoundTrip
+=== RUN   TestCreationXMLNativeSimulatedRoundTrip/bios
+    creation_linux_test.go:64: native libvirt test driver XML parser/validator only; no QEMU VM, disk upload, firmware, TPM, network, or guest behavior exercised
+=== RUN   TestCreationXMLNativeSimulatedRoundTrip/uefi
+    creation_linux_test.go:64: native libvirt test driver XML parser/validator only; no QEMU VM, disk upload, firmware, TPM, network, or guest behavior exercised
+--- PASS: TestCreationXMLNativeSimulatedRoundTrip (0.03s)
+    --- PASS: TestCreationXMLNativeSimulatedRoundTrip/bios (0.01s)
+    --- PASS: TestCreationXMLNativeSimulatedRoundTrip/uefi (0.01s)
+=== RUN   TestCreationXMLRejectsMappingChanges
+=== RUN   TestCreationXMLRejectsMappingChanges/extra_host_device
+=== RUN   TestCreationXMLRejectsMappingChanges/unreviewed_source_attribute
+=== RUN   TestCreationXMLRejectsMappingChanges/identity_binding
+=== RUN   TestCreationXMLRejectsMappingChanges/boot_order
+=== RUN   TestCreationXMLRejectsMappingChanges/CPU_feature
+=== RUN   TestCreationXMLRejectsMappingChanges/external_backing
+=== RUN   TestCreationXMLRejectsMappingChanges/extra_metadata
+=== RUN   TestCreationXMLRejectsMappingChanges/memory
+=== RUN   TestCreationXMLRejectsMappingChanges/NIC_link
+=== RUN   TestCreationXMLRejectsMappingChanges/disk_bus
+=== RUN   TestCreationXMLRejectsMappingChanges/extra_disk
+--- PASS: TestCreationXMLRejectsMappingChanges (0.03s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/extra_host_device (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/unreviewed_source_attribute (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/identity_binding (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/boot_order (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/CPU_feature (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/external_backing (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/extra_metadata (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/memory (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/NIC_link (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/disk_bus (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/extra_disk (0.00s)
+=== RUN   TestCreationCapabilitiesRequirePositiveSupport
+--- PASS: TestCreationCapabilitiesRequirePositiveSupport (0.00s)
+=== RUN   TestFirmwareDescriptorRequiresExactMappingAndKeyPolicy
+--- PASS: TestFirmwareDescriptorRequiresExactMappingAndKeyPolicy (0.00s)
+=== RUN   TestCreationDeviceMetadataFromInstalledQEMU
+    creation_linux_test.go:159: enable installed QEMU read-only metadata probes explicitly
+--- SKIP: TestCreationDeviceMetadataFromInstalledQEMU (0.00s)
+=== RUN   TestUploadedVolumeMetadataRequiresIndependentExactCapacity
+--- PASS: TestUploadedVolumeMetadataRequiresIndependentExactCapacity (0.00s)
+=== RUN   TestVolumeDownloadConnectionGuardsWithSimulatedStorage
+    creation_linux_test.go:265: native API rejects mismatched connections and read-only volume access before transfer; simulated volume only, no file or host storage created; successful native storage streaming remains untested
+--- PASS: TestVolumeDownloadConnectionGuardsWithSimulatedStorage (0.00s)
+=== RUN   TestReadOnlyPoolAndNetworkInventoryWithNativeTestDriver
+    inventory_linux_test.go:47: BLOCKED: installed libvirt test driver does not implement inactive network XML; adapter correctly returns its error instead of fabricating persistent state. Native network readback remains unqualified.
+    inventory_linux_test.go:75: Official libvirt read-only calls used its simulated test driver; no host pool/network was started, created or modified; no routing or storage hardware claim
+--- PASS: TestReadOnlyPoolAndNetworkInventoryWithNativeTestDriver (0.00s)
+=== RUN   TestNetworkStateSeparationAndUnsupportedFlagAreExplicit
+--- PASS: TestNetworkStateSeparationAndUnsupportedFlagAreExplicit (0.00s)
+=== RUN   TestInventoryResponseBound
+--- PASS: TestInventoryResponseBound (0.00s)
+=== RUN   TestOfficialBindingWithSimulatedLibvirtDriver
+    provider_linux_test.go:38: official native binding exercised against libvirt's simulated test driver; this is not KVM/guest evidence
+--- PASS: TestOfficialBindingWithSimulatedLibvirtDriver (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	1.112s
+=== RUN   TestPreservesOpaqueXML
+--- PASS: TestPreservesOpaqueXML (0.00s)
+=== RUN   TestRefusesAmbiguousEdits
+--- PASS: TestRefusesAmbiguousEdits (0.00s)
+=== RUN   FuzzPatch
+=== RUN   FuzzPatch/seed#0
+--- PASS: FuzzPatch (0.00s)
+    --- PASS: FuzzPatch/seed#0 (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/xmlpatch	1.013s
+?   	virmill.local/core/internal/buildinfo	[no test files]
+=== RUN   TestCleanupDeletesOnlyReviewedNewCopiesAndClosesRecipe
+    cleanup_linux_test.go:164: synthetic volume deletion adapter and generated source files; no native host deletion or hardware qualification
+--- PASS: TestCleanupDeletesOnlyReviewedNewCopiesAndClosesRecipe (0.24s)
+=== RUN   TestCleanupRetainsUncertainGenerationAndPreservesPartialAllocationIdentity
+--- PASS: TestCleanupRetainsUncertainGenerationAndPreservesPartialAllocationIdentity (0.18s)
+=== RUN   TestCleanupPartialDeletionRetainsLocksAndNeedsFreshReview
+--- PASS: TestCleanupPartialDeletionRetainsLocksAndNeedsFreshReview (0.31s)
+=== RUN   TestCleanupLostFinalAcknowledgementReconcilesAfterJournalReopen
+--- PASS: TestCleanupLostFinalAcknowledgementReconcilesAfterJournalReopen (0.19s)
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/identity
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/graph
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/native-reference
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/manifest-reference
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/actor
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/connection
+=== RUN   TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/future-input
+--- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete (0.70s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/identity (0.11s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/graph (0.11s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/native-reference (0.12s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/manifest-reference (0.11s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/actor (0.09s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/connection (0.09s)
+    --- PASS: TestCleanupStaleIdentityGraphReferencesAndAuthorityRefuseBeforeDelete/future-input (0.09s)
+=== RUN   TestCleanupCancellationRetainsRemainingVolumeAndLocks
+--- PASS: TestCleanupCancellationRetainsRemainingVolumeAndLocks (0.17s)
+=== RUN   TestCleanupVersionedRecordRefusesMissingPinsOrFutureMeaning
+--- PASS: TestCleanupVersionedRecordRefusesMissingPinsOrFutureMeaning (0.20s)
+=== RUN   TestCleanupProtectsReferencesOlderThanRecentJobs
+--- PASS: TestCleanupProtectsReferencesOlderThanRecentJobs (0.13s)
+=== RUN   TestCreationInputCompatibilityAndExplicitIdentityBoundary
+--- PASS: TestCreationInputCompatibilityAndExplicitIdentityBoundary (0.00s)
+=== RUN   TestCleanupInputSchemaCompatibility
+--- PASS: TestCleanupInputSchemaCompatibility (0.00s)
+=== RUN   TestCreationReceiptRoundTripAndFutureVersionRefusal
+--- PASS: TestCreationReceiptRoundTripAndFutureVersionRefusal (0.06s)
+=== RUN   TestManagedOwnershipRequiresBothJournalAndNativeIdentity
+--- PASS: TestManagedOwnershipRequiresBothJournalAndNativeIdentity (0.05s)
+=== RUN   TestReviewedResumeReverifiesAndNeverReallocatesOrUploads
+    recovery_linux_test.go:63: synthetic copied-volume coordinator only; no native stream, hardware, or guest evidence
+--- PASS: TestReviewedResumeReverifiesAndNeverReallocatesOrUploads (0.16s)
+=== RUN   TestFailedRecoveryRetainsLocksAndAllowsAnotherReviewedRecovery
+--- PASS: TestFailedRecoveryRetainsLocksAndAllowsAnotherReviewedRecovery (0.25s)
+=== RUN   TestPartialSetWrongActorStaleTargetAndTamperedRetainedBytesRefuseRecovery
+--- PASS: TestPartialSetWrongActorStaleTargetAndTamperedRetainedBytesRefuseRecovery (0.21s)
+=== RUN   TestDefinitionFollowsCompleteIndependentVolumeVerification
+    service_linux_test.go:263: Synthetic coordinator adapter proves ordering and independent copied fixture bytes only; no native volume upload, VM definition or guest boot executed
+--- PASS: TestDefinitionFollowsCompleteIndependentVolumeVerification (0.05s)
+=== RUN   TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets
+=== RUN   TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/allocate
+=== RUN   TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/populate
+=== RUN   TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/verify
+=== RUN   TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/define
+--- PASS: TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets (0.17s)
+    --- PASS: TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/allocate (0.04s)
+    --- PASS: TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/populate (0.04s)
+    --- PASS: TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/verify (0.04s)
+    --- PASS: TestCreationFailuresRetainOriginalsAndNeverDefinePartialSets/define (0.05s)
+=== RUN   TestLostDefinitionAcknowledgementReconcilesWithoutReplay
+--- PASS: TestLostDefinitionAcknowledgementReconcilesWithoutReplay (0.05s)
+=== RUN   TestCancelUploadRetainsAllocatedVolumeWithoutDefining
+--- PASS: TestCancelUploadRetainsAllocatedVolumeWithoutDefining (0.14s)
+=== RUN   TestIncompleteMappingsAndStaleTargetFailBeforeAllocation
+--- PASS: TestIncompleteMappingsAndStaleTargetFailBeforeAllocation (0.02s)
+PASS
+ok  	virmill.local/core/internal/creating	4.330s
+?   	virmill.local/core/internal/domain	[no test files]
+=== RUN   TestGrantBindsPeerActionResourcesAndPlan
+--- PASS: TestGrantBindsPeerActionResourcesAndPlan (0.01s)
+PASS
+ok  	virmill.local/core/internal/helper	1.025s
+=== RUN   TestApprovedSourceRequiresCompletedOwnedJournalReceipt
+    approved_linux_test.go:57: coordinator authority test with synthetic converter output, not an image-format or hardware test
+--- PASS: TestApprovedSourceRequiresCompletedOwnedJournalReceipt (0.09s)
+=== RUN   TestPreparedReceiptRejectsFutureFieldsAtApproval
+--- PASS: TestPreparedReceiptRejectsFutureFieldsAtApproval (0.04s)
+=== RUN   TestAllDiskMappingAndSourceDrift
+--- PASS: TestAllDiskMappingAndSourceDrift (0.01s)
+=== RUN   TestConverterFailurePreservesOriginalAndDoesNotPublish
+--- PASS: TestConverterFailurePreservesOriginalAndDoesNotPublish (0.02s)
+=== RUN   TestPublishedArtifactReconcilesWithoutConversionReplay
+--- PASS: TestPublishedArtifactReconcilesWithoutConversionReplay (0.03s)
+=== RUN   TestRealMultiDiskSplitVMDKPreparation
+    stage_linux_test.go:219: explicit isolated disk-tool fixture execution required; not a boot test
+--- SKIP: TestRealMultiDiskSplitVMDKPreparation (0.00s)
+=== RUN   TestCancelStopsWorkerBeforeRemovingOnlyItsStaging
+--- PASS: TestCancelStopsWorkerBeforeRemovingOnlyItsStaging (0.12s)
+=== RUN   TestReceiptSchemaCompatibilityAndIdentityPrecision
+--- PASS: TestReceiptSchemaCompatibilityAndIdentityPrecision (0.04s)
+PASS
+ok  	virmill.local/core/internal/importing	1.425s
+=== RUN   TestIdempotencyActorExpiryAndSubstitution
+--- PASS: TestIdempotencyActorExpiryAndSubstitution (0.02s)
+=== RUN   TestCrashAfterEffectBeforeJournal
+--- PASS: TestCrashAfterEffectBeforeJournal (0.02s)
+=== RUN   TestCanonicalRFC8785Vectors
+--- PASS: TestCanonicalRFC8785Vectors (0.00s)
+=== RUN   TestRecoveryIncludesJobsOlderThanRecentList
+--- PASS: TestRecoveryIncludesJobsOlderThanRecentList (0.09s)
+=== RUN   TestInheritedUncertainLocksSurviveEarlyRecoveryExit
+=== RUN   TestInheritedUncertainLocksSurviveEarlyRecoveryExit/queued-cancellation
+=== RUN   TestInheritedUncertainLocksSurviveEarlyRecoveryExit/validation
+=== RUN   TestInheritedUncertainLocksSurviveEarlyRecoveryExit/safe-cancellation
+--- PASS: TestInheritedUncertainLocksSurviveEarlyRecoveryExit (0.02s)
+    --- PASS: TestInheritedUncertainLocksSurviveEarlyRecoveryExit/queued-cancellation (0.01s)
+    --- PASS: TestInheritedUncertainLocksSurviveEarlyRecoveryExit/validation (0.01s)
+    --- PASS: TestInheritedUncertainLocksSurviveEarlyRecoveryExit/safe-cancellation (0.01s)
+PASS
+ok  	virmill.local/core/internal/operations	1.170s
+=== RUN   TestSingleFileSandboxRefusesWriteHandles
+--- PASS: TestSingleFileSandboxRefusesWriteHandles (0.00s)
+=== RUN   TestRealSingleFileSandboxHidesSiblingsAndClosesDescriptor
+    sandbox_file_test.go:29: explicit generated-file namespace probe required
+--- SKIP: TestRealSingleFileSandboxHidesSiblingsAndClosesDescriptor (0.00s)
+=== RUN   TestSandboxPolicyAndFailClosed
+    sandbox_test.go:36: REAL SANDBOX PROBE BLOCKED (no confinement certification): UNSUPPORTED_CAPABILITY: sandbox unavailable; normal plugin execution refused: bwrap: loopback: Failed to create NETLINK_ROUTE socket: Operation not permitted
+--- PASS: TestSandboxPolicyAndFailClosed (0.01s)
+PASS
+ok  	virmill.local/core/internal/platform/linux	1.026s
+=== RUN   TestInstalledActionPinnedPlanAndDurableResult
+    actions_test.go:69: requires explicit confined process fixture execution; no real VMs
+--- SKIP: TestInstalledActionPinnedPlanAndDurableResult (0.00s)
+=== RUN   TestDeveloperScaffoldBuildAndSignedPackPlans
+--- PASS: TestDeveloperScaffoldBuildAndSignedPackPlans (1.18s)
+=== RUN   TestInstallUpdateRollbackPermissionAndPreservation
+--- PASS: TestInstallUpdateRollbackPermissionAndPreservation (0.26s)
+=== RUN   TestChangedPackageStalePlanAndImmutableVersion
+--- PASS: TestChangedPackageStalePlanAndImmutableVersion (0.09s)
+=== RUN   TestLifecycleRecoveryObservesCommitWithoutRelaunch
+--- PASS: TestLifecycleRecoveryObservesCommitWithoutRelaunch (0.03s)
+=== RUN   TestDistributionRejectsTrailingArchiveAndParentCollisions
+--- PASS: TestDistributionRejectsTrailingArchiveAndParentCollisions (0.00s)
+=== RUN   TestLifecycleRequiresActiveInvocationDispositionAndSchemaGuard
+--- PASS: TestLifecycleRequiresActiveInvocationDispositionAndSchemaGuard (0.07s)
+=== RUN   TestSignedPackageAndScopeIntersection
+--- PASS: TestSignedPackageAndScopeIntersection (0.00s)
+=== RUN   TestTwoLanguageConfinedConformance
+    runner_test.go:14: requires prebuilt Go fixture and explicit isolated sandbox test execution
+--- SKIP: TestTwoLanguageConfinedConformance (0.00s)
+=== RUN   TestProviderCrashReconcileFixture
+    runner_test.go:36: requires prebuilt simulated provider
+--- SKIP: TestProviderCrashReconcileFixture (0.00s)
+PASS
+ok  	virmill.local/core/internal/plugins	2.696s
+=== RUN   TestMetadataCompareAndReopenMigration
+--- PASS: TestMetadataCompareAndReopenMigration (0.00s)
+=== RUN   TestRecoveryAcceptanceTransfersAllLocksAndLinksAtomically
+--- PASS: TestRecoveryAcceptanceTransfersAllLocksAndLinksAtomically (0.01s)
+=== RUN   TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit
+=== RUN   TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/drop-lock
+=== RUN   TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/actor
+=== RUN   TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/connection
+=== RUN   TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/commit-failure
+--- PASS: TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit (0.01s)
+    --- PASS: TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/drop-lock (0.00s)
+    --- PASS: TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/actor (0.00s)
+    --- PASS: TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/connection (0.00s)
+    --- PASS: TestRecoveryCannotDropLocksChangeActorOrPartiallyCommit/commit-failure (0.00s)
+=== RUN   TestOldVersionsPreserveUncertainStateAndPrivateBackup
+=== RUN   TestOldVersionsPreserveUncertainStateAndPrivateBackup/1
+=== RUN   TestOldVersionsPreserveUncertainStateAndPrivateBackup/2
+--- PASS: TestOldVersionsPreserveUncertainStateAndPrivateBackup (0.01s)
+    --- PASS: TestOldVersionsPreserveUncertainStateAndPrivateBackup/1 (0.00s)
+    --- PASS: TestOldVersionsPreserveUncertainStateAndPrivateBackup/2 (0.00s)
+=== RUN   TestMigrationBackupAndNewerSchemaRefusal
+--- PASS: TestMigrationBackupAndNewerSchemaRefusal (0.00s)
+=== RUN   TestRecordBundledSQLiteVersion
+    version_test.go:21: bundled SQLite runtime: 3.53.4
+--- PASS: TestRecordBundledSQLiteVersion (0.00s)
+PASS
+ok  	virmill.local/core/internal/store	1.041s
+=== RUN   TestPrivateRPCAndSingleton
+    socket_linux_test.go:39: IPC sandbox unavailable: listen unix /tmp/TestPrivateRPCAndSingleton1953755600/001/control.sock: setsockopt: operation not permitted
+--- SKIP: TestPrivateRPCAndSingleton (0.00s)
+PASS
+ok  	virmill.local/core/internal/transport/local	1.042s
+=== RUN   TestClientResolvesPathsBeforeDetachedServiceCall
+--- PASS: TestClientResolvesPathsBeforeDetachedServiceCall (0.00s)
+PASS
+ok  	virmill.local/core/internal/ui	1.052s
+=== RUN   TestCleanJSONNoninteractiveAndSharedMethod
+--- PASS: TestCleanJSONNoninteractiveAndSharedMethod (0.00s)
+=== RUN   TestPlanApplyRequiresExplicitBinding
+--- PASS: TestPlanApplyRequiresExplicitBinding (0.00s)
+=== RUN   TestPluginPlansUseSharedServiceAndExplicitInputs
+--- PASS: TestPluginPlansUseSharedServiceAndExplicitInputs (0.00s)
+=== RUN   TestImportPreparationUsesSharedService
+--- PASS: TestImportPreparationUsesSharedService (0.00s)
+=== RUN   TestResourceInventoryCommandsPreserveExplicitConnection
+--- PASS: TestResourceInventoryCommandsPreserveExplicitConnection (0.00s)
+=== RUN   TestCreationAndRecoveryCommandsUseSharedService
+--- PASS: TestCreationAndRecoveryCommandsUseSharedService (0.00s)
+PASS
+ok  	virmill.local/core/internal/ui/cli	1.052s
+=== RUN   TestKeyboardNavigationSharedServiceAndResize
+--- PASS: TestKeyboardNavigationSharedServiceAndResize (0.00s)
+=== RUN   TestEscDiscardsApprovalWithoutMutation
+--- PASS: TestEscDiscardsApprovalWithoutMutation (0.00s)
+=== RUN   TestPluginFormDispatchAndScrollableActionMenu
+--- PASS: TestPluginFormDispatchAndScrollableActionMenu (0.00s)
+=== RUN   TestImportFormDispatchesCompleteMappingToSharedService
+--- PASS: TestImportFormDispatchesCompleteMappingToSharedService (0.00s)
+=== RUN   TestStorageAndNetworkInventoryAreReachableWithoutApproval
+--- PASS: TestStorageAndNetworkInventoryAreReachableWithoutApproval (0.00s)
+=== RUN   TestCreationAndDefinitionRecoveryHaveSharedTUIAccess
+--- PASS: TestCreationAndDefinitionRecoveryHaveSharedTUIAccess (0.00s)
+=== RUN   TestLargeCreationFormRemainsBoundedAndVisible
+--- PASS: TestLargeCreationFormRemainsBoundedAndVisible (0.01s)
+PASS
+ok  	virmill.local/core/internal/ui/tui	1.049s
+=== RUN   TestPluginSchemasAreOfflineAndValidateResults
+--- PASS: TestPluginSchemasAreOfflineAndValidateResults (0.00s)
+=== RUN   TestBundledExamplesOffline
+--- PASS: TestBundledExamplesOffline (0.04s)
+=== RUN   TestYAMLAndTerminalSafety
+--- PASS: TestYAMLAndTerminalSafety (0.00s)
+PASS
+ok  	virmill.local/core/internal/validation	1.095s
+=== RUN   TestStrictJSON
+--- PASS: TestStrictJSON (0.00s)
+=== RUN   FuzzValidate
+=== RUN   FuzzValidate/seed#0
+=== RUN   FuzzValidate/seed#1
+--- PASS: FuzzValidate (0.00s)
+    --- PASS: FuzzValidate/seed#0 (0.00s)
+    --- PASS: FuzzValidate/seed#1 (0.00s)
+PASS
+ok  	virmill.local/core/internal/wire	1.011s
+?   	virmill.local/core/schemas	[no test files]

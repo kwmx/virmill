@@ -256,7 +256,8 @@
         "import-cli-daemon-001",
         "resource-inventory-artifacts-001",
         "creation-core-001",
-        "creation-artifacts-001"
+        "creation-artifacts-001",
+        "cleanup-artifacts-001"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified."
@@ -372,7 +373,10 @@
         "import-conversion-001",
         "import-unit-001",
         "import-cli-daemon-001",
-        "creation-core-001"
+        "creation-core-001",
+        "cleanup-core-001",
+        "cleanup-confinement-001",
+        "cleanup-artifacts-001"
       ],
       "outstanding": [
         "Prepared-source preservation and creation retention/guarded deletion, partial effects, cancellation and restart are tested with generated/synthetic fixtures. Native streaming, space faults, deletion/durability and disposal of uninspectable partial images still need qualified recovery adapters/evidence."
@@ -807,7 +811,10 @@
         "internal/backend/image/metadata_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "cleanup-core-001",
+        "cleanup-confinement-001",
+        "cleanup-artifacts-001"
       ],
       "outstanding": [
         "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete."
@@ -1263,7 +1270,8 @@
         "internal/transport/local/socket_linux_test.go"
       ],
       "evidence": [
-        "ipc-tests-001"
+        "ipc-tests-001",
+        "cleanup-artifacts-001"
       ],
       "outstanding": [
         "Coordinator separation implemented; long-running actual VM job client-detach/reconnect drill remains."
@@ -1311,7 +1319,9 @@
         "core-tests-003",
         "import-conversion-001",
         "import-unit-001",
-        "creation-core-001"
+        "creation-core-001",
+        "cleanup-core-001",
+        "cleanup-confinement-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains."
@@ -1343,7 +1353,8 @@
       ],
       "evidence": [
         "core-tests-001",
-        "creation-core-001"
+        "creation-core-001",
+        "cleanup-core-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage."
@@ -1385,7 +1396,8 @@
       ],
       "evidence": [
         "ipc-tests-001",
-        "creation-core-001"
+        "creation-core-001",
+        "cleanup-core-001"
       ],
       "outstanding": [
         "Cleanup inherits all original locks, adds observed pool/domain locks and rechecks generations/graphs/references before deletion. Synthetic contention/drift fixtures pass; actual concurrent native/external writer matrix remains."
@@ -1491,7 +1503,9 @@
       ],
       "evidence": [
         "sandbox-tests-001",
-        "import-sandbox-regression-001"
+        "import-sandbox-regression-001",
+        "cleanup-core-001",
+        "cleanup-confinement-001"
       ],
       "outstanding": [
         "Real generated-file single-FD sandbox probes preserve read-only access, close the inherited source FD and hide siblings/sockets. Plugin namespace tests remain scoped; full grant/network/security-framework qualification remains."
@@ -1555,7 +1569,8 @@
         "plugin-conformance-001",
         "sdk-tests-001",
         "plugin-lifecycle-003",
-        "plugin-lifecycle-004"
+        "plugin-lifecycle-004",
+        "cleanup-confinement-001"
       ],
       "outstanding": [
         "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
@@ -1581,7 +1596,8 @@
         "internal/plugins/runner_test.go"
       ],
       "evidence": [
-        "plugin-conformance-001"
+        "plugin-conformance-001",
+        "cleanup-confinement-001"
       ],
       "outstanding": [
         "Simulated create/partial/restart/reconcile/dedup fixture passes; complete provider pagination/lifecycle fixture matrix remains."
@@ -1615,7 +1631,9 @@
         "sdk-tests-001",
         "plugin-lifecycle-003",
         "plugin-lifecycle-004",
-        "import-sandbox-regression-001"
+        "import-sandbox-regression-001",
+        "cleanup-confinement-001",
+        "cleanup-static-portable-001"
       ],
       "outstanding": [
         "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains."
@@ -1648,7 +1666,8 @@
       "evidence": [
         "core-tests-001",
         "plugin-lifecycle-003",
-        "plugin-lifecycle-004"
+        "plugin-lifecycle-004",
+        "cleanup-confinement-001"
       ],
       "outstanding": [
         "Signed install/update/rollback, exact grants, revocation, active-job disposition and acknowledgement-loss recovery tested; unsigned/development override, persistent plugin-data migration and full qualification remain."
@@ -1828,7 +1847,10 @@
         "resource-inventory-artifacts-001",
         "creation-core-001",
         "creation-build-001",
-        "creation-artifacts-001"
+        "creation-artifacts-001",
+        "cleanup-core-001",
+        "cleanup-build-001",
+        "cleanup-artifacts-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain."
@@ -1856,7 +1878,8 @@
         "import-cross-build-001",
         "resource-inventory-portable-001",
         "creation-static-001",
-        "creation-portable-001"
+        "creation-portable-001",
+        "cleanup-static-portable-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -1899,7 +1922,11 @@
         "creation-core-001",
         "creation-static-001",
         "creation-build-001",
-        "creation-artifacts-001"
+        "creation-artifacts-001",
+        "cleanup-core-001",
+        "cleanup-static-portable-001",
+        "cleanup-build-001",
+        "cleanup-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."
@@ -1924,7 +1951,9 @@
       "plannedTest": "tests/integration/release/REL-04",
       "tests": [],
       "evidence": [
-        "creation-release-gate-001"
+        "creation-release-gate-001",
+        "cleanup-build-001",
+        "cleanup-release-gate-001"
       ],
       "outstanding": [
         "Full release blocked: incomplete mandatory code, no authorized disposable VM target, and missing required host/guest/hardware/restore evidence."

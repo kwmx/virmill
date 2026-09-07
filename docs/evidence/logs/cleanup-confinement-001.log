@@ -1,0 +1,138 @@
+=== RUN   TestRealSingleFileMetadataDoesNotFollowBackingAndPinsOpenFile
+    metadata_linux_test.go:43: real confined QEMU metadata on a held generated file; missing backing was reported without exposure; no VM boot
+--- PASS: TestRealSingleFileMetadataDoesNotFollowBackingAndPinsOpenFile (0.02s)
+=== RUN   TestSingleFileMetadataRejectsUnsafeInfo
+--- PASS: TestSingleFileMetadataRejectsUnsafeInfo (0.00s)
+=== RUN   TestBackingGraphRejectsUnapprovedDependencies
+--- PASS: TestBackingGraphRejectsUnapprovedDependencies (0.00s)
+=== RUN   TestRealConfinedFormatConversions
+    tool_linux_test.go:66: Actual converter: qemu-img version 10.2.2 (qemu-10.2.2-1.fc44); executable SHA-256 4362e911c13bb90e39b69479462cd4adb840749b582f4892ca114eb7e94dcf2e
+=== RUN   TestRealConfinedFormatConversions/raw
+    tool_linux_test.go:100: raw source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/qcow2
+    tool_linux_test.go:100: qcow2 source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vmdk
+    tool_linux_test.go:100: vmdk source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vdi
+    tool_linux_test.go:100: vdi source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vpc
+    tool_linux_test.go:100: vpc source converted, checked and compared at 8390656 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vhdx
+    tool_linux_test.go:100: vhdx source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+--- PASS: TestRealConfinedFormatConversions (0.36s)
+    --- PASS: TestRealConfinedFormatConversions/raw (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/qcow2 (0.07s)
+    --- PASS: TestRealConfinedFormatConversions/vmdk (0.05s)
+    --- PASS: TestRealConfinedFormatConversions/vdi (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/vpc (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/vhdx (0.06s)
+=== RUN   TestRealMissingAndEscapingVMDKExtents
+--- PASS: TestRealMissingAndEscapingVMDKExtents (0.04s)
+=== RUN   TestRealContainedBackingChainFlattensAndMissingBaseFails
+--- PASS: TestRealContainedBackingChainFlattensAndMissingBaseFails (0.08s)
+PASS
+ok  	virmill.local/core/internal/backend/image	1.511s
+=== RUN   TestCleanupXMLProtectsAllReferencedStorage
+--- PASS: TestCleanupXMLProtectsAllReferencedStorage (0.00s)
+=== RUN   TestRealFileCleanupGraphWithNativeSimulatedInventory
+    creation_cleanup_linux_test.go:219: real statx/bubblewrap/QEMU metadata plus in-memory libvirt test inventory; no native host deletion, guest boot or hardware evidence
+--- PASS: TestRealFileCleanupGraphWithNativeSimulatedInventory (0.17s)
+=== RUN   TestCreationXMLNativeSimulatedRoundTrip
+=== RUN   TestCreationXMLNativeSimulatedRoundTrip/bios
+    creation_linux_test.go:64: native libvirt test driver XML parser/validator only; no QEMU VM, disk upload, firmware, TPM, network, or guest behavior exercised
+=== RUN   TestCreationXMLNativeSimulatedRoundTrip/uefi
+    creation_linux_test.go:64: native libvirt test driver XML parser/validator only; no QEMU VM, disk upload, firmware, TPM, network, or guest behavior exercised
+--- PASS: TestCreationXMLNativeSimulatedRoundTrip (0.02s)
+    --- PASS: TestCreationXMLNativeSimulatedRoundTrip/bios (0.01s)
+    --- PASS: TestCreationXMLNativeSimulatedRoundTrip/uefi (0.01s)
+=== RUN   TestCreationXMLRejectsMappingChanges
+=== RUN   TestCreationXMLRejectsMappingChanges/memory
+=== RUN   TestCreationXMLRejectsMappingChanges/boot_order
+=== RUN   TestCreationXMLRejectsMappingChanges/disk_bus
+=== RUN   TestCreationXMLRejectsMappingChanges/extra_disk
+=== RUN   TestCreationXMLRejectsMappingChanges/CPU_feature
+=== RUN   TestCreationXMLRejectsMappingChanges/extra_metadata
+=== RUN   TestCreationXMLRejectsMappingChanges/NIC_link
+=== RUN   TestCreationXMLRejectsMappingChanges/extra_host_device
+=== RUN   TestCreationXMLRejectsMappingChanges/external_backing
+=== RUN   TestCreationXMLRejectsMappingChanges/unreviewed_source_attribute
+=== RUN   TestCreationXMLRejectsMappingChanges/identity_binding
+--- PASS: TestCreationXMLRejectsMappingChanges (0.03s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/memory (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/boot_order (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/disk_bus (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/extra_disk (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/CPU_feature (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/extra_metadata (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/NIC_link (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/extra_host_device (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/external_backing (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/unreviewed_source_attribute (0.00s)
+    --- PASS: TestCreationXMLRejectsMappingChanges/identity_binding (0.00s)
+=== RUN   TestCreationCapabilitiesRequirePositiveSupport
+--- PASS: TestCreationCapabilitiesRequirePositiveSupport (0.00s)
+=== RUN   TestFirmwareDescriptorRequiresExactMappingAndKeyPolicy
+--- PASS: TestFirmwareDescriptorRequiresExactMappingAndKeyPolicy (0.00s)
+=== RUN   TestCreationDeviceMetadataFromInstalledQEMU
+    creation_linux_test.go:170: actual installed QEMU -device MODEL,help only, proof 5c1f4dba490e3eafab1f9d140d10e6816f34265efd1022b250a197172a58b73b; no machine initialization or guest execution
+    creation_linux_test.go:189: read-only installed firmware metadata: secureBoot=false descriptor=6e0ba29fb7d38c1f84c05b1d932e9ca28d976e644ecb9e888b7ed638753a3e38 code=2eeb785094b42fc16c41b46b92949405332ce527b62d0f1646fe0c3f42cffbde template=035317bb2923a13c1dc57373d608521cc3a486f1e3119016727d54baccc6e8bb; enrollment, firmware execution and TPM recovery remain untested
+    creation_linux_test.go:189: read-only installed firmware metadata: secureBoot=true descriptor=64d3b16ce90e372bdacbcd36484022955d154a4a86e165fda9213057a7e93fbe code=052ab8a99e3cf0178bee2a999a7b3a5e63ca524a5eb54005f79a2523f2339bee template=451d91357dfcd353da0f0988625e70da0605a1f5da7ef6d30c2c685bafc46ee8; enrollment, firmware execution and TPM recovery remain untested
+--- PASS: TestCreationDeviceMetadataFromInstalledQEMU (0.11s)
+=== RUN   TestUploadedVolumeMetadataRequiresIndependentExactCapacity
+--- PASS: TestUploadedVolumeMetadataRequiresIndependentExactCapacity (0.00s)
+=== RUN   TestVolumeDownloadConnectionGuardsWithSimulatedStorage
+    creation_linux_test.go:265: native API rejects mismatched connections and read-only volume access before transfer; simulated volume only, no file or host storage created; successful native storage streaming remains untested
+--- PASS: TestVolumeDownloadConnectionGuardsWithSimulatedStorage (0.00s)
+=== RUN   TestReadOnlyPoolAndNetworkInventoryWithNativeTestDriver
+    inventory_linux_test.go:47: BLOCKED: installed libvirt test driver does not implement inactive network XML; adapter correctly returns its error instead of fabricating persistent state. Native network readback remains unqualified.
+    inventory_linux_test.go:75: Official libvirt read-only calls used its simulated test driver; no host pool/network was started, created or modified; no routing or storage hardware claim
+--- PASS: TestReadOnlyPoolAndNetworkInventoryWithNativeTestDriver (0.00s)
+=== RUN   TestNetworkStateSeparationAndUnsupportedFlagAreExplicit
+--- PASS: TestNetworkStateSeparationAndUnsupportedFlagAreExplicit (0.00s)
+=== RUN   TestInventoryResponseBound
+--- PASS: TestInventoryResponseBound (0.00s)
+=== RUN   TestOfficialBindingWithSimulatedLibvirtDriver
+    provider_linux_test.go:38: official native binding exercised against libvirt's simulated test driver; this is not KVM/guest evidence
+--- PASS: TestOfficialBindingWithSimulatedLibvirtDriver (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	1.372s
+=== RUN   TestSingleFileSandboxRefusesWriteHandles
+--- PASS: TestSingleFileSandboxRefusesWriteHandles (0.00s)
+=== RUN   TestRealSingleFileSandboxHidesSiblingsAndClosesDescriptor
+    sandbox_file_test.go:68: real namespace fixture: one read-only file, no sibling, no host socket, no inherited source descriptor
+--- PASS: TestRealSingleFileSandboxHidesSiblingsAndClosesDescriptor (0.01s)
+=== RUN   TestSandboxPolicyAndFailClosed
+    sandbox_test.go:51: real namespace probe prevented access to undeclared temporary host file and libvirt socket; network attack still requires full qualification
+--- PASS: TestSandboxPolicyAndFailClosed (0.02s)
+PASS
+ok  	virmill.local/core/internal/platform/linux	1.034s
+=== RUN   TestInstalledActionPinnedPlanAndDurableResult
+    actions_test.go:120: Confined Python action executed on synthetic selected records; exact result persisted, stale VM and revoked-grant plans refused. No VM/hardware effects.
+--- PASS: TestInstalledActionPinnedPlanAndDurableResult (0.28s)
+=== RUN   TestDeveloperScaffoldBuildAndSignedPackPlans
+--- PASS: TestDeveloperScaffoldBuildAndSignedPackPlans (1.07s)
+=== RUN   TestInstallUpdateRollbackPermissionAndPreservation
+--- PASS: TestInstallUpdateRollbackPermissionAndPreservation (0.23s)
+=== RUN   TestChangedPackageStalePlanAndImmutableVersion
+--- PASS: TestChangedPackageStalePlanAndImmutableVersion (0.09s)
+=== RUN   TestLifecycleRecoveryObservesCommitWithoutRelaunch
+--- PASS: TestLifecycleRecoveryObservesCommitWithoutRelaunch (0.03s)
+=== RUN   TestDistributionRejectsTrailingArchiveAndParentCollisions
+--- PASS: TestDistributionRejectsTrailingArchiveAndParentCollisions (0.00s)
+=== RUN   TestLifecycleRequiresActiveInvocationDispositionAndSchemaGuard
+--- PASS: TestLifecycleRequiresActiveInvocationDispositionAndSchemaGuard (0.06s)
+=== RUN   TestSignedPackageAndScopeIntersection
+--- PASS: TestSignedPackageAndScopeIntersection (0.00s)
+=== RUN   TestTwoLanguageConfinedConformance
+    runner_test.go:30: example.virmill.sdk-summary: [initialize identity and protocol describe unknown method rejected read-only plan and execute stale context rejected shutdown]
+    runner_test.go:30: example.virmill.python-summary: [initialize identity and protocol describe unknown method rejected read-only plan and execute stale context rejected shutdown]
+--- PASS: TestTwoLanguageConfinedConformance (0.03s)
+=== RUN   TestProviderCrashReconcileFixture
+    runner_test.go:82: simulated provider persisted partial fake effect, recovered after process restart, deduplicated and rejected backup; no actual VM or remote host
+--- PASS: TestProviderCrashReconcileFixture (0.02s)
+PASS
+ok  	virmill.local/core/internal/plugins	2.850s
+=== RUN   TestPrivateRPCAndSingleton
+--- PASS: TestPrivateRPCAndSingleton (0.00s)
+PASS
+ok  	virmill.local/core/internal/transport/local	1.033s

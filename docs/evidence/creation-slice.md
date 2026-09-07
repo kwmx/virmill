@@ -2,7 +2,9 @@
 
 Implemented source: `a05aabb`; private-daemon integration check and guide correction:
 `de5743ab955cdc047f0b010af6c8e025043b107a`. The latter revision is embedded in the
-development artifacts. No release has been published.
+development artifacts recorded for that slice. No release has been published.
+The later [cleanup slice](cleanup-slice.md) adds explicit resource disposition
+and supersedes the implementation-gap statements below for that bounded adapter.
 
 | Check | Recorded result | Scope |
 |---|---|---|
