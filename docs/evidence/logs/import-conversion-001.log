@@ -1,0 +1,46 @@
+=== RUN   TestBackingGraphRejectsUnapprovedDependencies
+--- PASS: TestBackingGraphRejectsUnapprovedDependencies (0.00s)
+=== RUN   TestRealConfinedFormatConversions
+    tool_linux_test.go:66: Actual converter: qemu-img version 10.2.2 (qemu-10.2.2-1.fc44); executable SHA-256 4362e911c13bb90e39b69479462cd4adb840749b582f4892ca114eb7e94dcf2e
+=== RUN   TestRealConfinedFormatConversions/raw
+    tool_linux_test.go:100: raw source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/qcow2
+    tool_linux_test.go:100: qcow2 source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vmdk
+    tool_linux_test.go:100: vmdk source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vdi
+    tool_linux_test.go:100: vdi source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vpc
+    tool_linux_test.go:100: vpc source converted, checked and compared at 8390656 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vhdx
+    tool_linux_test.go:100: vhdx source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+--- PASS: TestRealConfinedFormatConversions (0.34s)
+    --- PASS: TestRealConfinedFormatConversions/raw (0.05s)
+    --- PASS: TestRealConfinedFormatConversions/qcow2 (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/vmdk (0.05s)
+    --- PASS: TestRealConfinedFormatConversions/vdi (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/vpc (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/vhdx (0.06s)
+=== RUN   TestRealMissingAndEscapingVMDKExtents
+--- PASS: TestRealMissingAndEscapingVMDKExtents (0.03s)
+=== RUN   TestRealContainedBackingChainFlattensAndMissingBaseFails
+--- PASS: TestRealContainedBackingChainFlattensAndMissingBaseFails (0.07s)
+PASS
+ok  	virmill.local/core/internal/backend/image	1.462s
+=== RUN   TestAllDiskMappingAndSourceDrift
+--- PASS: TestAllDiskMappingAndSourceDrift (0.05s)
+=== RUN   TestConverterFailurePreservesOriginalAndDoesNotPublish
+--- PASS: TestConverterFailurePreservesOriginalAndDoesNotPublish (0.02s)
+=== RUN   TestPublishedArtifactReconcilesWithoutConversionReplay
+--- PASS: TestPublishedArtifactReconcilesWithoutConversionReplay (0.03s)
+=== RUN   TestRealMultiDiskSplitVMDKPreparation
+    stage_linux_test.go:251: boot -> disks/disk-000.qcow2: 8388608 virtual bytes, SHA-256 6115410969d8fe0c23f639dfe3a36ed1b770a5470b2e11b2a81b2c9e34bc39b5
+    stage_linux_test.go:251: data -> disks/disk-001.qcow2: 8388608 virtual bytes, SHA-256 6076b3e41ac4e1cb11751891b1ecdb1dc88c6c2c44e45e390f476b46c07baf00
+    stage_linux_test.go:253: Original OVA SHA-256 320356968865b2023ddf76dd5b157e52943180f64e8bf7589ef9e03a26875337 preserved. Actual qemu-img conversions, checks and comparisons executed in confinement; no VM registration or guest boot.
+--- PASS: TestRealMultiDiskSplitVMDKPreparation (0.19s)
+=== RUN   TestCancelStopsWorkerBeforeRemovingOnlyItsStaging
+--- PASS: TestCancelStopsWorkerBeforeRemovingOnlyItsStaging (0.12s)
+=== RUN   TestReceiptSchemaCompatibilityAndIdentityPrecision
+--- PASS: TestReceiptSchemaCompatibilityAndIdentityPrecision (0.03s)
+PASS
+ok  	virmill.local/core/internal/importing	1.473s

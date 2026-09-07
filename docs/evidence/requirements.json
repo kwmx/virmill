@@ -191,7 +191,8 @@
         "internal/backend/image/tool_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "import-conversion-001"
       ],
       "outstanding": [
         "Actual generated two-disk split-VMDK conversion preserves descriptor/controller order. VMware-origin guest adaptation, NIC mapping, registration and boot remain unverified."
@@ -220,7 +221,9 @@
         "internal/backend/image/tool_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "import-conversion-001",
+        "import-cli-daemon-001"
       ],
       "outstanding": [
         "Generic OVA preparation converts and atomically publishes every selected disk; generic guest registration, mapping and boot remain incomplete."
@@ -246,7 +249,9 @@
         "internal/importing/stage_linux_test.go",
         "internal/backend/image/tool_linux_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "import-conversion-001"
+      ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain."
       ],
@@ -275,7 +280,8 @@
         "internal/backend/image/tool_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "import-conversion-001"
       ],
       "outstanding": [
         "Archive traversal/type/entity bounds plus confined image graph/extent validation implemented. Broader malicious format corpus, encrypted fixtures and full security qualification remain."
@@ -301,7 +307,11 @@
         "internal/importing/stage_linux_test.go",
         "internal/backend/image/tool_linux_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "import-conversion-001",
+        "import-unit-001",
+        "import-cli-daemon-001"
+      ],
       "outstanding": [
         "Original preservation, converter-failure staging, safe worker cancellation and lost-publication-ack recovery tested; actual disk-full/crash/reboot/registration failure matrix remains."
       ],
@@ -326,7 +336,10 @@
         "internal/importing/stage_linux_test.go",
         "internal/backend/image/tool_linux_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "import-conversion-001",
+        "import-cli-daemon-001"
+      ],
       "outstanding": [
         "PreparedImport receipts explicitly separate disk conversion from VM definition and guest boot; registration/start/reachability stages remain to implement."
       ],
@@ -354,7 +367,9 @@
         "internal/backend/image/tool_linux_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "import-conversion-001",
+        "import-unit-001"
       ],
       "outstanding": [
         "Exact system selection, complete disk mapping and source identity/hash rechecks implemented. End-to-end missing-digest and multi-system guest fixtures remain."
@@ -1151,7 +1166,9 @@
       "evidence": [
         "core-tests-001",
         "core-tests-002",
-        "core-tests-003"
+        "core-tests-003",
+        "import-conversion-001",
+        "import-unit-001"
       ],
       "outstanding": [
         "Synthetic crash/acknowledgement-loss recovery and jobs older than recent-list limit tested; actual backend/reboot fault matrix remains."
@@ -1279,7 +1296,8 @@
         "internal/validation/validate_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "import-conversion-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain."
@@ -1305,7 +1323,8 @@
         "internal/platform/linux/sandbox_test.go"
       ],
       "evidence": [
-        "sandbox-tests-001"
+        "sandbox-tests-001",
+        "import-sandbox-regression-001"
       ],
       "outstanding": [
         "Successful namespace checks and unavailable-sandbox refusal; full file-grant/network/FD/security-framework matrix remains."
@@ -1428,7 +1447,8 @@
         "core-tests-001",
         "sdk-tests-001",
         "plugin-lifecycle-003",
-        "plugin-lifecycle-004"
+        "plugin-lifecycle-004",
+        "import-sandbox-regression-001"
       ],
       "outstanding": [
         "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains."
@@ -1520,7 +1540,9 @@
         "internal/ui/tui/model_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "import-unit-001",
+        "import-cli-daemon-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete."
@@ -1575,7 +1597,9 @@
       "evidence": [
         "core-tests-001",
         "core-tests-002",
-        "core-tests-003"
+        "core-tests-003",
+        "import-unit-001",
+        "import-cli-daemon-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain."
@@ -1604,7 +1628,9 @@
       ],
       "evidence": [
         "artifact-tests-001",
-        "core-tests-001"
+        "core-tests-001",
+        "reproducible-build-004",
+        "import-cli-daemon-001"
       ],
       "outstanding": [
         "Development packages and staged preservation tested; clean Fedora/Ubuntu/Debian install/upgrade/uninstall and actual migration matrix remain."
@@ -1628,7 +1654,8 @@
       "plannedTest": "tests/integration/release/REL-02",
       "tests": [],
       "evidence": [
-        "cross-build-001"
+        "cross-build-001",
+        "import-cross-build-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support."
@@ -1657,7 +1684,9 @@
         "internal/validation/validate_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "reproducible-build-004",
+        "import-cli-daemon-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures."
