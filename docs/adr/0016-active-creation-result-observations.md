@@ -31,3 +31,13 @@ access. Tests cover every active state with/without a receipt, actual synthetic
 blocked-upload progress through completion, wrong actors, invalid receipts and
 inconsistent success. These are coordinator tests, not native upload or hardware
 qualification. Prior evidence retains its original results and runtime revision.
+
+Cleanup operations exposed through the same result command use the same active
+state rule. Their optional `cleanupProof` and `disposition` keep their existing
+names, with additive availability flags and `complete: false` while active.
+Present proofs and dispositions must match their version, plan and operation;
+malformed records cannot masquerade as normal progress. Successful cleanup needs
+both records, and deletion needs every recorded volume absence confirmed.
+`complete` then means the cleanup/disposition completed; `vmCreated` remains false.
+No read invokes cleanup or releases inherited recovery locks. Synthetic tests
+cover every active cleanup state and missing, future or incomplete evidence.

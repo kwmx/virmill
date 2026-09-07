@@ -490,18 +490,21 @@ func (h *cleanupHandler) finish(p domain.Plan, in cleanupInput, recipe input, pr
 	return h.s.Store.ComparePut("vm-creation-disposition", in.CreationPlanID, nil, record)
 }
 func (h *cleanupHandler) proof(p domain.Plan, in cleanupInput) (cleanupProof, error) {
-	var proof cleanupProof
 	b, err := h.s.Store.MetadataBytes("vm-creation-cleanup", p.ID)
 	if err != nil {
-		return proof, err
+		return cleanupProof{}, err
 	}
-	if err = wire.Decode(b, &proof); err != nil {
+	return h.s.decodeCleanupProof(p, in, b)
+}
+func (s *Service) decodeCleanupProof(p domain.Plan, in cleanupInput, b []byte) (cleanupProof, error) {
+	var proof cleanupProof
+	if err := wire.Decode(b, &proof); err != nil {
 		return proof, domain.Fail("RECOVERY_REQUIRED", "cleanup intent proof missing")
 	}
 	if proof.Version != 1 || proof.PlanID != p.ID || proof.InputDigest != p.InputDigest || proof.CreationPlanID != in.CreationPlanID || len(proof.Intents) != len(in.Receipt.Volumes) || len(proof.Absent) != len(proof.Intents) {
 		return proof, domain.Fail("RECOVERY_REQUIRED", "cleanup proof identity or version differs")
 	}
-	job, err := h.s.Store.Job(proof.OperationID)
+	job, err := s.Store.Job(proof.OperationID)
 	if err != nil {
 		return proof, err
 	}
@@ -580,10 +583,43 @@ func (s *Service) cleanupResult(job domain.Job, p domain.Plan, encoded []byte) (
 	if err != nil {
 		return nil, err
 	}
-	result := map[string]any{"operation": job, "cleanupProof": json.RawMessage(proof), "disposition": json.RawMessage(disposition), "vmCreated": false, "guestBootVerified": false}
+	var recordedProof cleanupProof
+	if proof != nil {
+		if recordedProof, err = s.decodeCleanupProof(p, in, proof); err != nil {
+			return nil, err
+		}
+		if recordedProof.OperationID != job.ID {
+			return nil, domain.Fail("RECOVERY_REQUIRED", "cleanup result proof belongs to another operation")
+		}
+	}
+	if disposition != nil {
+		var record creationDisposition
+		if err = wire.Decode(disposition, &record); err != nil {
+			return nil, err
+		}
+		if record.Version != 1 || record.PlanID != p.ID || record.OperationID != job.ID || record.CreationPlanID != in.CreationPlanID || record.Disposition != in.Disposition {
+			return nil, domain.Fail("RECOVERY_REQUIRED", "cleanup disposition identity or version differs")
+		}
+	}
+	result := map[string]any{"operation": job, "cleanupProof": json.RawMessage(proof), "disposition": json.RawMessage(disposition), "cleanupProofAvailable": proof != nil, "dispositionAvailable": disposition != nil, "complete": false, "vmCreated": false, "guestBootVerified": false}
+	if creationInProgress(job.State) {
+		result["nextActions"] = []string{"operation watch " + job.ID, "operation show " + job.ID}
+		return result, nil
+	}
 	if job.State != "succeeded" {
 		return result, domain.Fail("RECOVERY_REQUIRED", "cleanup is unresolved; inspect candidates and reconcile or review a fresh disposition")
 	}
+	if proof == nil || disposition == nil {
+		return result, domain.Fail("RECOVERY_REQUIRED", "successful cleanup lacks its proof or disposition; inspect without replay")
+	}
+	if in.Disposition == "delete" {
+		for _, absent := range recordedProof.Absent {
+			if !absent {
+				return result, domain.Fail("RECOVERY_REQUIRED", "successful cleanup has unconfirmed volume deletion; inspect without replay")
+			}
+		}
+	}
+	result["complete"] = true
 	return result, nil
 }
 

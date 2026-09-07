@@ -89,3 +89,18 @@ Opening an older schema-1 or schema-2 journal creates and flushes a private
 retention pins and closed-recipe semantics as well as inherited recovery locks.
 Earlier binaries must refuse it. Keep the backup for deliberate operator recovery;
 restoring it can discard newer effects and is not an automatic downgrade procedure.
+
+## Observe cleanup progress
+
+Use `vm creation result CLEANUP_OPERATION_ID` or **VMs → vm creation result**.
+Queued, validating, running and verifying cleanup jobs return a normal progress
+observation with `complete: false`. `cleanupProofAvailable` and
+`dispositionAvailable` distinguish records that exist from null values. Follow
+`operation watch` while work continues; an active result does not ask you to
+reconcile an operation that is still executing.
+
+Only a succeeded cleanup with valid, matching proof and disposition can report
+`complete: true`; deletion also requires every recorded absence confirmation.
+This means the cleanup finished, with `vmCreated: false`. Invalid or uncertain
+results remain errors. Reading progress never deletes a volume, releases locks
+or retries cleanup. See [ADR 0016](adr/0016-active-creation-result-observations.md).

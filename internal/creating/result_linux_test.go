@@ -202,3 +202,106 @@ func TestRecoveredCreationDoesNotMasqueradeAsActiveProgress(t *testing.T) {
 		t.Fatal("read-only result replayed creation", backend)
 	}
 }
+
+func TestActiveCleanupResultDoesNotRecommendRecoveryOrReleaseLocks(t *testing.T) {
+	for _, state := range []string{"queued", "validating", "running", "verifying"} {
+		for _, present := range []bool{false, true} {
+			name := state + "/missing-proof"
+			if present {
+				name = state + "/partial-proof"
+			}
+			t.Run(name, func(t *testing.T) {
+				h, backend, original, parent, _ := cleanupFixture(t, "populate")
+				plan := planCleanup(t, h, parent, "delete")
+				job, err := h.s.Store.AcceptRecovery(plan, domain.ID(), "fixture-request", parent.ID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				job.State = state
+				if err = h.s.Store.Update(job, "synthetic cleanup progress"); err != nil {
+					t.Fatal(err)
+				}
+				_, encoded, err := h.s.Store.Plan(plan.ID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var in cleanupInput
+				if err = json.Unmarshal(encoded, &in); err != nil {
+					t.Fatal(err)
+				}
+				if present {
+					proof := cleanupProof{Version: 1, PlanID: plan.ID, OperationID: job.ID, InputDigest: plan.InputDigest, CreationPlanID: in.CreationPlanID, Intents: make([]bool, len(in.Receipt.Volumes)), Absent: make([]bool, len(in.Receipt.Volumes))}
+					if err = h.s.Store.Put("vm-creation-cleanup", plan.ID, proof); err != nil {
+						t.Fatal(err)
+					}
+				}
+				result, err := h.s.Result(context.Background(), 1000, job.ID)
+				if err != nil {
+					t.Fatal("active cleanup suggested recovery", err)
+				}
+				data := result.(map[string]any)
+				if data["complete"] != false || data["vmCreated"] != false || data["cleanupProofAvailable"] != present || data["dispositionAvailable"] != false || data["operation"].(domain.Job).State != state {
+					t.Fatal("cleanup progress misreported", data)
+				}
+				next, _ := json.Marshal(data["nextActions"])
+				if !strings.Contains(string(next), "operation watch") || strings.Contains(string(next), "reconcile") {
+					t.Fatal("premature cleanup recovery guidance", string(next))
+				}
+				checkCleanupLocks(t, h.s, original, job.ID)
+				if backend.deleteCalls != 0 {
+					t.Fatal("result deleted a volume")
+				}
+				if err = h.s.Store.Put("vm-creation-cleanup", plan.ID, map[string]any{"schemaVersion": 99}); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = h.s.Result(context.Background(), 1000, job.ID); err == nil {
+					t.Fatal("future cleanup proof treated as progress")
+				}
+			})
+		}
+	}
+}
+
+func TestCleanupResultRequiresCompleteDispositionEvidence(t *testing.T) {
+	for _, test := range []string{"no-proof", "no-disposition", "future-disposition", "unconfirmed-deletion"} {
+		t.Run(test, func(t *testing.T) {
+			h, _, _, parent, _ := cleanupFixture(t, "populate")
+			plan := planCleanup(t, h, parent, "delete")
+			job, err := h.s.Store.AcceptRecovery(plan, domain.ID(), "fixture-request", parent.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			job.State = "succeeded"
+			if err = h.s.Store.Update(job, "synthetic inconsistent cleanup success"); err != nil {
+				t.Fatal(err)
+			}
+			_, encoded, err := h.s.Store.Plan(plan.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var in cleanupInput
+			if err = json.Unmarshal(encoded, &in); err != nil {
+				t.Fatal(err)
+			}
+			if test != "no-proof" {
+				proof := cleanupProof{Version: 1, PlanID: plan.ID, OperationID: job.ID, InputDigest: plan.InputDigest, CreationPlanID: in.CreationPlanID, Intents: make([]bool, len(in.Receipt.Volumes)), Absent: make([]bool, len(in.Receipt.Volumes))}
+				if err = h.s.Store.Put("vm-creation-cleanup", plan.ID, proof); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if test == "future-disposition" || test == "unconfirmed-deletion" {
+				record := creationDisposition{Version: 1, PlanID: plan.ID, OperationID: job.ID, CreationPlanID: in.CreationPlanID, Disposition: "delete"}
+				if test == "future-disposition" {
+					record.Version = 2
+				}
+				if err = h.s.Store.Put("vm-creation-disposition", in.CreationPlanID, record); err != nil {
+					t.Fatal(err)
+				}
+			}
+			result, err := h.s.Result(context.Background(), 1000, job.ID)
+			if err == nil {
+				t.Fatal("incomplete cleanup evidence reported complete", result)
+			}
+		})
+	}
+}

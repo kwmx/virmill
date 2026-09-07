@@ -673,8 +673,7 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	if present {
 		result["receipt"] = receipt
 	}
-	switch j.State {
-	case "queued", "validating", "running", "verifying":
+	if creationInProgress(j.State) {
 		// A successful observation of progress does not mean the operation has
 		// completed. The operation's state and receipt flags remain authoritative.
 		result["nextActions"] = []string{"operation watch " + j.ID, "operation show " + j.ID}
@@ -691,6 +690,15 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 	}
 	result["complete"] = true
 	return result, nil
+}
+
+func creationInProgress(state string) bool {
+	switch state {
+	case "queued", "validating", "running", "verifying":
+		return true
+	default:
+		return false
+	}
 }
 
 var _ operations.Handler = (*Service)(nil)
