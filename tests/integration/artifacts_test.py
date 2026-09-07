@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Development package structure, staged preservation and private daemon integration."""
 import json
+import hashlib
+import io
 import os
 from pathlib import Path
 import subprocess
 import tempfile
+import tarfile
 import time
 import unittest
 
@@ -79,10 +82,43 @@ class Artifacts(unittest.TestCase):
                 manifest = json.loads((root/'generated/manifest.json').read_text())
                 self.assertEqual(manifest['id'],'example.virmill.integration')
                 self.assertTrue((root/'generated/sdk/server.go').is_file())
+                if os.environ.get('VIRMILL_TEST_DISK_TOOLS') == '1':
+                    self.prepare_fixture_through_cli(root, env, command)
             finally:
                 daemon.terminate()
                 daemon.wait(timeout=5)
                 log.close()
+
+    def prepare_fixture_through_cli(self, root, env, command):
+        # Generated content only: this tests the actual CLI, daemon, journal,
+        # namespace and qemu-img paths, without defining or booting a guest.
+        ovf = b'''<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"><References><File ovf:id="f1" ovf:href="boot.raw"/><File ovf:id="f2" ovf:href="data.raw"/></References><DiskSection><Disk ovf:diskId="boot" ovf:fileRef="f1"/><Disk ovf:diskId="data" ovf:fileRef="f2"/></DiskSection><VirtualSystem ovf:id="cli-fixture"><VirtualHardwareSection><Item><rasd:ResourceType>17</rasd:ResourceType><rasd:HostResource>ovf:/disk/boot</rasd:HostResource></Item><Item><rasd:ResourceType>17</rasd:ResourceType><rasd:HostResource>ovf:/disk/data</rasd:HostResource></Item></VirtualHardwareSection></VirtualSystem></Envelope>'''
+        archive = root/'fixture.ova'
+        with tarfile.open(archive, 'w', format=tarfile.USTAR_FORMAT) as output:
+            for name, data in [('fixture.ovf',ovf),('boot.raw',b'Virmill boot fixture'.ljust(1048576,b'\0')),('data.raw',b'Virmill data fixture'.ljust(1048576,b'\0'))]:
+                member = tarfile.TarInfo(name)
+                member.size, member.mode, member.mtime = len(data), 0o600, 0
+                output.addfile(member,io.BytesIO(data))
+        original = hashlib.sha256(archive.read_bytes()).hexdigest()
+        def invoke(*args):
+            result = subprocess.run(command+list(args)+['--output','json','--non-interactive'],cwd=root,env=env,check=True,capture_output=True,text=True,timeout=30)
+            response = json.loads(result.stdout)
+            self.assertIsNone(response['error'])
+            return response['data']
+        inputs = dict(destination='./prepared',systemID='cli-fixture',disks=[dict(id=name,format='raw',maximumVirtualBytes=1048576) for name in ('boot','data')])
+        plan = invoke('import','prepare','./fixture.ova','--input',json.dumps(inputs),'--plan')
+        self.assertEqual(plan['review']['destination'],str(root/'prepared'))
+        self.assertFalse((root/'prepared').exists())
+        job = invoke('plan','apply',plan['planID'],'--digest',plan['planDigest'],'--idempotency-key','import-fixture','--ack','write-import-artifacts','--wait')
+        self.assertEqual(job['state'],'succeeded')
+        result = invoke('import','result',job['operationID'])
+        artifact = invoke('import','verify','./prepared')
+        self.assertEqual(artifact,result['artifact'])
+        self.assertEqual([d['sourceID'] for d in artifact['disks']],['boot','data'])
+        self.assertFalse(artifact['vmDefined'])
+        self.assertFalse(artifact['guestBootVerified'])
+        self.assertEqual(hashlib.sha256(archive.read_bytes()).hexdigest(),original)
+        print('Native CLI/daemon OVA preparation: original SHA-256', original, 'output disk hashes', [d['sha256'] for d in artifact['disks']], '; no guest boot')
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

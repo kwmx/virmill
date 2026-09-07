@@ -56,7 +56,7 @@ entry = dict(id=a.id, at=at, revision=subprocess.check_output(['git','rev-parse'
              requirements=[s for s in a.requirements.split(',') if s], environment='environment.json',
              log=log.relative_to(ROOT/'docs/evidence').as_posix(), logSHA256=hashlib.sha256(log.read_bytes()).hexdigest())
 entry['fixtureDigests'] = {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in a.fixtures.split(',') if name}
-entry['testEnvironment'] = {key: os.environ[key] for key in ('VIRMILL_TEST_CONFORMANCE', 'VIRMILL_TEST_REQUIRE_IPC', 'SOURCE_DATE_EPOCH', 'CGO_ENABLED', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'GOPROXY') if key in os.environ}
+entry['testEnvironment'] = {key: os.environ[key] for key in ('VIRMILL_TEST_CONFORMANCE', 'VIRMILL_TEST_REQUIRE_IPC', 'VIRMILL_TEST_DISK_TOOLS', 'SOURCE_DATE_EPOCH', 'CGO_ENABLED', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'GOPROXY') if key in os.environ}
 if 'SKIP' in output or '[no test files]' in output or 'BLOCKED' in output:
     entry['limitations'] = 'Review log for skipped/unavailable paths; command success is not acceptance of those paths.'
 with (ROOT/'docs/evidence/ledger.jsonl').open('a') as f:

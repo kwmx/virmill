@@ -23,6 +23,9 @@ JSON-RPC error codes. Successful submission is queued/accepted, not completed.
 | operation.get, cancel, reconcile | id | Job with state/error |
 | operation.watch | id, after | ordered events after cursor |
 | import.inspect | path | bounded OVA inspection report |
+| import.prepare | path, input.destination/systemID/disks | immutable all-disk preparation plan |
+| import.result | id (operation ID) | durable PreparedImport receipt and directory |
+| import.verify | path | PreparedImport receipt after declared file-hash checks |
 | lab.validate, document.validate | path | schema/semantic validation report |
 | backup.verify-manifest | path, input.root (optional) | manifest-checked result |
 | plugin.validate | path | development manifest, distributionVerified=false |
@@ -49,3 +52,12 @@ same operation; changed input is rejected. Retention does not currently remove o
 keys/events. Uncertain steps retain resource locks and require observation, not
 replay. The current watch API returns a bounded event page; full push notifications,
 retention resynchronization and all method-specific generated schemas remain work.
+
+Import preparation inputs and receipts use the bundled
+`import-preparation-input` and `prepared-import` schemas. Preparation uses the
+same apply/cancel/reconcile endpoints as other mutations. Its review binds every
+disk mapping, source/tool digest, output location and space limit. A receipt
+records file conversion checks with `vmDefined: false` and `guestBootVerified:
+false`. Unconfirmed jobs expose `publicationStatus: unconfirmed`, not a false
+assertion that publication never occurred. See [the workflow](import-preparation.md)
+for cancellation and retained staging behavior.

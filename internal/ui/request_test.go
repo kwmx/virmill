@@ -20,4 +20,9 @@ func TestClientResolvesPathsBeforeDetachedServiceCall(t *testing.T) {
 	if err != nil || !filepath.IsAbs(r.Path) {
 		t.Fatal("declarative path not resolved", r, err)
 	}
+	r, err = NormalizeRequest("import.prepare", app.Request{Path: "appliance.ova", Input: map[string]any{"destination": "prepared/appliance"}})
+	destination, _ = filepath.Abs("prepared/appliance")
+	if err != nil || !filepath.IsAbs(r.Path) || r.Input["destination"] != destination {
+		t.Fatal("import paths not resolved on client", r, err)
+	}
 }

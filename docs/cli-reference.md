@@ -212,6 +212,76 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill import prepare`
+
+Plan independent conversion of every selected OVA disk; no VM is defined
+
+```text
+Usage:
+  virmill import prepare PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill import result`
+
+Show prepared artifact paths and verification by operation ID
+
+```text
+Usage:
+  virmill import result ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill import verify`
+
+Verify declared prepared-import artifact hashes; no guest boot claim
+
+```text
+Usage:
+  virmill import verify PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill lab validate`
 
 Validate declarative schema, network intent and dependency graph

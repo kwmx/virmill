@@ -74,3 +74,16 @@ func TestPluginPlansUseSharedServiceAndExplicitInputs(t *testing.T) {
 		t.Fatal("invocation bypassed service", r)
 	}
 }
+
+func TestImportPreparationUsesSharedService(t *testing.T) {
+	r := &recorder{}
+	var out bytes.Buffer
+	c := New(r, &out, &out)
+	c.SetArgs([]string{"import", "prepare", "/tmp/source.ova", "--input", `{"destination":"/tmp/private/prepared","disks":[{"id":"boot","format":"vmdk","maximumVirtualBytes":16777216}]}`, "--plan", "--output", "json", "--non-interactive"})
+	if err := c.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if r.method != "import.prepare" || r.request.Path != "/tmp/source.ova" || r.request.Input["destination"] != "/tmp/private/prepared" {
+		t.Fatal("import preview bypassed shared service", r)
+	}
+}

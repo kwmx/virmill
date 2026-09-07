@@ -200,6 +200,10 @@ func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
 			return
 		}
 		if err = h.Execute(ctx, p, input, step); err != nil {
+			if errors.Is(err, ErrCanceledSafely) {
+				_ = e.transition(&j, "canceled", "Canceled at a verified safe boundary; no published effect remains", nil)
+				return
+			}
 			_ = e.transition(&j, "recovery-required", "Step may have taken effect; reconcile before any retry", err)
 			return
 		}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/import-preparation-input.schema.json",
+  "title": "OVA preparation inputs",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "destination",
+    "disks"
+  ],
+  "properties": {
+    "destination": {
+      "type": "string",
+      "pattern": "^/",
+      "maxLength": 4096
+    },
+    "systemID": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "disks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "format",
+          "maximumVirtualBytes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "format": {
+            "enum": [
+              "raw",
+              "qcow2",
+              "vmdk",
+              "vdi",
+              "vpc",
+              "vhdx"
+            ]
+          },
+          "maximumVirtualBytes": {
+            "type": "integer",
+            "minimum": 1048576,
+            "maximum": 549755813888
+          }
+        }
+      }
+    }
+  }
+}
+

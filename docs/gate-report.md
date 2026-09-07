@@ -10,7 +10,7 @@ matching; missing kickoff document recorded in ADR 0001. No scope was reduced.
 | 1 spike | Native official binding builds with dlopen and runs libvirt test driver; OVA/XML/USB/manifest/network-intent fixtures implemented | Actual system/session/event/import/USB/packet/rollback/cold-restore matrix and guest versions |
 | 2 foundations | SQLite WAL/FULL, version guard/backup, locks, strict RPC, UID checks, immutable plan/dedup and crash observation | Full state/step schema, all recovery adapters, schedules, independent guardians and real effect faults |
 | 3 VM operations | Shared CLI/TUI service, native inventory and subset of planned lifecycle/vCPU edits | Complete creation/configuration/storage/console/guest paths and real VM evidence |
-| 4 import/network | Bounded package inspection and semantic topology validation | Conversion/registration/all network mutation/policy/rollback/packet flows |
+| 4 import/network | Bounded package inspection, confined all-disk OVA conversion/atomic artifact publication and semantic topology validation | Guest adaptation/registration/boot/all network mutation/policy/rollback/packet flows |
 | 5 protection/devices | Graph, manifest and USB selector safety libraries | Actual capture/restic/restore/templates/snapshots/USB/sharing integrations |
 | 6 labs/automation | Schema, reference and DAG validation | Actual DAG apply/reconcile/teardown, provisioning, scheduling and coordinated restore |
 | 7 plugins | SDK, shared scaffold/pack/install/version/grant plans, confined read-only actions, two-language and persistent simulated provider fixtures | Unsigned/development override, quarantine, brokers, structured forms and full extension/provider matrix |
@@ -29,7 +29,12 @@ There is no designated disposable host/VM/network/USB target or guest media matr
 No system package, service, bridge, VM, device attachment or host storage operation
 was applied; only build outputs and disposable application/test fixtures were written.
 
-The next dependency-ready work is complete immutable VM source/resource contracts,
-backend lifecycle completion, supervised confined disk inspection/conversion and the
-remaining recovery handlers, followed by safe actual creation and protection slices.
+ADR 0005 defines the owner's MVP request as a development milestone within the
+unchanged full 1.0 scope. Real generated-file tests now cover six source formats,
+two split VMDK disks, contained backing-chain flattening, missing/outside extents,
+CLI/daemon preparation and hash verification. Synthetic phase tests additionally
+cover cancellation cleanup and reconciliation after lost publication acknowledgement.
+These do not qualify VMware guests or libvirt boot. The next dependency-ready work
+is complete immutable VM source/resource contracts and safe creation, backend
+lifecycle completion and the remaining recovery/protection handlers.
 The root release checklist and requirements matrix must pass before version 1.0.

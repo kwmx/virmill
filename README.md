@@ -9,7 +9,11 @@ remain required. See [implementation status](docs/implementation-status.md),
 [release evidence](docs/evidence/README.md) and [support matrix](docs/support-matrix.md).
 An executable build or simulated test does not establish hardware support.
 
+Build and run the current development tools using [getting started](docs/getting-started.md).
+The [OVA preparation workflow](docs/import-preparation.md) converts complete disk
+sets into verified independent artifacts through the CLI or TUI; VM creation and
+guest qualification remain in progress.
+
 The public executable is `virmill`, the user coordinator is `virmilld`, and bounded
 privileged work belongs to `virmill-host-helper`. No publication destination has
 been selected. Local module names make no repository or domain ownership claim.
-

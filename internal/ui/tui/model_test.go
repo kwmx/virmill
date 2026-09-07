@@ -88,3 +88,34 @@ func TestPluginFormDispatchAndScrollableActionMenu(t *testing.T) {
 		t.Fatal("plugin action menu overflowed 80x24 terminal")
 	}
 }
+
+func TestImportFormDispatchesCompleteMappingToSharedService(t *testing.T) {
+	r := &recorder{}
+	m := New(r, "qemu:///system")
+	for i, name := range sections {
+		if name == "VMs" {
+			m.Section = i
+		}
+	}
+	found := false
+	for i, a := range m.actions() {
+		if a.Command == "import prepare" {
+			m.Selected = i
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("import preparation is inaccessible in TUI")
+	}
+	model, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = model.(Model)
+	m.Input = `{"path":"/tmp/source.ova","input":{"destination":"/tmp/private/prepared","systemID":"appliance","disks":[{"id":"boot","format":"vmdk","maximumVirtualBytes":16777216},{"id":"data","format":"vmdk","maximumVirtualBytes":16777216}]}}`
+	_, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd == nil {
+		t.Fatal("form not submitted")
+	}
+	cmd()
+	if r.method != "import.prepare" || r.request.Path != "/tmp/source.ova" || r.request.Input["systemID"] != "appliance" {
+		t.Fatal("TUI import mapping lost", r)
+	}
+}

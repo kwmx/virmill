@@ -19,7 +19,7 @@ import (
 // ConfinedCommand mounts only runtime code, the chosen executable and a private
 // workspace. Sockets, home, credentials and host /dev are never exposed.
 func ConfinedCommand(ctx context.Context, executable, workspace string, args []string) (*exec.Cmd, func(), error) {
-	return confinedCommand(ctx, executable, workspace, args, "", "")
+	return confinedCommand(ctx, executable, workspace, args, "", "", "", 64<<20)
 }
 
 // ConfinedPackageCommand exposes only a previously verified private package tree.
@@ -31,10 +31,23 @@ func ConfinedPackageCommand(ctx context.Context, directory, entrypoint, workspac
 	if e := PrivateDir(directory); e != nil {
 		return nil, nil, e
 	}
-	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint))
+	return confinedCommand(ctx, filepath.Join(directory, entrypoint), workspace, nil, directory, filepath.ToSlash(entrypoint), "", 64<<20)
 }
 
-func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint string) (*exec.Cmd, func(), error) {
+// ConfinedDiskCommand gives the fixed system image tool read-only access to a
+// private imported source tree and write access only to one output workspace.
+// The approved per-file output limit does not change plugin worker limits.
+func ConfinedDiskCommand(ctx context.Context, source, workspace string, args []string, maximumFileBytes int64) (*exec.Cmd, func(), error) {
+	if maximumFileBytes < 1 || maximumFileBytes > 1<<40 {
+		return nil, nil, errors.New("invalid disk worker output bound")
+	}
+	if e := PrivateDir(source); e != nil {
+		return nil, nil, e
+	}
+	return confinedCommand(ctx, "/usr/bin/qemu-img", workspace, args, "", "", source, maximumFileBytes)
+}
+
+func confinedCommand(ctx context.Context, executable, workspace string, args []string, packageDirectory, entrypoint, sourceDirectory string, maximumFileBytes int64) (*exec.Cmd, func(), error) {
 	if os.Getuid() == 0 {
 		return nil, nil, errors.New("untrusted workers must never run as root")
 	}
@@ -90,7 +103,16 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 	} else {
 		argv = append(argv, "--ro-bind", executable, "/plugin/executable")
 	}
-	argv = append(argv, "--bind", workspace, "/work", "--chdir", "/work", "--setenv", "PATH", "/usr/bin", "--setenv", "LANG", "C.UTF-8", "--setenv", "GOMEMLIMIT", "256MiB", "--seccomp", "3", "--", limit, "--as=2147483648", "--nproc=256", "--cpu=60", "--fsize=67108864", "--nofile=64", "--", command)
+	if sourceDirectory != "" {
+		argv = append(argv, "--ro-bind", sourceDirectory, "/source")
+	}
+	cpuSeconds := 60
+	openFiles := 64
+	if sourceDirectory != "" {
+		cpuSeconds = 1800
+		openFiles = 1024 // split-image descriptors may hold hundreds of extents
+	}
+	argv = append(argv, "--bind", workspace, "/work", "--chdir", "/work", "--setenv", "PATH", "/usr/bin", "--setenv", "LANG", "C.UTF-8", "--setenv", "GOMEMLIMIT", "256MiB", "--seccomp", "3", "--", limit, "--as=2147483648", "--nproc=256", fmt.Sprintf("--cpu=%d", cpuSeconds), fmt.Sprintf("--fsize=%d", maximumFileBytes), fmt.Sprintf("--nofile=%d", openFiles), "--", command)
 	argv = append(argv, args...)
 	cmd := exec.CommandContext(ctx, bwrap, argv...)
 	cmd.Env = []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8"}

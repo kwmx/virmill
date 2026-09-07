@@ -7,9 +7,13 @@ extracting, registering or booting it. It checks names, entry types, byte/member
 budgets, descriptor structure, file references and provided SHA checksums. Reports
 list every virtual system and disk, controller parent/position and NIC connection
 hints. Multiple systems require explicit selection in the eventual import workflow.
-A valid checksum is not publisher authenticity or guest readiness. Source format,
-backing-chain inspection, qemu-img conversion, virt-v2v adaptation and end-to-end
-registration remain incomplete. Do not treat this command as a VM importer.
+A valid checksum is not publisher authenticity or guest readiness. The separate
+[`import prepare` workflow](import-preparation.md) performs confined source-format,
+backing-chain and extent inspection, independent qcow2 conversion and content
+comparison for every explicitly selected disk. It preserves the descriptor and
+publishes the complete set under a durable receipt. Guest adaptation, full NIC/
+controller mapping, registration and guest boot remain incomplete. Preparation
+produces disk artifacts, not a defined VM.
 
 Powered-off vCPU previews patch the original XML byte spans and retain unknown
 namespaces, comments, attributes and device definitions. Ambiguous or structured
@@ -76,7 +80,8 @@ Standard XDG variables choose directories. `VIRMILL_SDK_DIRECTORY` optionally
 selects reviewed SDK source for scaffolding (default `/usr/share/virmill/sdk/go`).
 Plugin signing uses an explicitly supplied private-key file reference; key bytes
 are not journaled or included in distribution payloads. `VIRMILL_TEST_CONFORMANCE` and
-`VIRMILL_TEST_REQUIRE_IPC` are test-only switches and never select a runtime fake.
+`VIRMILL_TEST_REQUIRE_IPC` and `VIRMILL_TEST_DISK_TOOLS` are test-only switches and
+never select a runtime fake.
 Backup repository credentials are not requested by current implemented workflows.
 
 The development installer/uninstaller acts only on listed package files. It does

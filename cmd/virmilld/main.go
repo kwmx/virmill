@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"virmill.local/core/internal/app"
 	backend "virmill.local/core/internal/backend/libvirt"
+	"virmill.local/core/internal/importing"
 	"virmill.local/core/internal/operations"
 	platform "virmill.local/core/internal/platform/linux"
 	"virmill.local/core/internal/plugins"
@@ -35,6 +36,7 @@ func run() error {
 	defer engine.Close()
 	service := app.New(&backend.Provider{}, engine)
 	service.Inspector = platform.Doctor
+	importing.Register(service)
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e
 	}

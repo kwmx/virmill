@@ -114,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Mutation == "set" || a.Mutation == "autostart" || (a.Mutation != "" && strings.HasPrefix(a.Command, "plugin ")) {
+				if a.Mutation == "set" || a.Mutation == "autostart" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
 					var form struct {
 						ID    string         `json:"id"`
 						Path  string         `json:"path"`
@@ -240,7 +240,7 @@ func (m Model) View() string {
 		b.WriteString("Request in progress; UI remains available.\n")
 	}
 	if m.Editing {
-		b.WriteString("Input: path/ID; VM edits and plugin plans use JSON {id/path,input}. Esc cancels:\n> " + validation.SafeText(m.Input) + "\n")
+		b.WriteString("Input: path/ID; VM edits, import and plugin plans use JSON {id/path,input}. Esc cancels:\n> " + validation.SafeText(m.Input) + "\n")
 	}
 	if m.Confirm {
 		fmt.Fprintf(&b, "Approve plan %s. Required acknowledgements: %s\nType the full plan digest to authorize these exact effects; Esc cancels:\n%s\n> %s\n", m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, validation.SafeText(m.Input))
