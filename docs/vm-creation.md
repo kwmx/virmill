@@ -96,7 +96,16 @@ Esc discards the form or approval. Detaching does not stop an accepted daemon jo
 `operation show/watch OPERATION_ID` reports actual persisted phases. The definition
 is created only after all independent volume copies pass readback. Then
 `vm creation result OPERATION_ID` reports each volume and `volumesVerified` /
-`defined`. `guestBootVerified`, `setupVerified` and `connectivityVerified` remain
+`defined`. The same result is available in **VMs → vm creation result**. During
+queued, validating, running or verifying states, the command returns a successful
+observation with `complete: false`; this is not creation success. Before the first
+receipt, `receiptAvailable` is false and `receipt` is null. Once available, the
+partial receipt shows only recorded stages. Follow `operation watch OPERATION_ID`
+or inspect the operation; an active result never recommends premature recovery.
+A succeeded job requires a defined, volume-verified receipt before `complete` can
+be true. Uncertain/terminal incomplete work, unreadable or invalid receipts still
+return errors. Active observations do not release locks or perform recovery.
+Guest readiness remains separate: `guestBootVerified`, `setupVerified` and `connectivityVerified` remain
 false. VM inventory marks a successfully cataloged matching definition `managed`;
 discovery never adopts unrelated domains. Starting the VM is a separate reviewed
 `vm start VM_UUID` operation and does not establish setup or connectivity readiness.

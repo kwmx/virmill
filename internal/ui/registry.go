@@ -46,7 +46,7 @@ var Actions = []Action{
 	{"vm show", "inventory.get", "VMs", "Inspect live and persistent state by UUID", "id", ""},
 	{"vm boot show", "vm.boot.get", "VMs", "Inspect separate live and next-boot device order using disk targets and NIC MACs", "id", ""},
 	{"vm create", "vm.create", "VMs", "Plan managed copies, optional NoCloud provisioning and a new powered-off VM from a prepared source", "id", "create"},
-	{"vm creation result", "vm.creation.result", "VMs", "Inspect durable volume/definition stages by creation operation ID", "id", ""},
+	{"vm creation result", "vm.creation.result", "VMs", "Observe active progress and durable volume/definition stages by creation operation ID", "id", ""},
 	{"vm creation resume", "vm.creation.resume", "VMs", "Plan definition recovery using complete reverified retained volumes; never allocate or upload again", "id", "resume-definition"},
 	{"vm creation cleanup", "vm.creation.cleanup", "VMs", "Plan explicit retention or guarded deletion of failed-creation volumes and close the original recipe", "id", "cleanup"},
 	{"vm start", "vm.plan", "VMs", "Plan VM start", "id", "start"},

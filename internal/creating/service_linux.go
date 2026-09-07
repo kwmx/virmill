@@ -356,21 +356,34 @@ func (s *Service) save(receipt Receipt, previous *[]byte) error {
 	return err
 }
 func (s *Service) load(planID string) (Receipt, error) {
-	var out Receipt
-	b, err := s.Store.MetadataBytes("vm-creation", planID)
+	out, present, err := s.loadOptional(planID)
 	if err != nil {
 		return out, err
 	}
-	if b == nil {
+	if !present {
 		return out, domain.Fail("RECOVERY_REQUIRED", "creation receipt is missing")
 	}
+	return out, nil
+}
+
+// Missing metadata is normal before an active operation persists its first
+// receipt. Invalid or unreadable metadata is never treated as missing progress.
+func (s *Service) loadOptional(planID string) (Receipt, bool, error) {
+	var out Receipt
+	b, err := s.Store.MetadataBytes("vm-creation", planID)
+	if err != nil {
+		return out, false, err
+	}
+	if b == nil {
+		return out, false, nil
+	}
 	if err = wire.Decode(b, &out); err != nil {
-		return out, err
+		return out, true, err
 	}
 	if out.Version != 1 {
-		return out, domain.Fail("UNSUPPORTED_CAPABILITY", "newer creation receipt schema refused")
+		return out, true, domain.Fail("UNSUPPORTED_CAPABILITY", "newer creation receipt schema refused")
 	}
-	return out, nil
+	return out, true, nil
 }
 func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step domain.Step) (result error) {
 	var in input
@@ -652,14 +665,31 @@ func (s *Service) Result(ctx context.Context, uid uint32, id string) (any, error
 			return nil, err
 		}
 	}
-	receipt, err := s.load(p.ID)
+	receipt, present, err := s.loadOptional(p.ID)
 	if err != nil {
 		return nil, err
 	}
-	result := map[string]any{"operation": j, "receipt": receipt, "guestBootVerified": false, "setupVerified": false, "connectivityVerified": false}
+	result := map[string]any{"operation": j, "receipt": nil, "receiptAvailable": present, "complete": false, "guestBootVerified": false, "setupVerified": false, "connectivityVerified": false}
+	if present {
+		result["receipt"] = receipt
+	}
+	switch j.State {
+	case "queued", "validating", "running", "verifying":
+		// A successful observation of progress does not mean the operation has
+		// completed. The operation's state and receipt flags remain authoritative.
+		result["nextActions"] = []string{"operation watch " + j.ID, "operation show " + j.ID}
+		return result, nil
+	}
+	if !present {
+		return result, domain.Fail("RECOVERY_REQUIRED", "creation receipt is missing")
+	}
 	if j.State != "succeeded" {
 		return result, domain.Fail("RECOVERY_REQUIRED", "creation is not confirmed complete; retain listed volumes and inspect/reconcile the operation")
 	}
+	if !receipt.Defined || !receipt.VolumesVerified {
+		return result, domain.Fail("RECOVERY_REQUIRED", "successful creation lacks a complete verified definition receipt; inspect without replay")
+	}
+	result["complete"] = true
 	return result, nil
 }
 

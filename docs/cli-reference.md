@@ -1159,7 +1159,7 @@ Global Flags:
 
 ## `virmill vm creation result`
 
-Inspect durable volume/definition stages by creation operation ID
+Observe active progress and durable volume/definition stages by creation operation ID
 
 ```text
 Usage:

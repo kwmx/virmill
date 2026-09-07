@@ -381,3 +381,19 @@ func TestTUIReviewShowsSharedDowntimeEstimate(t *testing.T) {
 		t.Fatal("estimate review bypassed digest authorization")
 	}
 }
+
+func TestTUIActiveCreationResultIsProgressWithoutApproval(t *testing.T) {
+	m := New(&recorder{}, "fixture")
+	m.Height = 70
+	m.Width = 180
+	result := map[string]any{"operation": domain.Job{ID: "active-creation", State: "running"}, "receipt": nil, "receiptAvailable": false, "complete": false, "nextActions": []string{"operation watch active-creation"}}
+	next, _ := m.Update(resultMsg{response: app.Response{APIVersion: domain.APIVersion, Data: result}})
+	m = next.(Model)
+	if m.Plan != nil || !strings.Contains(m.View(), `"complete": false`) || !strings.Contains(m.View(), `"state": "running"`) || strings.Contains(m.View(), "RECOVERY_REQUIRED") {
+		t.Fatal("active result mistaken for failure, completion or plan", m.View())
+	}
+	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+	if cmd != nil || next.(Model).Confirm {
+		t.Fatal("active progress opened authorization")
+	}
+}

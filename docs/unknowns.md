@@ -31,8 +31,11 @@
   and other native profiles remain required. Old recipes still refuse changed semantics.
 
 - U009: During initial validation, `vm creation result` suggests recovery before a
-  receipt exists, although the job is still running. Report active stages without
-  premature recovery guidance; preserve uncertainty errors for actual failure.
+  receipt exists, although the job is still running. Corrected by optional-receipt
+  progress observations: queued/validating/running/verifying states remain explicitly
+  incomplete and direct users to watch the job. Invalid/uncertain receipts still
+  fail closed. See ADR 0016 and the result tests; native active-upload qualification
+  remains separate.
 
 - U010: Native lifecycle plans inherit the engine’s zero-valued downtime estimate,
   including `requiresDowntime: false` for explicit stop. Human-readable risks exist,

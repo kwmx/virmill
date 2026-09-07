@@ -234,3 +234,34 @@ func TestCLIPlanDisplaysSharedDowntimeEstimate(t *testing.T) {
 		t.Fatal("CLI omitted shared estimate", out.String())
 	}
 }
+
+type activeCreationClient struct{ method string }
+
+func (c *activeCreationClient) Call(_ context.Context, method string, _ app.Request) (app.Response, error) {
+	c.method = method
+	return app.Response{APIVersion: domain.APIVersion, Data: map[string]any{"operation": domain.Job{ID: "active-creation", State: "validating"}, "receipt": nil, "receiptAvailable": false, "complete": false, "guestBootVerified": false}}, nil
+}
+func TestCLIActiveCreationResultIsObservationNotFailureOrCompletion(t *testing.T) {
+	client := &activeCreationClient{}
+	var out, errs bytes.Buffer
+	cmd := New(client, &out, &errs)
+	cmd.SetArgs([]string{"vm", "creation", "result", "active-creation", "--output", "json", "--non-interactive"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal("active observation failed", err)
+	}
+	var response struct {
+		Data struct {
+			Complete         bool
+			Receipt          any
+			ReceiptAvailable bool
+			Operation        domain.Job
+		}
+		Error any
+	}
+	if err := json.Unmarshal(out.Bytes(), &response); err != nil {
+		t.Fatal(err)
+	}
+	if client.method != "vm.creation.result" || response.Error != nil || response.Data.Complete || response.Data.ReceiptAvailable || response.Data.Receipt != nil || response.Data.Operation.State != "validating" || errs.Len() != 0 {
+		t.Fatal("active progress misreported", out.String(), errs.String())
+	}
+}
