@@ -30,6 +30,10 @@ type Workspace struct {
 	CatalogSearch                string
 	CatalogSearching             bool
 	CatalogMode                  string
+	CatalogExpert                bool
+	Picker                       *FilePicker
+	PickerField                  int
+	PickerAction                 bool
 	ActionForm                   *ActionForm
 	ActionTitle                  string
 
@@ -302,6 +306,7 @@ func (m *Workspace) advanced() {
 	m.CatalogSearch = ""
 	m.CatalogSearching = false
 	m.CatalogMode = ""
+	m.CatalogExpert = false
 }
 func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	if m.Busy || m.Pending["apply"] != 0 {
@@ -375,10 +380,20 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		return nil
 	}
 	m.ActionForm = &f
+	if a.Method == "import.prepare" || a.Method == "import.prepare-install" || a.Method == "import.prepare-disks" || a.Method == "import.inspect" {
+		return m.browseField()
+	}
 	return nil
 }
 
 func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if m.Picker != nil {
+		switch msg.(type) {
+		case workspaceReply, workspaceTick:
+		default:
+			return m.updatePicker(msg)
+		}
+	}
 	switch v := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = v.Width
@@ -516,6 +531,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+		if (m.ActionForm != nil || m.Form != nil) && v.Type == tea.KeyCtrlO {
+			return m, m.browseField()
+		}
 		if m.ActionForm != nil {
 			f, submit, cancel := m.ActionForm.Update(v)
 			m.ActionForm = &f
@@ -579,9 +597,21 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.CatalogSearch != "" {
 					m.CatalogSearch = ""
 					m.CatalogIndex = 0
+				} else if m.CatalogExpert {
+					m.CatalogExpert = false
+					m.CatalogIndex = 0
 				} else {
 					m.Advanced = false
 				}
+			case "A":
+				if m.catalogHasAdvanced() {
+					m.CatalogExpert = true
+					m.CatalogIndex = 0
+				}
+			case "end":
+				m.CatalogIndex = max(0, m.catalogCount()-1)
+			case "home":
+				m.CatalogIndex = 0
 			case "left", "right":
 				if m.CatalogMode == "all" {
 					delta := 1
@@ -596,13 +626,18 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "up", "k":
 				m.CatalogIndex = max(0, m.CatalogIndex-1)
 			case "down", "j":
-				m.CatalogIndex = max(0, min(len(m.catalog())-1, m.CatalogIndex+1))
+				m.CatalogIndex = max(0, min(m.catalogCount()-1, m.CatalogIndex+1))
 			case "pgdown":
-				m.CatalogIndex = max(0, min(len(m.catalog())-1, m.CatalogIndex+max(1, m.Height-13)))
+				m.CatalogIndex = max(0, min(m.catalogCount()-1, m.CatalogIndex+max(1, m.Height-13)))
 			case "pgup":
 				m.CatalogIndex = max(0, m.CatalogIndex-max(1, m.Height-13))
 			case "enter":
 				rows := m.catalog()
+				if m.catalogHasAdvanced() && m.CatalogIndex == len(rows) {
+					m.CatalogExpert = true
+					m.CatalogIndex = 0
+					return m, nil
+				}
 				if len(rows) > 0 {
 					return m, m.openAction(rows[max(0, min(m.CatalogIndex, len(rows)-1))])
 				}
@@ -942,8 +977,11 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.Picker != nil {
+		return "Enter Open / choose    Backspace Up    Esc Back"
+	}
 	if m.ActionForm != nil {
-		return "Tab Next field   Enter Continue   Esc Back"
+		return m.formHints()
 	}
 	if m.Advanced && m.CatalogSearching {
 		return "Type to find an action   Enter Keep matches   Esc Clear"
@@ -952,7 +990,7 @@ func (m Workspace) hints() string {
 		return "[ Enter Select ]   [ / Find action ]   [ Esc Back ]"
 	}
 	if m.Form != nil {
-		return "Tab Next field   Shift-Tab Previous   Enter Review   Esc Cancel"
+		return m.formHints()
 	}
 	if m.Plan != nil {
 		if m.Reviewing {
@@ -978,6 +1016,9 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.Picker != nil {
+		return strings.Split(m.Picker.View(width, height), "\n")
+	}
 	if m.Help {
 		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest recipe.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
 	}
@@ -990,7 +1031,7 @@ func (m Workspace) content(width, height int) []string {
 	if m.Form != nil {
 		target := []string{}
 		if m.Form.VM.Key.UUID != "" {
-			target = pageLines([]string{"Target: " + m.Form.VM.Name, "UUID: " + m.Form.VM.Key.UUID, ""}, width, height, 0)
+			target = pageLines([]string{"VM: " + m.Form.VM.Name, ""}, width, height, 0)
 		}
 		return append(target, strings.Split(m.Form.View(width, max(6, height-len(target))), "\n")...)
 	}
@@ -1243,7 +1284,7 @@ func (m Workspace) buttons() []workspaceButton {
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
-	if m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

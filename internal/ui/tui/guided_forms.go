@@ -46,23 +46,23 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	}
 	switch kind {
 	case "resources":
-		field("vcpus", "CPU count", "1–512; blank keeps the current value", 3)
-		field("memoryMiB", "Memory (MiB)", "1–1048576; blank keeps the current value", 7)
+		field("vcpus", "CPU count", "1–512 CPUs. Leave blank to keep the current value.", 3)
+		field("memoryMiB", "Memory (MiB)", "1–1048576 MiB. Leave blank to keep the current value.", 7)
 	case "capture":
-		field("sourceRoot", "Source directory", "Absolute directory containing the source disks", 4096)
-		field("auxiliaryRootID", "Helper root ID (optional)", "Administrator-approved root for firmware/TPM state", 64)
+		field("sourceRoot", "Source directory", "Choose the directory containing this VM's disks.", 4096)
+		field("auxiliaryRootID", "Helper root ID (optional)", "For firmware/TPM: use an administrator-approved root ID.", 64)
 	case "guest-recipe":
-		field("recipe", "Recipe file", "Absolute path to the reviewed GuestRecipe file", 4096)
-		field("address", "Guest IP address", "Explicit IPv4 or IPv6; no address discovery", 45)
-		field("port", "SSH port", "1–65535", 5)
+		field("recipe", "Recipe file", "Choose the guest setup recipe you have reviewed.", 4096)
+		field("address", "Guest IP address", "Enter this guest's IPv4 or IPv6 address.", 45)
+		field("port", "SSH port", "Usually 22. Use the guest's SSH port (1–65535).", 5)
 		f.Fields[len(f.Fields)-1].Value, f.Fields[len(f.Fields)-1].Cursor = "22", 2
-		field("user", "Guest user", "Existing non-root SSH user", 32)
-		field("identityFile", "SSH private-key file", "Absolute file path; never paste a private key", 4096)
-		field("knownHostsFile", "Known-hosts file", "Absolute file path with the approved host key", 4096)
-		field("arguments", "Arguments (optional)", "Space-separated; quote spaces. No expansion. No secrets.", 32768)
+		field("user", "Guest user", "An existing SSH user in the guest; root is not allowed.", 32)
+		field("identityFile", "SSH private-key file", "Choose a key file; never paste a private key.", 4096)
+		field("knownHostsFile", "Known-hosts file", "Choose the file holding the approved guest host key.", 4096)
+		field("arguments", "Arguments (optional)", "Recipe inputs: quote spaces. No expansion or secrets.", 32768)
 	case "repository-init", "repository-check":
-		field("repository", "Repository directory", "Absolute local encrypted-repository path", 4096)
-		field("passwordFile", "Password file", "Absolute file path outside the repository; no password text", 4096)
+		field("repository", "Repository directory", "Choose the local directory for encrypted backups.", 4096)
+		field("passwordFile", "Password file", "Choose a file outside the repository; no password text.", 4096)
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
@@ -94,13 +94,30 @@ func (f GuidedForm) Title() string {
 func (f GuidedForm) note() string {
 	switch f.Kind {
 	case "resources":
-		return "Requires a stopped persistent VM. Enter opens a plan for review."
+		return "VM must be stopped and persistent. Changes apply next boot."
 	case "capture":
-		return "Requires a stopped VM. Enter previews capture; files stay private."
+		return "VM must be stopped. Save a private recovery point."
 	case "guest-recipe":
-		return "Requires a running VM. You approve its host-key binding; no root or reboot."
+		return "VM must be running. Review setup over SSH before it runs."
+	case "repository-init":
+		return "Create encrypted storage for your backups."
+	case "repository-check":
+		return "Check your backup storage for damage or missing data."
 	default:
-		return "Enter opens a plan for review. Only password-file references are accepted."
+		return "Review the plan before making changes."
+	}
+}
+
+// guidedBrowseKind describes a field's picker target without reading files or
+// changing request validation. The workspace owns opening the picker.
+func guidedBrowseKind(fieldName string) string {
+	switch fieldName {
+	case "repository", "sourceRoot":
+		return "directory"
+	case "path", "parametersFile", "recipe", "identityFile", "knownHostsFile", "passwordFile":
+		return "file"
+	default:
+		return ""
 	}
 }
 
@@ -372,38 +389,48 @@ func (f GuidedForm) View(width, height int) string {
 	if f.Error != "" {
 		footer = append(footer, clip("Error: "+f.Error))
 	}
-	keys := "Tab fields | Enter review | Esc cancel"
-	if width < 38 {
-		keys = "Enter review; Esc cancel"
+	keys := "[Enter Preview]  Tab Next field  Esc Back"
+	if width < 40 {
+		keys = "Enter Preview | Esc Back"
 	}
 	footer = append(footer, clip(keys))
 	if len(f.Fields) == 0 {
 		lines = append(lines, clip("No fields; reopen a supported form."))
 	} else {
 		focus := max(0, min(f.Focus, len(f.Fields)-1))
-		count := max(1, (height-len(lines)-len(footer))/2)
+		hint := f.Fields[focus].Hint
+		if guidedBrowseKind(f.Fields[focus].Name) != "" {
+			hint = "Ctrl+O Browse | " + hint
+		}
+		count := max(1, height-len(lines)-len(footer)-1)
 		first := max(0, focus-count+1)
+		labelWidth := 0
+		for _, field := range f.Fields {
+			labelWidth = max(labelWidth, ansi.StringWidth(clip(field.Label)))
+		}
+		labelWidth = min(labelWidth, width-12)
+		inputWidth := width - labelWidth - 6
 		for i := first; i < min(len(f.Fields), first+count); i++ {
 			field := f.Fields[i]
 			prefix := "  "
 			if i == focus {
 				prefix = "> "
 			}
-			lines = append(lines, clip(fmt.Sprintf("%s%d/%d %s", prefix, i+1, len(f.Fields), field.Label)))
+			label := ansi.Truncate(clip(field.Label), labelWidth, "")
+			label += strings.Repeat(" ", max(0, labelWidth-ansi.StringWidth(label)))
 			value := validation.SafeText(field.Value)
-			if value == "" {
-				value = "[" + field.Hint + "]"
-			} else if i == focus {
+			if i == focus {
 				runes := []rune(value)
 				cursor := max(0, min(field.Cursor, len(runes)))
 				before := string(runes[:cursor])
-				if cells := ansi.StringWidth(before); cells >= width-4 {
-					before = "…" + ansi.Cut(before, cells-(width-5), cells)
+				if cells := ansi.StringWidth(before); cells >= inputWidth {
+					before = "…" + ansi.Cut(before, cells-(inputWidth-2), cells)
 				}
 				value = before + "|" + string(runes[cursor:])
 			}
-			lines = append(lines, clip("  "+value))
+			lines = append(lines, clip(prefix+label+": ["+ansi.Truncate(value, inputWidth, "")+"]"))
 		}
+		lines = append(lines, clip(hint))
 	}
 	lines = append(lines, footer...)
 	return strings.Join(lines[:min(height, len(lines))], "\n")

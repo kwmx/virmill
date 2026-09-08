@@ -50,9 +50,42 @@ func actionGroup(a ui.Action) (int, string) {
 		return 90, "Inspect"
 	}
 }
+
+// The short menu is intentionally curated. Advanced and All tools retain the
+// full shared registry, including specialist recovery and development actions.
+func (m Workspace) commonAction(a ui.Action) bool {
+	if m.CatalogMode == "import" {
+		return a.Command == "import prepare" || a.Command == "import prepare-install" || a.Command == "import prepare-disks"
+	}
+	switch a.Command {
+	case "vm start":
+		return m.selectedVM().State != "running" && m.selectedVM().State != "paused"
+	case "vm stop", "vm reboot", "guest recipe run":
+		return m.selectedVM().State == "running" || m.selectedVM().Key.UUID == ""
+	case "vm resume":
+		return m.selectedVM().State == "paused"
+	case "vm set", "vm create", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
+		return true
+	}
+	return false
+}
+func (m Workspace) catalogHasAdvanced() bool {
+	return m.CatalogSection >= 0 && m.CatalogMode != "all" && m.CatalogMode != "import" && !m.CatalogExpert && m.CatalogSearch == ""
+}
+func (m Workspace) catalogCount() int {
+	n := len(m.catalog())
+	if m.catalogHasAdvanced() {
+		n++
+	}
+	return n
+}
+
 func (m Workspace) catalog() []ui.Action {
 	out := []ui.Action{}
 	for _, a := range ui.Actions {
+		if m.CatalogSection >= 0 && m.CatalogMode != "all" && !m.CatalogExpert && m.CatalogSearch == "" && !m.commonAction(a) {
+			continue
+		}
 		if m.CatalogMode == "import" && !strings.HasPrefix(a.Command, "import ") {
 			continue
 		}
@@ -106,9 +139,14 @@ func (m Workspace) catalogLines(width, height int) []string {
 	if m.CatalogMode == "import" {
 		title = "Import / Choose a source"
 	}
+	if m.CatalogExpert {
+		title = sections[m.CatalogSection] + " / Advanced tools"
+	}
 	out := []string{m.color(title, "1")}
 	if m.CatalogMode == "all" {
 		out = append(out, "Left / Right: change section    /: search tasks")
+	} else if m.CatalogMode == "import" {
+		out = append(out, "Prepare a source. Keep your original files.")
 	} else if vm := m.selectedVM(); vm.Key.UUID != "" {
 		out = append(out, clipCell("Selected VM: "+vm.Name+" ("+vm.State+")", width))
 	} else {
@@ -118,10 +156,10 @@ func (m Workspace) catalogLines(width, height int) []string {
 		out = append(out, "Find task: "+validation.SafeText(m.CatalogSearch))
 	}
 	rows := m.catalog()
-	if len(rows) == 0 {
+	if len(rows) == 0 && !m.catalogHasAdvanced() {
 		return append(out, "", "No matching tasks. Esc clears your search or goes back.")
 	}
-	selected := max(0, min(m.CatalogIndex, len(rows)-1))
+	selected := max(0, min(m.CatalogIndex, m.catalogCount()-1))
 	type menuLine struct {
 		text   string
 		action int
@@ -145,6 +183,14 @@ func (m Workspace) catalogLines(width, height int) []string {
 		}
 		lines = append(lines, menuLine{label, i})
 	}
+	if m.catalogHasAdvanced() {
+		label := "    Advanced tools..."
+		if selected == len(rows) {
+			label = m.color(" >  Advanced tools...", "1;30;46")
+			selectedLine = len(lines)
+		}
+		lines = append(lines, menuLine{label, len(rows)})
+	}
 	// Keep the selected task and its explanation on screen; do not force users
 	// to enter a form just to discover what an action does.
 	count := max(1, height-len(out)-5)
@@ -152,7 +198,7 @@ func (m Workspace) catalogLines(width, height int) []string {
 	if start > 0 && lines[start].action >= 0 {
 		count = max(1, count-1)
 		start = max(0, selectedLine-count+1)
-		if lines[start].action >= 0 {
+		if lines[start].action >= 0 && lines[start].action < len(rows) {
 			first := rows[lines[start].action]
 			_, group := actionGroup(first)
 			if m.CatalogSection < 0 {
@@ -164,11 +210,16 @@ func (m Workspace) catalogLines(width, height int) []string {
 	for i := start; i < min(len(lines), start+count); i++ {
 		out = append(out, lines[i].text)
 	}
-	out = append(out, "", m.color(actionLabel(rows[selected]), "1"))
-	desc := wrap(actionDescription(rows[selected]), width)
-	for _, line := range desc[:min(2, len(desc))] {
-		out = append(out, line)
+	description := "Recovery, saved state and other specialist tools."
+	if selected < len(rows) {
+		description = actionDescription(rows[selected])
 	}
-	out = append(out, fmt.Sprintf("Task %d of %d   |   Up/Down choose   Enter open   Esc back", selected+1, len(rows)))
+	out = append(out, "")
+	desc := wrap(description, width)
+	out = append(out, desc[:min(2, len(desc))]...)
+	if m.catalogHasAdvanced() && selected < len(rows) {
+		out = append(out, "A Advanced tools")
+	}
+	out = append(out, fmt.Sprintf("%d of %d", selected+1, m.catalogCount()))
 	return out
 }

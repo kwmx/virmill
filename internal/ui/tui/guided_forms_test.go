@@ -259,3 +259,79 @@ func TestGuidedFormsResizeSanitizationAndFocusVisible(t *testing.T) {
 		}
 	}
 }
+
+func TestGuidedFormsCompactLayoutShowsOnlyFocusedHelp(t *testing.T) {
+	f := guidedFixture(t, "guest-recipe")
+	for focus := range f.Fields {
+		f.Focus = focus
+		view := f.View(80, 24)
+		if !strings.Contains(view, f.Fields[focus].Hint) || !strings.Contains(view, "[Enter Preview]") || !strings.Contains(view, "Esc Back") {
+			t.Fatal("missing focused explanation or next step", view)
+		}
+		for i, field := range f.Fields {
+			if i != focus && strings.Contains(view, field.Hint) {
+				t.Fatal("unfocused field repeats instructions", field.Name, view)
+			}
+			if !strings.Contains(view, field.Label) {
+				t.Fatal("normal terminal hides a form field", field.Name, view)
+			}
+		}
+		if len(strings.Split(view, "\n")) != len(f.Fields)+4 {
+			t.Fatal("form should use one row per field and one help line", view)
+		}
+		wantBrowse := guidedBrowseKind(f.Fields[focus].Name) != ""
+		if strings.Contains(view, "Ctrl+O Browse") != wantBrowse {
+			t.Fatal("browse shortcut does not match focused field", f.Fields[focus].Name, view)
+		}
+	}
+}
+
+func TestGuidedFormCompactInputKeepsCursorAndInlineErrorVisible(t *testing.T) {
+	f := guidedFixture(t, "guest-recipe")
+	f.Focus = len(f.Fields) - 1
+	f.Fields[f.Focus].Value = strings.Repeat("界", 90)
+	f.Fields[f.Focus].Cursor = 90
+	f.Error = "Check the recipe inputs."
+	for _, size := range [][2]int{{80, 24}, {48, 10}, {24, 6}} {
+		view := f.View(size[0], size[1])
+		focused := ""
+		for _, line := range strings.Split(view, "\n") {
+			if strings.HasPrefix(line, "> ") {
+				focused = line
+			}
+		}
+		if !strings.Contains(focused, "|") || !strings.HasSuffix(focused, "]") || !strings.Contains(view, "Error:") || !strings.Contains(view, "Esc Back") {
+			t.Fatal("compact input lost cursor, error or escape", size, view)
+		}
+		if got := f.Fields[f.Focus].Value; got != strings.Repeat("界", 90) {
+			t.Fatal("rendering changed field value")
+		}
+	}
+}
+
+func TestGuidedBrowseKindsAndEssentialContext(t *testing.T) {
+	for field, want := range map[string]string{
+		"repository": "directory", "sourceRoot": "directory",
+		"path": "file", "parametersFile": "file", "recipe": "file", "identityFile": "file", "knownHostsFile": "file", "passwordFile": "file",
+		"vcpus": "", "address": "", "auxiliaryRootID": "", "unknown": "",
+	} {
+		if got := guidedBrowseKind(field); got != want {
+			t.Fatal("wrong picker target", field, got, want)
+		}
+	}
+	for _, kind := range []string{"resources", "capture"} {
+		if !strings.Contains(guidedFixture(t, kind).View(80, 24), "VM must be stopped") {
+			t.Fatal("required stopped state was hidden", kind)
+		}
+	}
+	f := guidedFixture(t, "guest-recipe")
+	f.Focus = 4
+	if view := f.View(80, 24); !strings.Contains(view, "never paste a private key") || !strings.Contains(view, "VM must be running") {
+		t.Fatal("SSH credential or running-state guidance was hidden", view)
+	}
+	f = guidedFixture(t, "repository-init")
+	f.Focus = 1
+	if view := f.View(80, 24); !strings.Contains(view, "outside the repository") || !strings.Contains(view, "no password text") {
+		t.Fatal("password-file guidance was hidden", view)
+	}
+}

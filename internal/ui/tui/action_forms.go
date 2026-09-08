@@ -42,12 +42,12 @@ func NewActionForm(action ui.Action, selectedID string) (ActionForm, error) {
 	}
 	switch action.Argument {
 	case "id":
-		field("id", "Stable ID", "Exact identity for this action; see its description above", 1024)
+		field("id", "Resource ID", "Choose the resource this task should use", 1024)
 		if guidedPrintable(selectedID) && len(selectedID) <= 1024 {
 			f.Form.Fields[0].Value, f.Form.Fields[0].Cursor = selectedID, len([]rune(selectedID))
 		}
 	case "path":
-		field("path", "File or directory path", "Canonical absolute path on this computer", 4096)
+		field("path", actionPathLabel(action), "Choose a file or type its path", 4096)
 	case "", "parameters":
 	default:
 		return ActionForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "this catalog argument needs a dedicated form")
@@ -62,7 +62,11 @@ func NewActionForm(action ui.Action, selectedID string) (ActionForm, error) {
 		field("after", "Event cursor (optional)", "Nonnegative sequence number; blank starts at zero", 19)
 	}
 	if actionParameterFields(action) {
-		field("parametersFile", "Parameters file (optional)", "Absolute JSON input-object file; secrets must be references", 4096)
+		label, hint := "Settings file (optional)", "Extra settings from a JSON file"
+		if strings.HasPrefix(action.Method, "import.prepare") {
+			label, hint = "Import settings", "Choose settings for the destination and disks"
+		}
+		field("parametersFile", label, hint, 4096)
 	}
 	return f, nil
 }
@@ -196,4 +200,33 @@ func (f ActionForm) request(connection string) (string, app.Request, int, error)
 		r.After = after
 	}
 	return f.Action.Method, r, -1, nil
+}
+
+func actionPathLabel(a ui.Action) string {
+	switch a.Command {
+	case "network create":
+		return "Network definition"
+	case "plugin new":
+		return "New project folder"
+	case "plugin pack", "plugin validate", "plugin test":
+		return "Project folder"
+	case "plugin install", "plugin update":
+		return "Plugin package"
+	case "lab validate":
+		return "Lab file"
+	case "config validate":
+		return "Configuration file"
+	case "import prepare":
+		return "OVA file"
+	case "import prepare-install":
+		return "ISO file"
+	case "import prepare-disks":
+		return "Source folder"
+	case "import verify":
+		return "Image manifest"
+	case "backup verify-manifest":
+		return "Recovery manifest"
+	default:
+		return "File or folder"
+	}
 }

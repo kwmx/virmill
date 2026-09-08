@@ -15,7 +15,10 @@ Example (parent executes only on the authorized disposable machine):
 All output is retained on failure. Never reuse the output directory. The script
 only invokes version/vm list/operation list and the TUI. Its key sequence opens
 a lifecycle plan and its confirmation, then cancels without applying. Durable
-plan-preview records are expected; no guest operation may be created.
+plan-preview records are expected; no guest operation may be created. The file
+browser reads existing media directory listings and fills a selected file path in
+the import form, then cancels. It never submits import, extracts or changes source
+media. Directory metadata is compared before/after.
 """
 
 import argparse
@@ -37,6 +40,7 @@ import subprocess
 import sys
 import termios
 import time
+import tempfile
 import unicodedata
 import unittest
 from unittest import mock
@@ -134,6 +138,40 @@ def filter_for(identity, vms):
                 (vm['name'] + ' ' + key + ' ' + vm.get('state', '')).casefold()] == [identity]:
             return query
     raise RuntimeError('selected fixture name lacks a unique bounded name filter')
+
+
+def media_listing(path):
+    """Bounded metadata only; never read media bytes or follow symlinks."""
+    path = canonical_path(str(path))
+    require(stat.S_ISDIR(path.lstat().st_mode), 'media directory must be ordinary')
+    out = {}
+    with os.scandir(path) as entries:
+        for entry in entries:
+            require(len(out) < 4096, 'media directory exceeds probe listing bound')
+            item = entry.stat(follow_symlinks=False)
+            out[entry.name] = {'generation': generation(item), 'mode': item.st_mode}
+    return out
+
+
+def media_folder(entries):
+    candidates = [name for name, info in entries.items() if
+                  stat.S_ISDIR(info['mode']) and 0 < len(name) <= 40 and
+                  name[0] != '.' and name.isascii() and
+                  all(c.isalnum() or c in ' ._-' for c in name)]
+    require(candidates, 'an existing printable media folder is required for browser traversal')
+    return sorted(candidates, key=lambda name: (name.casefold(), name))[0]
+
+
+def media_file(listings):
+    for directory, entries in listings.items():
+        candidates = [name for name, info in entries.items() if
+                      stat.S_ISREG(info['mode']) and 0 < len(name) <= 64 and
+                      name[0] != '.' and name.isascii() and
+                      all(c.isalnum() or c in ' ._-' for c in name) and
+                      not any(name.casefold() in other.casefold() for other in entries if other != name)]
+        if candidates:
+            return directory / sorted(candidates, key=lambda name: (len(name) > 40, name.casefold(), name))[0]
+    raise RuntimeError('an existing uniquely filterable ordinary media file is required')
 
 
 class Screen:
@@ -385,7 +423,7 @@ class Terminal:
         self.runner.save(self.label + '-screens.json', self.steps)
 
 
-def walkthrough(runner, vms, selected, columns, rows):
+def walkthrough(runner, vms, selected, columns, rows, media_root, folder, selected_file):
     label = f'workspace-{columns}x{rows}'
     terminal = Terminal(runner, label, columns, rows)
     try:
@@ -421,7 +459,7 @@ def walkthrough(runner, vms, selected, columns, rows):
                       terminal.send(b'\r'))
         terminal.wait('filtered native UUID details', lambda text: detail_page(text) and selected in text, terminal.send(b'\r'))
         terminal.wait('CPU and memory opens a labeled form for selected VM', lambda text:
-                      'Edit CPU and memory for next boot' in text and 'CPU count' in text and selected in text,
+                      'Edit CPU and memory for next boot' in text and 'CPU count' in text and vms[selected]['name'] in text,
                       terminal.send(b'e'))
         terminal.wait('Esc cancels labeled form without submitting', lambda text: detail_page(text) and selected in text,
                       terminal.send(b'\x1b'))
@@ -453,7 +491,8 @@ def walkthrough(runner, vms, selected, columns, rows):
         require('>[ a More ]' in focused, 'More button not reachable by keyboard')
         more_menu = lambda text: 'VMs / More tasks' in text and vms[selected]['name'] in text
         terminal.wait('Enter opens selected VM More menu with task groups', lambda text:
-                      more_menu(text) and 'Power' in text,
+                      more_menu(text) and 'Power' in text and 'Advanced tools...' in text and
+                      'Recovery and troubleshooting' not in text,
                       terminal.send(b'\r'))
         terminal.wait('Task search has focus before typing', lambda text:
                       more_menu(text) and re.search(r'Find (?:task|action):', text) is not None,
@@ -466,11 +505,74 @@ def walkthrough(runner, vms, selected, columns, rows):
                       more_menu(text) and 'Power' in text and
                       re.search(r'Find (?:task|action): CPU', text) is None,
                       terminal.send(b'\x1b'))
+        terminal.wait('A opens clearly separated advanced tools', lambda text:
+                      'VMs / Advanced tools' in text and vms[selected]['name'] in text,
+                      terminal.send(b'A'))
+        terminal.wait('Esc returns from advanced to common tasks', lambda text:
+                      more_menu(text) and 'Advanced tools...' in text and
+                      'VMs / Advanced tools' not in text,
+                      terminal.send(b'\x1b'))
         terminal.wait('Second Esc closes More and restores selected row', lambda text:
                       vm_table(text) and vms[selected]['name'][:16] in text and '1 of 1 selected' in text,
                       terminal.send(b'\x1b'))
         terminal.wait('Esc clears filter and restores observed rows', lambda text: vm_table(text) and 'Search:' not in text and
                       f'1 of {len(vms)} selected' in text, terminal.send(b'\x1b'))
+        source_menu = lambda text: 'Import / Choose a source' in text and all(
+            choice in text for choice in ('OVA appliance', 'ISO installer', 'Existing disk images'))
+        terminal.wait('Import starts with exactly three understandable source choices', lambda text:
+                      source_menu(text) and 'of 3' in text and 'Inspect' not in text,
+                      terminal.send(b'i'))
+        picker = lambda text: 'Choose a file' in text and 'Esc' in text
+        terminal.wait('OVA source opens browser at existing images directory', lambda text:
+                      picker(text) and str(media_root) in text and folder in text,
+                      terminal.send(b'\r'))
+        terminal.wait('Browser search receives focus', lambda text:
+                      picker(text) and 'Find:' in text and 'Enter done' in text,
+                      terminal.send(b'/'))
+        terminal.wait('Browser filters an actual existing media folder', lambda text:
+                      picker(text) and ('Find: ' + folder) in text and folder in text,
+                      terminal.send(folder.encode('ascii')))
+        terminal.wait('Enter finishes browser filter before directory navigation', lambda text:
+                      picker(text) and ('Find: ' + folder) in text and 'Enter open/select' in text and
+                      'Enter done' not in text, terminal.send(b'\r'))
+        terminal.wait('Enter traverses actual media folder without choosing an image', lambda text:
+                      picker(text) and str(media_root / folder) in text,
+                      terminal.send(b'\r'))
+        terminal.wait('Backspace returns to existing images directory', lambda text:
+                      picker(text) and str(media_root) in text and str(media_root / folder) not in text,
+                      terminal.send(b'\x7f'))
+        terminal.wait('Esc cancels browser and returns to import form', lambda text:
+                      'Choose a file' not in text and 'OVA appliance' in text and
+                      ('Browse' in text or 'browse' in text), terminal.send(b'\x1b'))
+        terminal.wait('Ctrl+O reopens browser from OVA file field', lambda text:
+                      picker(text) and str(media_root) in text,
+                      terminal.send(b'\x0f'))
+
+        def choose_browser_entry(name, description):
+            terminal.wait(description + ' filter focus', lambda text:
+                          picker(text) and 'Find:' in text and 'Enter done' in text,
+                          terminal.send(b'/'))
+            terminal.wait(description + ' observed name filter', lambda text:
+                          picker(text) and ('Find: ' + name) in text,
+                          terminal.send(name.encode('ascii')))
+            terminal.wait(description + ' filter finished', lambda text:
+                          picker(text) and 'Enter open/select' in text and 'Enter done' not in text,
+                          terminal.send(b'\r'))
+
+        if selected_file.parent != media_root:
+            choose_browser_entry(folder, 'Reopen source folder')
+            terminal.wait('Return to observed folder to choose existing file', lambda text:
+                          picker(text) and str(selected_file.parent) in text,
+                          terminal.send(b'\r'))
+        choose_browser_entry(selected_file.name, 'Choose existing source file')
+        terminal.wait('Selected file fills OVA field without submitting import', lambda text:
+                      'Choose a file' not in text and 'OVA appliance' in text and 'OVA file' in text and
+                      selected_file.name[-24:] in text,
+                      terminal.send(b'\r'))
+        terminal.wait('Esc cancels populated import form back to source choices', source_menu,
+                      terminal.send(b'\x1b'))
+        terminal.wait('Esc closes source choices back to VM workspace', vm_table,
+                      terminal.send(b'\x1b'))
         terminal.wait('Jobs workspace has loaded observations', lambda text: page(text, 'Jobs') and
                       ('NAME' in text and 'STATE' in text or 'No resources to display.' in text) and
                       'Could not load' not in text, terminal.send(b'9'))
@@ -488,7 +590,10 @@ def walkthrough(runner, vms, selected, columns, rows):
             if not terminal.read(): break
         require(terminal.process.wait(timeout=2) == 0, 'TUI did not exit cleanly')
         runner.checks.append({'case': label, 'status': 'passed', 'selectedVM': selected,
-                              'arrowSelectedVM': observed[0], 'exitCode': 0, 'resizedTo': list(new_size)})
+                              'arrowSelectedVM': observed[0], 'exitCode': 0, 'resizedTo': list(new_size),
+                              'mediaFolderTraversed': folder, 'sourceSelected': True,
+                              'selectedSourceFile': str(selected_file), 'importSubmitted': False,
+                              'advancedToolsSeparated': True})
     finally:
         terminal.close()
 
@@ -541,6 +646,7 @@ def main():
                   'guestMutationSubmitted': False, 'durablePlanPreviewsOnly': True, 'checks': runner.checks}
         runner.save('intent.json', report)
         baseline = prior_jobs = None
+        media_before = {}
         try:
             report['version'] = runner.cli('version')
             baseline = inventory(runner.cli('vm', 'list'), args.connection)
@@ -560,8 +666,16 @@ def main():
                         pass
                 require(candidates, 'no uniquely filterable actual native VM; supply --expect-vm after reviewing inventory')
                 selected = candidates[0]
+            media_root = Path.home() / 'images'
+            root_entries = media_listing(media_root)
+            folder = media_folder(root_entries)
+            media_before = {media_root: root_entries, media_root / folder: media_listing(media_root / folder)}
+            selected_file = media_file(media_before)
+            report['mediaListingsBefore'] = {str(path): {'entries': len(entries),
+                'metadataSHA256': sha(json.dumps(entries, sort_keys=True).encode())}
+                for path, entries in media_before.items()}
             for size in ((80, 24), (120, 36)):
-                walkthrough(runner, baseline, selected, *size)
+                walkthrough(runner, baseline, selected, *size, media_root, folder, selected_file)
             report['status'] = 'passed'
         except BaseException as error:
             report['error'] = type(error).__name__ + ': ' + str(error)
@@ -572,9 +686,11 @@ def main():
                 report['nativeInventoryPreserved'] = baseline is not None and after == baseline
                 report['noOperationCreated'] = prior_jobs is not None and set(after_jobs) == set(prior_jobs)
                 report['jobStatesPreserved'] = prior_jobs is not None and after_jobs == prior_jobs
+                report['mediaMetadataPreserved'] = bool(media_before) and all(
+                    media_listing(path) == entries for path, entries in media_before.items())
                 report['binaryPreserved'] = generation(before) == generation(os.fstat(fd)) == generation(binary.lstat())
                 runner.save('after.json', {'vms': after, 'jobs': after_jobs})
-                require(all(report[k] for k in ('nativeInventoryPreserved', 'noOperationCreated', 'jobStatesPreserved', 'binaryPreserved')),
+                require(all(report[k] for k in ('nativeInventoryPreserved', 'noOperationCreated', 'jobStatesPreserved', 'binaryPreserved', 'mediaMetadataPreserved')),
                         'native inventory/job IDs/job states/binary changed; no preservation success')
             except BaseException as error:
                 report['preservationError'] = type(error).__name__ + ': ' + str(error)
@@ -626,6 +742,26 @@ class ProbeTests(unittest.TestCase):
         values = {'a': {'name': 'probe-one'}, 'b': {'name': 'probe-two'}}
         self.assertEqual(filter_for('a', values), 'probe-o')
         with self.assertRaises(RuntimeError): filter_for('a', {'a': {'name': 'same'}, 'b': {'name': 'same'}})
+
+    def test_media_listing_does_not_follow_or_read_sources(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'samples').mkdir()
+            (root / 'media.ova').write_bytes(b'fixture source')
+            (root / 'link').symlink_to(root / 'samples', target_is_directory=True)
+            entries = media_listing(root)
+            self.assertEqual(media_folder(entries), 'samples')
+            self.assertEqual(media_file({root: entries}), root / 'media.ova')
+            self.assertTrue(stat.S_ISLNK(entries['link']['mode']))
+            self.assertEqual(entries, media_listing(root))
+            (root / 'media.ova').write_bytes(b'changed source')
+            self.assertNotEqual(entries, media_listing(root))
+            with self.assertRaises(RuntimeError):
+                media_listing(root / 'link')
+        with self.assertRaises(RuntimeError):
+            media_file({Path('/tmp'): {'source': {'mode': stat.S_IFREG}, 'source-copy': {'mode': stat.S_IFLNK}}})
+        with self.assertRaises(RuntimeError):
+            media_folder({'link': {'mode': stat.S_IFLNK}, '.hidden': {'mode': stat.S_IFDIR}})
 
     def test_no_execution_without_guard(self):
         args = parser().parse_args(['--binary', '/usr/bin/virmill', '--output', '/tmp/output'])

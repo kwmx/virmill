@@ -13,7 +13,7 @@ func TestTaskMenuGroupsAndSearchByPlainLanguage(t *testing.T) {
 	m.Section = 1
 	m, _ = wk(m, "a")
 	view := m.View()
-	for _, text := range []string{"VMs / More tasks", "Selected VM: Build guest", "Power", "Start VM", "Shut down VM"} {
+	for _, text := range []string{"VMs / More tasks", "Selected VM: Build guest", "Power", "Start VM", "Advanced tools..."} {
 		if !strings.Contains(view, text) {
 			t.Fatalf("missing %s:\n%s", text, view)
 		}
@@ -96,7 +96,7 @@ func TestAllToolsCategoriesAndImportSources(t *testing.T) {
 	}
 	m, _ = wk(m, "esc")
 	m, _ = wk(m, "i")
-	if !strings.Contains(m.View(), "Choose a source") || len(m.catalog()) != 6 {
+	if !strings.Contains(m.View(), "Choose a source") || len(m.catalog()) != 3 {
 		t.Fatal("import choices missing", m.View())
 	}
 	for _, a := range m.catalog() {
