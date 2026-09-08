@@ -1,0 +1,1 @@
+{"ledgerEntriesChecked": 425, "logHashesVerified": 423, "scopedPacketPasses": ["nat/services-only", "lab/services-only", "guest-only/deny"], "overallNativeRunsPassed": false, "all71StillRequired": true, "acceptedScenarios": 2, "claim": "Evidence consistency only; this command performs no native test"}

@@ -82,6 +82,12 @@ Managed network creation: [owned network run](owned-network-run.md). Native
 definition/filter/activation results, packet-fixture failures, exact cleanup,
 reproducible artifacts and remaining network qualification are recorded separately.
 
+Protected profiles: [implementation and native results](protected-network-run.md)
+and [artifact/fixture hashes](protected-network-artifacts.json). Services-only
+NAT/lab and guest-only namespace packet suites passed after two recorded fixture
+corrections. Strict active-zone preservation remains failed; no full network or
+real-guest support claim is accepted from these scoped results.
+
 EXT-02 simulated provider acceptance: [shared CLI/TUI conformance](provider-conformance-run.md).
 
 Latest frozen integration: [CLI streaming, terminal forms and cross builds](interface-integration-run.md).

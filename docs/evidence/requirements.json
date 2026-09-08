@@ -1123,7 +1123,10 @@
         "owned-network-native-005",
         "owned-network-packet-parsers-005",
         "owned-network-environment-001",
-        "owned-network-nm-diagnostic-001"
+        "owned-network-nm-diagnostic-001",
+        "protected-network-race-001",
+        "protected-network-native-001",
+        "protected-network-native-002"
       ],
       "outstanding": [
         "Allowed-host NAT/lab definition, authenticated IPv6 filters and activation now execute through shared CLI/TUI. Native namespace DHCP, peer/host IPv4, NAT DNS/TCP and lab no-default-route checks passed in native005; its overall result failed a strict active-zone comparison while existing ens19 DHCP repeatedly failed. Full required profiles and real guest/host preservation qualification remain open."
@@ -1208,14 +1211,53 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 4,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/domain/network_creation.go",
+        "internal/app/network_creation.go",
+        "internal/app/host_inventory.go",
+        "internal/backend/networkxml/network.go",
+        "internal/backend/networkxml/match.go",
+        "internal/backend/libvirt/network_creation_linux.go",
+        "internal/helper/network.go",
+        "internal/helper/authorization.go",
+        "internal/helper/network_executor_linux.go",
+        "internal/helper/protected_network_rules_linux.go",
+        "internal/helper/network_client_linux.go",
+        "internal/networkfirewall/service_linux.go",
+        "internal/ui/registry.go",
+        "docs/adr/0028-protected-network-policy.md",
+        "docs/network-creation.md",
+        "docs/network-helper.md",
+        "docs/evidence/protected-network-run.md"
+      ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-03",
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "internal/app/network_protected_test.go",
+        "internal/app/network_protected_boundary_test.go",
+        "internal/backend/networkxml/protected_test.go",
+        "internal/backend/libvirt/network_creation_protected_linux_test.go",
+        "internal/helper/network_protected_authorization_test.go",
+        "internal/helper/network_protected_client_test.go",
+        "internal/helper/protected_network_executor_linux_test.go",
+        "internal/ui/cli/network_creation_test.go",
+        "internal/ui/tui/network_creation_test.go",
+        "tests/fixtures/network/network_packet_fixture.py",
+        "tests/fixtures/network/test_packet_parsers.py",
+        "tests/fixtures/network_parent/create_native.py"
+      ],
+      "evidence": [
+        "protected-network-repro-001",
+        "protected-network-race-001",
+        "protected-network-xml-001",
+        "protected-network-vet-001",
+        "protected-network-native-001",
+        "protected-network-packet-parsers-003",
+        "protected-network-native-003"
+      ],
       "outstanding": [
-        "Services-only lab permits its declared DHCP/DNS but rejects other host services and external forwarding."
+        "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1227,14 +1269,54 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 4,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/domain/network_creation.go",
+        "internal/app/network_creation.go",
+        "internal/app/host_inventory.go",
+        "internal/backend/networkxml/network.go",
+        "internal/backend/networkxml/match.go",
+        "internal/backend/libvirt/network_creation_linux.go",
+        "internal/helper/network.go",
+        "internal/helper/authorization.go",
+        "internal/helper/network_executor_linux.go",
+        "internal/helper/protected_network_rules_linux.go",
+        "internal/helper/network_client_linux.go",
+        "internal/networkfirewall/service_linux.go",
+        "internal/ui/registry.go",
+        "docs/adr/0028-protected-network-policy.md",
+        "docs/network-creation.md",
+        "docs/network-helper.md",
+        "docs/evidence/protected-network-run.md"
+      ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-04",
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "internal/app/network_protected_test.go",
+        "internal/app/network_protected_boundary_test.go",
+        "internal/backend/networkxml/protected_test.go",
+        "internal/backend/libvirt/network_creation_protected_linux_test.go",
+        "internal/helper/network_protected_authorization_test.go",
+        "internal/helper/network_protected_client_test.go",
+        "internal/helper/protected_network_executor_linux_test.go",
+        "internal/ui/cli/network_creation_test.go",
+        "internal/ui/tui/network_creation_test.go",
+        "tests/fixtures/network/network_packet_fixture.py",
+        "tests/fixtures/network/test_packet_parsers.py",
+        "tests/fixtures/network_parent/create_native.py"
+      ],
+      "evidence": [
+        "protected-network-repro-001",
+        "protected-network-race-001",
+        "protected-network-xml-001",
+        "protected-network-vet-001",
+        "protected-network-native-001",
+        "protected-network-native-002",
+        "protected-network-packet-parsers-003",
+        "protected-network-native-003"
+      ],
       "outstanding": [
-        "Guest-only segment has no host L3/DHCP; approved guest static addressing works between guests."
+        "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1267,7 +1349,9 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "docs/evidence/protected-network-run.md",
+        "internal/helper/protected_network_rules_linux.go"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-05",
@@ -1297,7 +1381,13 @@
         "owned-network-native-005",
         "owned-network-packet-parsers-005",
         "owned-network-environment-001",
-        "owned-network-nm-diagnostic-001"
+        "owned-network-nm-diagnostic-001",
+        "protected-network-race-001",
+        "protected-network-xml-001",
+        "protected-network-native-001",
+        "protected-network-native-002",
+        "protected-network-packet-parsers-003",
+        "protected-network-native-003"
       ],
       "outstanding": [
         "Disabled IPv6 has explicit bridge-frame filters and NoCloud guest intent. Native namespace link-local connections failed and no solicited RA appeared in the bounded window; those negative results do not prove complete isolation. Enabled IPv6/local-only behavior, external IPv6 paths and complete guest packet qualification remain required."
@@ -1372,7 +1462,8 @@
         "owned-network-native-005",
         "owned-network-packet-parsers-005",
         "owned-network-environment-001",
-        "owned-network-nm-diagnostic-001"
+        "owned-network-nm-diagnostic-001",
+        "protected-network-race-001"
       ],
       "outstanding": [
         "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic."
@@ -3096,7 +3187,9 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "docs/evidence/protected-network-run.md",
+        "internal/helper/protected_network_rules_linux.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -3191,7 +3284,12 @@
         "auxiliary-inspection-tui-denial-001",
         "auxiliary-tui-policy-window-fixture-001",
         "auxiliary-inspection-tui-positive-001",
-        "auxiliary-helper-deactivation-native-001"
+        "auxiliary-helper-deactivation-native-001",
+        "protected-network-race-001",
+        "protected-network-vet-001",
+        "protected-network-native-001",
+        "protected-network-native-002",
+        "protected-network-native-003"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
@@ -4239,7 +4337,9 @@
         "lifecycle-policy-search-artifacts-001",
         "interface-race-001",
         "interface-cli-stream-001",
-        "interface-artifacts-001"
+        "interface-artifacts-001",
+        "protected-network-race-001",
+        "protected-network-artifacts-001"
       ],
       "outstanding": [
         "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",
@@ -4402,7 +4502,10 @@
         "installed-document-observer-after-001",
         "source-freeze-approval-blocked-001",
         "lifecycle-policy-search-artifacts-001",
-        "lifecycle-policy-search-repro-001"
+        "lifecycle-policy-search-repro-001",
+        "protected-network-repro-001",
+        "protected-network-staged-docs-001",
+        "protected-network-artifacts-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -4879,7 +4982,9 @@
         "lifecycle-policy-search-documents-001",
         "evidence-attribution-validation-001",
         "interface-documents-001",
-        "interface-artifacts-001"
+        "interface-artifacts-001",
+        "protected-network-documents-001",
+        "protected-network-staged-docs-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -4948,7 +5053,8 @@
         "multidisk-release-gate-001",
         "discovery-release-gate-001",
         "cold-native-packages-repro-001",
-        "evidence-attribution-validation-001"
+        "evidence-attribution-validation-001",
+        "protected-network-evidence-audit-001"
       ],
       "outstanding": [
         "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open.",

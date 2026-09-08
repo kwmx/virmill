@@ -39,6 +39,8 @@ Read-only device and subnet facts: [PCI and CIDR discovery](docs/host-network-di
 Managed NAT/lab creation, services-only and guest-only profiles, and reviewed activation recovery:
 [network guide](docs/network-creation.md), [helper setup](docs/network-helper.md),
 and [recorded qualification results](docs/evidence/owned-network-run.md).
+Protected network implementation and scoped native packet results:
+[protected-profile evidence](docs/evidence/protected-network-run.md).
 
 Recovery prerequisites: [native firmware/TPM inspection](docs/cold-state-layout.md)
 and [declared manifest verification](docs/recovery-manifest-verification.md).

@@ -1,0 +1,43 @@
+{
+  "productionRevision": "36e7838726c046fcd7deb1ad99af20b44e621a71",
+  "productionDigest": "011f66a994382bc02682c6b116fbe9c2671fa8afccc8d6b6b7146f29b9bd24d3",
+  "fixtureRevision": "0004d68c5688ba0a81a8002936152574185697be",
+  "fixtures": {
+    "tests/fixtures/network/network_packet_fixture.py": "d87cc1d563188aa2bdddac849cddc4625840d7d62c10ded9131e4f512e2e4916",
+    "tests/fixtures/network_parent/create_native.py": "6f752bbe1c51f9dd87efb77074dbcd9bb049e75d6f79c45f903b4f73882b4374"
+  },
+  "binaries": {
+    "virmill": "fe5013b33e330bb125fb655d114f7f1fa290a333576c7112b1ef5e0c11dc0625",
+    "virmill-host-helper": "19d71d2fea3050b5cdc67f72f114be2b6b4cd364c47f7193360a3902a9aba072",
+    "virmilld": "e58f084801b9e0fe7cb512223497f3b57cce864b91223955cd9adc74dc152f47"
+  },
+  "runs": [
+    {
+      "id": "protected-network-native-001",
+      "fixtureRevision": "36e7838726c046fcd7deb1ad99af20b44e621a71",
+      "packetSHA256": "d7ef2000a2c90223dc4f513ee31634b7eed290c8e9fb1637e897b95ce533997e",
+      "runnerSHA256": "793ea6376cd9d713ef1bfe39364d4d68cd30847fa3833bfa6a10187040b6e0db"
+    },
+    {
+      "id": "protected-network-native-002",
+      "fixtureRevision": "49001236e347b537f1795e13c57ac325dc248505",
+      "packetSHA256": "d7ef2000a2c90223dc4f513ee31634b7eed290c8e9fb1637e897b95ce533997e",
+      "runnerSHA256": "0e57ea7ed948deaaec7745e35efe94a14bc1a9f7f06505f456e163e541ef55c4"
+    },
+    {
+      "id": "protected-network-native-003",
+      "fixtureRevision": "0004d68c5688ba0a81a8002936152574185697be",
+      "packetSHA256": "d87cc1d563188aa2bdddac849cddc4625840d7d62c10ded9131e4f512e2e4916",
+      "runnerSHA256": "6f752bbe1c51f9dd87efb77074dbcd9bb049e75d6f79c45f903b4f73882b4374"
+    }
+  ],
+  "packageArtifacts": {
+    "build/bin/virmill": "fe5013b33e330bb125fb655d114f7f1fa290a333576c7112b1ef5e0c11dc0625",
+    "build/bin/virmill-host-helper": "19d71d2fea3050b5cdc67f72f114be2b6b4cd364c47f7193360a3902a9aba072",
+    "build/bin/virmilld": "e58f084801b9e0fe7cb512223497f3b57cce864b91223955cd9adc74dc152f47",
+    "dist/virmill-0.0.0-0.dev.x86_64.rpm": "e96a869d51f7703a174c45400b9d58fab3cfe734d81d17150ccea4b22ad79e3e",
+    "dist/virmill-host-helper-0.0.0-0.dev.x86_64.rpm": "532d788973b467921c3ebb39ea42adc6cd5ecf860b5bf4f364e4e4f4645efb00",
+    "dist/virmill-host-helper_0.0.0~dev_amd64.deb": "cf0adb1f54bc4b493214ce30c33462cbbbe1c0385a5239ea2445d860d26b7e3e",
+    "dist/virmill_0.0.0~dev_amd64.deb": "5d6421c572e2368946f0e4d75572c8884ce78873e28234fa042faea6c64cf124"
+  }
+}
