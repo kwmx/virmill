@@ -1,0 +1,5 @@
+=== RUN   TestProviderCrashReconcileFixture
+    runner_test.go:82: simulated provider persisted partial fake effect, recovered after process restart, deduplicated and rejected backup; no actual VM or remote host
+--- PASS: TestProviderCrashReconcileFixture (0.02s)
+PASS
+ok  	virmill.local/core/internal/plugins	1.054s

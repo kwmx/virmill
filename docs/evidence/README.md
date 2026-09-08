@@ -14,6 +14,11 @@ builds use an exact Git checkout; package file manifests and artifact digests bi
 their additional inputs. A working-tree digest or embedded HEAD alone is not a
 complete release source attestation.
 
+New recorder calls validate every supplied acceptance ID against the preserved
+71-row specification before running a command or writing evidence. Unknown or
+duplicate IDs fail immediately. Historical attribution mistakes remain visible
+with explicit corrections; the recorder never promotes an acceptance status.
+
 When a command runs in an isolated source checkout, pass both `--cwd` and
 `--source-root` to `scripts/record-evidence.py`. The latter binds the selected
 checkout's revision and implementation digest while logs still go into this
@@ -72,3 +77,9 @@ The copied-guest native reboot passed with a durable event receipt and preserved
 source disk/prior definitions. The new copy required forced-stop cleanup; no
 guest readiness claim follows. Package/private CLI/actual PTY checks and local
 QEMU fixture allocation failures are recorded separately.
+
+Managed network creation: [owned network run](owned-network-run.md). Native
+definition/filter/activation results, packet-fixture failures, exact cleanup,
+reproducible artifacts and remaining network qualification are recorded separately.
+
+EXT-02 simulated provider acceptance: [shared CLI/TUI conformance](provider-conformance-run.md).

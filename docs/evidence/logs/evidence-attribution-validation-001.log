@@ -1,0 +1,15 @@
+test_all_71_canonical_ids_keep_input_order_and_ledger_shape (__main__.EvidenceRecorderRequirements.test_all_71_canonical_ids_keep_input_order_and_ledger_shape) ... ok
+test_duplicate_ids_are_refused_including_nonadjacent_and_empty_separators (__main__.EvidenceRecorderRequirements.test_duplicate_ids_are_refused_including_nonadjacent_and_empty_separators) ... ok
+test_empty_default_semantics_stay_compatible (__main__.EvidenceRecorderRequirements.test_empty_default_semantics_stay_compatible) ... ok
+test_empty_separators_do_not_change_valid_attribution (__main__.EvidenceRecorderRequirements.test_empty_separators_do_not_change_valid_attribution) ... ok
+test_invalid_attribution_preserves_existing_legacy_bytes (__main__.EvidenceRecorderRequirements.test_invalid_attribution_preserves_existing_legacy_bytes) ... ok
+test_selected_source_cannot_redefine_acceptance_ids (__main__.EvidenceRecorderRequirements.test_selected_source_cannot_redefine_acceptance_ids) ... ok
+test_unavailable_or_invalid_catalog_refuses_before_command (__main__.EvidenceRecorderRequirements.test_unavailable_or_invalid_catalog_refuses_before_command) ... ok
+test_unknown_ids_and_mixed_lists_never_execute_or_create_evidence (__main__.EvidenceRecorderRequirements.test_unknown_ids_and_mixed_lists_never_execute_or_create_evidence) ... ok
+test_valid_failed_check_records_failure_without_promoting_requirement (__main__.EvidenceRecorderRequirements.test_valid_failed_check_records_failure_without_promoting_requirement) ... ok
+test_valid_selected_source_preserves_digest_revision_and_recorder_attribution (__main__.EvidenceRecorderRequirements.test_valid_selected_source_preserves_digest_revision_and_recorder_attribution) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.293s
+
+OK

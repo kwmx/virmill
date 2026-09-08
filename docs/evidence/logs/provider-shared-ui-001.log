@@ -1,0 +1,34 @@
+CLI actual confined checks: {"checks": ["simulated provider initialize identity/version/protocol and bounded describe schemas", "explicit simulated capabilities and fixture connection namespace", "reviewed create/get with stable fake IDs, exact deduplication and stale idempotency refusal", "stable ordered paginated inventory with repeated opaque cursors", "partial effect reported: operation=conformance-partial; resource=fixture-conformance-partial; status=partial", "restart/status/reconcile without apply replay: fixture-conformance-partial remains status=partial, reconciled=true, revision=1; inventory generation unchanged", "reviewed start/stop/delete preserve resource identity and retain a deleted receipt", "backup and lifecycle cancellation explicitly unsupported; no fake supported result", "shutdown; simulated-contract only, no real remote-provider or hardware qualification"], "confined": true, "evidenceClass": "simulated-contract", "pluginID": "example.virmill.provider-fixture"}
+test_cli_and_real_pty_use_private_confined_provider_workspace (__main__.ProviderConformanceUI.test_cli_and_real_pty_use_private_confined_provider_workspace) ... FAIL
+
+======================================================================
+FAIL: test_cli_and_real_pty_use_private_confined_provider_workspace (__main__.ProviderConformanceUI.test_cli_and_real_pty_use_private_confined_provider_workspace)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/faisal/project/virmill/build/provider-release/tests/integration/provider_conformance_ui_test.py", line 78, in test_cli_and_real_pty_use_private_confined_provider_workspace
+    until(b'provider-fixture', 90)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/faisal/project/virmill/build/provider-release/tests/integration/provider_conformance_ui_test.py", line 65, in until
+    self.assertIn(expected, received, received.decode(errors='replace'))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: b'provider-fixture' not found in bytearray(b"\x1b[H\n\n\n\n\n\n\n\n\n\n\n\n> /home/faisal/project/virmill/build/provider-release/build/provider-conformance\r\nEnter JSON with id or path, plus input parameters. See the selected command\'s ge\r\nnerated reference.\x1b[K\r\n\x1b[16;H") : [H
+
+
+
+
+
+
+
+
+
+
+
+> /home/faisal/project/virmill/build/provider-release/build/provider-conformance
+Enter JSON with id or path, plus input parameters. See the selected command's ge
+nerated reference.[K
+[16;H
+
+----------------------------------------------------------------------
+Ran 1 test in 90.385s
+
+FAILED (failures=1)

@@ -1,0 +1,29 @@
+{
+  "correctsRequirementAttributionOf": "owned-network-core-001",
+  "previousRequirements": [
+    "NET-01",
+    "NET-02",
+    "NET-05",
+    "NET-06",
+    "OPS-01",
+    "OPS-02",
+    "SEC-01"
+  ],
+  "requirements": [
+    "NET-01",
+    "NET-02",
+    "NET-05",
+    "NET-06",
+    "JOB-01",
+    "JOB-02",
+    "JOB-03",
+    "JOB-04",
+    "SEC-01"
+  ],
+  "reason": "OPS-01 and OPS-02 are not acceptance IDs in the supplied 71-scenario contract. The original observation and log remain unchanged; this entry corrects only requirement attribution.",
+  "observedSourceRevision": "151536dc4a4dbbd8719b59f8558c7caa1321cb26",
+  "observedSourceDigest": "f48862abc8a9e79f39905d329b4ac538e94bf56e0ffde3498744237bd7d131d9",
+  "observedLog": "logs/owned-network-core-001.log",
+  "observedLogSHA256": "25953d7266b0697994cb2ebe5057298798d57c3d1e3b62476447f8cf79266d9f",
+  "testRerun": false
+}

@@ -1,0 +1,1210 @@
+{
+  "status": "passed-native-creation",
+  "runID": "08198ab131db43c78d672c2ab6544dfe",
+  "scope": "native owned NAT/lab definition, helper IPv6 rules and namespace packets; not real-guest or release qualification",
+  "created": [
+    {
+      "uuid": "dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a",
+      "bridge": "vmdceba41d8d1a",
+      "kind": "lab",
+      "plan": {
+        "acknowledgements": [
+          "host-mutation",
+          "network-host-access",
+          "network-firewall",
+          "exclusive-network-writer"
+        ],
+        "actorUID": 1000,
+        "apiVersion": "virmill/v1",
+        "beforeFingerprints": {},
+        "connectionID": "qemu:///system",
+        "createdAt": "2026-09-08T04:53:43.707620454Z",
+        "estimates": {
+          "additionalBytes": 0,
+          "notes": "One new virtual bridge and optional libvirt DHCP/DNS process; no guest or disk allocation. Existing host networking is retained.",
+          "requiresDowntime": false
+        },
+        "expiresAt": "2026-09-08T05:08:43.707620454Z",
+        "inputDigest": "2924a43b184ee21d50ce9e98bee6f3393dffcd14b6228c7ba4274cffd9459527",
+        "operation": "network.create",
+        "planDigest": "9649b5638740858661613c0486d61486ccb2746883a3b8430107ac83a400634b",
+        "planID": "7c8726b2-8660-43e1-af71-0c94bb789f9d",
+        "requiredGrants": [
+          {
+            "operation": "network.create",
+            "resourceID": "libvirt|qemu:///system|network-allocation|host"
+          },
+          {
+            "operation": "network.create",
+            "resourceID": "libvirt|qemu:///system|network|dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a"
+          }
+        ],
+        "resourceIDs": [
+          "libvirt|qemu:///system|network-allocation|host",
+          "libvirt|qemu:///system|network|dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a"
+        ],
+        "review": {
+          "autostart": false,
+          "definition": {
+            "advertiseDefaultRoute": false,
+            "bridge": "vmdceba41d8d1a",
+            "dhcpEnabled": true,
+            "egress": "none",
+            "hostAccess": "allow",
+            "ipv4CIDR": "10.197.230.0/24",
+            "ipv6Mode": "disabled",
+            "name": "virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a",
+            "type": "lab",
+            "uuid": "dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a"
+          },
+          "guestRoutingVerified": false,
+          "metadata": {
+            "name": "native-lab",
+            "tags": [
+              "disposable-fixture"
+            ]
+          },
+          "networkXML": "<network ipv6=\"no\">\n  <name>virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a</name>\n  <uuid>dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a</uuid>\n  <metadata><virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"ef49a8bb467d9a442cfe88ed6279c16b6911b9f23b85a7a1e9866e3bd7209585\"/></metadata>\n  <bridge name=\"vmdceba41d8d1a\" zone=\"trusted\" stp=\"on\" delay=\"0\"/>\n  <ip family=\"ipv4\" address=\"10.197.230.1\" prefix=\"24\">\n    <dhcp><range start=\"10.197.230.2\" end=\"10.197.230.254\"/></dhcp>\n  </ip>\n</network>\n",
+          "packetVerification": "not-run",
+          "physicalUplinkChanges": false,
+          "resumeFrom": ""
+        },
+        "risks": [
+          "The new segment explicitly permits host access; it is unsuitable for untrusted guests requiring host isolation",
+          "Libvirt creates only the reviewed new bridge, IPv4 address, optional DHCP/DNS and native NAT or isolated forwarding; no physical uplink is moved",
+          "Coordinate other network writers: libvirt has no atomic create-only definition API and host/route snapshots are not atomic",
+          "IPv6, DHCP, routing, DNS and packet isolation require native verification; autostart remains disabled"
+        ],
+        "steps": [
+          {
+            "action": "network.define",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact persistent network exists and is inactive with autostart disabled",
+            "id": "define",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          },
+          {
+            "action": "network.ipv6-filter",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact bridge IPv6 deny rules are present in firewalld runtime and permanent configuration",
+            "id": "firewall",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          },
+          {
+            "action": "network.activate",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact persistent network is active with autostart disabled and IPv6 deny rules present; packet and guest behavior remain unverified",
+            "id": "activate",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          }
+        ]
+      },
+      "ruleCleanupNeeded": true,
+      "unapprovedApply": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "cancelRequested": false,
+          "createdAt": "0001-01-01T00:00:00Z",
+          "error": null,
+          "operationID": "",
+          "planID": "",
+          "state": "",
+          "step": 0
+        },
+        "warnings": [],
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "network IPv6 filter requires explicit administrator approval for this actor, key and network UUID",
+          "resource": "",
+          "operationID": "",
+          "retryable": false,
+          "safeNextActions": []
+        }
+      },
+      "apply": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "cancelRequested": false,
+          "createdAt": "2026-09-08T04:53:46.860983248Z",
+          "error": null,
+          "operationID": "0785bc1c-87ef-45c8-aad9-7124adb3c607",
+          "planID": "7c8726b2-8660-43e1-af71-0c94bb789f9d",
+          "state": "succeeded",
+          "step": 2
+        },
+        "warnings": [],
+        "error": null
+      },
+      "result": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "definition": {
+            "advertiseDefaultRoute": false,
+            "bridge": "vmdceba41d8d1a",
+            "dhcpEnabled": true,
+            "egress": "none",
+            "hostAccess": "allow",
+            "ipv4CIDR": "10.197.230.0/24",
+            "ipv6Mode": "disabled",
+            "name": "virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a",
+            "type": "lab",
+            "uuid": "dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a"
+          },
+          "guestRoutingVerified": false,
+          "job": {
+            "cancelRequested": false,
+            "createdAt": "2026-09-08T04:53:46.860983248Z",
+            "error": null,
+            "operationID": "0785bc1c-87ef-45c8-aad9-7124adb3c607",
+            "planID": "7c8726b2-8660-43e1-af71-0c94bb789f9d",
+            "state": "succeeded",
+            "step": 2
+          },
+          "metadata": {
+            "name": "native-lab",
+            "tags": [
+              "disposable-fixture"
+            ]
+          },
+          "network": {
+            "active": true,
+            "autostart": false,
+            "fingerprint": "fd0dc10d018dd4c2ebabfb0553105d8d8c4a8e431200304ea724b638c59b764b",
+            "isolationVerification": "not-run",
+            "key": {
+              "connectionID": "qemu:///system",
+              "kind": "network",
+              "providerID": "libvirt",
+              "resourceUUID": "dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a"
+            },
+            "liveXML": "<network>\n  <name>virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a</name>\n  <uuid>dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a</uuid>\n  <metadata>\n    <virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"ef49a8bb467d9a442cfe88ed6279c16b6911b9f23b85a7a1e9866e3bd7209585\"/>\n  </metadata>\n  <bridge name='vmdceba41d8d1a' zone='trusted' stp='on' delay='0'/>\n  <mac address='52:54:00:dc:dc:ef'/>\n  <ip family='ipv4' address='10.197.230.1' prefix='24'>\n    <dhcp>\n      <range start='10.197.230.2' end='10.197.230.254'/>\n    </dhcp>\n  </ip>\n</network>\n",
+            "name": "virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a",
+            "ownership": "external",
+            "persistent": true,
+            "persistentXML": "<network>\n  <name>virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a</name>\n  <uuid>dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a</uuid>\n  <metadata>\n    <virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"ef49a8bb467d9a442cfe88ed6279c16b6911b9f23b85a7a1e9866e3bd7209585\"/>\n  </metadata>\n  <bridge name='vmdceba41d8d1a' zone='trusted' stp='on' delay='0'/>\n  <mac address='52:54:00:dc:dc:ef'/>\n  <ip family='ipv4' address='10.197.230.1' prefix='24'>\n    <dhcp>\n      <range start='10.197.230.2' end='10.197.230.254'/>\n    </dhcp>\n  </ip>\n</network>\n"
+          },
+          "packetVerification": "not-run",
+          "subnetReserved": true
+        },
+        "warnings": [],
+        "error": null
+      },
+      "liveXMLSHA256": "429f75484da355b20bc3e592cf35ef59a871b1ba3930ee64e2ff9a41c75d4bb4",
+      "bridgeIPv6Disable": "1",
+      "packetExitCode": 0,
+      "packetReport": {
+        "cleanup": {
+          "DHCPLeasesRetained": true,
+          "errors": [],
+          "networkRemoved": false,
+          "status": "verified"
+        },
+        "error": null,
+        "fullNetworkAcceptance": false,
+        "guestOrHardwareQualification": false,
+        "networkId": "dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a",
+        "networkXMLSHA256": "429f75484da355b20bc3e592cf35ef59a871b1ba3930ee64e2ff9a41c75d4bb4",
+        "observations": {
+          "configuredDNS": {
+            "status": "not_tested"
+          },
+          "dhcp": "on",
+          "dhcpRouterExpectationMet": true,
+          "dhcpRouterOptions": [
+            {
+              "alternativeRouteOptions": [],
+              "present": false,
+              "role": "a",
+              "routers": []
+            },
+            {
+              "alternativeRouteOptions": [],
+              "present": false,
+              "role": "b",
+              "routers": []
+            }
+          ],
+          "forwardIPv4": {
+            "errno": 111,
+            "expected": "not_connected",
+            "filterEnforcementProven": false,
+            "negativeResultProvesFiltering": false,
+            "port": 443,
+            "reason": "[Errno 111] Connection refused",
+            "routeOrigin": "explicit_fixture_target_route_not_DHCP_default",
+            "status": "not_connected",
+            "target": "1.1.1.1"
+          },
+          "forwardIPv6": {
+            "reason": "current native profile declares IPv6 disabled",
+            "status": "not_requested"
+          },
+          "fullNetworkAcceptance": false,
+          "hostTCP": {
+            "hostAccessExpected": "allow",
+            "listenerAccepts": [
+              "10.197.230.193"
+            ],
+            "listenerBoundOnlyToSelectedBridge": true,
+            "listenerClosed": true,
+            "port": 45727,
+            "status": "connected",
+            "target": "10.197.230.1"
+          },
+          "ipv4ChecksMet": true,
+          "ipv6DisabledContradictedByObservedTraffic": false,
+          "ipv6IsolationProven": false,
+          "kind": "lab",
+          "multiNICGuestRoutesVerified": false,
+          "namespaceRoutes": {
+            "a": {
+              "-4": [
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "1.1.1.1",
+                  "flags": [],
+                  "gateway": "10.197.230.1"
+                },
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "10.197.230.0/24",
+                  "flags": [],
+                  "prefsrc": "10.197.230.193",
+                  "protocol": "kernel",
+                  "scope": "link"
+                },
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "10.197.230.193",
+                  "flags": [],
+                  "prefsrc": "10.197.230.193",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "10.197.230.255",
+                  "flags": [],
+                  "prefsrc": "10.197.230.193",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.0/8",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.1",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.255.255.255",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                }
+              ],
+              "-6": [
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "fe80::/64",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "::1",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "fe80::7a:26ff:fecc:440a",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "vea7a26cc44aa",
+                  "dst": "ff00::/8",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "multicast"
+                }
+              ]
+            },
+            "b": {
+              "-4": [
+                {
+                  "dev": "veb7a26cc44aa",
+                  "dst": "10.197.230.0/24",
+                  "flags": [],
+                  "prefsrc": "10.197.230.194",
+                  "protocol": "kernel",
+                  "scope": "link"
+                },
+                {
+                  "dev": "veb7a26cc44aa",
+                  "dst": "10.197.230.194",
+                  "flags": [],
+                  "prefsrc": "10.197.230.194",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "veb7a26cc44aa",
+                  "dst": "10.197.230.255",
+                  "flags": [],
+                  "prefsrc": "10.197.230.194",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.0/8",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.1",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.255.255.255",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                }
+              ],
+              "-6": [
+                {
+                  "dev": "veb7a26cc44aa",
+                  "dst": "fe80::/64",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "::1",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "veb7a26cc44aa",
+                  "dst": "fe80::7a:26ff:fecc:440b",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "veb7a26cc44aa",
+                  "dst": "ff00::/8",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "multicast"
+                }
+              ]
+            }
+          },
+          "peerIPv4": {
+            "addressOrigin": "own_DHCP_ACKs",
+            "source": "10.197.230.193",
+            "status": "connected",
+            "target": "10.197.230.194"
+          },
+          "peerIPv6LinkLocal": {
+            "source": "fe80::7a:26ff:fecc:440a",
+            "status": "not_connected",
+            "target": "fe80::7a:26ff:fecc:440b"
+          },
+          "realGuestQualified": false,
+          "routerAdvertisements": {
+            "absenceProven": false,
+            "advertisements": [],
+            "extensionHeaderRAsInterpreted": false,
+            "malformedFrames": [],
+            "packetBoundReached": false,
+            "seconds": 5,
+            "solicitationFrameHex": "333300000002027a26cc440a86dd6000000000103afffe80000000000000007a26fffecc440aff0200000000000000000000000000028500a48d000000000101027a26cc440a",
+            "solicited": true,
+            "status": "none_seen_in_bounded_window"
+          },
+          "scope": "namespace-packet-observations",
+          "servicesOnlyEnforcementQualified": false
+        },
+        "recipeSHA256": "0e41d68b7e54b865d62560dc511cd7084526575efeba43de8f4bb18479892de9",
+        "runId": "7a26cc44-aa49-4a13-a9d2-93037c03158e",
+        "status": "scoped_checks_passed"
+      }
+    },
+    {
+      "uuid": "e1916980-5169-4557-8180-669b10c93c8a",
+      "bridge": "vme19169805169",
+      "kind": "nat",
+      "plan": {
+        "acknowledgements": [
+          "host-mutation",
+          "network-host-access",
+          "network-firewall",
+          "exclusive-network-writer"
+        ],
+        "actorUID": 1000,
+        "apiVersion": "virmill/v1",
+        "beforeFingerprints": {},
+        "connectionID": "qemu:///system",
+        "createdAt": "2026-09-08T04:54:58.244990324Z",
+        "estimates": {
+          "additionalBytes": 0,
+          "notes": "One new virtual bridge and optional libvirt DHCP/DNS process; no guest or disk allocation. Existing host networking is retained.",
+          "requiresDowntime": false
+        },
+        "expiresAt": "2026-09-08T05:09:58.244990324Z",
+        "inputDigest": "e5f865cc1ebc4f97d4e6a9bd6e5212fe7918cac232e2ed5ac6ad7807a7378b38",
+        "operation": "network.create",
+        "planDigest": "a90202bb76133e072eee69a5067d59048e2d42930de62a4a8157267a5873e86e",
+        "planID": "bd3243bc-9194-4da3-96c0-e060467109c8",
+        "requiredGrants": [
+          {
+            "operation": "network.create",
+            "resourceID": "libvirt|qemu:///system|network-allocation|host"
+          },
+          {
+            "operation": "network.create",
+            "resourceID": "libvirt|qemu:///system|network|e1916980-5169-4557-8180-669b10c93c8a"
+          }
+        ],
+        "resourceIDs": [
+          "libvirt|qemu:///system|network-allocation|host",
+          "libvirt|qemu:///system|network|e1916980-5169-4557-8180-669b10c93c8a"
+        ],
+        "review": {
+          "autostart": false,
+          "definition": {
+            "advertiseDefaultRoute": true,
+            "bridge": "vme19169805169",
+            "dhcpEnabled": true,
+            "egress": "any",
+            "hostAccess": "allow",
+            "ipv4CIDR": "10.197.231.0/24",
+            "ipv6Mode": "disabled",
+            "name": "virmill-e1916980-5169-4557-8180-669b10c93c8a",
+            "type": "nat",
+            "uuid": "e1916980-5169-4557-8180-669b10c93c8a"
+          },
+          "guestRoutingVerified": false,
+          "metadata": {
+            "name": "native-nat",
+            "tags": [
+              "disposable-fixture"
+            ]
+          },
+          "networkXML": "<network ipv6=\"no\">\n  <name>virmill-e1916980-5169-4557-8180-669b10c93c8a</name>\n  <uuid>e1916980-5169-4557-8180-669b10c93c8a</uuid>\n  <metadata><virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"8dbd0a17035281f72013453f4e9074f59ac33e4740efe54f09a3ca35350f33ff\"/></metadata>\n  <forward mode=\"nat\"><nat><port start=\"1024\" end=\"65535\"/></nat></forward>\n  <bridge name=\"vme19169805169\" zone=\"trusted\" stp=\"on\" delay=\"0\"/>\n  <ip family=\"ipv4\" address=\"10.197.231.1\" prefix=\"24\">\n    <dhcp><range start=\"10.197.231.2\" end=\"10.197.231.254\"/></dhcp>\n  </ip>\n</network>\n",
+          "packetVerification": "not-run",
+          "physicalUplinkChanges": false,
+          "resumeFrom": ""
+        },
+        "risks": [
+          "The new segment explicitly permits host access; it is unsuitable for untrusted guests requiring host isolation",
+          "Libvirt creates only the reviewed new bridge, IPv4 address, optional DHCP/DNS and native NAT or isolated forwarding; no physical uplink is moved",
+          "Coordinate other network writers: libvirt has no atomic create-only definition API and host/route snapshots are not atomic",
+          "IPv6, DHCP, routing, DNS and packet isolation require native verification; autostart remains disabled"
+        ],
+        "steps": [
+          {
+            "action": "network.define",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact persistent network exists and is inactive with autostart disabled",
+            "id": "define",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          },
+          {
+            "action": "network.ipv6-filter",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact bridge IPv6 deny rules are present in firewalld runtime and permanent configuration",
+            "id": "firewall",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          },
+          {
+            "action": "network.activate",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact persistent network is active with autostart disabled and IPv6 deny rules present; packet and guest behavior remain unverified",
+            "id": "activate",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          }
+        ]
+      },
+      "ruleCleanupNeeded": true,
+      "unapprovedApply": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "cancelRequested": false,
+          "createdAt": "0001-01-01T00:00:00Z",
+          "error": null,
+          "operationID": "",
+          "planID": "",
+          "state": "",
+          "step": 0
+        },
+        "warnings": [],
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "network IPv6 filter requires explicit administrator approval for this actor, key and network UUID",
+          "resource": "",
+          "operationID": "",
+          "retryable": false,
+          "safeNextActions": []
+        }
+      },
+      "apply": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "cancelRequested": false,
+          "createdAt": "2026-09-08T04:55:01.483908836Z",
+          "error": null,
+          "operationID": "e3e01cf0-2118-47a4-9554-c6f5233a1670",
+          "planID": "bd3243bc-9194-4da3-96c0-e060467109c8",
+          "state": "succeeded",
+          "step": 2
+        },
+        "warnings": [],
+        "error": null
+      },
+      "result": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "definition": {
+            "advertiseDefaultRoute": true,
+            "bridge": "vme19169805169",
+            "dhcpEnabled": true,
+            "egress": "any",
+            "hostAccess": "allow",
+            "ipv4CIDR": "10.197.231.0/24",
+            "ipv6Mode": "disabled",
+            "name": "virmill-e1916980-5169-4557-8180-669b10c93c8a",
+            "type": "nat",
+            "uuid": "e1916980-5169-4557-8180-669b10c93c8a"
+          },
+          "guestRoutingVerified": false,
+          "job": {
+            "cancelRequested": false,
+            "createdAt": "2026-09-08T04:55:01.483908836Z",
+            "error": null,
+            "operationID": "e3e01cf0-2118-47a4-9554-c6f5233a1670",
+            "planID": "bd3243bc-9194-4da3-96c0-e060467109c8",
+            "state": "succeeded",
+            "step": 2
+          },
+          "metadata": {
+            "name": "native-nat",
+            "tags": [
+              "disposable-fixture"
+            ]
+          },
+          "network": {
+            "active": true,
+            "autostart": false,
+            "fingerprint": "04d00b49359ee0054b01702c15dd3b75c0af662210347d3df8577a30cee8c0f3",
+            "isolationVerification": "not-run",
+            "key": {
+              "connectionID": "qemu:///system",
+              "kind": "network",
+              "providerID": "libvirt",
+              "resourceUUID": "e1916980-5169-4557-8180-669b10c93c8a"
+            },
+            "liveXML": "<network>\n  <name>virmill-e1916980-5169-4557-8180-669b10c93c8a</name>\n  <uuid>e1916980-5169-4557-8180-669b10c93c8a</uuid>\n  <metadata>\n    <virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"8dbd0a17035281f72013453f4e9074f59ac33e4740efe54f09a3ca35350f33ff\"/>\n  </metadata>\n  <forward mode='nat'>\n    <nat>\n      <port start='1024' end='65535'/>\n    </nat>\n  </forward>\n  <bridge name='vme19169805169' zone='trusted' stp='on' delay='0'/>\n  <mac address='52:54:00:f8:6c:24'/>\n  <ip family='ipv4' address='10.197.231.1' prefix='24'>\n    <dhcp>\n      <range start='10.197.231.2' end='10.197.231.254'/>\n    </dhcp>\n  </ip>\n</network>\n",
+            "name": "virmill-e1916980-5169-4557-8180-669b10c93c8a",
+            "ownership": "external",
+            "persistent": true,
+            "persistentXML": "<network>\n  <name>virmill-e1916980-5169-4557-8180-669b10c93c8a</name>\n  <uuid>e1916980-5169-4557-8180-669b10c93c8a</uuid>\n  <metadata>\n    <virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"8dbd0a17035281f72013453f4e9074f59ac33e4740efe54f09a3ca35350f33ff\"/>\n  </metadata>\n  <forward mode='nat'>\n    <nat>\n      <port start='1024' end='65535'/>\n    </nat>\n  </forward>\n  <bridge name='vme19169805169' zone='trusted' stp='on' delay='0'/>\n  <mac address='52:54:00:f8:6c:24'/>\n  <ip family='ipv4' address='10.197.231.1' prefix='24'>\n    <dhcp>\n      <range start='10.197.231.2' end='10.197.231.254'/>\n    </dhcp>\n  </ip>\n</network>\n"
+          },
+          "packetVerification": "not-run",
+          "subnetReserved": true
+        },
+        "warnings": [],
+        "error": null
+      },
+      "liveXMLSHA256": "92769f653525c050cc7631d5062c4a25b94db21bf9e21628831a7b0f17a67812",
+      "bridgeIPv6Disable": "1",
+      "packetExitCode": 0,
+      "packetReport": {
+        "cleanup": {
+          "DHCPLeasesRetained": true,
+          "errors": [],
+          "networkRemoved": false,
+          "status": "verified"
+        },
+        "error": null,
+        "fullNetworkAcceptance": false,
+        "guestOrHardwareQualification": false,
+        "networkId": "e1916980-5169-4557-8180-669b10c93c8a",
+        "networkXMLSHA256": "92769f653525c050cc7631d5062c4a25b94db21bf9e21628831a7b0f17a67812",
+        "observations": {
+          "configuredDNS": {
+            "addresses": [
+              "172.66.147.243",
+              "104.20.23.154"
+            ],
+            "advertisedByOwnACK": true,
+            "name": "example.com",
+            "rcode": 0,
+            "responseHex": "da6981800001000200000000076578616d706c6503636f6d0000010001c00c000100010000012c0004ac4293f3c00c000100010000012c00046814179a",
+            "responseSHA256": "1d7844270fdd4b7a9965ca22686c16f90200f16a9c788b7b31ac98b4b048b862",
+            "server": "10.197.231.1",
+            "status": "resolved"
+          },
+          "dhcp": "on",
+          "dhcpRouterExpectationMet": true,
+          "dhcpRouterOptions": [
+            {
+              "alternativeRouteOptions": [],
+              "present": true,
+              "role": "a",
+              "routers": [
+                "10.197.231.1"
+              ]
+            },
+            {
+              "alternativeRouteOptions": [],
+              "present": true,
+              "role": "b",
+              "routers": [
+                "10.197.231.1"
+              ]
+            }
+          ],
+          "forwardIPv4": {
+            "expected": "connected",
+            "negativeResultProvesFiltering": false,
+            "port": 443,
+            "routeOrigin": "explicit_fixture_target_route_not_DHCP_default",
+            "status": "connected",
+            "target": "1.1.1.1"
+          },
+          "forwardIPv6": {
+            "reason": "current native profile declares IPv6 disabled",
+            "status": "not_requested"
+          },
+          "fullNetworkAcceptance": false,
+          "hostTCP": {
+            "hostAccessExpected": "allow",
+            "listenerAccepts": [
+              "10.197.231.77"
+            ],
+            "listenerBoundOnlyToSelectedBridge": true,
+            "listenerClosed": true,
+            "port": 37271,
+            "status": "connected",
+            "target": "10.197.231.1"
+          },
+          "ipv4ChecksMet": true,
+          "ipv6DisabledContradictedByObservedTraffic": false,
+          "ipv6IsolationProven": false,
+          "kind": "nat",
+          "multiNICGuestRoutesVerified": false,
+          "namespaceRoutes": {
+            "a": {
+              "-4": [
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "1.1.1.1",
+                  "flags": [],
+                  "gateway": "10.197.231.1"
+                },
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "10.197.231.0/24",
+                  "flags": [],
+                  "prefsrc": "10.197.231.77",
+                  "protocol": "kernel",
+                  "scope": "link"
+                },
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "10.197.231.77",
+                  "flags": [],
+                  "prefsrc": "10.197.231.77",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "10.197.231.255",
+                  "flags": [],
+                  "prefsrc": "10.197.231.77",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.0/8",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.1",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.255.255.255",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                }
+              ],
+              "-6": [
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "fe80::/64",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "::1",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "fe80::2:5aff:fea7:6f0a",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "vea025aa76fbf",
+                  "dst": "ff00::/8",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "multicast"
+                }
+              ]
+            },
+            "b": {
+              "-4": [
+                {
+                  "dev": "veb025aa76fbf",
+                  "dst": "10.197.231.0/24",
+                  "flags": [],
+                  "prefsrc": "10.197.231.78",
+                  "protocol": "kernel",
+                  "scope": "link"
+                },
+                {
+                  "dev": "veb025aa76fbf",
+                  "dst": "10.197.231.78",
+                  "flags": [],
+                  "prefsrc": "10.197.231.78",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "veb025aa76fbf",
+                  "dst": "10.197.231.255",
+                  "flags": [],
+                  "prefsrc": "10.197.231.78",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.0/8",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.0.0.1",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "host",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "127.255.255.255",
+                  "flags": [],
+                  "prefsrc": "127.0.0.1",
+                  "protocol": "kernel",
+                  "scope": "link",
+                  "table": "local",
+                  "type": "broadcast"
+                }
+              ],
+              "-6": [
+                {
+                  "dev": "veb025aa76fbf",
+                  "dst": "fe80::/64",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel"
+                },
+                {
+                  "dev": "lo",
+                  "dst": "::1",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "veb025aa76fbf",
+                  "dst": "fe80::2:5aff:fea7:6f0b",
+                  "flags": [],
+                  "metric": 0,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "local"
+                },
+                {
+                  "dev": "veb025aa76fbf",
+                  "dst": "ff00::/8",
+                  "flags": [],
+                  "metric": 256,
+                  "pref": "medium",
+                  "protocol": "kernel",
+                  "table": "local",
+                  "type": "multicast"
+                }
+              ]
+            }
+          },
+          "peerIPv4": {
+            "addressOrigin": "own_DHCP_ACKs",
+            "source": "10.197.231.77",
+            "status": "connected",
+            "target": "10.197.231.78"
+          },
+          "peerIPv6LinkLocal": {
+            "source": "fe80::2:5aff:fea7:6f0a",
+            "status": "not_connected",
+            "target": "fe80::2:5aff:fea7:6f0b"
+          },
+          "realGuestQualified": false,
+          "routerAdvertisements": {
+            "absenceProven": false,
+            "advertisements": [],
+            "extensionHeaderRAsInterpreted": false,
+            "malformedFrames": [],
+            "packetBoundReached": false,
+            "seconds": 5,
+            "solicitationFrameHex": "33330000000202025aa76f0a86dd6000000000103afffe8000000000000000025afffea76f0aff0200000000000000000000000000028500e7c600000000010102025aa76f0a",
+            "solicited": true,
+            "status": "none_seen_in_bounded_window"
+          },
+          "scope": "namespace-packet-observations",
+          "servicesOnlyEnforcementQualified": false
+        },
+        "recipeSHA256": "0e41d68b7e54b865d62560dc511cd7084526575efeba43de8f4bb18479892de9",
+        "runId": "025aa76f-bf63-4c22-b8cb-c69316cbc66c",
+        "status": "scoped_checks_passed"
+      }
+    }
+  ],
+  "binaries": {
+    "virmill": "0a2e9f67c4a6943dfc52f11d6a5f0afca6decc5f21b3e53dc021bdc1448b00e6",
+    "virmilld": "96164e106ff2815ec32a1a3f3bf4202b103fbcdb90bd8117a601472daa35ce6c",
+    "virmill-host-helper": "4919854e022b6f908687662d878b983a0898229c449bd434ef7b65a1d7316029"
+  },
+  "preservationBefore": {
+    "guests": {
+      "b9496482-2eeb-40e1-892b-4e291c108c52": {
+        "state": "shut off",
+        "xmlSHA256": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e"
+      },
+      "666c692d-da0e-4119-9554-727c4af3c751": {
+        "state": "shut off",
+        "xmlSHA256": "12ecd7f3a77ebcaf3b5942a1497bc0bbb32ce5546a3fa156f90ba7e24d432164"
+      },
+      "a19bf9ee-cd7f-4921-baac-39ce1694eb35": {
+        "state": "shut off",
+        "xmlSHA256": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2"
+      },
+      "ae630461-91d3-4f07-ad88-e6842c3dc3ea": {
+        "state": "shut off",
+        "xmlSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824"
+      },
+      "d4c95f21-28bc-428d-9e5f-ceda025d279e": {
+        "state": "shut off",
+        "xmlSHA256": "a10ba2cb370cd1740d42e34a944663420e8b716315e47f21d999a5a64249411e"
+      },
+      "f78674f3-bf3a-43e5-81f9-4283e2472024": {
+        "state": "shut off",
+        "xmlSHA256": "081324fb849b275fafacfdf7efc6e22581f1ea926e87b75e80af8f0af688b31c"
+      },
+      "50a0583b-3587-495f-90f4-9a42b8ad2fa3": {
+        "state": "shut off",
+        "xmlSHA256": "fa9966bbb12d425546b444f8094a5a5d046fa2042720a76a6975e810634ecd0c"
+      },
+      "074d9083-1953-4941-b006-9e301bb6d907": {
+        "state": "shut off",
+        "xmlSHA256": "7630c6b47171115d4825fac5918749ab805f6272144d16002de6b8b6a2184908"
+      },
+      "2ec994ce-2950-498c-8b19-d2f7dbb53a78": {
+        "state": "shut off",
+        "xmlSHA256": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408"
+      },
+      "3d47f209-5242-4d5f-8a0c-d2607db362af": {
+        "state": "shut off",
+        "xmlSHA256": "cd447f743205eaad20f20f9546fdfcead2c7ca091c970fc7763bf7f3db4f1b4b"
+      }
+    },
+    "networks": {
+      "e4aa7897-db51-45de-a0dc-a13554eba163": {
+        "xmlSHA256": "1a002f8fa10c9fc6152520ed47a9a6aee7081c4ebdaf95967ec44d4233350cff",
+        "info": "Name:           default\nUUID:           e4aa7897-db51-45de-a0dc-a13554eba163\nActive:         yes\nPersistent:     yes\nAutostart:      yes\nBridge:         virbr0\n\n"
+      },
+      "1739e5f7-27cd-4896-992f-961cf5c8b17e": {
+        "xmlSHA256": "063004218262379430b40dbe01ac64290c155496f020d919896417efc998d485",
+        "info": "Name:           virmill-1739e5f7-27cd-4896-992f-961cf5c8b17e\nUUID:           1739e5f7-27cd-4896-992f-961cf5c8b17e\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vm1739e5f727cd\n\n"
+      },
+      "2d0253cd-95b4-4d11-a921-3ebb15aa6166": {
+        "xmlSHA256": "f407dea63b037cf94cd88a21b40cbc2ef806386ea2335186349f5bc9829a03b3",
+        "info": "Name:           virmill-2d0253cd-95b4-4d11-a921-3ebb15aa6166\nUUID:           2d0253cd-95b4-4d11-a921-3ebb15aa6166\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vm2d0253cd95b4\n\n"
+      },
+      "bc247e57-0919-489b-a02e-3f3ad3c92447": {
+        "xmlSHA256": "84dfcdd7e147a41f5429a387885cddf6447c247651d07615b40342efbdb6ebda",
+        "info": "Name:           virmill-bc247e57-0919-489b-a02e-3f3ad3c92447\nUUID:           bc247e57-0919-489b-a02e-3f3ad3c92447\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmbc247e570919\n\n"
+      },
+      "fbb3905c-5c0b-4e03-a951-0e7ad2255847": {
+        "xmlSHA256": "300723081925c7258ff61fa0b88651f85debc729b9eaf9f2726a91f0aff48267",
+        "info": "Name:           virmill-fbb3905c-5c0b-4e03-a951-0e7ad2255847\nUUID:           fbb3905c-5c0b-4e03-a951-0e7ad2255847\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmfbb3905c5c0b\n\n"
+      }
+    }
+  },
+  "firewallBefore": {
+    "runtime": "",
+    "permanent": "",
+    "zones": "libvirt\n  interfaces: virbr0\npublic (default)\n  interfaces: ens18 ens19\n"
+  },
+  "originalPolicySHA256": "1ec86a37a44cac12e7fa7c16c542ec83e552e348ea2f2cec841597dc999d6ed4",
+  "helperIdentity": {
+    "actorUID": 1000,
+    "keyID": "fe043efdba4d9f35f4a0c19fb8c11a62380c9e300a87fda69f41799efc08d2cc",
+    "publicKey": "1dc79c21e34eea4d9ee91ff333dd150111d046d9953921884dd2c9373509ac02"
+  },
+  "policyRestored": true,
+  "preservationAfter": {
+    "guests": {
+      "b9496482-2eeb-40e1-892b-4e291c108c52": {
+        "state": "shut off",
+        "xmlSHA256": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e"
+      },
+      "666c692d-da0e-4119-9554-727c4af3c751": {
+        "state": "shut off",
+        "xmlSHA256": "12ecd7f3a77ebcaf3b5942a1497bc0bbb32ce5546a3fa156f90ba7e24d432164"
+      },
+      "a19bf9ee-cd7f-4921-baac-39ce1694eb35": {
+        "state": "shut off",
+        "xmlSHA256": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2"
+      },
+      "ae630461-91d3-4f07-ad88-e6842c3dc3ea": {
+        "state": "shut off",
+        "xmlSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824"
+      },
+      "d4c95f21-28bc-428d-9e5f-ceda025d279e": {
+        "state": "shut off",
+        "xmlSHA256": "a10ba2cb370cd1740d42e34a944663420e8b716315e47f21d999a5a64249411e"
+      },
+      "f78674f3-bf3a-43e5-81f9-4283e2472024": {
+        "state": "shut off",
+        "xmlSHA256": "081324fb849b275fafacfdf7efc6e22581f1ea926e87b75e80af8f0af688b31c"
+      },
+      "50a0583b-3587-495f-90f4-9a42b8ad2fa3": {
+        "state": "shut off",
+        "xmlSHA256": "fa9966bbb12d425546b444f8094a5a5d046fa2042720a76a6975e810634ecd0c"
+      },
+      "074d9083-1953-4941-b006-9e301bb6d907": {
+        "state": "shut off",
+        "xmlSHA256": "7630c6b47171115d4825fac5918749ab805f6272144d16002de6b8b6a2184908"
+      },
+      "2ec994ce-2950-498c-8b19-d2f7dbb53a78": {
+        "state": "shut off",
+        "xmlSHA256": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408"
+      },
+      "3d47f209-5242-4d5f-8a0c-d2607db362af": {
+        "state": "shut off",
+        "xmlSHA256": "cd447f743205eaad20f20f9546fdfcead2c7ca091c970fc7763bf7f3db4f1b4b"
+      }
+    },
+    "networks": {
+      "e4aa7897-db51-45de-a0dc-a13554eba163": {
+        "xmlSHA256": "1a002f8fa10c9fc6152520ed47a9a6aee7081c4ebdaf95967ec44d4233350cff",
+        "info": "Name:           default\nUUID:           e4aa7897-db51-45de-a0dc-a13554eba163\nActive:         yes\nPersistent:     yes\nAutostart:      yes\nBridge:         virbr0\n\n"
+      },
+      "1739e5f7-27cd-4896-992f-961cf5c8b17e": {
+        "xmlSHA256": "063004218262379430b40dbe01ac64290c155496f020d919896417efc998d485",
+        "info": "Name:           virmill-1739e5f7-27cd-4896-992f-961cf5c8b17e\nUUID:           1739e5f7-27cd-4896-992f-961cf5c8b17e\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vm1739e5f727cd\n\n"
+      },
+      "2d0253cd-95b4-4d11-a921-3ebb15aa6166": {
+        "xmlSHA256": "f407dea63b037cf94cd88a21b40cbc2ef806386ea2335186349f5bc9829a03b3",
+        "info": "Name:           virmill-2d0253cd-95b4-4d11-a921-3ebb15aa6166\nUUID:           2d0253cd-95b4-4d11-a921-3ebb15aa6166\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vm2d0253cd95b4\n\n"
+      },
+      "bc247e57-0919-489b-a02e-3f3ad3c92447": {
+        "xmlSHA256": "84dfcdd7e147a41f5429a387885cddf6447c247651d07615b40342efbdb6ebda",
+        "info": "Name:           virmill-bc247e57-0919-489b-a02e-3f3ad3c92447\nUUID:           bc247e57-0919-489b-a02e-3f3ad3c92447\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmbc247e570919\n\n"
+      },
+      "fbb3905c-5c0b-4e03-a951-0e7ad2255847": {
+        "xmlSHA256": "300723081925c7258ff61fa0b88651f85debc729b9eaf9f2726a91f0aff48267",
+        "info": "Name:           virmill-fbb3905c-5c0b-4e03-a951-0e7ad2255847\nUUID:           fbb3905c-5c0b-4e03-a951-0e7ad2255847\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmfbb3905c5c0b\n\n"
+      }
+    }
+  },
+  "existingResourcesPreserved": true,
+  "firewallAfter": {
+    "runtime": "",
+    "permanent": "",
+    "zones": "libvirt\n  interfaces: virbr0\npublic (default)\n  interfaces: ens18\n"
+  },
+  "existingFirewallPreserved": false
+}
+Traceback (most recent call last):
+  File "/home/virmill-test/virmill-tests/network-native-005/create_native.py", line 119, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/virmill-test/virmill-tests/network-native-005/create_native.py", line 117, in main
+    if not report.get('existingResourcesPreserved') or not report.get('existingFirewallPreserved') or not report.get('policyRestored'):raise RuntimeError('preservation verification failed')
+                                                                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: preservation verification failed

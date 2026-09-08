@@ -36,9 +36,15 @@ Keyboard action search and compact navigation: [TUI guide](docs/tui-navigation.m
 Managed-volume read access: [reviewed helper workflow](docs/managed-volume-access.md)
 and [native evidence](docs/evidence/managed-access-run.md).
 Read-only device and subnet facts: [PCI and CIDR discovery](docs/host-network-discovery.md).
+Managed NAT/lab creation and reviewed activation recovery:
+[network guide](docs/network-creation.md), [helper setup](docs/network-helper.md),
+and [recorded qualification results](docs/evidence/owned-network-run.md).
 
 Recovery prerequisites: [native firmware/TPM inspection](docs/cold-state-layout.md)
 and [declared manifest verification](docs/recovery-manifest-verification.md).
 New UEFI creation also records a [durable NVRAM declaration binding](docs/creation-nvram-binding.md).
 An explicit administrator policy enables [auxiliary member metadata inspection](docs/auxiliary-state-inspection.md).
 These observations do not establish complete capture or independent recovery.
+
+Reference provider development: [fixture guide](tests/fixtures/plugins/provider/README.md)
+and [accepted simulated-contract evidence](docs/evidence/provider-conformance-run.md).

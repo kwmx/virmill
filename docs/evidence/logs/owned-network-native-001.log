@@ -1,0 +1,299 @@
+{
+  "status": "failed",
+  "runID": "fe4d34cae7ee45edac1dd3a7b9aa8ad5",
+  "scope": "native owned NAT/lab definition, helper IPv6 rules and namespace packets; not real-guest or release qualification",
+  "created": [
+    {
+      "uuid": "fbb3905c-5c0b-4e03-a951-0e7ad2255847",
+      "bridge": "vmfbb3905c5c0b",
+      "kind": "lab",
+      "plan": {
+        "acknowledgements": [
+          "host-mutation",
+          "network-host-access",
+          "network-firewall",
+          "exclusive-network-writer"
+        ],
+        "actorUID": 1000,
+        "apiVersion": "virmill/v1",
+        "beforeFingerprints": {},
+        "connectionID": "qemu:///system",
+        "createdAt": "2026-09-08T04:16:58.462282641Z",
+        "estimates": {
+          "additionalBytes": 0,
+          "notes": "One new virtual bridge and optional libvirt DHCP/DNS process; no guest or disk allocation. Existing host networking is retained.",
+          "requiresDowntime": false
+        },
+        "expiresAt": "2026-09-08T04:31:58.462282641Z",
+        "inputDigest": "fc00962708c2dc40d17f67727db3d02822156c2a1e8c128b8c68086fc25ebe2d",
+        "operation": "network.create",
+        "planDigest": "e305315495c786aa5665f65bec3fbf394ad67f89a83766de773877ad876bccab",
+        "planID": "279c0f69-0987-4871-b58c-0d1361beb094",
+        "requiredGrants": [
+          {
+            "operation": "network.create",
+            "resourceID": "libvirt|qemu:///system|network-allocation|host"
+          },
+          {
+            "operation": "network.create",
+            "resourceID": "libvirt|qemu:///system|network|fbb3905c-5c0b-4e03-a951-0e7ad2255847"
+          }
+        ],
+        "resourceIDs": [
+          "libvirt|qemu:///system|network-allocation|host",
+          "libvirt|qemu:///system|network|fbb3905c-5c0b-4e03-a951-0e7ad2255847"
+        ],
+        "review": {
+          "autostart": false,
+          "definition": {
+            "advertiseDefaultRoute": false,
+            "bridge": "vmfbb3905c5c0b",
+            "dhcpEnabled": true,
+            "egress": "none",
+            "hostAccess": "allow",
+            "ipv4CIDR": "10.197.238.0/24",
+            "ipv6Mode": "disabled",
+            "name": "virmill-fbb3905c-5c0b-4e03-a951-0e7ad2255847",
+            "type": "lab",
+            "uuid": "fbb3905c-5c0b-4e03-a951-0e7ad2255847"
+          },
+          "guestRoutingVerified": false,
+          "metadata": {
+            "name": "native-lab",
+            "tags": [
+              "disposable-fixture"
+            ]
+          },
+          "networkXML": "<network ipv6=\"no\">\n  <name>virmill-fbb3905c-5c0b-4e03-a951-0e7ad2255847</name>\n  <uuid>fbb3905c-5c0b-4e03-a951-0e7ad2255847</uuid>\n  <metadata><virmill:networkCreation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" version=\"1\" intent=\"ff83a6c59d195099accd1a5aa0b6e1f56f50f8d2907b38872488e52d7ee8fe9a\"/></metadata>\n  <bridge name=\"vmfbb3905c5c0b\" zone=\"trusted\" stp=\"on\" delay=\"0\"/>\n  <ip family=\"ipv4\" address=\"10.197.238.1\" prefix=\"24\">\n    <dhcp><range start=\"10.197.238.2\" end=\"10.197.238.254\"/></dhcp>\n  </ip>\n</network>\n",
+          "packetVerification": "not-run",
+          "physicalUplinkChanges": false,
+          "resumeFrom": ""
+        },
+        "risks": [
+          "The new segment explicitly permits host access; it is unsuitable for untrusted guests requiring host isolation",
+          "Libvirt creates only the reviewed new bridge, IPv4 address, optional DHCP/DNS and native NAT or isolated forwarding; no physical uplink is moved",
+          "Coordinate other network writers: libvirt has no atomic create-only definition API and host/route snapshots are not atomic",
+          "IPv6, DHCP, routing, DNS and packet isolation require native verification; autostart remains disabled"
+        ],
+        "steps": [
+          {
+            "action": "network.define",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact persistent network exists and is inactive with autostart disabled",
+            "id": "define",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          },
+          {
+            "action": "network.ipv6-filter",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact bridge IPv6 deny rules are present in firewalld runtime and permanent configuration",
+            "id": "firewall",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          },
+          {
+            "action": "network.activate",
+            "compensation": "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources",
+            "completionPredicate": "Exact persistent network is active with autostart disabled and IPv6 deny rules present; packet and guest behavior remain unverified",
+            "id": "activate",
+            "idempotency": "non-repeatable",
+            "preconditions": [
+              "exact new network identity",
+              "no conflicting host or reserved prefix",
+              "exclusive network writer"
+            ],
+            "reconciliation": "Observe the exact journal-bound network without replaying definition or activation"
+          }
+        ]
+      },
+      "ruleCleanupNeeded": true,
+      "unapprovedApply": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "cancelRequested": false,
+          "createdAt": "0001-01-01T00:00:00Z",
+          "error": null,
+          "operationID": "",
+          "planID": "",
+          "state": "",
+          "step": 0
+        },
+        "warnings": [],
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "network IPv6 filter requires explicit administrator approval for this actor, key and network UUID",
+          "resource": "",
+          "operationID": "",
+          "retryable": false,
+          "safeNextActions": []
+        }
+      },
+      "apply": {
+        "apiVersion": "virmill/v1",
+        "data": {
+          "operationID": "5f24a9ee-2b6f-4d34-bfde-7fedc4f1b971",
+          "planID": "279c0f69-0987-4871-b58c-0d1361beb094",
+          "state": "running",
+          "step": 1,
+          "createdAt": "2026-09-08T04:17:01.827171465Z",
+          "error": null,
+          "cancelRequested": false
+        },
+        "warnings": [
+          "Client detached; operation may still be running"
+        ],
+        "error": {
+          "code": "WAIT_TIMEOUT",
+          "message": "wait timed out",
+          "resource": "",
+          "operationID": "",
+          "retryable": false,
+          "safeNextActions": []
+        }
+      }
+    }
+  ],
+  "binaries": {
+    "virmill": "7d8947cd741dd055d83ec7436a55cffac5536bf6129030bfff2bc8896200ef6a",
+    "virmilld": "676370d957dcb6e6c63f6000e61d1beac2ac2a4898a7a2bf81a90c470d2b994d",
+    "virmill-host-helper": "537b7030c5bc56695ea9209e507e08bd744e948bd8330f9c361cea48ce8ccfb0"
+  },
+  "preservationBefore": {
+    "guests": {
+      "b9496482-2eeb-40e1-892b-4e291c108c52": {
+        "state": "shut off",
+        "xmlSHA256": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e"
+      },
+      "666c692d-da0e-4119-9554-727c4af3c751": {
+        "state": "shut off",
+        "xmlSHA256": "12ecd7f3a77ebcaf3b5942a1497bc0bbb32ce5546a3fa156f90ba7e24d432164"
+      },
+      "a19bf9ee-cd7f-4921-baac-39ce1694eb35": {
+        "state": "shut off",
+        "xmlSHA256": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2"
+      },
+      "ae630461-91d3-4f07-ad88-e6842c3dc3ea": {
+        "state": "shut off",
+        "xmlSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824"
+      },
+      "d4c95f21-28bc-428d-9e5f-ceda025d279e": {
+        "state": "shut off",
+        "xmlSHA256": "a10ba2cb370cd1740d42e34a944663420e8b716315e47f21d999a5a64249411e"
+      },
+      "f78674f3-bf3a-43e5-81f9-4283e2472024": {
+        "state": "shut off",
+        "xmlSHA256": "081324fb849b275fafacfdf7efc6e22581f1ea926e87b75e80af8f0af688b31c"
+      },
+      "50a0583b-3587-495f-90f4-9a42b8ad2fa3": {
+        "state": "shut off",
+        "xmlSHA256": "fa9966bbb12d425546b444f8094a5a5d046fa2042720a76a6975e810634ecd0c"
+      },
+      "074d9083-1953-4941-b006-9e301bb6d907": {
+        "state": "shut off",
+        "xmlSHA256": "7630c6b47171115d4825fac5918749ab805f6272144d16002de6b8b6a2184908"
+      },
+      "2ec994ce-2950-498c-8b19-d2f7dbb53a78": {
+        "state": "shut off",
+        "xmlSHA256": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408"
+      },
+      "3d47f209-5242-4d5f-8a0c-d2607db362af": {
+        "state": "shut off",
+        "xmlSHA256": "cd447f743205eaad20f20f9546fdfcead2c7ca091c970fc7763bf7f3db4f1b4b"
+      }
+    },
+    "networks": {
+      "e4aa7897-db51-45de-a0dc-a13554eba163": {
+        "xmlSHA256": "1a002f8fa10c9fc6152520ed47a9a6aee7081c4ebdaf95967ec44d4233350cff",
+        "info": "Name:           default\nUUID:           e4aa7897-db51-45de-a0dc-a13554eba163\nActive:         yes\nPersistent:     yes\nAutostart:      yes\nBridge:         virbr0\n\n"
+      }
+    }
+  },
+  "firewallBefore": {
+    "runtime": "",
+    "permanent": "",
+    "zones": "libvirt\n  interfaces: virbr0\npublic (default)\n  interfaces: ens18\n"
+  },
+  "originalPolicySHA256": "1ec86a37a44cac12e7fa7c16c542ec83e552e348ea2f2cec841597dc999d6ed4",
+  "helperIdentity": {
+    "actorUID": 1000,
+    "keyID": "83792e66af5fc261ff82a853b92f9fe5101fa7fbe8c2dc8a6cdb0d56eeb9c0a7",
+    "publicKey": "f4f972ca3d7ff717af94e6c6b3ad3e43cebda36988ca71240d32524cf1d066c6"
+  },
+  "policyRestored": true,
+  "preservationAfter": {
+    "guests": {
+      "b9496482-2eeb-40e1-892b-4e291c108c52": {
+        "state": "shut off",
+        "xmlSHA256": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e"
+      },
+      "666c692d-da0e-4119-9554-727c4af3c751": {
+        "state": "shut off",
+        "xmlSHA256": "12ecd7f3a77ebcaf3b5942a1497bc0bbb32ce5546a3fa156f90ba7e24d432164"
+      },
+      "a19bf9ee-cd7f-4921-baac-39ce1694eb35": {
+        "state": "shut off",
+        "xmlSHA256": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2"
+      },
+      "ae630461-91d3-4f07-ad88-e6842c3dc3ea": {
+        "state": "shut off",
+        "xmlSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824"
+      },
+      "d4c95f21-28bc-428d-9e5f-ceda025d279e": {
+        "state": "shut off",
+        "xmlSHA256": "a10ba2cb370cd1740d42e34a944663420e8b716315e47f21d999a5a64249411e"
+      },
+      "f78674f3-bf3a-43e5-81f9-4283e2472024": {
+        "state": "shut off",
+        "xmlSHA256": "081324fb849b275fafacfdf7efc6e22581f1ea926e87b75e80af8f0af688b31c"
+      },
+      "50a0583b-3587-495f-90f4-9a42b8ad2fa3": {
+        "state": "shut off",
+        "xmlSHA256": "fa9966bbb12d425546b444f8094a5a5d046fa2042720a76a6975e810634ecd0c"
+      },
+      "074d9083-1953-4941-b006-9e301bb6d907": {
+        "state": "shut off",
+        "xmlSHA256": "7630c6b47171115d4825fac5918749ab805f6272144d16002de6b8b6a2184908"
+      },
+      "2ec994ce-2950-498c-8b19-d2f7dbb53a78": {
+        "state": "shut off",
+        "xmlSHA256": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408"
+      },
+      "3d47f209-5242-4d5f-8a0c-d2607db362af": {
+        "state": "shut off",
+        "xmlSHA256": "cd447f743205eaad20f20f9546fdfcead2c7ca091c970fc7763bf7f3db4f1b4b"
+      }
+    },
+    "networks": {
+      "e4aa7897-db51-45de-a0dc-a13554eba163": {
+        "xmlSHA256": "1a002f8fa10c9fc6152520ed47a9a6aee7081c4ebdaf95967ec44d4233350cff",
+        "info": "Name:           default\nUUID:           e4aa7897-db51-45de-a0dc-a13554eba163\nActive:         yes\nPersistent:     yes\nAutostart:      yes\nBridge:         virbr0\n\n"
+      }
+    }
+  },
+  "existingResourcesPreserved": true,
+  "firewallAfter": {
+    "runtime": "",
+    "permanent": "",
+    "zones": "libvirt\n  interfaces: virbr0\npublic (default)\n  interfaces: ens18\n"
+  },
+  "existingFirewallPreserved": true
+}
+Traceback (most recent call last):
+  File "/home/virmill-test/virmill-tests/network-151536d/create_native.py", line 115, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/home/virmill-test/virmill-tests/network-151536d/create_native.py", line 83, in main
+    assert applied['error'] is None and applied['data']['state']=='succeeded',applied
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'apiVersion': 'virmill/v1', 'data': {'operationID': '5f24a9ee-2b6f-4d34-bfde-7fedc4f1b971', 'planID': '279c0f69-0987-4871-b58c-0d1361beb094', 'state': 'running', 'step': 1, 'createdAt': '2026-09-08T04:17:01.827171465Z', 'error': None, 'cancelRequested': False}, 'warnings': ['Client detached; operation may still be running'], 'error': {'code': 'WAIT_TIMEOUT', 'message': 'wait timed out', 'resource': '', 'operationID': '', 'retryable': False, 'safeNextActions': []}}

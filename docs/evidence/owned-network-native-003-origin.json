@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-08T04:32:10.328879+00:00",
+  "command": [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "StrictHostKeyChecking=yes",
+    "-o",
+    "ForwardAgent=no",
+    "-o",
+    "ConnectTimeout=10",
+    "virmill-test@virmill-test.home",
+    "python3 -I /home/virmill-test/virmill-tests/network-native-003/create_native.py --execute-disposable --root /home/virmill-test/virmill-tests/network-native-003 --lab-cidr 10.197.234.0/24 --nat-cidr 10.197.235.0/24"
+  ],
+  "cwd": ".",
+  "environment": "environment.json",
+  "evidenceClass": "native-kernel-packets",
+  "exitCode": 1,
+  "fixtureDigests": {
+    "tests/fixtures/network/network_packet_fixture.py": "d9af29b160496a01ead222a88754dc45fe9998b8565ca900ce5bc1e9dd67f099",
+    "tests/fixtures/network_parent/create_native.py": "f3b1eaf5b26623138a96bf35370ffe8bb17e3c1168b9dc249de9a72bb9eb0d55"
+  },
+  "id": "owned-network-native-003",
+  "log": "logs/owned-network-native-003.log",
+  "logSHA256": "9354d0d16d2c85c3e6933fe58930705b243c73448ea12dea91e7d1245b4d6a2e",
+  "requirements": [
+    "NET-01",
+    "NET-02",
+    "NET-05",
+    "NET-06",
+    "JOB-01",
+    "JOB-02",
+    "SEC-01"
+  ],
+  "result": "failed",
+  "revision": "22846d4ff828b40f06aceb689a195d0c42dd168c",
+  "sourceDigest": "3b81f25d69d6b4156761f94626cf4801a75cc53d9e6d79d1dfab09d176381e17",
+  "sourceDigestScope": "implementation-tree-v1: cmd, internal, sdk, schemas, contracts, scripts, tests, packaging, go.mod, go.sum; excludes interpreter caches",
+  "testEnvironment": {}
+}

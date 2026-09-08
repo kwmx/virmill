@@ -16,7 +16,7 @@
 - [ ] Provisioning recipes, cloud-init and supported guest transports verified, with secrets redacted.
 - [ ] Private coordinator, helper authorization, crash/reboot reconciliation and scheduled credential failures tested.
 - [ ] Working plugin SDK/scaffolder, package signing, confinement and two-language conformance delivered.
-- [ ] Simulated provider demonstrates the future remote extension boundary without a remote dependency in core.
+- [x] Simulated provider demonstrates the future remote extension boundary without a remote dependency in core. See EXT-02 and [recorded conformance](docs/evidence/provider-conformance-run.md).
 - [ ] Install/update/migration/uninstall tested; user VMs/disks/backups preserved by default.
 - [ ] Common packages and example plugin cross-build on declared future-platform CI targets; no false host-support claims.
 - [ ] User/operator/plugin documentation and examples match actual implemented behavior.

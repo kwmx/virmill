@@ -1,0 +1,166 @@
+{
+  "at": "2026-09-08T05:00:20.877975+00:00",
+  "scope": "read-only disposable-host observation",
+  "kernel": {
+    "argv": [
+      "uname",
+      "-r"
+    ],
+    "exitCode": 0,
+    "stdout": "7.1.13-200.fc44.x86_64\n",
+    "stderr": ""
+  },
+  "packages": {
+    "argv": [
+      "rpm",
+      "-q",
+      "libvirt-daemon",
+      "qemu-kvm",
+      "firewalld",
+      "python3-firewall",
+      "nftables",
+      "NetworkManager",
+      "iptables-nft",
+      "python3",
+      "systemd",
+      "iproute"
+    ],
+    "exitCode": 0,
+    "stdout": "libvirt-daemon-12.0.0-3.fc44.x86_64\nqemu-kvm-10.2.2-1.fc44.x86_64\nfirewalld-2.4.4-1.fc44.noarch\npython3-firewall-2.4.4-1.fc44.noarch\nnftables-1.1.6-2.fc44.x86_64\nNetworkManager-1.56.1-2.fc44.x86_64\niptables-nft-1.8.11-13.fc44.x86_64\npython3-3.14.7-1.fc44.x86_64\nsystemd-259.8-1.fc44.x86_64\niproute-6.17.0-2.fc44.x86_64\n",
+    "stderr": ""
+  },
+  "ipv4Forwarding": "1",
+  "helperUnits": [
+    {
+      "argv": [
+        "systemctl",
+        "is-active",
+        "virmill-host-helper.socket"
+      ],
+      "exitCode": 3,
+      "stdout": "inactive\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "systemctl",
+        "is-active",
+        "virmill-host-helper.service"
+      ],
+      "exitCode": 3,
+      "stdout": "inactive\n",
+      "stderr": ""
+    }
+  ],
+  "namespaces": {
+    "argv": [
+      "sudo",
+      "-n",
+      "ip",
+      "netns",
+      "list"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "firewall": [
+    {
+      "argv": [
+        "sudo",
+        "-n",
+        "firewall-cmd",
+        "--direct",
+        "--get-all-rules"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "sudo",
+        "-n",
+        "firewall-cmd",
+        "--permanent",
+        "--direct",
+        "--get-all-rules"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "guests": {
+    "b9496482-2eeb-40e1-892b-4e291c108c52": {
+      "inactiveXMLSHA256": "7880991288cfbfb9b757678c3c0c0211500fe1fc3f03274a29f84b03e632076e",
+      "state": "shut off\n\n"
+    },
+    "666c692d-da0e-4119-9554-727c4af3c751": {
+      "inactiveXMLSHA256": "12ecd7f3a77ebcaf3b5942a1497bc0bbb32ce5546a3fa156f90ba7e24d432164",
+      "state": "shut off\n\n"
+    },
+    "a19bf9ee-cd7f-4921-baac-39ce1694eb35": {
+      "inactiveXMLSHA256": "e31e20ae14df1e2809c242416ff31416249b8c4d3a14dab74507afb02e0250d2",
+      "state": "shut off\n\n"
+    },
+    "ae630461-91d3-4f07-ad88-e6842c3dc3ea": {
+      "inactiveXMLSHA256": "e3200ea179e0cee3258b413baf8668529f2c1fdbed4535115a674d1b4d40d824",
+      "state": "shut off\n\n"
+    },
+    "d4c95f21-28bc-428d-9e5f-ceda025d279e": {
+      "inactiveXMLSHA256": "a10ba2cb370cd1740d42e34a944663420e8b716315e47f21d999a5a64249411e",
+      "state": "shut off\n\n"
+    },
+    "f78674f3-bf3a-43e5-81f9-4283e2472024": {
+      "inactiveXMLSHA256": "081324fb849b275fafacfdf7efc6e22581f1ea926e87b75e80af8f0af688b31c",
+      "state": "shut off\n\n"
+    },
+    "50a0583b-3587-495f-90f4-9a42b8ad2fa3": {
+      "inactiveXMLSHA256": "fa9966bbb12d425546b444f8094a5a5d046fa2042720a76a6975e810634ecd0c",
+      "state": "shut off\n\n"
+    },
+    "074d9083-1953-4941-b006-9e301bb6d907": {
+      "inactiveXMLSHA256": "7630c6b47171115d4825fac5918749ab805f6272144d16002de6b8b6a2184908",
+      "state": "shut off\n\n"
+    },
+    "2ec994ce-2950-498c-8b19-d2f7dbb53a78": {
+      "inactiveXMLSHA256": "bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408",
+      "state": "shut off\n\n"
+    },
+    "3d47f209-5242-4d5f-8a0c-d2607db362af": {
+      "inactiveXMLSHA256": "cd447f743205eaad20f20f9546fdfcead2c7ca091c970fc7763bf7f3db4f1b4b",
+      "state": "shut off\n\n"
+    }
+  },
+  "networks": {
+    "e4aa7897-db51-45de-a0dc-a13554eba163": {
+      "inactiveXMLSHA256": "1a002f8fa10c9fc6152520ed47a9a6aee7081c4ebdaf95967ec44d4233350cff",
+      "state": "Name:           default\nUUID:           e4aa7897-db51-45de-a0dc-a13554eba163\nActive:         yes\nPersistent:     yes\nAutostart:      yes\nBridge:         virbr0\n\n"
+    },
+    "1739e5f7-27cd-4896-992f-961cf5c8b17e": {
+      "inactiveXMLSHA256": "063004218262379430b40dbe01ac64290c155496f020d919896417efc998d485",
+      "state": "Name:           virmill-1739e5f7-27cd-4896-992f-961cf5c8b17e\nUUID:           1739e5f7-27cd-4896-992f-961cf5c8b17e\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vm1739e5f727cd\n\n"
+    },
+    "2d0253cd-95b4-4d11-a921-3ebb15aa6166": {
+      "inactiveXMLSHA256": "f407dea63b037cf94cd88a21b40cbc2ef806386ea2335186349f5bc9829a03b3",
+      "state": "Name:           virmill-2d0253cd-95b4-4d11-a921-3ebb15aa6166\nUUID:           2d0253cd-95b4-4d11-a921-3ebb15aa6166\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vm2d0253cd95b4\n\n"
+    },
+    "bc247e57-0919-489b-a02e-3f3ad3c92447": {
+      "inactiveXMLSHA256": "84dfcdd7e147a41f5429a387885cddf6447c247651d07615b40342efbdb6ebda",
+      "state": "Name:           virmill-bc247e57-0919-489b-a02e-3f3ad3c92447\nUUID:           bc247e57-0919-489b-a02e-3f3ad3c92447\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmbc247e570919\n\n"
+    },
+    "dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a": {
+      "inactiveXMLSHA256": "429f75484da355b20bc3e592cf35ef59a871b1ba3930ee64e2ff9a41c75d4bb4",
+      "state": "Name:           virmill-dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a\nUUID:           dceba41d-8d1a-4cb1-9e4a-4e66a6cf148a\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmdceba41d8d1a\n\n"
+    },
+    "e1916980-5169-4557-8180-669b10c93c8a": {
+      "inactiveXMLSHA256": "92769f653525c050cc7631d5062c4a25b94db21bf9e21628831a7b0f17a67812",
+      "state": "Name:           virmill-e1916980-5169-4557-8180-669b10c93c8a\nUUID:           e1916980-5169-4557-8180-669b10c93c8a\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vme19169805169\n\n"
+    },
+    "fbb3905c-5c0b-4e03-a951-0e7ad2255847": {
+      "inactiveXMLSHA256": "300723081925c7258ff61fa0b88651f85debc729b9eaf9f2726a91f0aff48267",
+      "state": "Name:           virmill-fbb3905c-5c0b-4e03-a951-0e7ad2255847\nUUID:           fbb3905c-5c0b-4e03-a951-0e7ad2255847\nActive:         no\nPersistent:     yes\nAutostart:      no\nBridge:         vmfbb3905c5c0b\n\n"
+    }
+  }
+}

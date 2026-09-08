@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/virmill-test/virmill-tests/network-native-003/cleanup_veth_003.py", line 29, in <module>
+    checked(recorded)
+    ~~~~~~~^^^^^^^^^^
+  File "/home/virmill-test/virmill-tests/network-native-003/cleanup_veth_003.py", line 25, in checked
+    assert (item['ifindex'], item['address'], item['link']) == (index, mac, peer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
