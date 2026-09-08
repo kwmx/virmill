@@ -1,0 +1,148 @@
+{
+  "status": "passed",
+  "scope": "read-only verification after prior coordinator restart",
+  "originalReportSHA256": "7bdf05330a676f78028ef90739326b4582a1b3532770640bea8ce69c565d7bc6",
+  "originalReportStatus": "failed",
+  "guestMutationSubmitted": false,
+  "serviceMutationSubmitted": false,
+  "journalWritesSubmitted": false,
+  "mediaCoverage": "same top-level inode, size, mtime and ctime metadata as original baseline",
+  "journalCoverage": [
+    "jobs",
+    "locks",
+    "events",
+    "plans"
+  ],
+  "intentionalPostRestartPreviews": [
+    {
+      "id": "81aa3e69-6a13-4eb6-bf26-11b5a8477d3b",
+      "operation": "import.prepare-install",
+      "bodySHA256": "a822372c98be0abed64efd40a02837409a2e60617b8d3e317db88fbde68e6ff2"
+    },
+    {
+      "id": "102e0b75-ac9d-4366-a3bf-26932af14063",
+      "operation": "import.prepare-install",
+      "bodySHA256": "d7bc3641bbdfe1bcb055d2fd1e2c47628c759d913e9310358b5bcbc802befce3"
+    }
+  ],
+  "before": {
+    "journal": {
+      "jobCount": 0,
+      "tables": {
+        "jobs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "locks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "plans": "374b0bbd3fc4b5e9ba97ff62ba8493c65ec3b67690fad6ddf41fdfccf7180259"
+      }
+    },
+    "vms": "dbb97277b9aff2edda3ac6dea08be5736e49427f8b3011809742ac8d2a1c56ee",
+    "media": {
+      "DFIR-Win11.ova": [
+        9332176,
+        36551735808,
+        1788779062342298473,
+        1788779062342298473
+      ],
+      "kali-linux-2026.2-vmware-amd64.7z": [
+        9332199,
+        3896419664,
+        1788778843709911054,
+        1788778843709911054
+      ],
+      "kali-linux-2026.2-virtualbox-amd64.7z": [
+        9332202,
+        3922416160,
+        1788778893691914069,
+        1788778893691914069
+      ],
+      "kali-linux-2026.2-qemu-amd64.7z": [
+        9332203,
+        3892765566,
+        1788778951982083816,
+        1788778951982083816
+      ],
+      "kali-linux-2026.2-installer-amd64.iso": [
+        9332188,
+        4802531328,
+        1788779048229015252,
+        1788779048229015252
+      ],
+      "kali-linux-2026.2-hyperv-amd64.7z": [
+        9332201,
+        3954335610,
+        1788779077724607157,
+        1788779077724607157
+      ],
+      "kali-vb": [
+        268435610,
+        48,
+        1788886760984760081,
+        1788886760984760081
+      ]
+    }
+  },
+  "ipcReadinessAttempts": 1,
+  "ipcReadinessMethod": "operation list",
+  "newPID": "62334",
+  "newUIDMap": "         0          0 4294967295\n",
+  "newGIDMap": "         0          0 4294967295\n",
+  "runningDaemonSHA256": "27940679fff999b78881820d626ac1bbe670735d3ffdeb35c4ab7b7030f066fa",
+  "journalSchemaVersion": 3,
+  "after": {
+    "journal": {
+      "jobCount": 0,
+      "tables": {
+        "jobs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "locks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "events": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "plans": "374b0bbd3fc4b5e9ba97ff62ba8493c65ec3b67690fad6ddf41fdfccf7180259"
+      }
+    },
+    "vms": "dbb97277b9aff2edda3ac6dea08be5736e49427f8b3011809742ac8d2a1c56ee",
+    "media": {
+      "DFIR-Win11.ova": [
+        9332176,
+        36551735808,
+        1788779062342298473,
+        1788779062342298473
+      ],
+      "kali-linux-2026.2-vmware-amd64.7z": [
+        9332199,
+        3896419664,
+        1788778843709911054,
+        1788778843709911054
+      ],
+      "kali-linux-2026.2-virtualbox-amd64.7z": [
+        9332202,
+        3922416160,
+        1788778893691914069,
+        1788778893691914069
+      ],
+      "kali-linux-2026.2-qemu-amd64.7z": [
+        9332203,
+        3892765566,
+        1788778951982083816,
+        1788778951982083816
+      ],
+      "kali-linux-2026.2-installer-amd64.iso": [
+        9332188,
+        4802531328,
+        1788779048229015252,
+        1788779048229015252
+      ],
+      "kali-linux-2026.2-hyperv-amd64.7z": [
+        9332201,
+        3954335610,
+        1788779077724607157,
+        1788779077724607157
+      ],
+      "kali-vb": [
+        268435610,
+        48,
+        1788886760984760081,
+        1788886760984760081
+      ]
+    }
+  },
+  "guestsJobsMediaPreserved": true
+}

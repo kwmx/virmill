@@ -446,7 +446,16 @@
         "docs/vm-configuration.md",
         "docs/evidence/boot-media-run.md",
         "docs/evidence/cold-source-integration-run.md",
-        "docs/creation-firmware-normalization.md"
+        "docs/creation-firmware-normalization.md",
+        "internal/ui/tui/import_form.go",
+        "internal/ui/tui/import_draft.go",
+        "internal/ui/tui/workspace_import.go",
+        "internal/ui/tui/settings_export.go",
+        "docs/adr/0034-native-import-options.md",
+        "docs/tui-navigation.md",
+        "docs/evidence/import-options-run.md",
+        "packaging/systemd/virmilld.service",
+        "docs/adr/0035-coordinator-host-identities.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -476,7 +485,11 @@
         "tests/fixtures/protection/disposable-recorded-run/cold-probe-prepare-plan-001.py",
         "tests/fixtures/protection/disposable-recorded-run/cold-probe-create-001.py",
         "internal/backend/libvirt/creation_firmware_normalization_test.go",
-        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-reconcile-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-reconcile-001.py",
+        "internal/ui/tui/import_form_test.go",
+        "internal/ui/tui/import_draft_test.go",
+        "internal/ui/tui/workspace_import_test.go",
+        "internal/ui/tui/settings_export_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -510,7 +523,11 @@
         "cold-fixes-vet-001",
         "cold-fixes-packaging-001",
         "cold-fixes-reconcile-001",
-        "cold-native-packaging-001"
+        "cold-native-packaging-001",
+        "import-options-race-002",
+        "import-options-native-003",
+        "import-options-artifacts-003",
+        "import-options-coordinator-003"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -597,7 +614,14 @@
         "internal/creating/recovery_linux.go",
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
-        "internal/backend/libvirt/creation_xml.go"
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/ui/tui/import_form.go",
+        "internal/ui/tui/import_draft.go",
+        "internal/ui/tui/workspace_import.go",
+        "internal/ui/tui/settings_export.go",
+        "docs/adr/0034-native-import-options.md",
+        "docs/tui-navigation.md",
+        "docs/evidence/import-options-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
@@ -608,7 +632,11 @@
         "internal/creating/service_linux_test.go",
         "internal/creating/recovery_linux_test.go",
         "internal/backend/libvirt/creation_linux_test.go",
-        "internal/app/importer/manifest_test.go"
+        "internal/app/importer/manifest_test.go",
+        "internal/ui/tui/import_form_test.go",
+        "internal/ui/tui/import_draft_test.go",
+        "internal/ui/tui/workspace_import_test.go",
+        "internal/ui/tui/settings_export_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -622,7 +650,8 @@
         "native-first-core-001",
         "native-first-artifacts-001",
         "native-first-ova-001",
-        "native-first-ova-002"
+        "native-first-ova-002",
+        "import-options-race-002"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified."
@@ -4214,7 +4243,15 @@
         "internal/ui/tui/workspace_picker.go",
         "docs/adr/0033-progressive-disclosure-and-local-file-picker.md",
         "docs/evidence/tui-explorer-run.md",
-        "docs/evidence/picker-home-run.md"
+        "docs/evidence/picker-home-run.md",
+        "internal/ui/tui/import_form.go",
+        "internal/ui/tui/import_draft.go",
+        "internal/ui/tui/workspace_import.go",
+        "internal/ui/tui/settings_export.go",
+        "docs/adr/0034-native-import-options.md",
+        "docs/evidence/import-options-run.md",
+        "packaging/systemd/virmilld.service",
+        "docs/adr/0035-coordinator-host-identities.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4306,7 +4343,11 @@
         "internal/ui/tui/action_menu_test.go",
         "internal/ui/tui/action_labels_test.go",
         "internal/ui/tui/file_picker_test.go",
-        "internal/ui/tui/workspace_picker_test.go"
+        "internal/ui/tui/workspace_picker_test.go",
+        "internal/ui/tui/import_form_test.go",
+        "internal/ui/tui/import_draft_test.go",
+        "internal/ui/tui/workspace_import_test.go",
+        "internal/ui/tui/settings_export_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4397,7 +4438,11 @@
         "picker-home-tests-001",
         "picker-home-artifacts-001",
         "picker-home-upgrade-001",
-        "picker-home-native-001"
+        "picker-home-native-001",
+        "import-options-race-002",
+        "import-options-native-003",
+        "import-options-artifacts-003",
+        "import-options-coordinator-003"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4455,7 +4500,13 @@
         "internal/ui/tui/workspace_picker.go",
         "docs/adr/0033-progressive-disclosure-and-local-file-picker.md",
         "docs/evidence/tui-explorer-run.md",
-        "docs/evidence/picker-home-run.md"
+        "docs/evidence/picker-home-run.md",
+        "internal/ui/tui/import_form.go",
+        "internal/ui/tui/import_draft.go",
+        "internal/ui/tui/workspace_import.go",
+        "internal/ui/tui/settings_export.go",
+        "docs/adr/0034-native-import-options.md",
+        "docs/evidence/import-options-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4481,7 +4532,11 @@
         "internal/ui/tui/action_menu_test.go",
         "internal/ui/tui/action_labels_test.go",
         "internal/ui/tui/file_picker_test.go",
-        "internal/ui/tui/workspace_picker_test.go"
+        "internal/ui/tui/workspace_picker_test.go",
+        "internal/ui/tui/import_form_test.go",
+        "internal/ui/tui/import_draft_test.go",
+        "internal/ui/tui/workspace_import_test.go",
+        "internal/ui/tui/settings_export_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4515,7 +4570,10 @@
         "picker-home-tests-001",
         "picker-home-artifacts-001",
         "picker-home-upgrade-001",
-        "picker-home-native-001"
+        "picker-home-native-001",
+        "import-options-race-002",
+        "import-options-native-003",
+        "import-options-artifacts-003"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
@@ -4782,7 +4840,9 @@
         "docs/adr/0024-installed-documentation-links.md",
         "docs/evidence/schema-and-package-qualification-run.md",
         "docs/evidence/automatic-allocation-run.md",
-        "docs/evidence/automatic-allocation-artifacts.json"
+        "docs/evidence/automatic-allocation-artifacts.json",
+        "packaging/systemd/virmilld.service",
+        "docs/adr/0035-coordinator-host-identities.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -4916,7 +4976,8 @@
         "tui-workspace-reproducibility-001",
         "tui-workspace-artifacts-001",
         "tui-workspace-artifacts-002",
-        "tui-workspace-upgrade-native-001"
+        "tui-workspace-upgrade-native-001",
+        "import-options-coordinator-003"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",

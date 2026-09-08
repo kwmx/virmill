@@ -5,8 +5,8 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**UI update:** the installed CLI now uses `4489c6e`; see the
-[browser-location correction evidence](evidence/picker-home-run.md) for current hashes and
+**UI update:** the installed CLI and running coordinator now use `01a2b94`; see the
+[native import options evidence](evidence/import-options-run.md) for current hashes and
 controls. The original beta build evidence below remains historical.
 
 ## Start testing now
