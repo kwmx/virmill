@@ -232,6 +232,55 @@ class NativeGuardTests(unittest.TestCase):
                 self.assertEqual(gateway, "192.168.80.1")
                 self.assertEqual(bool(ranges), dhcp)
 
+    def test_known_libvirt_normalizations_preserve_the_selected_profile(self):
+        for kind, dhcp in (("nat", True), ("lab", True), ("lab", False)):
+            with self.subTest(kind=kind, dhcp=dhcp):
+                original = network_xml(kind, dhcp)
+                normalized = (original.replace(b" ipv6='no'", b" connections='0'")
+                              .replace(b" mode='nat'", b"").replace(b" family='ipv4'", b"")
+                              .replace(b"prefix='24'", b"netmask='255.255.255.0'")
+                              .replace(b"<bridge ", b"<mac address='52:54:00:12:34:56'/><bridge ")
+                              .replace(b"<v:networkCreation xmlns:v=", b"<other:networkCreation xmlns:other="))
+                # The full declaration/intent check remains the parent's Go
+                # matcher; these are only equivalent forms read by the observer.
+                self.assertEqual(fixture.native_network(original, UUID, "vm123456781234", kind, "on" if dhcp else "off"),
+                                 fixture.native_network(normalized, UUID, "vm123456781234", kind, "on" if dhcp else "off"))
+
+    def test_ipv6_enabled_empty_unknown_and_ipv6_addressing_remain_refused(self):
+        for value in ("yes", "on", "true", "1", "", "NO", " no ", "unknown"):
+            with self.subTest(value=value), self.assertRaisesRegex(fixture.Refusal, "IPv6 disabled"):
+                fixture.native_network(network_xml().replace(b"ipv6='no'", ("ipv6='" + value + "'").encode()),
+                                       UUID, "vm123456781234", "lab", "on")
+        for raw in (network_xml().replace(b" ipv6='no'", b"").replace(b"family='ipv4'", b"family='ipv6'"),
+                    network_xml().replace(b" ipv6='no'", b"").replace(b"</network>", b"<ip family='ipv6' address='fd12::1' prefix='64'/></network>")):
+            with self.assertRaisesRegex(fixture.Refusal, "ambiguous native IP"):
+                fixture.native_network(raw, UUID, "vm123456781234", "lab", "on")
+
+    def test_forward_default_is_only_nat_and_never_changes_lab_mode(self):
+        for value in ("route", "bridge", "open", "", "NAT"):
+            with self.subTest(value=value), self.assertRaisesRegex(fixture.Refusal, "forwarding mode"):
+                fixture.native_network(network_xml("nat").replace(b"mode='nat'", ("mode='" + value + "'").encode()),
+                                       UUID, "vm123456781234", "nat", "on")
+        with self.assertRaisesRegex(fixture.Refusal, "forwarding mode"):
+            fixture.native_network(network_xml("nat").replace(b" mode='nat'", b""), UUID,
+                                   "vm123456781234", "lab", "on")
+
+    def test_equivalent_netmask_does_not_allow_ambiguous_or_inverted_masks(self):
+        for replacement in (b"prefix='24' netmask='255.255.255.0'", b"netmask='0.0.0.255'",
+                            b"netmask='255.0.255.0'", b"prefix='024'", b""):
+            with self.subTest(replacement=replacement), self.assertRaises((fixture.Refusal, ValueError)):
+                fixture.native_network(network_xml().replace(b"prefix='24'", replacement),
+                                       UUID, "vm123456781234", "lab", "on")
+
+    def test_native_comments_are_nonsemantic_but_xml_directives_refused(self):
+        original = network_xml()
+        self.assertEqual(fixture.native_network(original, UUID, "vm123456781234", "lab", "on"),
+                         fixture.native_network(original.replace(b"<bridge", b"<!-- generated native network --><bridge"),
+                                                UUID, "vm123456781234", "lab", "on"))
+        for prefix in (b"<!DOCTYPE network []>", b"<?xml version='1.0'?>", b"<?native test?>"):
+            with self.subTest(prefix=prefix), self.assertRaises(fixture.Refusal):
+                fixture.native_network(prefix + original, UUID, "vm123456781234", "lab", "on")
+
     def test_unbound_bridge_or_existing_config_shape_refused(self):
         base = network_xml()
         cases = {"bridge": base.replace(b"vm123456781234", b"virbr0"),
@@ -291,6 +340,317 @@ class NativeGuardTests(unittest.TestCase):
                     self.assertIsNone(result)
                 except fixture.Refusal:
                     pass
+
+
+class VethInitializationTests(unittest.TestCase):
+    def harness(self, setter_failure=None, settle=None, lost_add=False):
+        endpoint = {"host": "vpaa0cdad290f", "peer": "veaa0cdad290f", "namespace": "unused-generated-test",
+                    "alias": "virmill-packet:" + UUID + ":host-a", "mac": "02:12:34:56:78:0a"}
+        state = {"links": [], "events": []}
+
+        def record(event):
+            state["events"].append(json.loads(json.dumps(event)))
+
+        def command(argv, **kwargs):
+            record({"command": argv})
+            self.assertEqual(argv, ["/usr/bin/udevadm", "settle", "--timeout=5"])
+            self.assertEqual(kwargs["timeout"], 7)
+            if settle:
+                settle(state)
+            return {"returncode": 0, "stdout": "", "stderr": ""}
+
+        recorder = types.SimpleNamespace(event=record, command=command, deadline=0)
+        instance = fixture.Fixture(types.SimpleNamespace(run_id=UUID, dhcp="off"), recorder,
+                                   {"ip": "/usr/bin/ip", "udevadm": "/usr/bin/udevadm"})
+        instance.endpoints = [endpoint]
+        instance.links = lambda: json.loads(json.dumps(state["links"]))
+
+        def ip(*argv, **kwargs):
+            record({"ip": list(argv)})
+            if argv[:2] == ("link", "add"):
+                state["links"] = [
+                    {"ifname": endpoint["host"], "ifindex": 10, "link": endpoint["peer"],
+                     "address": "3e:a7:0f:0f:5c:1a", "flags": ["BROADCAST", "MULTICAST", "M-DOWN"],
+                     "operstate": "DOWN", "linkinfo": {"info_kind": "veth"}},
+                    {"ifname": endpoint["peer"], "ifindex": 9, "link": endpoint["host"],
+                     "address": "a6:77:80:0a:fc:b7", "flags": ["BROADCAST", "MULTICAST", "M-DOWN"],
+                     "operstate": "DOWN", "linkinfo": {"info_kind": "veth"}}]
+                if lost_add:
+                    raise OSError("creation acknowledgement lost")
+            elif argv[:2] == ("link", "set"):
+                row = next(item for item in state["links"] if item["ifname"] == argv[3])
+                side = "host" if argv[3] == endpoint["host"] else "peer"
+                self.assertEqual(argv[4], "alias")
+                if setter_failure != side + "_noop":
+                    row["ifalias"] = argv[5]
+                if setter_failure == side + "_lost":
+                    raise OSError("alias acknowledgement lost")
+            elif argv[:2] == ("link", "delete"):
+                self.assertEqual(argv, ("link", "delete", "dev", endpoint["host"]))
+                state["links"] = []
+            else:
+                raise AssertionError("unexpected native command " + repr(argv))
+            return {"returncode": 0, "stdout": "", "stderr": ""}
+        instance.ip = ip
+        return instance, endpoint, state
+
+    def cleanup(self, instance):
+        with mock.patch.object(fixture.os.path, "lexists", return_value=False):
+            return instance.cleanup()
+
+    def test_explicit_alias_commands_follow_durable_pair_receipt_and_settle(self):
+        instance, endpoint, state = self.harness()
+        instance.create_veth_pair(endpoint)
+        mutations = [event["ip"] for event in state["events"] if "ip" in event]
+        self.assertEqual(mutations, [
+            ["link", "add", "name", endpoint["host"], "type", "veth", "peer", "name", endpoint["peer"]],
+            ["link", "set", "dev", endpoint["host"], "alias", endpoint["alias"]],
+            ["link", "set", "dev", endpoint["peer"], "alias", "virmill-packet:" + UUID + ":peer"]])
+        phases = [event.get("phase", "command") for event in state["events"]]
+        self.assertLess(phases.index("created-veth-pair-receipt"), phases.index("settled-veth-pair-receipt"))
+        self.assertLess(phases.index("settled-veth-pair-receipt"), phases.index("veth-alias-intent"))
+        self.assertTrue(endpoint["aliasesVerified"])
+        self.assertEqual(endpoint["confirmedAliases"], ["host", "peer"])
+        self.assertEqual(self.cleanup(instance)["status"], "verified")
+        self.assertEqual(state["links"], [])
+
+    def test_observed_mac_initialization_change_is_bound_after_settle(self):
+        def initialize(state):
+            state["links"][0]["address"] = "22:22:a5:0b:8a:90"
+            state["links"][1]["address"] = "b2:d4:04:eb:5b:83"
+        instance, endpoint, state = self.harness(settle=initialize)
+        instance.create_veth_pair(endpoint)
+        receipt = next(event for event in state["events"] if event.get("phase") == "settled-veth-pair-receipt")
+        self.assertEqual(receipt["initialPair"]["host"]["address"], "3e:a7:0f:0f:5c:1a")
+        self.assertEqual(receipt["pair"]["host"]["address"], "22:22:a5:0b:8a:90")
+        self.assertEqual(receipt["MACChangeCause"], "not_attributed")
+        self.assertEqual(endpoint["createdPair"], receipt["pair"])
+        self.assertEqual(self.cleanup(instance)["status"], "verified")
+
+    def test_alias_gap_noop_and_lost_ack_cleanup_only_the_unchanged_pair(self):
+        for failure in ("host_noop", "host_lost", "peer_noop", "peer_lost"):
+            with self.subTest(failure=failure):
+                instance, endpoint, state = self.harness(setter_failure=failure)
+                with self.assertRaises((fixture.Refusal, OSError)):
+                    instance.create_veth_pair(endpoint)
+                self.assertFalse(endpoint["aliasesVerified"])
+                self.assertEqual(self.cleanup(instance)["status"], "verified")
+                self.assertEqual(state["links"], [])
+                self.assertEqual(sum(event.get("ip", [])[:2] == ["link", "delete"] for event in state["events"]), 1)
+
+    def test_alias_gap_identity_or_attachment_changes_refuse_cleanup(self):
+        changes = [(0, "address", "02:00:00:00:00:99"), (1, "address", "02:00:00:00:00:99"),
+                   (0, "ifindex", 77), (1, "ifindex", 78), (1, "link", "unrelated0"),
+                   (0, "ifalias", "foreign-owner"), (1, "ifalias", "foreign-owner"),
+                   (0, "master", "unrelated0"), (1, "flags", ["UP"])]
+        for index, key, value in changes:
+            with self.subTest(index=index, key=key):
+                instance, endpoint, state = self.harness(setter_failure="host_lost")
+                with self.assertRaises(OSError):
+                    instance.create_veth_pair(endpoint)
+                state["links"][index][key] = value
+                self.assertEqual(self.cleanup(instance)["status"], "manual_review_required")
+                self.assertFalse(any(event.get("ip", [])[:2] == ["link", "delete"] for event in state["events"]))
+
+    def test_lost_creation_ack_never_claims_or_deletes_a_named_pair(self):
+        instance, endpoint, state = self.harness(lost_add=True)
+        with self.assertRaises(OSError):
+            instance.create_veth_pair(endpoint)
+        self.assertNotIn("createdPair", endpoint)
+        self.assertEqual(self.cleanup(instance)["status"], "manual_review_required")
+        self.assertFalse(any(event.get("ip", [])[:2] == ["link", "delete"] for event in state["events"]))
+
+    def test_settle_failure_does_not_permit_changed_mac_cleanup(self):
+        for change_mac in (False, True):
+            def failed_settle(state):
+                if change_mac:
+                    state["links"][0]["address"] = "22:22:a5:0b:8a:90"
+                raise fixture.Refusal("settle deadline")
+            with self.subTest(change_mac=change_mac):
+                instance, endpoint, state = self.harness(settle=failed_settle)
+                with self.assertRaises(fixture.Refusal):
+                    instance.create_veth_pair(endpoint)
+                result = self.cleanup(instance)
+                self.assertEqual(result["status"], "manual_review_required" if change_mac else "verified")
+                self.assertEqual(bool(state["links"]), change_mac)
+
+    def test_post_settle_mac_drift_and_replacement_refused_even_with_same_alias(self):
+        instance, endpoint, state = self.harness()
+        instance.create_veth_pair(endpoint)
+        state["links"][0]["address"] = "02:00:00:00:00:99"
+        self.assertEqual(self.cleanup(instance)["status"], "manual_review_required")
+        self.assertFalse(any(event.get("ip", [])[:2] == ["link", "delete"] for event in state["events"]))
+
+    def test_pair_index_change_during_settle_refuses_alias_mutation(self):
+        def replace_pair(state):
+            state["links"][0]["ifindex"] = 99
+        instance, endpoint, state = self.harness(settle=replace_pair)
+        with self.assertRaisesRegex(fixture.Refusal, "changed during initialization"):
+            instance.create_veth_pair(endpoint)
+        self.assertEqual(self.cleanup(instance)["status"], "manual_review_required")
+        self.assertFalse(any(event.get("ip", [])[:2] in (["link", "set"], ["link", "delete"])
+                             for event in state["events"]))
+
+    def test_post_receipt_change_is_refused_before_first_alias_command(self):
+        instance, endpoint, state = self.harness()
+        record = instance.r.event
+        def replaced_after_receipt(event):
+            record(event)
+            if event.get("phase") == "settled-veth-pair-receipt":
+                state["links"][1]["address"] = "02:00:00:00:00:99"
+        instance.r.event = replaced_after_receipt
+        with self.assertRaisesRegex(fixture.Refusal, "identity or journaled alias differs"):
+            instance.create_veth_pair(endpoint)
+        self.assertEqual(self.cleanup(instance)["status"], "manual_review_required")
+        self.assertFalse(any(event.get("ip", [])[:2] in (["link", "set"], ["link", "delete"])
+                             for event in state["events"]))
+
+    def test_peer_json_name_and_numeric_forms_require_reciprocal_pair(self):
+        instance, endpoint, state = self.harness(setter_failure="host_noop")
+        with self.assertRaises(fixture.Refusal):
+            instance.create_veth_pair(endpoint)
+        named = fixture.veth_pair_snapshot(endpoint, state["links"])
+        for row, index in zip(state["links"], (9, 10)):
+            del row["link"]
+            row["link_index"] = index
+        self.assertEqual(fixture.veth_pair_snapshot(endpoint, state["links"]), named)
+        state["links"][0]["link_index"] = 100
+        with self.assertRaisesRegex(fixture.Refusal, "reciprocal"):
+            fixture.veth_pair_snapshot(endpoint, state["links"])
+
+
+class BridgeForwardingTests(unittest.TestCase):
+    def harness(self, states):
+        observed, saved, clock = [], {}, {"now": 0.0}
+        recorder = types.SimpleNamespace(deadline=180, event=lambda value: observed.append(value),
+                                         save=lambda name, value: saved.update({name: json.loads(json.dumps(value))}))
+        instance = fixture.Fixture(types.SimpleNamespace(bridge="vm123456781234", run_id=UUID), recorder,
+                                   {"ip": "/usr/bin/ip"})
+        instance.before = {"ifindex": 7, "address": "52:54:00:11:22:33"}
+        endpoint = {"role": "a", "host": "vpa1234567812", "peer": "vea1234567812", "aliasesVerified": True,
+                    "alias": "virmill-packet:" + UUID + ":host-a", "mac": "02:12:34:56:78:0a",
+                    "createdPair": {"host": {"ifindex": 10, "address": "22:22:a5:0b:8a:90"},
+                                    "peer": {"ifindex": 9, "address": "b2:d4:04:eb:5b:83"}}}
+        calls = []
+        instance.check_attached_endpoints = lambda item: calls.append("identity")
+        instance.bridge_state = lambda: instance.before
+        instance.netxml = lambda: calls.append("xml")
+        stream = iter(states)
+        last = {"state": 0}
+        def state(item):
+            last["state"] = next(stream, last["state"])
+            return last["state"]
+        instance.forwarding_state = state
+        def sleep(seconds):
+            clock["now"] += seconds
+        return instance, endpoint, observed, saved, calls, clock, sleep
+
+    def test_wait_records_transitions_and_rechecks_identity_before_forwarding_success(self):
+        instance, endpoint, observed, saved, calls, clock, sleep = self.harness([1, 2, 3])
+        with mock.patch.object(fixture.time, "monotonic", side_effect=lambda: clock["now"]), \
+                mock.patch.object(fixture.time, "sleep", side_effect=sleep):
+            instance.wait_forwarding(endpoint)
+        result = saved["bridge-forwarding-a.json"]
+        self.assertEqual(result["status"], "forwarding")
+        self.assertEqual([item["state"] for item in result["states"]], [1, 2, 3])
+        self.assertEqual(result["requiredState"], 3)
+        self.assertFalse(result["STPChanged"])
+        self.assertEqual(calls, ["identity", "identity", "xml"])
+        self.assertEqual(len(observed), 3)
+
+    def test_timeout_retains_states_and_never_reports_forwarding(self):
+        instance, endpoint, observed, saved, calls, clock, sleep = self.harness([1, 2])
+        with mock.patch.object(fixture.time, "monotonic", side_effect=lambda: clock["now"]), \
+                mock.patch.object(fixture.time, "sleep", side_effect=sleep), \
+                self.assertRaisesRegex(fixture.Refusal, "did not reach forwarding"):
+            instance.wait_forwarding(endpoint)
+        result = saved["bridge-forwarding-a.json"]
+        self.assertEqual(result["status"], "failed")
+        self.assertLessEqual(len(result["states"]), 142)
+        self.assertEqual(clock["now"], 35)
+        self.assertEqual(calls, ["identity"])
+
+    def test_identity_failure_after_forwarding_is_still_failure(self):
+        instance, endpoint, observed, saved, calls, clock, sleep = self.harness([3])
+        instance.check_attached_endpoints = mock.Mock(side_effect=[None, fixture.Refusal("peer MAC changed")])
+        with mock.patch.object(fixture.time, "monotonic", return_value=0), \
+                self.assertRaisesRegex(fixture.Refusal, "peer MAC changed"):
+            instance.wait_forwarding(endpoint)
+        self.assertEqual(saved["bridge-forwarding-a.json"]["status"], "failed")
+
+    def test_sysfs_wait_requires_exact_port_and_bridge_identities(self):
+        instance, endpoint, *_ = self.harness([])
+        host = "/sys/class/net/" + endpoint["host"]
+        bridge = "/sys/class/net/vm123456781234"
+        expected = {host + "/ifindex": "10\n", host + "/address": "22:22:a5:0b:8a:90\n",
+                    host + "/ifalias": endpoint["alias"] + "\n", host + "/master/ifindex": "7\n",
+                    bridge + "/ifindex": "7\n", bridge + "/address": "52:54:00:11:22:33\n",
+                    host + "/brport/state": "3\n"}
+        def check(values):
+            with mock.patch.object(fixture.Path, "read_text", autospec=True,
+                                   side_effect=lambda path, **kwargs: values[str(path)]):
+                return fixture.Fixture.forwarding_state(instance, endpoint)
+        self.assertEqual(check(expected), 3)
+        for key in expected:
+            with self.subTest(key=key), self.assertRaises(fixture.Refusal):
+                check({**expected, key: "999\n"})
+
+    def test_dhcp_worker_alone_has_extended_timeout(self):
+        instance, endpoint, *_ = self.harness([])
+        instance.tools["python"] = "/usr/bin/python3"
+        instance.a.recipe_sha256 = "a" * 64
+        calls = []
+        instance.ns = lambda item, argv, **kwargs: calls.append(kwargs) or {"stdout": '{"status":"fixture-result"}'}
+        for mode in ("dhcp", "ra", "tcp", "dns"):
+            instance.worker(endpoint, mode)
+        self.assertEqual([call["timeout"] for call in calls], [40, 24, 24, 24])
+
+
+class DHCPFailureDiagnosticsTests(unittest.TestCase):
+    def test_failure_retains_only_first_eight_frames_with_unrelated_classification(self):
+        clock = {"now": 0.0}
+        packets = [reply(xid=XID + index + 1) for index in range(10)]
+        sent = []
+        class FakeSocket:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def setsockopt(self, *args):
+                pass
+            def bind(self, *args):
+                pass
+            def settimeout(self, *args):
+                pass
+            def send(self, packet):
+                sent.append(packet)
+            def recvmsg(self, *args):
+                clock["now"] += 0.25
+                if packets:
+                    return packets.pop(0), [], 0, ("vea1234567812", 2048, 0, 1, bytes(6))
+                raise fixture.socket.timeout()
+        args = types.SimpleNamespace(interface="vea1234567812")
+        with mock.patch.object(fixture.socket, "socket", return_value=FakeSocket()), \
+                mock.patch.object(fixture.os, "urandom", return_value=XID.to_bytes(4, "big")), \
+                mock.patch.object(fixture.time, "monotonic", side_effect=lambda: clock["now"]), \
+                self.assertRaisesRegex(fixture.Refusal, "DHCP phase 2 timed out") as caught:
+            fixture.dhcp_worker(args, MAC)
+        diagnostics = json.loads(str(caught.exception).rsplit("; ", 1)[1])
+        self.assertEqual(len(diagnostics["receivedSamples"]), 8)
+        self.assertEqual([item["classification"] for item in diagnostics["receivedSamples"]], ["unrelated"] * 8)
+        self.assertEqual([item["bootpXID"] for item in diagnostics["receivedSamples"]], list(range(XID + 1, XID + 9)))
+        self.assertEqual(clock["now"], 18)
+        self.assertEqual(len(sent), 6)
+
+    def test_frame_diagnostic_is_bounded_and_preserves_packet_type(self):
+        frame = reply() + bytes(3000)
+        sample = fixture.dhcp_frame_sample(frame, ("vea1234567812", 2048, 4), 32)
+        self.assertEqual(sample["capturedBytes"], 2048)
+        self.assertEqual(len(sample["frameHex"]), 4096)
+        self.assertTrue(sample["truncated"])
+        self.assertEqual(sample["packetType"], 4)
+        self.assertEqual(sample["udpPorts"], [67, 68])
+        self.assertEqual(sample["bootpClientMAC"], MAC.hex())
 
 
 if __name__ == "__main__":

@@ -29,6 +29,7 @@ APPROVED_PARENT = Path("/home/virmill-test/virmill-tests")
 MAX_FRAME = 2048
 MAX_COMMAND_OUTPUT = 262144
 COOKIE = b"\x63\x82\x53\x63"
+BR_STATE_FORWARDING = 3  # Linux uapi linux/if_bridge.h; read-only brport/state.
 
 
 class Refusal(Exception):
@@ -293,7 +294,8 @@ def parse_dns(packet, xid, name):
 
 
 def native_network(raw, network_id, bridge, kind, dhcp):
-    require(len(raw) <= 65536 and b"<!" not in raw, "oversized XML or XML declarations/entities refused")
+    require(len(raw) <= 65536 and not re.search(br"<!(?!--)", raw) and b"<?" not in raw,
+            "oversized XML or XML declarations/entities refused")
     root = ET.fromstring(raw)
     require(root.tag == "network" and len(root.findall("uuid")) == 1 and root.findtext("uuid") == network_id,
             "native network UUID mismatch")
@@ -308,15 +310,22 @@ def native_network(raw, network_id, bridge, kind, dhcp):
     bridges = root.findall("bridge")
     require(len(bridges) == 1 and bridges[0].get("name") == bridge, "native bridge mismatch")
     forwards = root.findall("forward")
-    require((kind == "nat" and len(forwards) == 1 and forwards[0].get("mode") == "nat") or
+    require((kind == "nat" and len(forwards) == 1 and forwards[0].get("mode", "nat") == "nat") or
             (kind == "lab" and not forwards), "native forwarding mode mismatch")
-    require(root.get("ipv6") == "no", "this fixture profile requires declared IPv6 disabled")
+    # These two omitted defaults are the same equivalences used by the parent's
+    # networkxml.Match. They say nothing about actual bridge-frame filtering.
+    require(root.get("ipv6") in (None, "no"), "this fixture profile requires declared IPv6 disabled")
     ips = root.findall("ip")
     require(len(ips) == 1 and ips[0].get("family", "ipv4") == "ipv4", "ambiguous native IP configuration")
     ip = ips[0]
     gateway = str(canonical_ip(ip.get("address", ""), 4))
-    prefix = ip.get("prefix") or ip.get("netmask")
-    network = ipaddress.IPv4Network(gateway + "/" + str(prefix), strict=False)
+    require(("prefix" in ip.attrib) != ("netmask" in ip.attrib), "native IP must have exactly one prefix or netmask")
+    prefix = ip.get("prefix") if "prefix" in ip.attrib else ip.get("netmask")
+    network = ipaddress.IPv4Network(gateway + "/" + prefix, strict=False)
+    if "prefix" in ip.attrib:
+        require(prefix == str(network.prefixlen), "noncanonical IPv4 prefix")
+    else:
+        require(prefix == str(network.netmask), "native netmask is not an ordinary contiguous IPv4 mask")
     require(network.prefixlen <= 29 and network.is_private, "fixture requires two endpoints and a private /29 or larger subnet")
     ranges = []
     dhcps = ip.findall("dhcp")
@@ -340,6 +349,38 @@ def ordinary_path(path, directory=False):
     require(stat.S_ISDIR(state.st_mode) if directory else stat.S_ISREG(state.st_mode),
             "nonordinary path: " + str(path))
     return state
+
+
+def veth_pair_snapshot(endpoint, links):
+    """Inspect a new DOWN, unattached pair while both ends share this namespace."""
+    pair = {}
+    for side in ("host", "peer"):
+        matches = [item for item in links if item.get("ifname") == endpoint[side]]
+        require(len(matches) == 1, "new veth endpoint missing or ambiguous")
+        item = matches[0]
+        require(item.get("linkinfo", {}).get("info_kind") == "veth" and
+                type(item.get("ifindex")) is int and item["ifindex"] > 0,
+                "new endpoint is not an identified veth")
+        require(type(item.get("flags")) is list and "UP" not in item["flags"] and
+                item.get("operstate") == "DOWN" and "master" not in item,
+                "new veth is no longer DOWN and unattached")
+        address = item.get("address", "")
+        require(re.fullmatch(r"[0-9a-f]{2}(?::[0-9a-f]{2}){5}", address) and
+                not int(address[:2], 16) & 1 and address != "00:00:00:00:00:00",
+                "new veth MAC is not canonical unicast")
+        alias = item.get("ifalias", "")
+        require(type(alias) is str, "invalid veth alias shape")
+        pair[side] = {"name": endpoint[side], "ifindex": item["ifindex"], "address": address, "alias": alias}
+    require(pair["host"]["ifindex"] != pair["peer"]["ifindex"], "veth endpoint indices are not distinct")
+    for side, other in (("host", "peer"), ("peer", "host")):
+        item = next(item for item in links if item.get("ifname") == endpoint[side])
+        require("link" in item or "link_index" in item, "veth reciprocal peer reference unavailable")
+        if "link" in item:
+            require(item["link"] == endpoint[other], "veth reciprocal peer name differs")
+        if "link_index" in item:
+            require(type(item["link_index"]) is int and item["link_index"] == pair[other]["ifindex"],
+                    "veth reciprocal peer index differs")
+    return pair
 
 
 class Recorder:
@@ -427,6 +468,7 @@ class Recorder:
 
 def discover(recorder):
     required = {"ip": ("/usr/bin/ip", "/usr/sbin/ip"), "virsh": ("/usr/bin/virsh",),
+                "udevadm": ("/usr/bin/udevadm", "/usr/sbin/udevadm"),
                 "ping": ("/usr/bin/ping",), "python": ("/usr/bin/python3",)}
     found = {}
     versions = {"pythonRuntime": sys.version, "kernel": os.uname().release,
@@ -458,7 +500,36 @@ def worker_guard(args):
     return bytes.fromhex(Path("/sys/class/net", args.interface, "address").read_text().strip().replace(":", ""))
 
 
+def dhcp_frame_sample(frame, packet_address, flags):
+    captured = frame[:MAX_FRAME]
+    result = {"receivedBytes": len(frame), "capturedBytes": len(captured), "truncated": len(frame) > MAX_FRAME,
+              "frameSHA256": digest(captured), "frameHex": captured.hex(), "messageFlags": flags,
+              "packetType": packet_address[2] if len(packet_address) >= 3 else None,
+              "classification": "not_parsed"}
+    if len(frame) >= 14:
+        result["etherType"] = frame[12:14].hex()
+    if len(frame) >= 34 and frame[12:14] == b"\x08\x00" and frame[14] >> 4 == 4:
+        result["ipProtocol"] = frame[23]
+        ihl = (frame[14] & 15) * 4
+        udp_start = 14 + ihl
+        if 20 <= ihl <= 60 and frame[23] == 17 and len(frame) >= udp_start + 8:
+            result["udpPorts"] = list(struct.unpack("!HH", frame[udp_start:udp_start + 4]))
+            bootp = frame[udp_start + 8:]
+            if len(bootp) >= 34:
+                result["bootpXID"] = int.from_bytes(bootp[4:8], "big")
+                result["bootpClientMAC"] = bootp[28:34].hex()
+    return result
+
+
 def dhcp_worker(args, mac):
+    received_samples = []
+    try:
+        return dhcp_exchange(args, mac, received_samples)
+    except (Refusal, OSError) as exc:
+        raise Refusal(str(exc) + "; " + json.dumps({"receivedSamples": received_samples}, sort_keys=True)) from exc
+
+
+def dhcp_exchange(args, mac, received_samples):
     xid = int.from_bytes(os.urandom(4), "big")
     malformed = []
     offers = []
@@ -469,17 +540,20 @@ def dhcp_worker(args, mac):
         sock.settimeout(0.25)
         request = dhcp_request(mac, xid)
         for phase in (2, 5):
-            deadline, resend, frames = time.monotonic() + 9, 0, 0
+            deadline, resend, frames = time.monotonic() + 18, 0, 0
             while time.monotonic() < deadline and frames < 512:
                 if time.monotonic() >= resend:
                     sock.send(request)
                     transmitted.append({"phase": phase, "frameSHA256": digest(request), "frameHex": request.hex()})
                     resend = time.monotonic() + 3
                 try:
-                    frame, ancillary, msg_flags, _ = sock.recvmsg(MAX_FRAME + 1, socket.CMSG_SPACE(20))
+                    frame, ancillary, msg_flags, packet_address = sock.recvmsg(MAX_FRAME + 1, socket.CMSG_SPACE(20))
                 except socket.timeout:
                     continue
                 frames += 1
+                sample = dhcp_frame_sample(frame, packet_address, msg_flags) if len(received_samples) < 8 else None
+                if sample is not None:
+                    received_samples.append(sample)
                 try:
                     require(not msg_flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC), "truncated packet/auxdata")
                     checksum_status = "wire"
@@ -492,12 +566,20 @@ def dhcp_worker(args, mac):
                             elif status & 128:  # TP_STATUS_CSUM_VALID.
                                 checksum_status = "kernel_valid"
                     reply = parse_dhcp(frame, xid, mac, checksum_status)
+                    if sample is not None:
+                        sample["checksumStatus"] = checksum_status
                 except Refusal as exc:
+                    if sample is not None:
+                        sample.update({"classification": "malformed", "reason": str(exc)[:256]})
                     if len(malformed) < 16:
                         malformed.append(str(exc))
                     continue
                 if reply is None:
+                    if sample is not None:
+                        sample["classification"] = "unrelated"
                     continue
+                if sample is not None:
+                    sample["classification"] = "matched_phase_" + str(reply["messageType"])
                 require(reply["messageType"] != 6, "DHCP NAK received")
                 if reply["messageType"] != phase:
                     continue
@@ -670,10 +752,120 @@ class Fixture:
         result = self.ns(endpoint, [self.tools["python"], "-I", "-B", self.source, "worker", "--worker", mode,
                                     "--run-id", self.a.run_id, "--interface", endpoint["peer"],
                                     "--recipe-sha256", self.a.recipe_sha256,
-                                    "--host-netns-inode", str(self.host_inode), *extra], timeout=24)
+                                    "--host-netns-inode", str(self.host_inode), *extra], timeout=40 if mode == "dhcp" else 24)
         value = json.loads(result["stdout"])
         require(value.get("status") != "failed", "namespace worker failed")
         return value
+
+    def check_created_pair(self, endpoint, links, allowed_aliases, peer_mac=None):
+        observed = veth_pair_snapshot(endpoint, links)
+        require("createdPair" in endpoint, "new veth pair has no acknowledged identity receipt")
+        for side in ("host", "peer"):
+            expected = endpoint["createdPair"][side]
+            address = peer_mac if side == "peer" and peer_mac is not None else expected["address"]
+            require(observed[side]["name"] == expected["name"] and observed[side]["ifindex"] == expected["ifindex"] and
+                    observed[side]["address"] == address and observed[side]["alias"] in allowed_aliases[side],
+                    "new veth pair identity or journaled alias differs")
+        return observed
+
+    def create_veth_pair(self, endpoint):
+        # The iproute2 veth constructor may discard an alias supplied with add.
+        # Never infer an alias from a successful acknowledgement of that command.
+        existing = {item["ifname"] for item in self.links()}
+        require(endpoint["host"] not in existing and endpoint["peer"] not in existing, "new veth name collision")
+        self.ip("link", "add", "name", endpoint["host"], "type", "veth", "peer", "name", endpoint["peer"])
+        initial = veth_pair_snapshot(endpoint, self.links())
+        require(all(not initial[side]["alias"] for side in ("host", "peer")), "new veth unexpectedly has an alias")
+        endpoint["createdPair"] = initial
+        endpoint["ifindex"] = initial["host"]["ifindex"]
+        endpoint["confirmedAliases"] = []
+        endpoint["aliasIntent"] = None
+        endpoint["aliasesVerified"] = False
+        self.r.event({"phase": "created-veth-pair-receipt", "pair": initial,
+                      "runId": self.a.run_id, "initializationSettled": False})
+        # Normal device initialization can change generated MACs after add.
+        # Await the existing udev queue, without changing any udev configuration.
+        self.r.command([self.tools["udevadm"], "settle", "--timeout=5"], timeout=7)
+        settled = veth_pair_snapshot(endpoint, self.links())
+        for side in ("host", "peer"):
+            require(settled[side]["name"] == initial[side]["name"] and
+                    settled[side]["ifindex"] == initial[side]["ifindex"] and not settled[side]["alias"],
+                    "new veth pair changed during initialization")
+        self.r.event({"phase": "settled-veth-pair-receipt", "initialPair": initial, "pair": settled,
+                      "runId": self.a.run_id, "MACChangeCause": "not_attributed"})
+        endpoint["createdPair"] = settled
+        expected = {"host": {""}, "peer": {""}}
+        aliases = {"host": endpoint["alias"], "peer": "virmill-packet:" + self.a.run_id + ":peer"}
+        for side in ("host", "peer"):
+            self.check_created_pair(endpoint, self.links(), expected)
+            endpoint["aliasIntent"] = side
+            self.r.event({"phase": "veth-alias-intent", "side": side, "name": endpoint[side],
+                          "ifindex": settled[side]["ifindex"], "address": settled[side]["address"],
+                          "alias": aliases[side]})
+            self.ip("link", "set", "dev", endpoint[side], "alias", aliases[side])
+            expected[side] = {aliases[side]}
+            self.check_created_pair(endpoint, self.links(), expected)
+            endpoint["confirmedAliases"].append(side)
+            endpoint["aliasIntent"] = None
+            self.r.event({"phase": "veth-alias-verified", "side": side, "name": endpoint[side], "alias": aliases[side]})
+        endpoint["aliasesVerified"] = True
+
+    def forwarding_state(self, endpoint):
+        host = Path("/sys/class/net", endpoint["host"])
+        bridge = Path("/sys/class/net", self.a.bridge)
+        read = lambda path: path.read_text(encoding="ascii").removesuffix("\n")
+        original = endpoint["createdPair"]["host"]
+        require(read(host / "ifindex") == str(original["ifindex"]) and
+                read(host / "address") == original["address"] and read(host / "ifalias") == endpoint["alias"],
+                "owned bridge port identity changed while awaiting forwarding")
+        require(read(host / "master/ifindex") == str(self.before["ifindex"]) and
+                read(bridge / "ifindex") == str(self.before["ifindex"]) and
+                read(bridge / "address") == self.before["address"],
+                "owned bridge port master changed while awaiting forwarding")
+        state = read(host / "brport/state")
+        require(state in ("0", "1", "2", "3", "4"), "unknown bridge port state")
+        return int(state)
+
+    def check_attached_endpoints(self, endpoint):
+        host = json.loads(self.ip("-j", "-d", "link", "show", "dev", endpoint["host"])["stdout"])
+        peer = json.loads(self.ns(endpoint, [self.tools["ip"], "-j", "-d", "link", "show", "dev", endpoint["peer"]])["stdout"])
+        for side, rows in (("host", host), ("peer", peer)):
+            require(len(rows) == 1, "attached veth endpoint missing or ambiguous")
+            current, original = rows[0], endpoint["createdPair"][side]
+            address = original["address"] if side == "host" else endpoint["mac"]
+            alias = endpoint["alias"] if side == "host" else "virmill-packet:" + self.a.run_id + ":peer"
+            require(current.get("ifname") == endpoint[side] and current.get("ifindex") == original["ifindex"] and
+                    current.get("address") == address and current.get("ifalias") == alias and
+                    current.get("linkinfo", {}).get("info_kind") == "veth" and "UP" in current.get("flags", []),
+                    "attached veth endpoint identity, alias, MAC or administrative state differs")
+
+    def wait_forwarding(self, endpoint):
+        start = time.monotonic()
+        deadline = min(start + 35, self.r.deadline)
+        observations = []
+        result = {"status": "failed", "host": endpoint["host"], "requiredState": BR_STATE_FORWARDING,
+                  "timeoutSeconds": 35, "states": observations, "STPChanged": False}
+        try:
+            require(endpoint.get("aliasesVerified"), "forwarding wait requires verified endpoint aliases")
+            self.check_attached_endpoints(endpoint)
+            while time.monotonic() < deadline and len(observations) < 142:
+                state = self.forwarding_state(endpoint)
+                observed = {"state": state, "elapsedSeconds": round(time.monotonic() - start, 3)}
+                observations.append(observed)
+                self.r.event({"phase": "bridge-port-forwarding-observation", "host": endpoint["host"], **observed})
+                if state == BR_STATE_FORWARDING:
+                    self.check_attached_endpoints(endpoint)
+                    require(self.bridge_state() == self.before, "bridge changed while awaiting forwarding")
+                    self.netxml()
+                    result["status"] = "forwarding"
+                    return
+                time.sleep(min(0.25, max(0, deadline - time.monotonic())))
+            raise Refusal("owned bridge port did not reach forwarding within the bounded wait")
+        except Exception as exc:
+            result["error"] = str(exc)
+            raise
+        finally:
+            self.r.save("bridge-forwarding-" + endpoint["role"] + ".json", result)
 
     def create(self):
         require(self.bridge_state() == self.before, "bridge changed before namespace creation")
@@ -686,14 +878,11 @@ class Fixture:
             endpoint["nsfd"] = os.open("/run/netns/" + endpoint["namespace"], os.O_RDONLY | os.O_CLOEXEC)
             state = os.fstat(endpoint["nsfd"])
             endpoint["nsino"], endpoint["nsdev"] = state.st_ino, state.st_dev
-            self.ip("link", "add", "name", endpoint["host"], "alias", endpoint["alias"],
-                    "type", "veth", "peer", "name", endpoint["peer"])
-            link = next(item for item in self.links() if item["ifname"] == endpoint["host"])
-            require(link.get("ifalias") == endpoint["alias"] and link.get("linkinfo", {}).get("info_kind") == "veth",
-                    "created veth ownership mismatch")
-            endpoint["ifindex"] = link["ifindex"]
-            self.ip("link", "set", "dev", endpoint["peer"], "alias", "virmill-packet:" + self.a.run_id + ":peer")
+            self.create_veth_pair(endpoint)
             self.ip("link", "set", "dev", endpoint["peer"], "address", endpoint["mac"])
+            self.check_created_pair(endpoint, self.links(),
+                                    {"host": {endpoint["alias"]}, "peer": {"virmill-packet:" + self.a.run_id + ":peer"}},
+                                    peer_mac=endpoint["mac"])
             self.ip("link", "set", "dev", endpoint["peer"], "netns", endpoint["namespace"])
             require(self.bridge_state() == self.before, "bridge changed before attaching owned veth")
             self.netxml()
@@ -701,6 +890,7 @@ class Fixture:
             self.ip("link", "set", "dev", endpoint["host"], "up")
             self.ns(endpoint, [self.tools["ip"], "link", "set", "dev", "lo", "up"])
             self.ns(endpoint, [self.tools["ip"], "link", "set", "dev", endpoint["peer"], "up"])
+            self.wait_forwarding(endpoint)
             if self.a.dhcp == "on":
                 lease = self.worker(endpoint, "dhcp", "--network", str(self.network), "--gateway", self.gateway,
                                     *[part for low, high in self.ranges for part in ("--range", str(low) + "," + str(high))])
@@ -822,21 +1012,41 @@ class Fixture:
         errors = []
         self.r.deadline = time.monotonic() + 60  # cleanup gets its own bounded opportunity
         for endpoint in reversed(self.endpoints):
+            veth_safe = True
             try:
                 links = {item["ifname"]: item for item in self.links()}
                 current = links.get(endpoint["host"])
                 if current:
-                    require("ifindex" in endpoint and current["ifindex"] == endpoint["ifindex"] and
-                            current.get("ifalias") == endpoint["alias"] and current.get("linkinfo", {}).get("info_kind") == "veth",
-                            "unknown or replaced veth; manual review required")
+                    require("createdPair" in endpoint, "unknown veth creation acknowledgement; manual review required")
+                    if endpoint.get("aliasesVerified"):
+                        original = endpoint["createdPair"]["host"]
+                        require(current["ifindex"] == original["ifindex"] and current.get("address") == original["address"] and
+                                current.get("ifalias") == endpoint["alias"] and current.get("linkinfo", {}).get("info_kind") == "veth",
+                                "unknown or replaced veth; manual review required")
+                    else:
+                        expected = {"host": {""}, "peer": {""}}
+                        for side in ("host", "peer"):
+                            alias = endpoint["alias"] if side == "host" else "virmill-packet:" + self.a.run_id + ":peer"
+                            if side in endpoint.get("confirmedAliases", []):
+                                expected[side] = {alias}
+                            elif endpoint.get("aliasIntent") == side:
+                                expected[side].add(alias)  # only the exact, already journaled transition
+                        self.check_created_pair(endpoint, list(links.values()), expected)
                     self.ip("link", "delete", "dev", endpoint["host"])
+                    remaining = {item["ifname"] for item in self.links()}
+                    require(endpoint["host"] not in remaining and endpoint["peer"] not in remaining,
+                            "veth names remain after deletion; manual review required")
                 elif "ifindex" in endpoint:
+                    require(endpoint["peer"] not in links and not any(item["ifindex"] == endpoint["ifindex"] for item in links.values()),
+                            "veth disappeared under its expected name but pair/index remains; manual review required")
                     self.r.event({"phase": "cleanup", "host": endpoint["host"], "status": "already_absent"})
             except Exception as exc:
+                veth_safe = False
                 errors.append(endpoint["host"] + ": " + str(exc))
             try:
                 path = Path("/run/netns", endpoint["namespace"])
                 if os.path.lexists(path):
+                    require(veth_safe, "namespace retained because veth ownership is ambiguous")
                     state = path.lstat()
                     require("nsfd" in endpoint and not stat.S_ISLNK(state.st_mode) and
                             (state.st_dev, state.st_ino) == (endpoint["nsdev"], endpoint["nsino"]),
