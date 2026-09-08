@@ -27,7 +27,7 @@ func localPath(p string) bool {
 }
 func within(p, root string) bool { return p == root || strings.HasPrefix(p, root+"/") }
 func disjoint(a, b string) bool  { return !within(a, b) && !within(b, a) }
-func private(path string, directory bool, limit uint64) (fileidentity.Identity, error) {
+func private(path string, directory bool, limit uint64, readOnlyFile bool) (fileidentity.Identity, error) {
 	if !localPath(path) {
 		return fileidentity.Identity{}, invalid("canonical absolute nonroot local path required")
 	}
@@ -42,7 +42,7 @@ func private(path string, directory bool, limit uint64) (fileidentity.Identity, 
 	if directory {
 		mode = 0700
 	}
-	if err != nil || st.Uid != uint32(os.Geteuid()) || st.Mode&07777 != mode || !directory && (id.Size == 0 || id.Size > limit) {
+	if err != nil || st.Uid != uint32(os.Geteuid()) || st.Mode&07777 != mode && !(readOnlyFile && !directory && st.Mode&07777 == 0400) || !directory && (id.Size == 0 || id.Size > limit) {
 		return fileidentity.Identity{}, domain.Fail("PERMISSION_DENIED", "local backup requires current-user private directory or bounded single-link file")
 	}
 	return id, nil
@@ -62,7 +62,7 @@ func absent(path string) error {
 }
 func observeDirectory(path string, allowAbsent bool) (binding, error) {
 	b := binding{Path: path}
-	id, err := private(path, true, 0)
+	id, err := private(path, true, 0, false)
 	if err == nil {
 		b.Exists = true
 		b.Identity = id
@@ -74,7 +74,7 @@ func observeDirectory(path string, allowAbsent bool) (binding, error) {
 	if err = absent(path); err != nil {
 		return b, err
 	}
-	parent, err := private(filepath.Dir(path), true, 0)
+	parent, err := private(filepath.Dir(path), true, 0, false)
 	if err != nil {
 		return b, err
 	}
@@ -86,11 +86,11 @@ func observeFile(path string, password bool) (binding, error) {
 	if password {
 		limit = 4096
 	}
-	id, err := private(path, false, limit)
+	id, err := private(path, false, limit, !password)
 	if err != nil {
 		return binding{}, err
 	}
-	parent, err := private(filepath.Dir(path), true, 0)
+	parent, err := private(filepath.Dir(path), true, 0, false)
 	if err != nil {
 		return binding{}, err
 	}
@@ -125,7 +125,7 @@ func syncDirectory(path string) error {
 	return f.Sync()
 }
 func createDirectory(path string) error {
-	parent, err := private(filepath.Dir(path), true, 0)
+	parent, err := private(filepath.Dir(path), true, 0, false)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func createDirectory(path string) error {
 	if err = unix.Mkdirat(int(f.Fd()), filepath.Base(path), 0700); err != nil {
 		return recovery("private staging already exists or creation was not acknowledged; retain it")
 	}
-	if _, err = private(path, true, 0); err != nil {
+	if _, err = private(path, true, 0, false); err != nil {
 		return err
 	}
 	return syncDirectory(filepath.Dir(path))

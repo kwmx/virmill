@@ -76,7 +76,7 @@ func (f *fakeTool) Init(ctx context.Context, r restic.Repository) error {
 	if err := os.Mkdir(r.Path, 0700); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(r.Path, "config"), []byte("generated repository configuration"), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(r.Path, "config"), []byte("generated repository configuration"), 0400); err != nil {
 		return err
 	}
 	return f.after("after-init", ctx)
