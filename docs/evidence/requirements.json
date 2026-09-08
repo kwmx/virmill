@@ -258,7 +258,8 @@
         "boot-media-captured-001",
         "cold-recovery-integrated-race-001",
         "cold-recovery-native-001",
-        "cold-recovery-native-002"
+        "cold-recovery-native-002",
+        "beta-recovery-race-001"
       ],
       "outstanding": [
         "Pure span tests preserve every unrelated byte; official libvirt in-memory tests preserve opaque metadata and refuse synthetic display-password redaction. New plans retain hashes, not opaque XML. Real adopted VM and complete unknown XML normalization/preservation remain unqualified.",
@@ -2012,7 +2013,9 @@
         "generated-disk-remote-001",
         "cold-recovery-integrated-race-001",
         "cold-recovery-native-001",
-        "cold-recovery-native-002"
+        "cold-recovery-native-002",
+        "beta-recovery-native-001",
+        "beta-recovery-native-002"
       ],
       "outstanding": [
         "Durable complete cold capture, immutable all-member publication, metadata-bound auxiliary delivery and new disconnected BIOS restoration are implemented through shared CLI/TUI. Focused generated-file/IPC/native-seam tests pass; frozen integrated and live evidence are being collected. Qualified firmware/TPM restore staging, identity-preserving replacement, checkpoint/revert and the full source/OS/crash matrix remain required.",
@@ -2227,7 +2230,10 @@
         "restic-native-adapter-001",
         "restic-native-adapter-002",
         "restic-native-adapter-003",
-        "restic-native-adapter-004"
+        "restic-native-adapter-004",
+        "beta-recovery-race-001",
+        "beta-recovery-native-001",
+        "beta-recovery-native-002"
       ],
       "outstanding": [
         "Complete local stopped capture and new BIOS restore are implemented. Encrypted restic repository publication and restoration without original VM files/application database remain incomplete; a local catalog is not a full independent repository backup. Auxiliary restore and complete native recovery qualification remain required.",
@@ -2250,7 +2256,8 @@
         "internal/localbackup/execute_linux.go",
         "internal/backend/restic/tool_linux.go",
         "internal/coldstore/store_linux.go",
-        "docs/local-backups.md"
+        "docs/local-backups.md",
+        "docs/evidence/beta-recovery-run.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-02",
@@ -2265,11 +2272,16 @@
         "restic-native-adapter-001",
         "restic-native-adapter-002",
         "restic-native-adapter-003",
-        "restic-native-adapter-004"
+        "restic-native-adapter-004",
+        "beta-recovery-race-001",
+        "beta-recovery-native-001",
+        "beta-recovery-native-002",
+        "beta-recovery-native-003"
       ],
       "outstanding": [
         "Supported live backup respects consistency; shutdown/interruption produces partial status, never a valid incomplete backup.",
-        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario."
+        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
+        "Encrypted two-disk BIOS capture backup, full repository check, empty-journal recovery, new-VM restore and synthetic second-disk boot passed in beta-recovery-native-002/003. Firmware/TPM recovery and the complete backup acceptance matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2380,7 +2392,8 @@
         "internal/localbackup/execute_linux.go",
         "internal/backend/restic/tool_linux.go",
         "internal/coldstore/store_linux.go",
-        "docs/local-backups.md"
+        "docs/local-backups.md",
+        "docs/evidence/beta-recovery-run.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-06",
@@ -2395,11 +2408,16 @@
         "restic-native-adapter-001",
         "restic-native-adapter-002",
         "restic-native-adapter-003",
-        "restic-native-adapter-004"
+        "restic-native-adapter-004",
+        "beta-recovery-race-001",
+        "beta-recovery-native-001",
+        "beta-recovery-native-002",
+        "beta-recovery-native-003"
       ],
       "outstanding": [
         "Isolated test restore catches identity/address conflicts and reports the exact readiness verified.",
-        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario."
+        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
+        "Encrypted two-disk BIOS capture backup, full repository check, empty-journal recovery, new-VM restore and synthetic second-disk boot passed in beta-recovery-native-002/003. Firmware/TPM recovery and the complete backup acceptance matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2426,7 +2444,9 @@
         "internal/backend/xmlpatch/usb_test.go",
         "internal/app/usb_inventory_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "beta-recovery-race-001"
+      ],
       "outstanding": [
         "USB attach/detach works live and persistently where supported, with serial and port identity behavior verified.",
         "USB identity discovery and exact configuration patcher implemented; discovery is reachable in CLI/TUI. Assignment authorization, host-use checking, native attach/detach and reconnect workflows and physical hardware qualification remain open."
@@ -2459,7 +2479,8 @@
         "internal/app/usb_inventory_test.go"
       ],
       "evidence": [
-        "core-tests-001"
+        "core-tests-001",
+        "beta-recovery-race-001"
       ],
       "outstanding": [
         "Synthetic USB selector tests only; actual inventory/conflict detection, attach, reconnect and physical tests remain.",
@@ -2535,14 +2556,20 @@
         "internal/backend/seed/tool_linux.go",
         "internal/creating/provision_linux.go",
         "schemas/nocloud-config.schema.json",
-        "docs/cloud-provisioning.md"
+        "docs/cloud-provisioning.md",
+        "internal/guestsetup",
+        "internal/backend/guestssh",
+        "docs/guest-recipes.md",
+        "docs/evidence/guest-recipe-run.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-01",
       "tests": [
         "internal/app/provision/nocloud_test.go",
         "internal/backend/seed/tool_linux_test.go",
-        "internal/creating/provision_linux_test.go"
+        "internal/creating/provision_linux_test.go",
+        "internal/guestsetup/service_test.go",
+        "internal/backend/guestssh/native_linux_test.go"
       ],
       "evidence": [
         "nocloud-core-001",
@@ -2551,7 +2578,8 @@
         "nocloud-artifacts-001"
       ],
       "outstanding": [
-        "Typed NoCloud public-key/non-root-user configuration binds new clone identity, explicit NIC intent and exact deterministic media to reviewed creation. Seed generation is not guest execution; supported cloud-init/Netplan guest validation, guest transports and readiness remain unqualified or missing."
+        "Typed NoCloud public-key/non-root-user configuration binds new clone identity, explicit NIC intent and exact deterministic media to reviewed creation. Seed generation is not guest execution; supported cloud-init/Netplan guest validation, guest transports and readiness remain unqualified or missing.",
+        "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2563,14 +2591,23 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 6,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/guestsetup",
+        "internal/backend/guestssh",
+        "docs/guest-recipes.md",
+        "docs/evidence/guest-recipe-run.md"
+      ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-02",
-      "tests": [],
+      "tests": [
+        "internal/guestsetup/service_test.go",
+        "internal/backend/guestssh/native_linux_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded."
+        "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded.",
+        "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2589,23 +2626,33 @@
         "internal/app/service.go",
         "internal/ui/registry.go",
         "docs/guest-agent-readiness.md",
-        "docs/evidence/cold-recovery-run.md"
+        "docs/evidence/cold-recovery-run.md",
+        "internal/guestsetup",
+        "internal/backend/guestssh",
+        "docs/guest-recipes.md",
+        "docs/evidence/guest-recipe-run.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
       "tests": [
         "internal/backend/libvirt/guest_readiness_linux_test.go",
         "internal/ui/cli/guest_readiness_test.go",
-        "internal/ui/tui/guest_readiness_test.go"
+        "internal/ui/tui/guest_readiness_test.go",
+        "internal/guestsetup/service_test.go",
+        "internal/backend/guestssh/native_linux_test.go"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
         "cold-recovery-native-001",
-        "cold-recovery-native-002"
+        "cold-recovery-native-002",
+        "guest-ssh-native-001",
+        "guest-ssh-native-002",
+        "guest-ssh-native-003"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
-        "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario."
+        "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
+        "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3079,7 +3126,10 @@
         "automatic-allocation-native-001",
         "cold-recovery-integrated-race-001",
         "cold-recovery-native-001",
-        "cold-recovery-native-002"
+        "cold-recovery-native-002",
+        "beta-recovery-race-001",
+        "beta-recovery-native-001",
+        "beta-recovery-native-002"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -4734,7 +4784,11 @@
         "automatic-allocation-repro-001",
         "automatic-allocation-documents-002",
         "automatic-allocation-artifacts-002",
-        "cold-recovery-reproducibility-001"
+        "cold-recovery-reproducibility-001",
+        "beta-recovery-reproducibility-001",
+        "beta-recovery-vet-001",
+        "beta-recovery-fix-reproducibility-001",
+        "beta-recovery-fix-artifacts-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -5238,7 +5292,11 @@
         "automatic-allocation-static-001",
         "automatic-allocation-repro-001",
         "automatic-allocation-documents-002",
-        "automatic-allocation-artifacts-002"
+        "automatic-allocation-artifacts-002",
+        "beta-recovery-race-001",
+        "beta-recovery-reproducibility-001",
+        "beta-recovery-fix-reproducibility-001",
+        "beta-recovery-fix-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -5310,7 +5368,10 @@
         "discovery-release-gate-001",
         "cold-native-packages-repro-001",
         "evidence-attribution-validation-001",
-        "protected-network-evidence-audit-001"
+        "protected-network-evidence-audit-001",
+        "beta-recovery-reproducibility-001",
+        "beta-recovery-fix-reproducibility-001",
+        "beta-recovery-fix-artifacts-001"
       ],
       "outstanding": [
         "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open.",

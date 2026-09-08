@@ -22,6 +22,7 @@ def main():
     p.add_argument('--source-data', type=Path, required=True)
     p.add_argument('--capture-id', required=True)
     p.add_argument('--pool', required=True)
+    p.add_argument('--recover-from', type=Path, help='Retained successful backup proof; skip init, backup and check')
     a = p.parse_args()
     assert socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == 1000
     root = a.root.resolve(strict=True)
@@ -82,7 +83,7 @@ def main():
             daemon = subprocess.Popen([str(root/'bin/virmilld')], env=env, stdout=log, stderr=log)
         for _ in range(100):
             if (base/'runtime/virmill/control.sock').exists(): return base
-            assert daemon.poll() is None
+            if daemon.poll() is not None: raise RuntimeError('coordinator exited; inspect '+name+'-daemon.log')
             time.sleep(.1)
         raise RuntimeError('coordinator did not become ready')
     try:
@@ -90,20 +91,38 @@ def main():
         for name, wanted in report['binaries'].items():
             assert name in ('virmill', 'virmilld') and hashlib.sha256((root/'bin'/name).read_bytes()).hexdigest() == wanted
         baseline = inventory(); before = source_hashes()
-        profile('backup-profile', a.source_data)
-        report['version'] = cli('version')['data']
-        credential = root/'repository-credential'; credential.write_bytes(os.urandom(48).hex().encode()+b'\n'); credential.chmod(0o600)
-        repo = str(root/'repository')
-        common = {'repository': repo, 'passwordFile': str(credential)}
-        init = cli('backup', 'repository', 'init', repo, '--input', json.dumps({'passwordFile': str(credential)}), '--plan')['data']
-        report['init'] = cli('backup', 'result', apply(init))['data']
-        backup = cli('backup', 'create', a.capture_id, '--input', json.dumps(common), '--plan')['data']
-        backup_proof = cli('backup', 'result', apply(backup))['data']; report['backup'] = backup_proof
-        assert backup_proof['roundtripVerified'] and not backup_proof['guestBootVerified']
-        check = cli('backup', 'repository', 'check', repo, '--input', json.dumps({'passwordFile': str(credential)}), '--plan')['data']
-        report['repositoryCheck'] = cli('backup', 'result', apply(check))['data']
-        assert report['repositoryCheck']['repositoryDataChecked']
-        fresh = profile('fresh-recovery-profile')
+        if a.recover_from is None:
+            profile('backup-profile', a.source_data)
+            report['version'] = cli('version')['data']
+            credential = root/'repository-credential'; credential.write_bytes(os.urandom(48).hex().encode()+b'\n'); credential.chmod(0o600)
+            repo = str(root/'repository')
+            common = {'repository': repo, 'passwordFile': str(credential)}
+            init = cli('backup', 'repository', 'init', repo, '--input', json.dumps({'passwordFile': str(credential)}), '--plan')['data']
+            report['init'] = cli('backup', 'result', apply(init))['data']
+            backup = cli('backup', 'create', a.capture_id, '--input', json.dumps(common), '--plan')['data']
+            backup_proof = cli('backup', 'result', apply(backup))['data']; report['backup'] = backup_proof
+            assert backup_proof['roundtripVerified'] and not backup_proof['guestBootVerified']
+            check = cli('backup', 'repository', 'check', repo, '--input', json.dumps({'passwordFile': str(credential)}), '--plan')['data']
+            report['repositoryCheck'] = cli('backup', 'result', apply(check))['data']
+            assert report['repositoryCheck']['repositoryDataChecked']
+        else:
+            previous = a.recover_from.resolve(strict=True)
+            assert previous.is_relative_to(Path.home()/'virmill-tests') and previous != root
+            proof_file = previous/'results/report.json'
+            proof_bytes = proof_file.read_bytes()
+            proof = json.loads(proof_bytes)
+            assert proof['binaries'] == report['binaries']
+            assert proof['sourceCapturePreserved'] and proof['priorDefinitionsPreserved']
+            backup_proof = proof['backup']
+            assert backup_proof['roundtripVerified'] and proof['repositoryCheck']['repositoryDataChecked']
+            assert backup_proof['captureID'] == a.capture_id
+            credential = previous/'repository-credential'
+            repo = str(previous/'repository')
+            common = {'repository': repo, 'passwordFile': str(credential)}
+            report['retainedBackupProofSHA256'] = hashlib.sha256(proof_bytes).hexdigest()
+            report['retainedBackupRoot'] = str(previous)
+            report['backup'] = backup_proof
+        fresh = profile('fresh')
         assert cli('operation', 'list')['data'] == []
         report['freshDatabaseInitiallyEmpty'] = True
         args = dict(common, captureID=a.capture_id, manifestSHA256=backup_proof['manifestSHA256'])

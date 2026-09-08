@@ -13,6 +13,7 @@ import (
 	backend "virmill.local/core/internal/backend/libvirt"
 	"virmill.local/core/internal/coldcapture"
 	"virmill.local/core/internal/creating"
+	"virmill.local/core/internal/guestsetup"
 	"virmill.local/core/internal/importing"
 	"virmill.local/core/internal/localbackup"
 	"virmill.local/core/internal/networkfirewall"
@@ -55,6 +56,7 @@ func run() error {
 	auxiliary.Register(service, p.Config)
 	coldcapture.Register(service, p.Data, p.Cache, p.Config)
 	localbackup.Register(service, p.Data, p.Cache)
+	guestsetup.Register(service)
 	networkfirewall.Register(service, p.Config)
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e

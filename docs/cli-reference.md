@@ -17,6 +17,7 @@ Available Commands:
   config      Manage config
   device      Manage device
   doctor      Read-only prerequisites; never applies repairs
+  guest       Manage guest
   help        Help about any command
   host        Manage host
   import      Manage import
@@ -304,6 +305,53 @@ Read-only prerequisites; never applies repairs
 ```text
 Usage:
   virmill doctor [flags]
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill guest recipe result`
+
+Inspect durable guest recipe stages and completion without exposing guest output
+
+```text
+Usage:
+  virmill guest recipe result ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill guest recipe run`
+
+Plan an exact non-root guest recipe through explicit SSH credentials and verified host keys
+
+```text
+Usage:
+  virmill guest recipe run VM_UUID RECIPE_PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

@@ -68,6 +68,10 @@ type Server struct {
 }
 
 func Listen(path string, service *app.Service) (*Server, error) {
+	// Linux sockaddr_un reserves one byte for the pathname terminator.
+	if len(path) > 107 {
+		return nil, errors.New("coordinator socket path exceeds 107 bytes; choose a shorter XDG_RUNTIME_DIR")
+	}
 	if os.Getuid() == 0 {
 		return nil, errors.New("virmilld must run as an ordinary user")
 	}

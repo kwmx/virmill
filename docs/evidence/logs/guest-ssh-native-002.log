@@ -1,0 +1,5 @@
+=== RUN   TestNativeSSHAuthorizedReadOnly
+    native_linux_test.go:68: actual fixed SSH executable /usr/bin/ssh SHA256=ae339eda0cbac945d383cd6519de3e2e53d18acfb6cc634a5276a93f9839b2aa version=OpenSSH_10.2p1, OpenSSL 3.5.8 25 Aug 2026: ordinary UID=1000, literal arguments preserved, untrusted host refused; no nested guest recipe claim
+--- PASS: TestNativeSSHAuthorizedReadOnly (0.35s)
+PASS
+ok  	virmill.local/core/internal/backend/guestssh	0.348s

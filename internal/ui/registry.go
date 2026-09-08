@@ -62,6 +62,8 @@ var Actions = []Action{
 	{"snapshot restore", "snapshot.restore", "Protection", "Plan independent new volumes and a new disconnected VM from a complete cold recovery set", "id", "restore"},
 	{"vm boot show", "vm.boot.get", "VMs", "Inspect separate live and next-boot device order using disk targets and NIC MACs", "id", ""},
 	{"vm readiness show", "vm.readiness.show", "VMs", "Observe a running VM's guest-agent channel and one bounded guest ping; no application readiness claim", "id", ""},
+	{"guest recipe run", "guest.recipe.run", "VMs", "Plan an exact non-root guest recipe through explicit SSH credentials and verified host keys", "id", "run"},
+	{"guest recipe result", "guest.recipe.result", "VMs", "Inspect durable guest recipe stages and completion without exposing guest output", "id", ""},
 	{"vm create", "vm.create", "VMs", "Plan managed copies, optional NoCloud provisioning and a new powered-off VM from a prepared source", "id", "create"},
 	{"vm creation result", "vm.creation.result", "VMs", "Observe active progress and durable volume/definition stages by creation operation ID", "id", ""},
 	{"vm creation resume", "vm.creation.resume", "VMs", "Plan definition recovery using complete reverified retained volumes; never allocate or upload again", "id", "resume-definition"},

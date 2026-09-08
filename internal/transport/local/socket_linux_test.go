@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 	"virmill.local/core/internal/app"
@@ -79,5 +80,16 @@ func TestPrivateRPCAndSingleton(t *testing.T) {
 	server.Close()
 	if e = <-done; e != nil {
 		t.Fatal(e)
+	}
+}
+
+func TestLongSocketPathFailsBeforeCreatingRuntimeDirectory(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), strings.Repeat("x", 108))
+	server, err := Listen(filepath.Join(dir, "control.sock"), nil)
+	if server != nil || err == nil || !strings.Contains(err.Error(), "shorter XDG_RUNTIME_DIR") {
+		t.Fatalf("unhelpful overlong socket result: %v", err)
+	}
+	if _, err = os.Lstat(dir); !os.IsNotExist(err) {
+		t.Fatalf("overlong socket created runtime directory: %v", err)
 	}
 }

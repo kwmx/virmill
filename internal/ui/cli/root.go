@@ -159,6 +159,10 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			cmd.Use = "call PLUGIN_ID ACTION_ID"
 			cmd.Args = cobra.ExactArgs(2)
 		}
+		if a.Command == "guest recipe run" {
+			cmd.Use = "run VM_UUID RECIPE_PATH"
+			cmd.Args = cobra.ExactArgs(2)
+		}
 		if a.Command == "plugin new" {
 			cmd.Use = "new [PATH]"
 			cmd.Args = cobra.MaximumNArgs(1)
@@ -167,6 +171,9 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			r := app.Request{Action: a.Mutation, After: after}
 			if a.Argument == "id" {
 				r.ID = args[0]
+			}
+			if a.Command == "guest recipe run" {
+				r.Path = args[1]
 			}
 			if a.Argument == "path" && len(args) > 0 {
 				r.Path = args[0]

@@ -1,0 +1,6 @@
+=== RUN   TestNativeSSHAuthorizedReadOnly
+    native_linux_test.go:46: GUEST_TRANSPORT_FAILED: guest SSH: SSH transport, authentication or strict host-key verification failed; diagnostics withheld, no fallback attempted
+--- FAIL: TestNativeSSHAuthorizedReadOnly (0.09s)
+FAIL
+FAIL	virmill.local/core/internal/backend/guestssh	0.091s
+FAIL

@@ -10,6 +10,9 @@ import (
 // NormalizeRequest resolves user-entered paths on the client. The detached
 // coordinator's working directory is unrelated to the terminal's directory.
 func NormalizeRequest(method string, r app.Request) (app.Request, error) {
+	if method == "guest.recipe.run" && r.Path != "" && filepath.Clean(r.Path) != r.Path {
+		return r, domain.Fail("INVALID_INPUT", "canonical guest recipe path required")
+	}
 	// Recovery verification rejects lexical aliases before Abs can clean away
 	// a symlink/parent traversal. Canonical relative paths still resolve locally.
 	if method == "backup.verify-manifest" || strings.HasPrefix(method, "backup.repository.") {

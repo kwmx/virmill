@@ -1,0 +1,13 @@
+{
+  "identical": true,
+  "nativeEnvironment": "docs/evidence/environment.json",
+  "artifacts": {
+    "build/bin/virmill": "36dac5fee77c4812224d6e1eb369107b688b7c57a308848abb16ccc35769c923",
+    "build/bin/virmill-host-helper": "bd1b8de9deb3c7d9018a6c2fad4e056f8d08f7ae4caeb5f0d5da693e3b72d3e2",
+    "build/bin/virmilld": "78abc4064de29b3418a874e6a4266bdbe2b181f5a5681f5b0c641b757f5904af",
+    "dist/virmill-1.0.0-0.beta.1.x86_64.rpm": "6c8e76fc45fb0b2866ab0cc4567c7b70dbdc9d3b0a877cbe2e99add5864e4851",
+    "dist/virmill-host-helper-1.0.0-0.beta.1.x86_64.rpm": "6b526a53d7da3becbdffbb7f7c75947f2db4deb084f40d43b052d712711a225b",
+    "dist/virmill-host-helper_1.0.0~beta.1_amd64.deb": "b491824efbf618eaceccbdbf922349fcc566d4f778f553e602e961e9cce8acd5",
+    "dist/virmill_1.0.0~beta.1_amd64.deb": "cf25e1f3b67ce07fddabc685932fb398f742fc1442838902792b49965e80f40a"
+  }
+}

@@ -55,6 +55,8 @@ The [cold capture and restore workflow](docs/cold-capture-and-restore.md) now
 captures complete supported stopped sets and restores BIOS sets into new
 disconnected guests. The [live two-disk recovery evidence](docs/evidence/cold-recovery-run.md)
 records an actual restored boot; firmware/TPM restoration remains open.
+Reviewed existing-guest scripts: [guest recipes](docs/guest-recipes.md).
+Encrypted fresh-profile recovery: [native evidence](docs/evidence/beta-recovery-run.md).
 USB device facts are available through [USB discovery](docs/usb-discovery.md).
 
 Reference provider development: [fixture guide](tests/fixtures/plugins/provider/README.md)

@@ -191,6 +191,11 @@ save its repository snapshot ID, capture UUID and manifest hash with your recove
 instructions. Keep repository credentials separate from the source capture and
 repository. Repository recovery and creation of a new VM are separate plans.
 
+For an existing running Linux guest with a verified SSH key/address and a
+non-root account, use [reviewed guest recipes](guest-recipes.md). Readiness,
+check, apply and verify are separate durable stages. This does not install the
+initial account or automatically establish the address-to-VM identity.
+
 ## Jobs, failures and useful reports
 
 ```sh
