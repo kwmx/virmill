@@ -2,12 +2,12 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 	"io"
 	"os"
+	"os/signal"
 	"sort"
 	"strings"
 	"time"
@@ -17,7 +17,6 @@ import (
 	"virmill.local/core/internal/operations"
 	"virmill.local/core/internal/ui"
 	"virmill.local/core/internal/ui/tui"
-	"virmill.local/core/internal/validation"
 	"virmill.local/core/internal/wire"
 )
 
@@ -63,27 +62,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		return c.Help()
 	}
 	emit := func(response app.Response) error {
-		if !(o.Quiet && o.Output == "table") {
-			var b []byte
-			var e error
-			if o.Output == "table" {
-				b, e = json.MarshalIndent(response, "", "  ")
-			} else {
-				b, e = json.Marshal(response)
-			}
-			if e != nil {
-				return e
-			}
-			if o.Output == "table" {
-				fmt.Fprintln(out, validation.SafeText(string(b)))
-			} else {
-				fmt.Fprintln(out, string(b))
-			}
-		}
-		if response.Error != nil {
-			return response.Error
-		}
-		return nil
+		return writeResponse(out, o.Output, o.Quiet, response)
 	}
 	call := func(c *cobra.Command, method string, r app.Request) error {
 		r.Connection = o.Connection
@@ -142,7 +121,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		var input string
 		var after int64
-		var hard, planOnly bool
+		var hard, planOnly, follow bool
 		pluginFlags := map[string]*string{}
 		cmd := &cobra.Command{Use: use, Short: a.Summary, Long: a.Summary + ". Calls the shared coordinator service. Mutations return an immutable preview; apply it with plan apply and exact acknowledgements. No privilege is implied by --yes.", Args: cobra.NoArgs}
 		if a.Argument != "" && a.Argument != "parameters" {
@@ -150,6 +129,9 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		cmd.Flags().StringVar(&input, "input", "{}", "JSON parameters; secrets must be references")
 		cmd.Flags().Int64Var(&after, "after", 0, "Event cursor")
+		if a.Command == "operation watch" {
+			cmd.Flags().BoolVar(&follow, "follow", false, "Follow ordered events and terminal state with --output ndjson; timeout detaches")
+		}
 		if a.Mutation != "" {
 			cmd.Flags().BoolVar(&planOnly, "plan", true, "Return preview (apply separately after review)")
 		}
@@ -215,6 +197,16 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			if a.Mutation != "" && !planOnly {
 				return domain.Fail("INVALID_INPUT", "review and apply the generated plan using plan apply")
 			}
+			if follow {
+				if o.Output != "ndjson" || len(r.Input) != 0 {
+					return domain.Fail("INVALID_INPUT", "--follow requires --output ndjson and no input parameters")
+				}
+				interruptible, stop := signal.NotifyContext(c.Context(), os.Interrupt)
+				defer stop()
+				ctx, cancel := context.WithTimeout(interruptible, o.Timeout)
+				defer cancel()
+				return followOperation(ctx, client, o.Connection, r.ID, after, nil, true, emit)
+			}
 			return call(c, a.Method, r)
 		}
 		add(a.Command, cmd)
@@ -235,46 +227,47 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		if wait && detach {
 			return domain.Fail("INVALID_INPUT", "choose --wait or --detach")
 		}
-		ctx, cancel := context.WithTimeout(c.Context(), o.Timeout)
+		parent := c.Context()
+		if wait {
+			var stop context.CancelFunc
+			parent, stop = signal.NotifyContext(parent, os.Interrupt)
+			defer stop()
+		}
+		ctx, cancel := context.WithTimeout(parent, o.Timeout)
 		defer cancel()
+		if e := ctx.Err(); e != nil {
+			return emit(streamFailure(ctx, e, "", 0, nil))
+		}
 		resp, e := client.Call(ctx, "operation.apply", app.Request{Connection: o.Connection, Apply: &operations.ApplyRequest{PlanID: args[0], PlanDigest: digest, IdempotencyKey: key, Acknowledgements: acks}})
 		if e != nil {
-			return e
+			if wait {
+				return emit(streamFailure(ctx, e, "", 0, nil))
+			}
+			return emit(app.Response{APIVersion: domain.APIVersion, Warnings: []string{}, Error: responseFailure(e)})
 		}
 		if resp.Error != nil || !wait {
+			if wait && ctx.Err() != nil {
+				return emit(streamFailure(ctx, ctx.Err(), "", 0, nil))
+			}
 			return emit(resp)
 		}
-		b, _ := json.Marshal(resp.Data)
-		var job domain.Job
-		if e = json.Unmarshal(b, &job); e != nil {
-			return e
+		job, e := decodeStreamJob(resp, "")
+		if e != nil {
+			return emit(streamFailure(ctx, e, "", 0, nil))
 		}
-		ticker := time.NewTicker(200 * time.Millisecond)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return emit(app.Response{APIVersion: domain.APIVersion, Data: job, Warnings: []string{"Client detached; operation may still be running"}, Error: domain.Fail("WAIT_TIMEOUT", "wait timed out")})
-			case <-ticker.C:
-				resp, e = client.Call(ctx, "operation.get", app.Request{ID: job.ID})
-				if e != nil {
-					return e
-				}
-				if resp.Error != nil {
-					return emit(resp)
-				}
-				b, _ = json.Marshal(resp.Data)
-				if e = json.Unmarshal(b, &job); e != nil {
-					return e
-				}
-				if domain.Terminal(job.State) {
-					if job.Error != nil {
-						resp.Error = job.Error
-					}
-					return emit(resp)
-				}
+		if job.PlanID != args[0] {
+			return emit(streamFailure(ctx, domain.Fail("INVALID_STATE", "accepted operation refers to a different plan"), "", 0, nil))
+		}
+		stream := o.Output == "ndjson"
+		if stream {
+			// Keep durable acceptance visible before following. It does not imply
+			// completion, and an interrupted stream never resubmits this request.
+			resp.Data = job
+			if e = emit(resp); e != nil {
+				return e
 			}
 		}
+		return followOperation(ctx, client, o.Connection, job.ID, 0, &job, stream, emit)
 	}
 	add("plan apply", apply)
 	completion := &cobra.Command{Use: "completion SHELL", Short: "Generate shell completions", Args: cobra.ExactArgs(1), ValidArgs: []string{"bash", "zsh", "fish", "powershell"}, RunE: func(c *cobra.Command, args []string) error {

@@ -35,7 +35,7 @@ var Actions = []Action{
 	{"plugin permissions grant", "plugin.plan", "Plugins", "Plan explicit additional declared scopes and disable until reviewed", "id", "grant"},
 	{"plugin permissions revoke", "plugin.plan", "Plugins", "Plan scope revocation and stop new invocations", "id", "revoke"},
 	{"plugin validate", "plugin.validate", "Plugins", "Validate a development manifest; no trust or signature claim", "path", ""},
-	{"plugin test", "plugin.test", "Plugins", "Run confined summary conformance using synthetic selected VM records", "path", ""},
+	{"plugin test", "plugin.test", "Plugins", "Run confined action or reference-provider conformance with generated state", "path", ""},
 	{"host inspect", "host.inspect", "Overview", "Inspect read-only local host prerequisites", "", ""},
 	{"host capabilities", "host.capabilities", "Settings", "Probe the selected local libvirt connection", "", ""},
 	{"storage pool list", "storage.pool.list", "Storage", "List existing local libvirt pools without adoption or activation", "", ""},

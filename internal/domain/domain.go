@@ -44,6 +44,8 @@ func ExitCode(e error) int {
 			return 6
 		case "WAIT_TIMEOUT":
 			return 7
+		case "CLIENT_INTERRUPTED":
+			return 130
 		}
 	}
 	return 1

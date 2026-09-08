@@ -4,6 +4,12 @@ From the source repository, run `scripts/build-provider-fixture.sh`. It uses the
 pinned offline toolchain and writes a development manifest containing the actual
 executable digest into `build/provider-conformance`.
 
+For the complete opt-in Go/Python action and provider test suite, first run
+`scripts/build-conformance-fixtures.sh`. This also builds the SDK summary action
+required by `VIRMILL_TEST_CONFORMANCE=1`; a fresh checkout needs no preexisting
+untracked fixture source. Development manifests must be ordinary files no larger
+than 1 MiB; symlinks, directories and FIFOs are refused before execution.
+
 With the development coordinator running, use:
 
 ```sh

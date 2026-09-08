@@ -2,7 +2,8 @@
 set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$root"
-export GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off
+export GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOWORK=off GOENV=off GOFLAGS=
+export GOOS=linux GOARCH=amd64 CGO_ENABLED=0
 mkdir -p build/provider-conformance
 ./scripts/go -C tests/fixtures/plugins/provider build -mod=mod -buildvcs=false -trimpath -o "$root/build/provider-fixture" .
 cp build/provider-fixture build/provider-conformance/provider-fixture

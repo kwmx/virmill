@@ -13,7 +13,7 @@ import termios
 import time
 import unittest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.environ.get('VIRMILL_TEST_BUILD_ROOT', Path(__file__).resolve().parents[2])).resolve()
 
 
 class ProviderConformanceUI(unittest.TestCase):
@@ -68,22 +68,30 @@ class ProviderConformanceUI(unittest.TestCase):
                         received.clear()
                         os.write(master, b'\t' * 9)
                         until(b'Plugins')
-                        os.write(master, b'/plugin test\r')
-                        time.sleep(.1)
+                        # Separate the search control key from pasted query
+                        # text: terminals may coalesce multi-rune input events.
+                        os.write(master, b'/')
+                        until(b'Search>')
+                        received.clear()
+                        os.write(master, b'plugin test')
+                        until(b'> plugin test')
+                        received.clear()
+                        os.write(master, b'\r')
+                        until(b'Filter: plugin test')
                         received.clear()
                         os.write(master, b'\r')
                         until(b'Input:')
                         received.clear()
                         os.write(master, str(fixture).encode() + b'\r')
-                        until(b'provider-fixture', 90)
+                        until(b'simulated provider initialize', 45)
                         for _ in range(30):
-                            if b'confined' in received:
+                            if b'"confined": true' in received and b'example.virmill.provider-fixture' in received:
                                 break
                             os.write(master, b'\x1b[6~')
                             if select.select([master], [], [], .2)[0]:
                                 received.extend(os.read(master, 65536))
-                        self.assertIn(b'confined', received, received.decode(errors='replace'))
-                        self.assertIn(b'true', received)
+                        self.assertIn(b'"confined": true', received, received.decode(errors='replace'))
+                        self.assertIn(b'example.virmill.provider-fixture', received, received.decode(errors='replace'))
                         print('Actual 80x24 PTY selected Plugins > plugin test and displayed the confined result.')
                         os.write(master, b'q')
                         client.wait(timeout=5)

@@ -689,6 +689,7 @@ Usage:
 
 Flags:
       --after int      Event cursor
+      --follow         Follow ordered events and terminal state with --output ndjson; timeout detaches
       --input string   JSON parameters; secrets must be references (default "{}")
 
 Global Flags:
@@ -1094,7 +1095,7 @@ Global Flags:
 
 ## `virmill plugin test`
 
-Run confined summary conformance using synthetic selected VM records
+Run confined action or reference-provider conformance with generated state
 
 ```text
 Usage:

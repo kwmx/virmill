@@ -27,25 +27,28 @@ type resultMsg struct {
 	err      error
 }
 type Model struct {
-	Client     ui.Client
-	Connection string
-	Section    int
-	Selected   int
-	Width      int
-	Height     int
-	Offset     int
-	Input      string
-	Editing    bool
-	Busy       bool
-	Help       bool
-	Output     string
-	Plan       *domain.Plan
-	Confirm    bool
-	Quit       bool
-	Search     string
-	Searching  bool
-	SearchNote string
-	selection  map[string]string
+	Client       ui.Client
+	Connection   string
+	Section      int
+	Selected     int
+	Width        int
+	Height       int
+	Offset       int
+	Input        string
+	Editing      bool
+	Busy         bool
+	Help         bool
+	Output       string
+	Plan         *domain.Plan
+	Confirm      bool
+	Quit         bool
+	Search       string
+	Searching    bool
+	SearchNote   string
+	selection    map[string]string
+	dialogReview bool
+	dialogOffset int
+	formError    string
 }
 
 func New(c ui.Client, connection string) Model {
@@ -181,17 +184,50 @@ func (m *Model) searchKey(v tea.KeyMsg) {
 	}
 }
 
+func (m *Model) formFailure(message string) {
+	m.Output, m.formError = message, message
+	m.dialogOffset = 0
+	m.dialogReview = false
+}
+
+func (m Model) detailText() string {
+	if !m.Confirm || m.Plan == nil {
+		return m.Output
+	}
+	review, err := json.MarshalIndent(m.Plan, "", "  ")
+	if err != nil {
+		return "Plan review could not be rendered. Esc cancels this dialog."
+	}
+	text := fmt.Sprintf("Approve plan %s\nFull plan digest:\n%s\nRequired acknowledgements:\n%s\nAffected resources and complete plan:\n%s",
+		m.Plan.ID, m.Plan.Digest, strings.Join(m.Plan.Acknowledgements, "\n"), review)
+	if m.formError != "" {
+		text = m.formError + "\n" + text
+	}
+	return text
+}
+
+func (m *Model) scrollDialog(delta int) {
+	rows := max(1, m.outputRows())
+	last := max(0, len(wrap(validation.SafeText(m.detailText()), max(1, m.Width)))-rows)
+	m.dialogOffset = max(0, min(m.dialogOffset+delta, last))
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.clampSelection()
 	switch v := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = v.Width
 		m.Height = v.Height
+		rows := max(1, m.outputRows())
+		m.Offset = max(0, min(m.Offset, len(wrap(validation.SafeText(m.Output), max(1, m.Width)))-rows))
+		m.scrollDialog(0)
 	case resultMsg:
 		m.Busy = false
 		m.Plan = nil
 		m.Confirm = false
 		m.Offset = 0
+		m.dialogOffset = 0
+		m.formError = ""
 		if v.err != nil {
 			m.Output = validation.SafeText(v.err.Error())
 			break
@@ -212,20 +248,58 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		if m.Editing || m.Confirm {
+			// KeyRunes can contain an entire IME input or unbracketed paste.
+			// Text such as "enter" must never become an Enter control event.
+			if v.Type == tea.KeyRunes || v.Type == tea.KeySpace {
+				if !m.dialogReview {
+					incoming := string(v.Runes)
+					if v.Type == tea.KeySpace {
+						incoming = " "
+					}
+					if len(m.Input)+len(incoming) <= 128<<10 {
+						m.Input += incoming
+					} else {
+						m.formFailure("Input exceeds the 128 KiB form limit; the new text was not added.")
+					}
+				}
+				return m, nil
+			}
 			switch key {
 			case "esc":
 				m.Editing = false
 				m.Confirm = false
 				m.Input = ""
+				m.dialogReview, m.dialogOffset, m.formError = false, 0, ""
+			case "tab", "shift+tab":
+				m.dialogReview = !m.dialogReview
+			case "pgdown":
+				m.scrollDialog(min(10, max(1, m.outputRows())))
+			case "pgup":
+				m.scrollDialog(-min(10, max(1, m.outputRows())))
+			case "down":
+				if m.dialogReview {
+					m.scrollDialog(1)
+				}
+			case "up":
+				if m.dialogReview {
+					m.scrollDialog(-1)
+				}
 			case "backspace":
+				if m.dialogReview {
+					break
+				}
 				r := []rune(m.Input)
 				if len(r) > 0 {
 					m.Input = string(r[:len(r)-1])
 				}
 			case "enter":
+				if m.dialogReview {
+					m.dialogReview = false
+					break
+				}
 				if m.Confirm {
 					if m.Plan == nil || m.Input != m.Plan.Digest {
-						m.Output = "Plan digest did not match. No operation submitted."
+						m.formFailure("Plan digest did not match. No operation submitted.")
 						break
 					}
 					p := m.Plan
@@ -253,7 +327,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						Input map[string]any `json:"input"`
 					}
 					if e := wire.Decode([]byte(m.Input), &form); e != nil {
-						m.Output = "Enter JSON with id or path, plus input parameters. See the selected command's generated reference."
+						m.formFailure("Enter JSON with id or path, plus input parameters. See the selected command's generated reference.")
 						break
 					}
 					r.ID = form.ID
@@ -264,20 +338,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Busy = true
 				m.Input = ""
 				return m, m.call(a.Method, r)
-			default:
-				if v.Type == tea.KeyRunes {
-					incoming := string(v.Runes)
-					if len(m.Input)+len(incoming) <= 128<<10 {
-						m.Input += incoming
-					} else {
-						m.Output = "Input exceeds the 128 KiB form limit; the new text was not added."
-					}
-				}
 			}
 			return m, nil
 		}
 		if m.Searching {
 			m.searchKey(v)
+			return m, nil
+		}
+		if v.Type == tea.KeyRunes && (v.Paste || len(v.Runes) != 1) {
+			// Only explicit single-character shortcuts belong to navigation.
 			return m, nil
 		}
 		switch key {
@@ -320,6 +389,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.Plan != nil && !m.Busy {
 				m.Confirm = true
 				m.Input = ""
+				m.dialogReview, m.dialogOffset, m.formError = false, 0, ""
 			}
 		case "enter":
 			if m.Busy {
@@ -333,6 +403,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if action.Argument != "" {
 				m.Editing = true
 				m.Input = ""
+				m.dialogReview, m.dialogOffset, m.formError = false, 0, ""
 			} else {
 				m.Busy = true
 				return m, m.call(action.Method, app.Request{Connection: m.Connection})
@@ -354,6 +425,8 @@ func (m Model) call(method string, r app.Request) tea.Cmd {
 }
 func (m Model) menuLines() []string {
 	width, height := max(1, m.Width), max(1, m.Height)
+	dialog := m.Editing || m.Confirm
+	compactDialog := dialog && height < 10
 	clip := func(text string) string {
 		tail := "…"
 		if width == 1 {
@@ -365,7 +438,16 @@ func (m Model) menuLines() []string {
 		clip(fmt.Sprintf("Virmill | %s | %s", m.Connection, sections[m.Section])),
 		clip("Tab: section  /: search  Enter: action  ?: help  PgUp/PgDn: details  q: detach"),
 	}
-	if m.Searching || m.Search != "" {
+	if dialog {
+		lines[1] = clip("Focus: input | Tab: details  Enter: submit  Esc: cancel  PgUp/PgDn: review")
+		if m.dialogReview {
+			lines[1] = clip("Focus: details | Tab/Enter: input  Up/Down/PgUp/PgDn: scroll  Esc: cancel")
+		}
+		if compactDialog {
+			lines = lines[:1]
+		}
+	}
+	if (m.Searching || m.Search != "") && !compactDialog {
 		prefix := "Filter: "
 		if m.Searching {
 			prefix = "Search> "
@@ -381,36 +463,52 @@ func (m Model) menuLines() []string {
 		}
 		lines = append(lines, clip(prefix+query))
 	}
-	if m.SearchNote != "" {
+	if m.SearchNote != "" && !dialog {
 		lines = append(lines, clip(m.SearchNote))
 	}
-	if m.Help {
+	if m.Help && !dialog {
 		lines = append(lines, clip("Up/Down selects. / searches this section. Plans: a reviews digest approval. Jobs continue after detaching."))
 	}
 	var tail []string
 	if m.Busy {
 		tail = append(tail, clip("Request in progress; UI remains available."))
 	}
-	if m.Editing {
+	if dialog {
 		input := wrap(validation.SafeText(m.Input), max(1, width-2))
-		if len(input) > 3 {
-			input = append([]string{"… earlier input hidden"}, input[len(input)-2:]...)
+		inputRows := 3
+		if height < 12 {
+			inputRows = 1
 		}
-		tail = append(tail, clip("Input: path/ID or JSON {id/path,input}; Esc cancels:"))
+		if len(input) > inputRows {
+			if inputRows == 1 {
+				input = input[len(input)-1:]
+			} else {
+				input = append([]string{"… earlier input hidden"}, input[len(input)-inputRows+1:]...)
+			}
+		}
+		prompt := "Input: path/ID or JSON {id/path,input}; Esc cancels:"
+		if m.Confirm {
+			prompt = "Type the full plan digest; PgUp/PgDn reviews; Esc cancels:"
+		}
+		if compactDialog {
+			prompt = "Focus: input; Esc cancels"
+			if m.dialogReview {
+				prompt = "Focus: details; Tab: input"
+			}
+		}
+		tail = append(tail, clip(prompt))
 		for i, line := range input {
 			prefix := "  "
-			if i == 0 {
+			if i == 0 && !m.dialogReview {
 				prefix = "> "
 			}
 			tail = append(tail, clip(prefix+line))
 		}
+		if m.formError != "" && !compactDialog {
+			tail = append(tail, clip(m.formError))
+		}
 	}
-	if m.Confirm && m.Plan != nil {
-		text := fmt.Sprintf("Approve plan %s. Required acknowledgements: %s\nType the full plan digest; Esc cancels:\n%s\n> %s",
-			m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, m.Input)
-		tail = append(tail, wrap(validation.SafeText(text), width)...)
-	}
-	if m.Plan != nil && !m.Confirm {
+	if m.Plan != nil && !dialog {
 		tail = append(tail, clip("Plan is a preview. Press a to review authorization."))
 	}
 	actions := m.actions()
@@ -449,7 +547,7 @@ func (m Model) View() string {
 		return ""
 	}
 	m.clampSelection()
-	if m.Width < 12 || m.Height < 4 {
+	if m.Width < 12 || m.Height < 4 || ((m.Editing || m.Confirm) && m.Height < 6) {
 		lines := []string{"Terminal too small; resize.", "Selection and input are retained."}
 		lines = lines[:min(len(lines), m.Height)]
 		for i := range lines {
@@ -458,8 +556,12 @@ func (m Model) View() string {
 		return strings.Join(lines, "\n") + "\n"
 	}
 	prefix := m.menuLines()
-	lines := wrap(validation.SafeText(m.Output), m.Width)
-	start := max(0, min(m.Offset, len(lines)))
+	lines := wrap(validation.SafeText(m.detailText()), m.Width)
+	offset := m.Offset
+	if m.Editing || m.Confirm {
+		offset = m.dialogOffset
+	}
+	start := max(0, min(offset, len(lines)))
 	end := min(start+m.outputRows(), len(lines))
 	return strings.Join(append(prefix, lines[start:end]...), "\n") + "\n"
 }

@@ -11,11 +11,14 @@ import (
 )
 
 func TestWorkspace(ctx context.Context, path, cache string) (ConformanceReport, error) {
+	if err := ctx.Err(); err != nil {
+		return ConformanceReport{}, err
+	}
 	root, e := filepath.Abs(path)
 	if e != nil {
 		return ConformanceReport{}, e
 	}
-	b, e := os.ReadFile(filepath.Join(root, "manifest.json"))
+	b, e := readRegular(filepath.Join(root, "manifest.json"), 1<<20)
 	if e != nil {
 		return ConformanceReport{}, e
 	}
@@ -83,7 +86,7 @@ func writeScaffold(destination string, files map[string][]byte) error {
 	return nil
 }
 func WorkspaceManifest(path string) (Manifest, error) {
-	b, e := os.ReadFile(filepath.Join(path, "manifest.json"))
+	b, e := readRegular(filepath.Join(path, "manifest.json"), 1<<20)
 	if e != nil {
 		return Manifest{}, e
 	}
