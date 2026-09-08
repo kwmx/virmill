@@ -112,7 +112,7 @@ def walkthrough(runner, iso, columns, rows):
             terminal.send(b'\x15')
             while terminal.read(.1) and not terminal.screen.complete():
                 pass
-            wait('Edit ' + label, lambda text: selected_label(text, label), value.encode('ascii'))
+            wait('Edit ' + label, lambda text: selected_label(text, label) and value in text, value.encode('ascii'))
 
         def picker(text, kind='file'):
             return re.search(r'(?:^|[│|])Choose a ' + kind + r'[ \t]*$', text, re.MULTILINE) is not None

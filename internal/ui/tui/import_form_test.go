@@ -47,6 +47,26 @@ func TestImportFormFitsSmallTerminal(t *testing.T) {
 	}
 }
 
+func TestImportFormShowsValuesWhileEditing(t *testing.T) {
+	f := NewImportForm("iso")
+	f.Draft.Source = "/media/installer.iso"
+	f = importFocus(t, f, "mediaID")
+	for _, size := range [][2]int{{80, 24}, {60, 18}} {
+		view := f.View(size[0], size[1])
+		if !strings.Contains(view, "/media/installer.iso") || !strings.Contains(view, "[installer|]") {
+			t.Fatal("short path or editable value disappeared", view)
+		}
+	}
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyCtrlU})
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("new-media")})
+	if !strings.Contains(f.View(80, 24), "[new-media|]") {
+		t.Fatal("typed value invisible")
+	}
+	if got := importTail("very-long-name.iso", 8); got != "…ame.iso" {
+		t.Fatal("filename suffix truncated incorrectly", got)
+	}
+}
+
 func TestImportCycleUnknownNeedsExplicitChoice(t *testing.T) {
 	if got := importCycle("", []string{"qcow2", "raw"}, 1); got != "qcow2" {
 		t.Fatal(got)

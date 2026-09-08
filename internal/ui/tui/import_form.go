@@ -96,7 +96,7 @@ func (f ImportForm) View(width, height int) string {
 			if value == "" {
 				value = "Choose…"
 			}
-			value = ansi.TruncateLeft(value, max(1, width-ansi.StringWidth(c.label)-8), "…")
+			value = importTail(value, max(1, width-ansi.StringWidth(c.label)-8))
 			row = c.label + ": [ " + value + " ]"
 		default:
 			if i == focus {
@@ -107,7 +107,7 @@ func (f ImportForm) View(width, height int) string {
 				}
 				before := string(runes[:cursor])
 				available := max(2, width-ansi.StringWidth(c.label)-8)
-				before = ansi.TruncateLeft(before, available-1, "…")
+				before = importTail(before, available-1)
 				value = before + "|" + string(runes[cursor:])
 			}
 			row = c.label + ": [" + value + "]"
@@ -116,6 +116,15 @@ func (f ImportForm) View(width, height int) string {
 	}
 	lines = append(lines, footer...)
 	return strings.Join(lines[:min(height, len(lines))], "\n")
+}
+
+// TruncateLeft removes columns; it does not impose a maximum width. Keep short
+// values intact and remove only the overflow, including room for the marker.
+func importTail(value string, width int) string {
+	if ansi.StringWidth(value) <= width {
+		return value
+	}
+	return ansi.TruncateLeft(value, ansi.StringWidth(value)-width+1, "…")
 }
 
 func (f *ImportForm) edit(c importControl, key tea.KeyMsg) {
