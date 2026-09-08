@@ -1,0 +1,7 @@
+ok  	virmill.local/core/internal/ui	(cached)
+ok  	virmill.local/core/internal/ui/cli	3.397s
+ok  	virmill.local/core/internal/ui/tui	4.994s
+ok  	virmill.local/core/internal/transport/local	(cached)
+ok  	virmill.local/core/internal/app/importer	(cached)
+ok  	virmill.local/core/internal/importing	(cached)
+ok  	virmill.local/core/internal/operations	(cached)

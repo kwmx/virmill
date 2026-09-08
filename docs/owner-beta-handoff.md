@@ -5,9 +5,10 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**UI update:** the installed CLI and running coordinator now use `01a2b94`; see the
-[native import options evidence](evidence/import-options-run.md) for current hashes and
+**UI update:** the installed CLI and running coordinator now use `4945d75`; see the
+[import inspection correction evidence](evidence/import-flow-run.md) for current hashes and
 controls. The original beta build evidence below remains historical.
+Exit any already-open TUI and run `virmill` again to load the new interface.
 
 ## Start testing now
 

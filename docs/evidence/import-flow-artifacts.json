@@ -1,0 +1,32 @@
+{
+  "built": [
+    {
+      "path": "virmill-1.0.0-0.beta.1.x86_64.rpm",
+      "sha256": "114115812dba6d55b7fe7508d5f3983fe1037b546f56e3bcea1c6c4bf56283d1"
+    },
+    {
+      "path": "virmill-host-helper-1.0.0-0.beta.1.x86_64.rpm",
+      "sha256": "6b526a53d7da3becbdffbb7f7c75947f2db4deb084f40d43b052d712711a225b"
+    },
+    {
+      "path": "virmill-host-helper_1.0.0~beta.1_amd64.deb",
+      "sha256": "b491824efbf618eaceccbdbf922349fcc566d4f778f553e602e961e9cce8acd5"
+    },
+    {
+      "path": "virmill_1.0.0~beta.1_amd64.deb",
+      "sha256": "05c43cbe1d3798d41db13ee60c1eedb87b31b3f7b131902dbe33d029c29dbedf"
+    }
+  ],
+  "releaseQualified": false,
+  "published": false,
+  "sourceRevision": "4945d75471bc343f2486a6953688cbafa04645c7",
+  "binaries": {
+    "virmill": "29cd3ba4077ed2a3ebecacf99c2a257e4cd5f8cb2c1538a76ccca745a8d0868d",
+    "virmilld": "00dd4f7496d8a50628d786e7a8771fb100edea2900ad650db7185071d79818c1"
+  },
+  "installedCoreOnAuthorizedVM": true,
+  "coordinatorPID": 63488,
+  "upgradeEvidence": "import-flow-upgrade-001",
+  "restartEvidence": "import-flow-restart-001",
+  "nativeUIEvidence": "import-flow-native-001"
+}
