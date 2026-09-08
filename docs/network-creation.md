@@ -6,8 +6,8 @@ declarations have these distinct policies:
 
 | Profile | Host access | Egress | Address and service declaration |
 | --- | --- | --- | --- |
-| NAT | `allow` or `services-only` | `any` | Explicit private IPv4 CIDR; optional DHCP |
-| Lab | `allow` or `services-only` | `none` | Explicit private IPv4 CIDR; optional DHCP; no DHCP default route |
+| NAT | `allow` or `services-only` | `any` | Private IPv4 CIDR or `auto`; optional DHCP |
+| Lab | `allow` or `services-only` | `none` | Private IPv4 CIDR or `auto`; optional DHCP; no DHCP default route |
 | Guest-only | `deny` | `none` | No host IP, DHCP, DNS or forwarding; optional logical guest-subnet CIDR |
 
 Protected `services-only` and `guest-only` plans use recipe and policy version 2.
@@ -56,7 +56,7 @@ the original reviewed policy and digest in both interfaces; it does not convert
 an old allowed-host plan into a protected one.
 
 Creation requires `qemu:///system`, `ipv6.mode: disabled`, and a new virtual
-bridge. NAT and lab require an explicit canonical private IPv4 CIDR with prefix
+bridge. NAT and lab accept `auto` using [configurable allocation](network-allocation.md), or an explicit canonical private IPv4 CIDR with prefix
 /8 through /30. Their bridge address is subnet+1;
 when enabled, DHCP leases span subnet+2 through the last usable address. NAT DHCP
 requires `advertiseDefaultRoute: true`; lab DHCP requires false. A DHCP-disabled
@@ -86,7 +86,7 @@ activation: version 1 uses the existing IPv6 filter; version 2 adds protected
 host-access policy. See the [helper boundary](network-helper.md) for its rule
 families and qualification limits. No physical uplink is
 moved and no firewall reload is requested. Native network autostart remains disabled.
-The implementation still refuses automatic CIDR allocation, external bridge
+The implementation still refuses external bridge
 creation, network extensions, enabled IPv6, `internet-only` egress and policy
 combinations outside the table. These are not silently replaced with an
 allowed-host profile. Outstanding mandatory networking, distribution and guest
@@ -122,3 +122,5 @@ describe what the application has proven. A defined/active network is not proof
 of DHCP options, DNS, internet reachability, guest routes, IPv6 or isolation. The
 [packet fixture](network-packet-fixtures.md) records native namespace observations
 separately from real guest and hardware qualification.
+
+Automatic selection and configured planned reservations: [allocation guide](network-allocation.md).

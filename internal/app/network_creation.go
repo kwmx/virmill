@@ -24,6 +24,7 @@ type networkRecipe struct {
 	Metadata    json.RawMessage          `json:"metadata"`
 	ParentJobID string                   `json:"parentJobID,omitempty"`
 	OriginJobID string                   `json:"originJobID,omitempty"`
+	Allocation  *networkAllocationReview `json:"allocation,omitempty"`
 }
 type networkRecord struct {
 	Version    int                      `json:"version"`
@@ -47,6 +48,9 @@ func parseNetworkRecipe(p domain.Plan, raw []byte) (networkRecipe, error) {
 	}
 	if (p.Operation != "network.create" || r.ParentJobID != "" || r.OriginJobID != "") && (p.Operation != "network.creation.resume" || r.ParentJobID == "" || r.OriginJobID == "") {
 		return r, domain.Fail("INVALID_INPUT", "invalid network recovery binding")
+	}
+	if err := validateNetworkAllocation(r); err != nil {
+		return r, err
 	}
 	var metadata map[string]any
 	if json.Unmarshal(r.Metadata, &metadata) != nil {
@@ -107,19 +111,28 @@ func (s *Service) planNetworkCreation(ctx context.Context, uid uint32, r Request
 	if err = network.Validate(spec); err != nil {
 		return empty, domain.Fail("INVALID_INPUT", err.Error())
 	}
-	if (spec.IPv4 == nil && spec.Type != "guest-only") || (spec.IPv4 != nil && spec.IPv4.CIDR == "auto") || spec.BridgeRef != "" {
-		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "creation requires a new managed bridge and explicit IPv4 CIDR, optional only for guest-only; use network cidr check before choosing the subnet")
+	if (spec.IPv4 == nil && spec.Type != "guest-only") || spec.BridgeRef != "" {
+		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "creation requires a new managed bridge and IPv4 CIDR or auto, optional only for guest-only")
 	}
 	id := domain.ID()
 	d := domain.NetworkDefinition{UUID: id, Name: "virmill-" + id, Bridge: "vm" + strings.ReplaceAll(id, "-", "")[:12], Type: spec.Type, IPv6Mode: spec.IPv6.Mode, HostAccess: spec.HostAccess, Egress: spec.Egress}
 	if spec.IPv4 != nil {
 		d.IPv4CIDR, d.DHCPEnabled, d.AdvertiseDefaultRoute = spec.IPv4.CIDR, spec.IPv4.DHCP.Enabled, spec.IPv4.DHCP.AdvertiseDefaultRoute
 	}
+	var allocation *networkAllocationReview
+	if d.IPv4CIDR == "auto" {
+		var selected string
+		selected, allocation, err = s.allocateNetworkCIDR(ctx, r.Connection)
+		if err != nil {
+			return empty, err
+		}
+		d.IPv4CIDR = selected
+	}
 	if err = networkxml.Validate(d); err != nil {
 		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", err.Error())
 	}
 	metadata, _ := json.Marshal(value["metadata"])
-	recipe := networkRecipe{Version: d.PolicyVersion(), Definition: d, Metadata: metadata}
+	recipe := networkRecipe{Version: d.PolicyVersion(), Definition: d, Metadata: metadata, Allocation: allocation}
 	return s.Engine.Plan(ctx, uid, r.Connection, "network.create", networkResources(r.Connection, d), nil, recipe, networkSteps(false, d), networkAcknowledgements(), networkRisks(d))
 }
 func (s *Service) networkRecords() ([]networkRecord, error) {
@@ -200,7 +213,7 @@ func (s *Service) recordForRecipe(p domain.Plan, r networkRecipe) (networkRecord
 		return out, domain.Fail("SOURCE_CHANGED", "original network plan integrity differs")
 	}
 	recipe, err := parseNetworkRecipe(original, body)
-	if err != nil || recipe.Definition != r.Definition || original.Operation != "network.create" || original.ActorUID != p.ActorUID {
+	if err != nil || recipe.Definition != r.Definition || !reflect.DeepEqual(recipe.Allocation, r.Allocation) || original.Operation != "network.create" || original.ActorUID != p.ActorUID {
 		return out, domain.Fail("SOURCE_CHANGED", "network reservation does not belong to original creation")
 	}
 	inputDigest, err := operations.Digest(json.RawMessage(body))
@@ -229,7 +242,7 @@ func (h *networkCreationHandler) Review(ctx context.Context, p domain.Plan, raw 
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"definition": r.Definition, "metadata": r.Metadata, "networkXML": xml, "autostart": false, "packetVerification": "not-run", "guestRoutingVerified": false, "resumeFrom": r.ParentJobID, "physicalUplinkChanges": false}, ctx.Err()
+	return map[string]any{"allocation": r.Allocation, "definition": r.Definition, "metadata": r.Metadata, "networkXML": xml, "autostart": false, "packetVerification": "not-run", "guestRoutingVerified": false, "resumeFrom": r.ParentJobID, "physicalUplinkChanges": false}, ctx.Err()
 }
 func (h *networkCreationHandler) Estimate(context.Context, domain.Plan, []byte) (domain.Estimates, error) {
 	return domain.Estimates{Notes: "One new virtual bridge and optional libvirt DHCP/DNS process; no guest or disk allocation. Existing host networking is retained."}, nil
@@ -472,7 +485,7 @@ func (s *Service) networkCreationResult(ctx context.Context, uid uint32, r Reque
 	if err != nil {
 		return nil, err
 	}
-	result := map[string]any{"job": j, "definition": recipe.Definition, "metadata": recipe.Metadata, "subnetReserved": record.JobID != "" && recipe.Definition.IPv4CIDR != "", "packetVerification": "not-run", "guestRoutingVerified": false}
+	result := map[string]any{"job": j, "allocation": recipe.Allocation, "definition": recipe.Definition, "metadata": recipe.Metadata, "subnetReserved": record.JobID != "" && recipe.Definition.IPv4CIDR != "", "packetVerification": "not-run", "guestRoutingVerified": false}
 	if provider, ok := s.Provider.(domain.NetworkCreationProvider); ok && record.JobID != "" {
 		n, e := provider.InspectCreatedNetwork(ctx, r.Connection, recipe.Definition)
 		if e != nil {

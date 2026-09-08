@@ -1,0 +1,14 @@
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: auto-lab
+  displayName: Lab with an automatically selected private IPv4 subnet
+  tags: [example]
+spec:
+  type: lab
+  ipv4:
+    cidr: auto
+    dhcp: {enabled: true, advertiseDefaultRoute: false}
+  ipv6: {mode: disabled}
+  hostAccess: services-only
+  egress: none

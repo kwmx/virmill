@@ -20,7 +20,12 @@ def network_rules(definition):
  return rules
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--lab-cidr',required=True);p.add_argument('--nat-cidr',required=True);p.add_argument('--profile',choices=('allow','protected'),default='allow');p.add_argument('--guest-cidr');p.add_argument('--host4-target');p.add_argument('--dhcp',choices=('on','off'),default='on');p.add_argument('--kinds',nargs='+',choices=('lab','nat','guest-only'));a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--lab-cidr',required=True);p.add_argument('--nat-cidr',required=True);p.add_argument('--profile',choices=('allow','protected'),default='allow');p.add_argument('--guest-cidr');p.add_argument('--host4-target');p.add_argument('--dhcp',choices=('on','off'),default='on');p.add_argument('--kinds',nargs='+',choices=('lab','nat','guest-only'));p.add_argument('--auto',action='store_true');p.add_argument('--allocation-settings',type=pathlib.Path);a=p.parse_args()
+ if a.auto:assert a.allocation_settings is not None
+ allocation_settings=None
+ if a.allocation_settings is not None:
+  allocation_raw=a.allocation_settings.read_bytes();assert len(allocation_raw)<=65536
+  allocation_settings=json.loads(allocation_raw);assert allocation_settings['version']==1
  if a.profile=='protected':assert a.guest_cidr and a.host4_target
  else:assert not a.guest_cidr and not a.host4_target
  profiles=[('lab',a.lab_cidr),('nat',a.nat_cidr)]+([('guest-only',a.guest_cidr)] if a.profile=='protected' else [])
@@ -73,6 +78,8 @@ def main():
   for name in ('state','runtime','cache','data','config'):
    target=root/name;target.mkdir(mode=0o700);env['XDG_'+('RUNTIME_DIR' if name=='runtime' else name.upper()+'_HOME')]=str(target)
   config=root/'config/virmill';config.mkdir(mode=0o700)
+  if allocation_settings is not None:
+   (config/'network-allocation.json').write_bytes(allocation_raw);report['allocationSettingsSHA256']=hashlib.sha256(allocation_raw).hexdigest()
   run(['openssl','genpkey','-algorithm','ED25519','-out',str(config/'helper-key.pem')]);os.chmod(config/'helper-key.pem',0o600)
   log=(results/'daemon.log').open('w');daemon=subprocess.Popen([str(root/'bin/virmilld')],env=env,stdout=log,stderr=subprocess.STDOUT)
   for _ in range(100):
@@ -95,9 +102,11 @@ def main():
   if identity['actorUID'] not in policy['actors']:policy['actors'].append(identity['actorUID'])
   for kind,cidr in profiles:
    host_access='deny' if kind=='guest-only' else ('services-only' if a.profile=='protected' else 'allow');dhcp=kind!='guest-only' and a.dhcp=='on'
-   doc={'apiVersion':'virmill/v1','kind':'Network','metadata':{'name':'native-'+kind,'tags':['disposable-fixture']},'spec':{'type':kind,'hostAccess':host_access,'egress':'any' if kind=='nat' else 'none','ipv4':{'cidr':cidr,'dhcp':{'enabled':dhcp,'advertiseDefaultRoute':dhcp and kind=='nat'}},'ipv6':{'mode':'disabled'}}}
+   doc={'apiVersion':'virmill/v1','kind':'Network','metadata':{'name':'native-'+kind,'tags':['disposable-fixture']},'spec':{'type':kind,'hostAccess':host_access,'egress':'any' if kind=='nat' else 'none','ipv4':{'cidr':'auto' if a.auto else cidr,'dhcp':{'enabled':dhcp,'advertiseDefaultRoute':dhcp and kind=='nat'}},'ipv6':{'mode':'disabled'}}}
    path=root/(kind+'.json');path.write_text(json.dumps(doc)+'\n')
    plan=cli('network','create',str(path),'--plan')['data'];d=plan['review']['definition'];assert d['type']==kind and d['hostAccess']==host_access and d['dhcpEnabled']==dhcp and re.fullmatch(r'vm[0-9a-f]{12}',d['bridge'])
+   assert d['ipv4CIDR']==cidr,'selected subnet must match the explicitly reviewed fixture subnet'
+   if a.auto:assert plan['review']['allocation']['requestedCIDR']=='auto' and plan['review']['allocation']['config']==allocation_settings
    item={'uuid':d['uuid'],'bridge':d['bridge'],'kind':kind,'plan':plan,'definition':d,'cleanupRules':network_rules(d),'ruleCleanupNeeded':True};created.append(item);save()
    # First apply must fail without the independent network permission and before definition.
    denied=cli('plan','apply',plan['planID'],'--digest',plan['planDigest'],'--idempotency-key',str(uuid.uuid4()),*[part for ack in plan['acknowledgements'] for part in ('--ack',ack)],check=False)

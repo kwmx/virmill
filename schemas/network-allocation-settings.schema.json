@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/network-allocation-settings.schema.json",
+  "title": "Virmill network allocation settings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "ranges"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "ranges": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "cidr",
+          "prefixLength"
+        ],
+        "properties": {
+          "cidr": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 18,
+            "description": "Canonical RFC 1918 IPv4 CIDR; semantic validation checks the complete prefix."
+          },
+          "prefixLength": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 30
+          }
+        }
+      }
+    },
+    "planned": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "cidr"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "cidr": {
+            "type": "string",
+            "minLength": 9,
+            "maxLength": 18,
+            "description": "Canonical RFC 1918 IPv4 CIDR; semantic validation checks the complete prefix."
+          }
+        }
+      }
+    }
+  }
+}

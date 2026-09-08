@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "ranges": [
+    {"cidr": "10.0.0.0/8", "prefixLength": 24},
+    {"cidr": "172.16.0.0/12", "prefixLength": 24},
+    {"cidr": "192.168.0.0/16", "prefixLength": 24}
+  ],
+  "planned": [
+    {"id": "external-lab", "cidr": "10.9.0.0/24"}
+  ]
+}

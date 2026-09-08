@@ -1,17 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
 	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/app/network"
 	"virmill.local/core/internal/auxiliary"
 	backend "virmill.local/core/internal/backend/libvirt"
 	"virmill.local/core/internal/creating"
 	"virmill.local/core/internal/importing"
 	"virmill.local/core/internal/networkfirewall"
+	"virmill.local/core/internal/networksettings"
 	"virmill.local/core/internal/operations"
 	platform "virmill.local/core/internal/platform/linux"
 	"virmill.local/core/internal/plugins"
@@ -41,6 +44,9 @@ func run() error {
 	service := app.New(&backend.Provider{}, engine)
 	service.Inspector = platform.Doctor
 	service.HostPrefixes = platform.ObserveHostNetworkPrefixes
+	service.NetworkAllocation = func(ctx context.Context) (network.AllocationConfig, error) {
+		return networksettings.Load(ctx, p.Config)
+	}
 	importing.Register(service)
 	creating.Register(service, p.Cache)
 	storageaccess.Register(service, p.Config)

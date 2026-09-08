@@ -54,3 +54,8 @@ a missing route destination or mask is its address-family default `/0`; the
 gateway is mandatory. Such configured routes remain conflict evidence even
 while a network is inactive. Missing masks on interface IP declarations are
 refused when a safe prefix cannot be explicitly observed.
+
+The checker also considers configured `planned` allocations. Network creation
+accepts `cidr: auto` through the same observations; see [automatic allocation](network-allocation.md).
+Foreign managed definitions must match their complete fixed profile; hidden
+guest-only subnets need a UUID-bound planned entry matching the native intent.

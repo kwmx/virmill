@@ -6,20 +6,20 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/xml"
 	"net/netip"
 	"sort"
+	"strings"
 	"virmill.local/core/internal/app/network"
+	"virmill.local/core/internal/backend/networkxml"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/validation"
 	"virmill.local/core/internal/wire"
 )
 
 type cidrInput struct {
-	Candidates []string `json:"candidates"`
-	Planned    []struct {
-		ID   string `json:"id"`
-		CIDR string `json:"cidr"`
-	} `json:"planned"`
+	Candidates []string                    `json:"candidates"`
+	Planned    []network.PlannedAllocation `json:"planned"`
 }
 type prefixConflict struct {
 	CIDR           string `json:"cidr"`
@@ -86,110 +86,15 @@ func (s *Service) checkCIDRsExcept(ctx context.Context, r Request, excludeNetwor
 		}
 		candidates = append(candidates, p)
 	}
-	occupied := []prefixConflict{}
-	if s.Engine != nil && s.Engine.Store != nil {
-		reserved, err := s.networkRecords()
-		if err != nil {
-			return nil, err
-		}
-		for _, record := range reserved {
-			if record.Connection == r.Connection && record.Definition.UUID != excludeNetwork && record.Definition.IPv4CIDR != "" {
-				occupied = append(occupied, prefixConflict{CIDR: record.Definition.IPv4CIDR, Source: "application-reservation", ID: record.Definition.UUID})
-			}
-		}
-	}
-	ids := map[string]bool{}
-	for _, planned := range in.Planned {
-		if ids[planned.ID] {
-			return nil, domain.Fail("INVALID_INPUT", "duplicate planned allocation ID")
-		}
-		ids[planned.ID] = true
-		if _, err := canonicalPrefix(planned.CIDR); err != nil {
-			return nil, err
-		}
-		occupied = append(occupied, prefixConflict{CIDR: planned.CIDR, Source: "planned", ID: planned.ID})
-	}
-	if s.HostPrefixes == nil {
-		return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "host prefix observation unavailable")
-	}
-	inv, ok := s.Provider.(domain.ResourceInventory)
-	if !ok {
-		return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "native network inventory unavailable")
-	}
-	host, err := s.HostPrefixes(ctx)
+	cfg, err := s.allocationConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if len(host.Prefixes) > 65536 {
-		return nil, domain.Fail("INVALID_STATE", "host prefix observation limit")
-	}
-	report := cidrReport{Candidates: []cidrCandidate{}, Warnings: append([]string{}, host.Warnings...)}
-	for _, h := range host.Prefixes {
-		p, err := canonicalPrefix(h.CIDR)
-		if err != nil {
-			return nil, domain.Fail("INVALID_STATE", "invalid observed host prefix")
-		}
-		if h.Source != "address" && h.Source != "route" {
-			return nil, domain.Fail("INVALID_STATE", "unknown observed prefix source")
-		}
-		if h.Source == "route" && p.Bits() == 0 {
-			report.IgnoredDefaultRoutes++
-			continue
-		}
-		occupied = append(occupied, prefixConflict{CIDR: h.CIDR, Source: h.Source, InterfaceIndex: h.InterfaceIndex, Table: h.Table})
-	}
-	networks, err := inv.ListNetworks(ctx, r.Connection)
+	in.Planned = append(in.Planned, cfg.Planned...)
+	occupied, report, err := s.observeCIDROccupancy(ctx, r.Connection, in, excludeNetwork)
 	if err != nil {
 		return nil, err
 	}
-	if len(networks) > 4096 {
-		return nil, domain.Fail("INVALID_STATE", "network observation limit")
-	}
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	xmlBytes := 0
-	netIDs := map[string]bool{}
-	for _, n := range networks {
-		if err := ctx.Err(); err != nil {
-			return nil, err
-		}
-		if n.Key.UUID == "" || len(n.Key.UUID) > 128 || netIDs[n.Key.UUID] {
-			return nil, domain.Fail("INVALID_STATE", "missing or duplicate network identity")
-		}
-		netIDs[n.Key.UUID] = true
-		if n.Key.UUID == excludeNetwork {
-			continue
-		}
-		if !n.Active && !n.Persistent || n.Active && n.LiveXML == "" || n.Persistent && n.PersistentXML == "" {
-			return nil, domain.Fail("INVALID_STATE", "network configuration observation incomplete")
-		}
-		for _, layer := range []struct{ name, xml string }{{"live", n.LiveXML}, {"persistent", n.PersistentXML}} {
-			if layer.xml == "" {
-				continue
-			}
-			xmlBytes += len(layer.xml)
-			if xmlBytes > 16<<20 {
-				return nil, domain.Fail("INVALID_STATE", "network XML observation limit")
-			}
-			prefixes, err := network.DefinedPrefixes(layer.xml)
-			if err != nil {
-				return nil, domain.Fail("INVALID_STATE", "network "+n.Key.UUID+" "+layer.name+": "+err.Error())
-			}
-			for _, p := range prefixes {
-				occupied = append(occupied, prefixConflict{CIDR: p.String(), Source: "network-" + layer.name, ID: n.Key.UUID})
-			}
-		}
-	}
-	// Sorting makes attribution/digests stable even when native enumeration order
-	// changes. A digest describes this observation; it is never an approval token.
-	sort.Slice(occupied, func(i, j int) bool {
-		a, b := occupied[i], occupied[j]
-		return cmp.Or(cmp.Compare(a.CIDR, b.CIDR), cmp.Compare(a.Source, b.Source), cmp.Compare(a.ID, b.ID), cmp.Compare(a.InterfaceIndex, b.InterfaceIndex), cmp.Compare(a.Table, b.Table)) < 0
-	})
-	observed, _ := json.Marshal(occupied)
-	hash := sha256.Sum256(observed)
-	report.ObservedDigest = hex.EncodeToString(hash[:])
 	conflicts := 0
 	for i, p := range candidates {
 		item := cidrCandidate{CIDR: in.Candidates[i], Conflicts: []prefixConflict{}}
@@ -213,4 +118,192 @@ func (s *Service) checkCIDRsExcept(ctx context.Context, r Request, excludeNetwor
 	}
 	report.Warnings = append(report.Warnings, "Read-only observation is not atomic and reserves no CIDR. Recheck immediately before any reviewed network change.", "All host route tables are considered, including inactive policy routes; only route /0 defaults are excluded. Configured network and planned /0 allocations still conflict.", "No packet routing, isolation, passthrough or guest behavior has been verified.")
 	return report, nil
+}
+
+// observeCIDROccupancy takes one bounded native/host/reservation observation for
+// both explicit checks and automatic allocation. Defaults are excluded only
+// when they originate from a host route, never from a planned allocation.
+func (s *Service) observeCIDROccupancy(ctx context.Context, uri string, in cidrInput, excludeNetwork string) ([]prefixConflict, cidrReport, error) {
+	occupied := []prefixConflict{}
+	known := map[string]domain.NetworkDefinition{}
+	if s.Engine != nil && s.Engine.Store != nil {
+		reserved, err := s.networkRecords()
+		if err != nil {
+			return nil, cidrReport{}, err
+		}
+		for _, record := range reserved {
+			if record.Connection == uri {
+				known[record.Definition.UUID] = record.Definition
+			}
+			if record.Connection == uri && record.Definition.UUID != excludeNetwork && record.Definition.IPv4CIDR != "" {
+				occupied = append(occupied, prefixConflict{CIDR: record.Definition.IPv4CIDR, Source: "application-reservation", ID: record.Definition.UUID})
+			}
+		}
+	}
+	ids := map[string]bool{}
+	for _, planned := range in.Planned {
+		if ids[planned.ID] {
+			return nil, cidrReport{}, domain.Fail("INVALID_INPUT", "duplicate planned allocation ID")
+		}
+		ids[planned.ID] = true
+		if _, err := canonicalPrefix(planned.CIDR); err != nil {
+			return nil, cidrReport{}, err
+		}
+		occupied = append(occupied, prefixConflict{CIDR: planned.CIDR, Source: "planned", ID: planned.ID})
+	}
+	if s.HostPrefixes == nil {
+		return nil, cidrReport{}, domain.Fail("UNSUPPORTED_CAPABILITY", "host prefix observation unavailable")
+	}
+	inv, ok := s.Provider.(domain.ResourceInventory)
+	if !ok {
+		return nil, cidrReport{}, domain.Fail("UNSUPPORTED_CAPABILITY", "native network inventory unavailable")
+	}
+	host, err := s.HostPrefixes(ctx)
+	if err != nil {
+		return nil, cidrReport{}, err
+	}
+	if len(host.Prefixes) > 65536 {
+		return nil, cidrReport{}, domain.Fail("INVALID_STATE", "host prefix observation limit")
+	}
+	report := cidrReport{Candidates: []cidrCandidate{}, Warnings: append([]string{}, host.Warnings...)}
+	for _, h := range host.Prefixes {
+		p, err := canonicalPrefix(h.CIDR)
+		if err != nil {
+			return nil, cidrReport{}, domain.Fail("INVALID_STATE", "invalid observed host prefix")
+		}
+		if h.Source != "address" && h.Source != "route" {
+			return nil, cidrReport{}, domain.Fail("INVALID_STATE", "unknown observed prefix source")
+		}
+		if h.Source == "route" && p.Bits() == 0 {
+			report.IgnoredDefaultRoutes++
+			continue
+		}
+		occupied = append(occupied, prefixConflict{CIDR: h.CIDR, Source: h.Source, InterfaceIndex: h.InterfaceIndex, Table: h.Table})
+	}
+	networks, err := inv.ListNetworks(ctx, uri)
+	if err != nil {
+		return nil, cidrReport{}, err
+	}
+	if len(networks) > 4096 {
+		return nil, cidrReport{}, domain.Fail("INVALID_STATE", "network observation limit")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, cidrReport{}, err
+	}
+	xmlBytes := 0
+	netIDs := map[string]bool{}
+	for _, n := range networks {
+		if err := ctx.Err(); err != nil {
+			return nil, cidrReport{}, err
+		}
+		if n.Key.UUID == "" || len(n.Key.UUID) > 128 || netIDs[n.Key.UUID] {
+			return nil, cidrReport{}, domain.Fail("INVALID_STATE", "missing or duplicate network identity")
+		}
+		netIDs[n.Key.UUID] = true
+		if n.Key.UUID == excludeNetwork {
+			continue
+		}
+		if !n.Active && !n.Persistent || n.Active && n.LiveXML == "" || n.Persistent && n.PersistentXML == "" {
+			return nil, cidrReport{}, domain.Fail("INVALID_STATE", "network configuration observation incomplete")
+		}
+		for _, layer := range []struct{ name, xml string }{{"live", n.LiveXML}, {"persistent", n.PersistentXML}} {
+			if layer.xml == "" {
+				continue
+			}
+			xmlBytes += len(layer.xml)
+			if xmlBytes > 16<<20 {
+				return nil, cidrReport{}, domain.Fail("INVALID_STATE", "network XML observation limit")
+			}
+			prefixes, err := network.DefinedPrefixes(layer.xml)
+			if err != nil {
+				return nil, cidrReport{}, domain.Fail("INVALID_STATE", "network "+n.Key.UUID+" "+layer.name+": "+err.Error())
+			}
+			if definition, owned := known[n.Key.UUID]; owned {
+				if err := networkxml.Match(layer.xml, definition); err != nil {
+					return nil, cidrReport{}, err
+				}
+			} else if (strings.HasPrefix(n.Name, "virmill-") || hasManagedNetworkMarker(layer.xml)) && !matchesForeignNetworkAllocation(n, layer.xml, prefixes, in.Planned) {
+				// Guest-only intent hashes bind the declaration, but
+				// are not reversible into the logical CIDR. A different user's
+				// journal cannot be guessed from the addressless native bridge.
+				return nil, cidrReport{}, domain.Fail("UNRESOLVED_ALLOCATION", "managed network "+n.Key.UUID+" has no exact observable or explicitly declared allocation; recover its owning inventory and declare its UUID/CIDR in planned settings")
+			}
+			for _, p := range prefixes {
+				occupied = append(occupied, prefixConflict{CIDR: p.String(), Source: "network-" + layer.name, ID: n.Key.UUID})
+			}
+		}
+	}
+	if len(occupied) > 65536 {
+		return nil, cidrReport{}, domain.Fail("INVALID_STATE", "combined allocation observation limit")
+	}
+	// Sorting makes attribution/digests stable even when native enumeration order
+	// changes. A digest describes this observation; it is never an approval token.
+	sort.Slice(occupied, func(i, j int) bool {
+		a, b := occupied[i], occupied[j]
+		return cmp.Or(cmp.Compare(a.CIDR, b.CIDR), cmp.Compare(a.Source, b.Source), cmp.Compare(a.ID, b.ID), cmp.Compare(a.InterfaceIndex, b.InterfaceIndex), cmp.Compare(a.Table, b.Table)) < 0
+	})
+	observed, _ := json.Marshal(occupied)
+	hash := sha256.Sum256(observed)
+	report.ObservedDigest = hex.EncodeToString(hash[:])
+	return occupied, report, ctx.Err()
+}
+
+// Foreign configuration can supply allocation facts without transferring any
+// authority. Every field, native intent hash and permitted libvirt default must
+// match a fixed profile; an added route/IP cannot hide an unknown guest subnet.
+func matchesForeignNetworkAllocation(n domain.VirtualNetwork, raw string, prefixes []netip.Prefix, planned []network.PlannedAllocation) bool {
+	d := domain.NetworkDefinition{UUID: n.Key.UUID, Name: n.Name, Bridge: "vm" + strings.ReplaceAll(n.Key.UUID, "-", "")}
+	if len(d.Bridge) != 34 {
+		return false
+	}
+	d.Bridge = d.Bridge[:14]
+	d.Type, d.HostAccess, d.Egress, d.IPv6Mode = "guest-only", "deny", "none", "disabled"
+	if networkxml.Match(raw, d) == nil {
+		return true
+	}
+	for _, item := range planned {
+		if item.ID == n.Key.UUID {
+			d.IPv4CIDR = item.CIDR
+			if networkxml.Match(raw, d) == nil {
+				return true
+			}
+		}
+	}
+	if len(prefixes) != 1 || !prefixes[0].Addr().Is4() {
+		return false
+	}
+	d.IPv4CIDR = prefixes[0].String()
+	for _, kind := range []string{"nat", "lab"} {
+		d.Type = kind
+		d.Egress = "none"
+		if kind == "nat" {
+			d.Egress = "any"
+		}
+		for _, access := range []string{"allow", "services-only"} {
+			d.HostAccess = access
+			for _, dhcp := range []bool{false, true} {
+				d.DHCPEnabled = dhcp
+				d.AdvertiseDefaultRoute = dhcp && kind == "nat"
+				if networkxml.Match(raw, d) == nil {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// Called only after DefinedPrefixes has validated and bounded the entire XML.
+// A marker indicates a possible hidden allocation, never ownership or trust.
+func hasManagedNetworkMarker(raw string) bool {
+	decoder := xml.NewDecoder(strings.NewReader(raw))
+	for {
+		token, err := decoder.Token()
+		if err != nil {
+			return false
+		}
+		if element, ok := token.(xml.StartElement); ok && element.Name == (xml.Name{Space: "urn:virmill:v1", Local: "networkCreation"}) {
+			return true
+		}
+	}
 }

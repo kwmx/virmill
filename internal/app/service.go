@@ -33,13 +33,14 @@ type Response struct {
 	Error      *domain.Error `json:"error"`
 }
 type Service struct {
-	Provider        domain.ComputeProvider
-	Engine          *operations.Engine
-	Inspector       func() []domain.Capability
-	HostPrefixes    func(context.Context) (domain.HostNetworkPrefixes, error)
-	Extensions      map[string]func(context.Context, uint32, Request) (any, error)
-	InventoryVM     func(context.Context, domain.VM) (domain.VM, error)
-	NetworkFirewall NetworkFirewall
+	Provider          domain.ComputeProvider
+	Engine            *operations.Engine
+	Inspector         func() []domain.Capability
+	HostPrefixes      func(context.Context) (domain.HostNetworkPrefixes, error)
+	NetworkAllocation func(context.Context) (network.AllocationConfig, error)
+	Extensions        map[string]func(context.Context, uint32, Request) (any, error)
+	InventoryVM       func(context.Context, domain.VM) (domain.VM, error)
+	NetworkFirewall   NetworkFirewall
 }
 
 func New(p domain.ComputeProvider, e *operations.Engine) *Service {
