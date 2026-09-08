@@ -20,15 +20,18 @@ def network_rules(definition):
  return rules
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--lab-cidr',required=True);p.add_argument('--nat-cidr',required=True);p.add_argument('--profile',choices=('allow','protected'),default='allow');p.add_argument('--guest-cidr');p.add_argument('--host4-target');p.add_argument('--dhcp',choices=('on','off'),default='on');a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--lab-cidr',required=True);p.add_argument('--nat-cidr',required=True);p.add_argument('--profile',choices=('allow','protected'),default='allow');p.add_argument('--guest-cidr');p.add_argument('--host4-target');p.add_argument('--dhcp',choices=('on','off'),default='on');p.add_argument('--kinds',nargs='+',choices=('lab','nat','guest-only'));a=p.parse_args()
  if a.profile=='protected':assert a.guest_cidr and a.host4_target
  else:assert not a.guest_cidr and not a.host4_target
  profiles=[('lab',a.lab_cidr),('nat',a.nat_cidr)]+([('guest-only',a.guest_cidr)] if a.profile=='protected' else [])
+ if a.kinds:
+  assert len(set(a.kinds))==len(a.kinds) and set(a.kinds).issubset({kind for kind,_ in profiles})
+  profiles=[item for item in profiles if item[0] in a.kinds]
  networks=[ipaddress.IPv4Network(c) for _,c in profiles];assert all(n.is_private and n.prefixlen==24 for n in networks) and all(not left.overlaps(right) for i,left in enumerate(networks) for right in networks[i+1:])
  root=a.root.resolve(strict=True);assert root.is_relative_to(pathlib.Path.home()/'virmill-tests') and os.getuid()!=0
  run_id=uuid.uuid4().hex;results=root/'results';results.mkdir(mode=0o700)
  env=dict(os.environ);events=[];created=[];daemon=None;policy_before=None;dropin=None;dropin_installed=False;current_policy_sha=None;helper_root='/run/virmill-network-fixture-'+run_id
- report={'status':'failed','runID':run_id,'scope':'native owned network definition, declared policy rules and namespace packets; not real-guest or release qualification','profile':a.profile,'created':created}
+ report={'status':'failed','runID':run_id,'scope':'native owned network definition, declared policy rules and namespace packets; not real-guest or release qualification','profile':a.profile,'selectedKinds':[kind for kind,_ in profiles],'created':created}
  def save(): (results/'report.json').write_text(json.dumps(report,indent=2)+'\n');(results/'commands.json').write_text(json.dumps(events,indent=2)+'\n')
  def run(argv,timeout=45,check=True):
   start=time.monotonic();out=subprocess.run(argv,capture_output=True,text=True,env=env,timeout=timeout)
@@ -111,8 +114,8 @@ def main():
    if kind=='guest-only':static_args += ['--static-cidr4',cidr,'--host4-target',a.host4_target]
    packet=run(['sudo','-n','python3','-I',helper_root+'/network_packet_fixture.py','run','--root',str(root),'--execute-reviewed','--confirm-new-unused-network','--run-id',packet_id,'--recipe-sha256',packet_sha,'--network-id',d['uuid'],'--network-xml-sha256',item['liveXMLSHA256'],'--bridge',d['bridge'],'--kind',kind,'--host-access',host_access,'--dhcp','on' if dhcp else 'off',*static_args,'--forward4-target','1.1.1.1','--forward4-port','443',*(['--dns-name','example.com'] if dhcp and (kind=='nat' or host_access=='services-only') else []),'--output',str(packet_output)],timeout=270,check=False)
    item['packetExitCode']=packet.returncode;item['packetReport']=json.loads(run(['sudo','-n','cat',str(packet_output/'report.json')]).stdout)
-   assert packet.returncode==0,item['packetReport']
-  report['status']='passed-native-creation';save()
+   if packet.returncode!=0:assert item['packetReport'].get('cleanup',{}).get('status')=='verified',item['packetReport']
+  report['status']='passed-native-creation' if all(item['packetExitCode']==0 for item in created) else 'failed-packet-qualification';save()
  finally:
   # Stop every test writer before any cleanup, including after a detached client.
   if daemon is not None:daemon.terminate();daemon.wait(timeout=20);daemon=None
@@ -138,6 +141,7 @@ def main():
   if 'preservationBefore' in report:report['preservationAfter']=snapshots();report['existingResourcesPreserved']=report['preservationBefore']==report['preservationAfter']
   if 'firewallBefore' in report:report['firewallAfter']={'runtime':firewall(),'permanent':firewall(True),'zones':run(['sudo','-n','firewall-cmd','--get-active-zones']).stdout};report['existingFirewallPreserved']=report['firewallBefore']==report['firewallAfter']
   save();print(json.dumps(report,indent=2))
+ if report['status']!='passed-native-creation':raise RuntimeError('one or more packet profiles failed qualification')
  if not report.get('existingResourcesPreserved') or not report.get('existingFirewallPreserved') or not report.get('policyRestored'):raise RuntimeError('preservation verification failed')
 
 if __name__=='__main__':main()

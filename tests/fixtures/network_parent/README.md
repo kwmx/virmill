@@ -34,6 +34,11 @@ has no host IP, and requires the already assigned host address as a negative
 probe target. No host address is created or moved. The packet fixture independently
 checks the selected target and complete profile contract.
 
+`--kinds nat guest-only` selects dependency-ready profiles for one run. It does
+not waive the omitted profile's required qualification. A packet discrepancy
+with verified endpoint cleanup is retained while the next selected profile is
+tested; an unverified cleanup or failed creation stops further mutations.
+
 The recipe explicitly uses `1.1.1.1:443` for bounded external TCP reachability
 and `example.com` for the managed DNS query. These are packet-test targets, not
 publication destinations. Before running, the parent must review and authorize
