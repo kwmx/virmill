@@ -143,6 +143,7 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch intent.Kind {
 	case "cancel":
 		m.Import = nil
+		m.Advanced = true
 		m.Pending = maps.Clone(m.Pending)
 		delete(m.Pending, "import-inspect")
 		delete(m.Pending, "plan")

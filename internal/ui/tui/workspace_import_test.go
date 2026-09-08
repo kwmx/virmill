@@ -43,6 +43,12 @@ func TestImportWorkspacePreviewRetainsOptionsAndUsesSharedService(t *testing.T) 
 	if len(c.calls) != 1 {
 		t.Fatal("cancel must not apply")
 	}
+	for range 3 {
+		m, _ = wk(m, "esc")
+	}
+	if m.Import != nil || !m.Advanced {
+		t.Fatal("back from the reviewed draft must restore its source catalog")
+	}
 }
 
 func TestImportWorkspaceExportReturnsToDraftAndRefusesOverwrite(t *testing.T) {
