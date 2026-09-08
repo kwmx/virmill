@@ -148,7 +148,7 @@ class Artifacts(unittest.TestCase):
             os.write(master,b'/');receive('Enter Keep matches')
             os.write(master,b'no-such-command-xyz');receive('No matching actions.')
             os.write(master,b'\x1b');time.sleep(.05)
-            os.write(master,b'\x1b');receive('Overview')
+            os.write(master,b'\x1b');receive('Virtual machines')
             os.write(master,b'q')
             proc.wait(timeout=5);self.assertEqual(proc.returncode,0)
             print('Actual 80x24 workspace PTY: Actions catalog, search, select-only Enter, clear, back and no-results feedback passed; no action was submitted')

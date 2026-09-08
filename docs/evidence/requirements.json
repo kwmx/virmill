@@ -4204,7 +4204,8 @@
         "internal/ui/tui/guided_forms.go",
         "internal/ui/tui/action_forms.go",
         "internal/ui/tui/presentation.go",
-        "docs/tui-navigation.md"
+        "docs/tui-navigation.md",
+        "docs/evidence/tui-workspace-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4363,7 +4364,12 @@
         "automatic-allocation-static-001",
         "tui-workspace-native-001",
         "tui-workspace-native-002",
-        "tui-workspace-race-001"
+        "tui-workspace-race-001",
+        "tui-workspace-frozen-race-001",
+        "tui-workspace-artifacts-001",
+        "tui-workspace-artifacts-002",
+        "tui-workspace-upgrade-native-001",
+        "tui-workspace-installed-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4411,7 +4417,8 @@
         "internal/ui/tui/workspace.go",
         "internal/ui/tui/guided_forms.go",
         "internal/ui/tui/action_forms.go",
-        "internal/ui/tui/presentation.go"
+        "internal/ui/tui/presentation.go",
+        "docs/evidence/tui-workspace-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4448,7 +4455,11 @@
         "interface-artifacts-001",
         "tui-workspace-native-001",
         "tui-workspace-native-002",
-        "tui-workspace-race-001"
+        "tui-workspace-race-001",
+        "tui-workspace-frozen-race-001",
+        "tui-workspace-artifacts-001",
+        "tui-workspace-artifacts-002",
+        "tui-workspace-installed-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
@@ -4530,7 +4541,8 @@
         "internal/ui/tui/guided_forms.go",
         "internal/ui/tui/action_forms.go",
         "internal/ui/tui/presentation.go",
-        "docs/tui-navigation.md"
+        "docs/tui-navigation.md",
+        "docs/evidence/tui-workspace-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -4658,7 +4670,9 @@
         "automatic-allocation-static-001",
         "tui-workspace-native-001",
         "tui-workspace-native-002",
-        "tui-workspace-race-001"
+        "tui-workspace-race-001",
+        "tui-workspace-frozen-race-001",
+        "tui-workspace-installed-native-001"
       ],
       "outstanding": [
         "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",
@@ -4842,7 +4856,11 @@
         "beta-owner-artifacts-001",
         "beta-owner-install-native-001",
         "beta-owner-install-native-002",
-        "beta-owner-full-release-check-001"
+        "beta-owner-full-release-check-001",
+        "tui-workspace-reproducibility-001",
+        "tui-workspace-artifacts-001",
+        "tui-workspace-artifacts-002",
+        "tui-workspace-upgrade-native-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",

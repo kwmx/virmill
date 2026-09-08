@@ -1,0 +1,23 @@
+test_debian_archive_structure_and_rpm_metadata (__main__.Artifacts.test_debian_archive_structure_and_rpm_metadata) ... ok
+test_private_daemon_cli_and_lab_validation (__main__.Artifacts.test_private_daemon_cli_and_lab_validation) ... FAIL
+test_staged_install_and_uninstall_preserve_user_artifacts (__main__.Artifacts.test_staged_install_and_uninstall_preserve_user_artifacts) ... ok
+
+======================================================================
+FAIL: test_private_daemon_cli_and_lab_validation (__main__.Artifacts.test_private_daemon_cli_and_lab_validation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/faisal/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 80, in test_private_daemon_cli_and_lab_validation
+    self.check_tui_search(root, env)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/home/faisal/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 151, in check_tui_search
+    os.write(master,b'\x1b');receive('Overview')
+                             ~~~~~~~^^^^^^^^^^^^
+  File "/home/faisal/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 141, in receive
+    self.fail('TUI keyboard observation missing: '+expected)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: TUI keyboard observation missing: Overview
+
+----------------------------------------------------------------------
+Ran 3 tests in 5.687s
+
+FAILED (failures=1)

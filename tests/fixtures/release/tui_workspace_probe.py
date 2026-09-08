@@ -424,6 +424,16 @@ def walkthrough(runner, vms, selected, columns, rows):
                       terminal.send(b'e'))
         terminal.wait('Esc cancels labeled form without submitting', lambda text: detail_page(text) and selected in text,
                       terminal.send(b'\x1b'))
+        terminal.wait('Start creates only a review plan for the selected VM', lambda text:
+                      'Plan ID' in text and 'Plan digest' in text and selected in text,
+                      terminal.send(b's'))
+        terminal.wait('Enter opens explicit confirmation without applying', lambda text:
+                      'Confirm reviewed changes' in text and 'Digest:' in text,
+                      terminal.send(b'\r'))
+        terminal.wait('Esc returns to the complete review', lambda text: 'Plan ID' in text and 'Plan digest' in text,
+                      terminal.send(b'\x1b'))
+        terminal.wait('Esc dismisses the unapplied plan', lambda text: detail_page(text) and selected in text,
+                      terminal.send(b'\x1b'))
         terminal.wait('Esc leaves filtered details', vm_table, terminal.send(b'\x1b'))
         terminal.wait('Esc clears filter and restores observed rows', lambda text: vm_table(text) and 'Search:' not in text and
                       f'1 of {len(vms)} selected' in text, terminal.send(b'\x1b'))
@@ -497,11 +507,11 @@ def main():
         os.umask(0o077)
         output.mkdir(mode=0o700)  # Exclusive; never remove or reuse earlier evidence.
         runner = Runner(args, output, fd)
-        report = {'status': 'failed', 'scope': 'real PTY read-only software navigation; no full UX or hardware claim',
+        report = {'status': 'failed', 'scope': 'real PTY navigation and durable plan preview/cancel; no guest mutation, full UX or hardware claim',
                   'hostname': socket.gethostname(), 'uid': os.getuid(), 'binary': str(binary), 'binarySHA256': digest,
                   'binaryGeneration': generation(before), 'connection': args.connection,
                   'pythonVersion': sys.version, 'startedUTC': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-                  'mutationKeysSent': False, 'checks': runner.checks}
+                  'guestMutationSubmitted': False, 'durablePlanPreviewsOnly': True, 'checks': runner.checks}
         runner.save('intent.json', report)
         baseline = prior_jobs = None
         try:
