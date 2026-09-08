@@ -61,10 +61,15 @@ no settings file is required. **Tab / Shift-Tab** moves between options,
 **Enter** activates the selected button or file explorer, left/right changes
 selectors, and **Space** changes a checkbox. A short explanation follows the
 focused option. **Back** or Esc returns one page without losing your choices.
+While editing an import, the sidebar and unrelated shortcuts are hidden. The
+primary Continue or Preview button remains visible as options scroll.
 
 1. **Source:** choose an OVA/ISO file or the folder containing existing disks.
-   For OVA, select **Inspect appliance**, then choose the appliance member when
-   the archive contains several systems. For ISO, the media name identifies the
+   For OVA, **Continue** checks the appliance automatically. A single appliance
+   advances to Destination; choose a member when the archive contains several
+   systems. Large files can take several minutes: the checking screen shows
+   elapsed time and **Cancel inspection** (Enter or Esc). Cancellation stops
+   the read, keeps the chosen source and does not submit a job. For ISO, the media name identifies the
    installer; **Advanced verification** accepts an optional publisher checksum.
 2. **Destination:** choose an existing parent with **Save in**, then enter a new
    folder name. The reviewed import creates that folder; browsing does not.
@@ -99,6 +104,12 @@ the chosen destination and disk options; check those before reusing it elsewhere
 
 These workflows **prepare images**. Applying their plans does not define a VM,
 boot it or install a guest OS. VM creation remains a separate action.
+
+Import inspection, import previews and plan submission wait up to 20 minutes by
+default. CLI `--timeout` overrides the client wait. Only one import inspection or
+preview runs at a time per coordinator; a busy message means another check is
+finishing. Preview cancellation may leave a saved plan, but starts no operation.
+An interrupted apply has uncertain acceptance: check Jobs before submitting again.
 
 ## Forms and review
 

@@ -26,6 +26,9 @@ type Workspace struct {
 	Import             *ImportForm
 	ExportForm         *GuidedForm
 	ImportPickerTarget string
+	ImportCancel       context.CancelFunc
+	ImportStarted      time.Time
+	ImportElapsed      time.Duration
 	ButtonFocus        bool
 	ButtonIndex        int
 
@@ -84,8 +87,19 @@ func (m *Workspace) request(kind, method string, r app.Request) tea.Cmd {
 	m.Pending[kind] = token
 	client := m.Client
 	r.Connection = m.Connection
+	wait := 30 * time.Second
+	importRead := ui.ImportRead(method)
+	if importRead || kind == "apply" {
+		wait = ui.ImportWait
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	if importRead && m.Import != nil {
+		if m.ImportCancel != nil {
+			m.ImportCancel()
+		}
+		m.ImportCancel = cancel
+	}
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		normalized, err := ui.NormalizeRequest(method, r)
 		if err != nil {
@@ -404,6 +418,12 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	switch v := msg.(type) {
+	case importPulse:
+		if m.Import != nil && m.Pending["import-inspect"] == v.Token {
+			m.ImportElapsed = time.Since(m.ImportStarted)
+			return m, importPulseCommand(v.Token)
+		}
+		return m, nil
 	case importExportReply:
 		if m.Pending["import-export"] != v.Token {
 			return m, nil
@@ -453,7 +473,16 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Notice = ""
 			}
 			if v.Kind == "import-inspect" && m.Import != nil {
-				m.Import.Error = text
+				m.Import.Error = importError(err)
+				m.ImportCancel = nil
+				m.Error = ""
+				delete(m.Errors, v.Kind)
+			}
+			if v.Kind == "plan" && m.Import != nil {
+				m.Import.Error = importError(err)
+				m.ImportCancel = nil
+				m.Error = ""
+				delete(m.Errors, v.Kind)
 			}
 			if v.Kind == "apply" {
 				m.Import = nil
@@ -543,11 +572,18 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyMsg:
 		if v.Type == tea.KeyCtrlC {
+			if m.ImportCancel != nil {
+				m.ImportCancel()
+			}
 			m.Quit = true
 			return m, tea.Quit
 		}
 		if m.Width < 60 || m.Height < 18 {
 			if v.Type == tea.KeyEsc {
+				if m.ImportCancel != nil {
+					m.ImportCancel()
+					m.ImportCancel = nil
+				}
 				m.Form = nil
 				m.ActionForm = nil
 				m.Import = nil
@@ -1027,7 +1063,26 @@ func (m Workspace) hints() string {
 		return "Ctrl+O Choose folder   Enter Export   Esc Back"
 	}
 	if m.Import != nil && m.Plan == nil {
-		return "Tab Next option   Space Toggle   Enter Choose   Esc Back"
+		if m.Busy && m.Pending["import-inspect"] != 0 {
+			return "Enter / Esc Cancel inspection"
+		}
+		if m.Busy {
+			return "Esc Cancel preview"
+		}
+		controls := m.Import.controls()
+		if len(controls) > 0 {
+			switch controls[max(0, min(m.Import.Focus, len(controls)-1))].kind {
+			case "text":
+				return "Type to edit   Tab Next option   Esc Back"
+			case "path":
+				return "Enter Browse   Tab Next option   Esc Back"
+			case "toggle":
+				return "Space Toggle   Tab Next option   Esc Back"
+			case "choice":
+				return "Left/Right Choose   Tab Next option   Esc Back"
+			}
+		}
+		return "Enter Select   Tab Next option   Esc Back"
 	}
 	if m.ActionForm != nil {
 		return m.formHints()
@@ -1075,6 +1130,9 @@ func (m Workspace) content(width, height int) []string {
 		return m.importExportView(width, height)
 	}
 	if m.Import != nil && m.Plan == nil {
+		if m.Busy && m.Pending["import-inspect"] != 0 {
+			return m.importBusyView(width, height)
+		}
 		return strings.Split(m.Import.View(width, height), "\n")
 	}
 	if m.ActionForm != nil {
@@ -1237,10 +1295,15 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	header := m.color(" Virmill ", "1;35") + m.color(" / "+sections[m.Section], "1") + "   " + validation.SafeText(m.Connection) + "   beta"
+	importModal := m.Import != nil && m.Plan == nil
+	title := sections[m.Section]
+	if importModal {
+		title = "Import"
+	}
+	header := m.color(" Virmill ", "1;35") + m.color(" / "+title, "1") + "   " + validation.SafeText(m.Connection) + "   beta"
 	lines := []string{ansi.Truncate(header, width, ""), m.color(strings.Repeat(rule, width), "2")}
 	sidebar := 0
-	if width >= 105 {
+	if width >= 105 && !importModal {
 		sidebar = 20
 	}
 	bodyWidth := width - sidebar
@@ -1286,6 +1349,9 @@ func (m Workspace) View() string {
 		if m.NavFocus {
 			nav = "Section: " + sections[m.NavIndex] + "   Up/Down to choose, Enter opens"
 		}
+		if importModal {
+			nav = ""
+		}
 		lines = append(lines, clipCell(nav, width))
 	} else {
 		lines = append(lines, "")
@@ -1298,7 +1364,12 @@ func (m Workspace) View() string {
 		message = "Working... " + message
 	}
 	if message == "" {
-		message = m.status() + " | Tab Buttons  / Search  : All tools  ? Help"
+		if !importModal {
+			message = m.status() + " | Tab Buttons  / Search  : All tools  ? Help"
+		}
+	}
+	if importModal && m.Pending["import-inspect"] != 0 {
+		message = ""
 	}
 	lines = append(lines, clipCell(message, width), m.color(strings.Repeat(rule, width), "2"), ansi.Truncate(m.footerButtons(), width, ""))
 	return strings.Join(lines[:min(height, len(lines))], "\n")

@@ -257,3 +257,93 @@ func TestImportFormOVAUsesEveryInspectedDiskAndInvalidatesSource(t *testing.T) {
 		t.Fatal("source change must invalidate inspection")
 	}
 }
+
+func TestImportFormContinueInspectsOVAWithoutExtraStep(t *testing.T) {
+	f := NewImportForm("ova")
+	f.Draft.Source = "/media/appliance.ova"
+	for _, c := range f.controls() {
+		if c.id == "inspect" {
+			t.Fatal("uninspected source must not require a separate Inspect button")
+		}
+	}
+	f = importFocus(t, f, "next")
+	if f.controls()[f.Focus].label != "Continue" {
+		t.Fatal("expected one clear next step")
+	}
+	f, intent := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if intent.Kind != "inspect" || f.Error != "" || f.Page != 0 {
+		t.Fatalf("Continue must request inspection without an error: %+v %+v", f, intent)
+	}
+	report := importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "one", DiskIDs: []string{"disk1"}}}, Disks: []importer.Disk{{ID: "disk1", Path: "disk.vmdk", Format: "vmdk"}}}
+	if err := f.Draft.ApplyInspection(report); err != nil {
+		t.Fatal(err)
+	}
+	f = importFocus(t, f, "next")
+	f, intent = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if intent.Kind != "" || f.Error != "" || f.Page != 1 {
+		t.Fatalf("inspected source should continue: %+v %+v", f, intent)
+	}
+}
+
+func TestImportFormContinueNeedsAnExplicitCollectionMember(t *testing.T) {
+	f := NewImportForm("ova")
+	f.Draft.Source = "/media/collection.ova"
+	report := importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "a", DiskIDs: []string{"disk-a"}}, {ID: "b", DiskIDs: []string{"disk-b"}}}, Disks: []importer.Disk{{ID: "disk-a", Path: "a.vmdk", Format: "vmdk"}, {ID: "disk-b", Path: "b.raw", Format: "raw"}}}
+	if err := f.Draft.ApplyInspection(report); err != nil {
+		t.Fatal(err)
+	}
+	f = importFocus(t, f, "next")
+	f, intent := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if intent.Kind != "" || f.Page != 0 || f.Error != "Choose which appliance to import." || f.controls()[f.Focus].id != "system" {
+		t.Fatal("collection must focus the missing choice", f.Error, intent)
+	}
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
+	f = importFocus(t, f, "next")
+	f, intent = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if f.Page != 1 || f.Error != "" || intent.Kind != "" || f.Draft.SystemID != "a" || f.Draft.Disks[0].ID != "disk-a" {
+		t.Fatal("selected member did not advance intact")
+	}
+	f.Page = 0
+	f.Draft.Source = "/media/replacement.ova"
+	f = importFocus(t, f, "next")
+	f, intent = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if intent.Kind != "inspect" || f.Draft.Report != nil || len(f.Draft.Disks) != 0 || f.Draft.SystemID != "" {
+		t.Fatal("stale report must be discarded before inspection")
+	}
+}
+
+func TestImportFormPrimaryActionVisibleWithoutDuplicateKeyGuide(t *testing.T) {
+	for _, kind := range []string{"ova", "iso", "disks"} {
+		f := NewImportForm(kind)
+		f.Draft.Disks = []ImportDisk{{ID: "one", Path: "disk.qcow2"}}
+		f.Draft.Files = []ImportFile{{Path: "disk.qcow2"}, {Path: "backing.raw"}}
+		f.advanced = true
+		for page := 0; page < 3; page++ {
+			f.Page = page
+			for i := range f.controls() {
+				f.Focus = i
+				for _, size := range [][2]int{{80, 18}, {60, 12}, {120, 30}} {
+					view := f.View(size[0], size[1])
+					primary := "[ Continue ]"
+					if page == 2 {
+						primary = "[ Preview import ]"
+					}
+					if !strings.Contains(view, primary) || strings.Count(view, primary) != 1 {
+						t.Fatalf("primary action should remain visible once: %s", view)
+					}
+					if !strings.Contains(view, "Step ") || strings.Contains(view, "Tab Next option") || strings.Contains(view, "Enter Choose") {
+						t.Fatalf("step heading or single keyboard guide violated: %s", view)
+					}
+					if len(strings.Split(view, "\n")) > size[1] {
+						t.Fatal("tall primary-action view")
+					}
+					for _, line := range strings.Split(view, "\n") {
+						if ansi.StringWidth(line) > size[0] {
+							t.Fatal("wide primary-action view", line)
+						}
+					}
+				}
+			}
+		}
+	}
+}

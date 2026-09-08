@@ -65,6 +65,7 @@ type Server struct {
 	cancel      context.CancelFunc
 	mu          sync.Mutex
 	connections map[*net.UnixConn]bool
+	heavyReads  chan struct{}
 }
 
 func Listen(path string, service *app.Service) (*Server, error) {
@@ -107,7 +108,7 @@ func Listen(path string, service *app.Service) (*Server, error) {
 		return fail(e)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	return &Server{Listener: l, lock: lock, Service: service, ctx: ctx, cancel: cancel, connections: map[*net.UnixConn]bool{}}, nil
+	return &Server{Listener: l, lock: lock, Service: service, ctx: ctx, cancel: cancel, connections: map[*net.UnixConn]bool{}, heavyReads: make(chan struct{}, 1)}, nil
 }
 func (s *Server) Serve() error {
 	slots := make(chan struct{}, 32)
@@ -152,7 +153,7 @@ func (s *Server) Serve() error {
 					resp.Error = &rpcError{Code: -32600, Message: "Invalid request"}
 				} else {
 					resp.ID = r.ID
-					result := s.Service.Call(s.ctx, uid, r.Method, r.Params)
+					result := s.call(c, uid, r.Method, r.Params)
 					resp.Result = &result
 				}
 				b, e := json.Marshal(resp)
@@ -167,6 +168,81 @@ func (s *Server) Serve() error {
 		}()
 	}
 }
+
+func heavyRead(method string) bool {
+	switch method {
+	case "import.inspect", "import.prepare", "import.prepare-install", "import.prepare-disks":
+		return true
+	}
+	return false
+}
+
+func (s *Server) call(c *net.UnixConn, uid uint32, method string, request app.Request) app.Response {
+	if !heavyRead(method) {
+		// In particular, apply retains coordinator-lifetime acceptance semantics.
+		// Already accepted jobs execute under the engine's independent context.
+		return s.Service.Call(s.ctx, uid, method, request)
+	}
+	fail := func(code, message string) app.Response {
+		return app.Response{APIVersion: domain.APIVersion, Warnings: []string{}, Error: domain.Fail(code, message)}
+	}
+	select {
+	case s.heavyReads <- struct{}{}:
+		defer func() { <-s.heavyReads }()
+	default:
+		return fail("RESOURCE_BUSY", "Another import inspection or preview is still finishing. Wait for it to finish or cancel, then try again.")
+	}
+	ctx, cleanup, err := disconnectedReadContext(s.ctx, c)
+	if err != nil {
+		return fail("OPERATION_FAILED", "Cannot monitor import request cancellation: "+err.Error())
+	}
+	defer cleanup()
+	result := s.Service.Call(ctx, uid, method, request)
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		return fail("WAIT_TIMEOUT", "Import inspection or preview exceeded its 20 minute limit; no job was submitted.")
+	}
+	return result
+}
+
+// disconnectedReadContext observes only socket hangup/error flags on a held
+// duplicate FD. It never reads or peeks at framed input, including pipelined
+// requests already buffered by the server. The FD is closed by its sole polling
+// goroutine, avoiding descriptor reuse races during request cleanup.
+func disconnectedReadContext(parent context.Context, conn *net.UnixConn) (context.Context, func(), error) {
+	raw, err := conn.SyscallConn()
+	if err != nil {
+		return nil, nil, err
+	}
+	fd := -1
+	var duplicateErr error
+	if err = raw.Control(func(original uintptr) {
+		fd, duplicateErr = unix.FcntlInt(original, unix.F_DUPFD_CLOEXEC, 0)
+	}); err != nil {
+		return nil, nil, err
+	}
+	if duplicateErr != nil {
+		return nil, nil, duplicateErr
+	}
+	ctx, cancel := context.WithTimeout(parent, 20*time.Minute)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		defer unix.Close(fd)
+		poll := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLRDHUP | unix.POLLHUP | unix.POLLERR}}
+		for ctx.Err() == nil {
+			_, err := unix.Poll(poll, 100)
+			if errors.Is(err, unix.EINTR) {
+				continue
+			}
+			if err != nil || poll[0].Revents&(unix.POLLRDHUP|unix.POLLHUP|unix.POLLERR|unix.POLLNVAL) != 0 {
+				cancel()
+				return
+			}
+		}
+	}()
+	return ctx, func() { cancel(); <-done }, nil
+}
+
 func (s *Server) Close() error {
 	s.cancel()
 	e := s.Listener.Close()
@@ -190,12 +266,20 @@ func (c Client) Call(ctx context.Context, method string, r app.Request) (app.Res
 	d := net.Dialer{}
 	raw, e := d.DialContext(ctx, "unix", c.Socket)
 	if e != nil {
+		if ctx.Err() != nil {
+			return out, clientWaitError(ctx, method, e)
+		}
 		return out, domain.Fail("COORDINATOR_UNAVAILABLE", "start virmilld as your user: "+e.Error())
 	}
 	defer raw.Close()
 	conn := raw.(*net.UnixConn)
+	stopCancellation := context.AfterFunc(ctx, func() { conn.Close() })
+	defer stopCancellation()
 	uid, e := peer(conn)
 	if e != nil || uid != uint32(os.Getuid()) {
+		if ctx.Err() != nil {
+			return out, clientWaitError(ctx, method, e)
+		}
 		return out, domain.Fail("PERMISSION_DENIED", "coordinator peer UID mismatch")
 	}
 	deadline := time.Now().Add(c.Timeout)
@@ -215,17 +299,11 @@ func (c Client) Call(ctx context.Context, method string, r app.Request) (app.Res
 		return out, errors.New("request too large")
 	}
 	if _, e = conn.Write(append(b, '\n')); e != nil {
-		return out, e
+		return out, clientWaitError(ctx, method, e)
 	}
 	frame, e := wire.ReadFrame(bufio.NewReader(conn))
 	if e != nil {
-		if ne, ok := e.(net.Error); ok && ne.Timeout() {
-			return out, domain.Fail("WAIT_TIMEOUT", "client wait timed out; accepted server jobs continue")
-		}
-		if e == io.EOF {
-			return out, errors.New("coordinator disconnected")
-		}
-		return out, e
+		return out, clientWaitError(ctx, method, e)
 	}
 	var response reply
 	if e = wire.Decode(frame, &response); e != nil {
@@ -241,4 +319,32 @@ func (c Client) Call(ctx context.Context, method string, r app.Request) (app.Res
 		return out, errors.New("missing RPC result")
 	}
 	return *response.Result, nil
+}
+
+func clientWaitError(ctx context.Context, method string, err error) error {
+	if errors.Is(ctx.Err(), context.Canceled) {
+		message := "Request canceled."
+		if heavyRead(method) {
+			message = "Import inspection or preview canceled; no job was submitted."
+		} else if method == "operation.apply" {
+			message = "Stopped waiting for submission. Check Jobs before submitting again; accepted jobs continue."
+		}
+		return domain.Fail("CLIENT_INTERRUPTED", message)
+	}
+	var networkError net.Error
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) || errors.As(err, &networkError) && networkError.Timeout() {
+		message := "Request timed out; no result was received."
+		if method == "import.inspect" {
+			message = "Appliance inspection timed out; no job was submitted."
+		} else if heavyRead(method) {
+			message = "Import preview timed out; no job was submitted."
+		} else if method == "operation.apply" {
+			message = "Submission wait timed out; acceptance is uncertain. Check Jobs before submitting again."
+		}
+		return domain.Fail("WAIT_TIMEOUT", message)
+	}
+	if err == io.EOF {
+		return errors.New("coordinator disconnected")
+	}
+	return err
 }

@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"virmill.local/core/internal/app"
 	"virmill.local/core/internal/app/importer"
+	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/validation"
 )
 
@@ -20,6 +22,37 @@ type importExportReply struct {
 	Token uint64
 	Path  string
 	Err   error
+}
+
+type importPulse struct{ Token uint64 }
+
+func importPulseCommand(token uint64) tea.Cmd {
+	return tea.Tick(time.Second, func(time.Time) tea.Msg { return importPulse{Token: token} })
+}
+
+func (m Workspace) importBusyView(width, height int) []string {
+	seconds := int(m.ImportElapsed.Seconds())
+	return pageLines([]string{
+		"Checking appliance", "", filepath.Base(m.Import.Draft.Source), "",
+		"Reading the appliance and verifying its files.",
+		"Large files can take several minutes.", "",
+		fmt.Sprintf("Elapsed %d:%02d", seconds/60, seconds%60), "",
+		"> [ Cancel inspection ]",
+	}, width, height, 0)
+}
+
+func importError(err error) string {
+	if e, ok := err.(*domain.Error); ok {
+		switch e.Code {
+		case "WAIT_TIMEOUT":
+			return "The appliance check took too long. Retry when the disk is less busy, or choose another file."
+		case "BUSY", "RESOURCE_BUSY":
+			return "Another image check is finishing. Wait a moment, then Continue."
+		default:
+			return validation.SafeText(e.Message)
+		}
+	}
+	return validation.SafeText(err.Error())
 }
 
 func (m *Workspace) openImport(kind string) tea.Cmd {
@@ -129,12 +162,22 @@ func (m *Workspace) importPicked(path string) {
 }
 func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.Busy {
-		if key.Type == tea.KeyEsc {
+		if key.Type == tea.KeyEsc || (key.Type == tea.KeyEnter && m.Pending["import-inspect"] != 0) {
+			inspection := m.Pending["import-inspect"] != 0
+			if m.ImportCancel != nil {
+				m.ImportCancel()
+				m.ImportCancel = nil
+			}
 			m.Pending = maps.Clone(m.Pending)
 			delete(m.Pending, "import-inspect")
 			delete(m.Pending, "plan")
 			m.Busy = false
-			m.Notice = ""
+			m.Notice = "Inspection canceled."
+			if !inspection {
+				m.Notice = "Preview canceled."
+			}
+			m.Error = ""
+			m.Import.Error = ""
 		}
 		return m, nil
 	}
@@ -142,6 +185,10 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	m.Import = &f
 	switch intent.Kind {
 	case "cancel":
+		if m.ImportCancel != nil {
+			m.ImportCancel()
+			m.ImportCancel = nil
+		}
 		m.Import = nil
 		m.Advanced = true
 		m.Pending = maps.Clone(m.Pending)
@@ -159,8 +206,11 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.Busy = true
 		m.Error = ""
 		m.Import.Error = ""
-		m.Notice = "Inspecting appliance..."
-		return m, m.request("import-inspect", "import.inspect", app.Request{Path: f.Draft.Source})
+		m.Notice = ""
+		m.ImportStarted = time.Now()
+		m.ImportElapsed = 0
+		cmd := m.request("import-inspect", "import.inspect", app.Request{Path: f.Draft.Source})
+		return m, tea.Batch(cmd, importPulseCommand(m.Pending["import-inspect"]))
 	case "preview", "export":
 		method, r, err := f.Draft.Request(m.Connection)
 		if err != nil {
@@ -232,6 +282,7 @@ func (m Workspace) importExportView(width, height int) []string {
 }
 func (m *Workspace) importInspection(data any) {
 	m.Busy = false
+	m.ImportCancel = nil
 	m.Notice = ""
 	if m.Import == nil {
 		return
@@ -249,5 +300,10 @@ func (m *Workspace) importInspection(data any) {
 		return
 	}
 	m.Import.Error = ""
-	m.Notice = "Appliance inspected. Choose its system and disk options."
+	if m.Import.Draft.SystemID != "" {
+		m.Import.Page = 1
+		m.Import.Focus = 0
+	} else {
+		m.Notice = "Choose which appliance to import."
+	}
 }

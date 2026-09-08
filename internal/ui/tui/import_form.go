@@ -45,35 +45,56 @@ func (f ImportForm) View(width, height int) string {
 		return ansi.Truncate(strings.NewReplacer("\n", " ", "\t", " ").Replace(validation.SafeText(s)), width, "…")
 	}
 	if width < 40 || height < 10 {
-		return strings.Join([]string{clean("Resize to continue editing."), clean("Esc goes back; options are retained.")}[:min(height, 2)], "\n")
+		return strings.Join([]string{clean("Resize to continue editing."), clean("Your options are retained.")}[:min(height, 2)], "\n")
 	}
 	title := map[string]string{"ova": "Import an appliance", "iso": "Prepare installation media", "disks": "Import disk images"}[f.Draft.Kind]
 	if title == "" {
 		title = "Import options"
 	}
-	steps := []string{"Source", "Destination", "Disks"}
 	page := max(0, min(f.Page, 2))
-	for i := range steps {
-		if i == page {
-			steps[i] = "[" + steps[i] + "]"
-		}
-	}
-	lines := []string{clean(title), clean(strings.Join(steps, "  >  ")), ""}
+	steps := []string{"Choose the source", "Choose where to save", "Set up the disks"}
+	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared copy in a new folder.", "Choose disk options, then review before making changes."}
+	lines := []string{clean(title), "", clean(purpose[page]), clean(fmt.Sprintf("Step %d of 3 · %s", page+1, steps[page])), ""}
 	controls := f.controls()
 	if len(controls) == 0 {
-		return strings.Join(append(lines, clean("Unsupported source type. Esc returns.")), "\n")
+		return strings.Join(append(lines, clean("Choose OVA, ISO or existing disks to continue.")), "\n")
 	}
 	focus := max(0, min(f.Focus, len(controls)-1))
-	footer := []string{clean(controls[focus].help), clean("Tab Next option   Enter Choose   Esc Back")}
+	primary := -1
+	body := []int{}
+	for i, c := range controls {
+		if c.id == "next" || c.id == "preview" {
+			primary = i
+		} else {
+			body = append(body, i)
+		}
+	}
+	// Keep the next step visible while a long disk list scrolls. Keyboard
+	// guidance belongs to the workspace; this form shows only contextual help.
+	footer := []string{}
 	if f.Error != "" {
-		footer = append([]string{clean("Error: " + f.Error)}, footer...)
+		errorLines := wrap(validation.SafeText(f.Error), width)
+		footer = append(footer, errorLines[:min(3, len(errorLines))]...)
 	}
+	if primary >= 0 {
+		prefix := "  "
+		if focus == primary {
+			prefix = "> "
+		}
+		footer = append(footer, clean(prefix+"[ "+controls[primary].label+" ]"))
+	}
+	footer = append(footer, clean(controls[focus].help))
 	room := max(1, height-len(lines)-len(footer))
-	first := max(0, focus-room+1)
-	if first > 0 {
-		lines[2] = clean(fmt.Sprintf("%d earlier options; Shift+Tab to return", first))
+	bodyFocus := slices.Index(body, focus)
+	first := max(0, bodyFocus-room+1)
+	if bodyFocus < 0 {
+		first = max(0, len(body)-room)
 	}
-	for i := first; i < min(len(controls), first+room); i++ {
+	if first > 0 {
+		lines[len(lines)-1] = clean(fmt.Sprintf("%d earlier options", first))
+	}
+	for row := first; row < min(len(body), first+room); row++ {
+		i := body[row]
 		c := controls[i]
 		prefix := "  "
 		if i == focus {
@@ -98,6 +119,8 @@ func (f ImportForm) View(width, height int) string {
 			}
 			value = importTail(value, max(1, width-ansi.StringWidth(c.label)-8))
 			row = c.label + ": [ " + value + " ]"
+		case "info":
+			row = c.label + ": " + importTail(value, max(1, width-ansi.StringWidth(c.label)-4))
 		default:
 			if i == focus {
 				runes := []rune(value)
@@ -225,8 +248,8 @@ func (f ImportForm) controls() []importControl {
 		}
 		controls = append(controls, importPath("source", label, help, d.Source))
 		if d.Kind == "ova" {
-			controls = append(controls, importButton("inspect", "Inspect appliance", "Read the appliance's systems and disks before choosing options."))
-			if d.Report != nil {
+			if d.Report != nil && d.Report.Source == d.Source {
+				controls = append(controls, importButton("inspect", "Recheck source", "Read this archive again if its contents have changed."))
 				choices := []string{}
 				for _, sys := range d.Report.Systems {
 					choices = append(choices, sys.ID)
@@ -250,13 +273,17 @@ func (f ImportForm) controls() []importControl {
 				controls = append(controls, importText("sha256", "Expected SHA-256", "Optional publisher checksum; leave blank if unavailable.", d.SHA256))
 			}
 		}
-		controls = append(controls, importButton("next", "Next: Destination", "Choose where the prepared copy will be saved."))
+		nextHelp := "Choose where to save a prepared copy of this source."
+		if d.Kind == "ova" && (d.Report == nil || d.Report.Source != d.Source) {
+			nextHelp = "Check the appliance, then choose where to save its copy."
+		}
+		controls = append(controls, importButton("next", "Continue", nextHelp))
 	case 1:
 		controls = append(controls,
 			importPath("destination", "Save in", "Choose an existing parent folder with enough free space.", d.DestinationParent),
 			importText("folder", "New folder name", "A new folder for this import. Existing files are never overwritten.", d.DestinationName),
 			importButton("back", "Back: Source", "Change the source without leaving this form."),
-			importButton("next", "Next: Disks", "Set disk sizes and review which files will be copied."))
+			importButton("next", "Continue", "Set disk sizes and review which files will be copied."))
 	case 2:
 		if len(d.Disks) > 0 {
 			index := max(0, min(f.Disk, len(d.Disks)-1))
@@ -267,7 +294,7 @@ func (f ImportForm) controls() []importControl {
 			}
 			controls = append(controls, importControl{id: "disk", label: "Disk", kind: "choice", value: choices[index], choices: choices, help: "Left/Right switches disks. Each disk keeps its own options."})
 			if d.Kind == "ova" {
-				controls = append(controls, importButton("diskInfo", "Source: "+disk.Path, "The inspected source and disk ID are preserved for this appliance."))
+				controls = append(controls, importControl{id: "diskInfo", label: "Source", value: disk.Path, kind: "info", help: "The inspected source and disk ID are preserved for this appliance."})
 			} else {
 				controls = append(controls, importText("diskID", "Disk name", "A unique short name; letters, numbers, dots, dashes and underscores.", disk.ID))
 			}
@@ -311,7 +338,7 @@ func (f ImportForm) controls() []importControl {
 		if d.Kind != "ova" {
 			controls = append(controls, importControl{id: "offline", label: "Source images are not in use", kind: "toggle", value: fmt.Sprint(d.Offline), help: "Space toggles. Stop any VM or program using these source images first."})
 		}
-		controls = append(controls, importButton("back", "Back: Destination", "Change where the copied images will be saved."), importButton("preview", "Preview import", "Review storage needs and safety checks before applying anything."), importButton("export", "Export settings", "Save these options for reuse. Export does not start the import."))
+		controls = append(controls, importButton("back", "Back: Destination", "Change where the copied images will be saved."), importButton("export", "Export settings", "Save these options for reuse. Export does not start the import."), importButton("preview", "Preview import", "Review storage needs and safety checks before applying anything."))
 	}
 	return controls
 }
@@ -389,13 +416,46 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 			f.Focus = 0
 			f.Error = ""
 		case "next":
-			if f.Page == 0 && (!guidedPath(f.Draft.Source) || (f.Draft.Kind == "ova" && (f.Draft.Report == nil || f.Draft.SystemID == ""))) {
-				f.Error = "Choose a source and, for OVA, inspect and select its appliance."
-				return f, none
+			if f.Page == 0 {
+				if !guidedPath(f.Draft.Source) {
+					f.Error = map[string]string{"ova": "Choose an OVA file to continue.", "iso": "Choose an ISO file to continue.", "disks": "Choose the folder containing your disk images."}[f.Draft.Kind]
+					f.Focus = 0
+					return f, none
+				}
+				if f.Draft.Kind == "ova" {
+					if f.Draft.Report == nil || f.Draft.Report.Source != f.Draft.Source {
+						f.Draft.Report = nil
+						f.Draft.SystemID = ""
+						f.Draft.Disks = nil
+						f.Error = ""
+						return f, ImportIntent{Kind: "inspect"}
+					}
+					selected := false
+					for _, system := range f.Draft.Report.Systems {
+						selected = selected || system.ID == f.Draft.SystemID
+					}
+					if !selected {
+						f.Error = "Choose which appliance to import."
+						for i, option := range controls {
+							if option.id == "system" {
+								f.Focus = i
+							}
+						}
+						return f, none
+					}
+				}
 			}
-			if f.Page == 1 && (f.Draft.DestinationParent == "" || f.Draft.DestinationName == "") {
-				f.Error = "Choose a parent folder and enter a new folder name."
-				return f, none
+			if f.Page == 1 {
+				if !guidedPath(f.Draft.DestinationParent) {
+					f.Error = "Choose a folder using Save in."
+					f.Focus = 0
+					return f, none
+				}
+				if f.Draft.DestinationName == "" {
+					f.Error = "Enter a name for the new folder."
+					f.Focus = 1
+					return f, none
+				}
 			}
 			f.Page = min(2, f.Page+1)
 			f.Focus = 0

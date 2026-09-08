@@ -38,7 +38,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 	f.StringVar(&o.Connection, "connection", "qemu:///system", "Explicit local libvirt connection")
 	f.StringVar(&o.Output, "output", "table", "table, json or ndjson")
 	f.BoolVar(&o.NonInteractive, "non-interactive", false, "Never prompt")
-	f.DurationVar(&o.Timeout, "timeout", 30*time.Second, "Client wait timeout; jobs continue after detach")
+	f.DurationVar(&o.Timeout, "timeout", 30*time.Second, "Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach")
 	f.BoolVar(&o.Quiet, "quiet", false, "Suppress human output")
 	f.BoolVar(&o.Verbose, "verbose", false, "Verbose diagnostics")
 	f.BoolVar(&o.NoColor, "no-color", false, "Disable color (output is plain by default)")
@@ -71,7 +71,11 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		if err != nil {
 			return err
 		}
-		ctx, cancel := context.WithTimeout(c.Context(), o.Timeout)
+		wait := o.Timeout
+		if ui.ImportRead(method) && !root.PersistentFlags().Changed("timeout") {
+			wait = ui.ImportWait
+		}
+		ctx, cancel := context.WithTimeout(c.Context(), wait)
 		defer cancel()
 		resp, e := client.Call(ctx, method, r)
 		if e != nil {
@@ -240,7 +244,11 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			parent, stop = signal.NotifyContext(parent, os.Interrupt)
 			defer stop()
 		}
-		ctx, cancel := context.WithTimeout(parent, o.Timeout)
+		limit := o.Timeout
+		if !root.PersistentFlags().Changed("timeout") {
+			limit = ui.ImportWait
+		}
+		ctx, cancel := context.WithTimeout(parent, limit)
 		defer cancel()
 		if e := ctx.Err(); e != nil {
 			return emit(streamFailure(ctx, e, "", 0, nil))

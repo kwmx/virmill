@@ -576,13 +576,15 @@ func wrap(s string, width int) []string {
 	return lines
 }
 func Run(c ui.Client, connection string) error {
-	_, e := tea.NewProgram(NewWorkspace(c, connection), tea.WithAltScreen()).Run()
-	return e
+	return RunOptions(c, connection, false)
 }
 
 func RunOptions(c ui.Client, connection string, noColor bool) error {
 	m := NewWorkspace(c, connection)
 	m.NoColor = m.NoColor || noColor
-	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	final, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	if w, ok := final.(Workspace); ok && w.ImportCancel != nil {
+		w.ImportCancel()
+	}
 	return err
 }

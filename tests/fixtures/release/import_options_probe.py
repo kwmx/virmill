@@ -8,7 +8,9 @@ checks in tui_workspace_probe.py (copy both scripts together). Export creates a
 new settings file in the test output; preview creates a durable plan only. It
 never creates a VM or converted media and never deletes anything. This provides
 UX-01/UX-02 software evidence and IMP-01 input/plan coverage, not guest boot or
-full acceptance. --self-test runs without services, PTYs or network access.
+full acceptance. Optional --ova adds one canceled OVA inspection and a bounded
+three-second observation for stale replies in a new source draft. --self-test runs
+without services, PTYs or network access.
 """
 import argparse
 import json
@@ -141,13 +143,13 @@ def walkthrough(runner, iso, columns, rows):
         wait('ISO selected into native source options', lambda text: not picker(text) and 'Media name' in text,
              b'\r')
         edit('Media name', 'install-media')
-        activate('Next: Destination', lambda text: 'New folder name' in text, 'Destination options open')
+        activate('Continue', lambda text: 'New folder name' in text, 'Destination options open')
         activate('Save in', lambda text: picker(text, 'folder'), 'Destination folder browser opens')
         browser_path(runner.directory, 'folder')
         if picker(terminal.screen.text(), 'folder'):
             wait('Choose test output parent', lambda text: not picker(text, 'folder') and 'New folder name' in text, b'\x13')
         edit('New folder name', destination.name)
-        activate('Next: Disks', lambda text: 'Add blank disk' in text, 'Disk options open')
+        activate('Continue', lambda text: 'Add blank disk' in text, 'Disk options open')
         edit('Disk name', 'system')
         edit('Size (MiB)', '1024')
         activate('Add blank disk', lambda text: 'Disk' in text, 'Second blank disk added')
@@ -182,9 +184,9 @@ def walkthrough(runner, iso, columns, rows):
         plan = runner.cli('plan', 'show', matched.group(1))
         verify_plan(plan, export, iso)
         runner.save(terminal.label + '-plan.json', plan)
-        wait('Cancel plan returns to disk options', lambda text: 'Plan ID' not in text and '[Disks]' in text, b'\x1b')
-        wait('Esc goes back to destination options', lambda text: '[Destination]' in text and 'New folder name' in text, b'\x1b')
-        wait('Esc goes back to source options', lambda text: '[Source]' in text and 'Media name' in text, b'\x1b')
+        wait('Cancel plan returns to disk options', lambda text: 'Plan ID' not in text and 'Step 3 of 3' in text, b'\x1b')
+        wait('Esc goes back to destination options', lambda text: 'Step 2 of 3' in text and 'New folder name' in text, b'\x1b')
+        wait('Esc goes back to source options', lambda text: 'Step 1 of 3' in text and 'Media name' in text, b'\x1b')
         wait('Esc cancels draft back to source choices', lambda text: 'Import / Choose a source' in text and 'ISO installer' in text, b'\x1b')
         wait('Esc closes source choices to VM workspace', lambda text: workspace_page(text, 'VMs') and 'Choose a source' not in text, b'\x1b')
         terminal.send(b'q')
@@ -203,6 +205,80 @@ def walkthrough(runner, iso, columns, rows):
         terminal.close()
 
 
+def ova_cancellation_walkthrough(runner, ova):
+    """One canceled read of the explicit OVA; do not hash or inspect it twice."""
+    terminal = Terminal(runner, 'ova-inspection-cancel-120x36', 120, 36)
+    try:
+        def wait(label, predicate, key=None):
+            return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+
+        def picker(text):
+            return re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is not None
+
+        def source_menu(text):
+            return 'Import / Choose a source' in text and 'ISO installer' in text
+
+        wait('Default Overview before OVA', lambda text: 'Virtual machines' in text)
+        wait('VM workspace before OVA', lambda text: workspace_page(text, 'VMs'), b'2')
+        wait('Source choices before OVA', source_menu, b'i')
+        wait('OVA browser opens', picker, b'\r')
+        wait('OVA browser folder path input', lambda text: picker(text) and 'Path:' in text, b'\x0c')
+        terminal.send(b'\x15')
+        while terminal.read(.1) and not terminal.screen.complete():
+            pass
+        wait('Explicit OVA parent entered', lambda text: picker(text) and 'Path:' in text,
+             str(ova.parent).encode('ascii'))
+        wait('Existing OVA parent listing', lambda text: picker(text) and 'Path:' not in text, b'\r')
+        wait('OVA name filter starts', lambda text: picker(text) and 'Enter done' in text, b'/')
+        wait('Existing OVA selected from listing', lambda text: picker(text) and ova.name in text,
+             ova.name.encode('ascii'))
+        wait('OVA filter completes', lambda text: picker(text) and 'Enter open/select' in text, b'\r')
+        wait('OVA source options ready', lambda text: not picker(text) and 'OVA file' in text and 'Continue' in text, b'\r')
+        current = terminal.screen.text()
+        for step in range(8):
+            if selected_label(current, 'Continue'):
+                break
+            previous = current
+            current = wait(f'Focus OVA Continue: Tab {step + 1}', lambda text: text != previous, b'\t')
+        require(selected_label(current, 'Continue'), 'Continue is not keyboard reachable')
+        wait('Continue starts visible cancelable OVA inspection', lambda text:
+             'Checking appliance' in text and '[ Cancel inspection ]' in text, b'\r')
+        wait('Cancel inspection returns to editable source', lambda text:
+             'Step 1 of 3' in text and 'OVA file' in text and 'Continue' in text and
+             'Checking appliance' not in text and 'Inspection canceled.' in text, b'\x1b')
+        wait('Leave canceled OVA draft', source_menu, b'\x1b')
+        wait('Choose another source after canceling inspection', lambda text:
+             source_menu(text) and re.search(r'>.*ISO installer', text) is not None, b'\x1b[B')
+        wait('New ISO browser opens after canceled OVA', picker, b'\r')
+        wait('Cancel browser leaves new ISO draft', lambda text:
+             not picker(text) and 'Step 1 of 3' in text and 'Media name' in text, b'\x1b')
+        # This bounds the native observation honestly. Deterministic workspace
+        # tests separately inject delayed replies beyond this observation window.
+        observed_since = time.monotonic()
+        while time.monotonic() - observed_since < 3:
+            require(terminal.read(.1), 'PTY closed during stale-reply observation')
+            text = terminal.screen.text()
+            require('Step 1 of 3' in text and 'Media name' in text and 'Error:' not in text and
+                    'Checking appliance' not in text and ova.name not in text,
+                    'canceled OVA reply leaked into the new ISO draft')
+        wait('Cancel new ISO draft', source_menu, b'\x1b')
+        wait('Close source choices after OVA cancellation', lambda text:
+             workspace_page(text, 'VMs') and 'Choose a source' not in text, b'\x1b')
+        terminal.send(b'q')
+        deadline = time.monotonic() + 5
+        while terminal.process.poll() is None and time.monotonic() < deadline:
+            if not terminal.read():
+                break
+        require(terminal.process.wait(timeout=2) == 0, 'TUI did not exit after canceled OVA inspection')
+        runner.checks.append({'case': terminal.label, 'status': 'passed', 'size': [120, 36],
+                              'source': str(ova), 'inspectionStartedFromContinue': True,
+                              'inspectionCanceled': True, 'newSourceDraftRemainedUsable': True,
+                              'lateReplyObservationSeconds': 3, 'completeInspectionClaimed': False,
+                              'guestMutationSubmitted': False, 'exitCode': 0})
+    finally:
+        terminal.close()
+
+
 def parser():
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument('--self-test', action='store_true')
@@ -210,6 +286,7 @@ def parser():
     result.add_argument('--binary')
     result.add_argument('--binary-sha256')
     result.add_argument('--iso')
+    result.add_argument('--ova', help='Optional explicit existing OVA; inspect once then cancel, never import')
     result.add_argument('--output')
     result.add_argument('--connection', choices=('qemu:///system', 'qemu:///session'), default='qemu:///system')
     return result
@@ -218,7 +295,7 @@ def parser():
 def main():
     args = parser().parse_args()
     if args.self_test:
-        require(not any((args.execute_disposable, args.binary, args.output, args.iso)), 'self-test cannot execute')
+        require(not any((args.execute_disposable, args.binary, args.output, args.iso, args.ova)), 'self-test cannot execute')
         return 0 if unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(ProbeTests)).wasSuccessful() else 1
     require(args.execute_disposable and args.binary and args.output and args.iso and
             re.fullmatch('[0-9a-f]{64}', args.binary_sha256 or ''), 'explicit host execution, paths and SHA-256 pin required')
@@ -230,6 +307,13 @@ def main():
     source_before = iso.lstat()
     require(stat.S_ISREG(source_before.st_mode) and source_before.st_size > 0 and iso.suffix.lower() == '.iso',
             'existing ordinary ISO source required')
+    ova = canonical_path(args.ova) if args.ova else None
+    ova_before = None
+    if ova is not None:
+        require(str(ova).isascii() and all(c.isalnum() or c in ' ._-' for c in ova.name), 'printable OVA path required')
+        ova_before = ova.lstat()
+        require(stat.S_ISREG(ova_before.st_mode) and ova_before.st_size > 0 and ova.suffix.lower() == '.ova',
+                'existing ordinary OVA source required')
     fd = os.open(binary, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
     try:
         before = os.fstat(fd)
@@ -244,10 +328,11 @@ def main():
         os.umask(0o077)
         output.mkdir(mode=0o700)
         runner = Runner(args, output, fd)
-        report = {'status': 'failed', 'scope': 'native ISO options, export and unapplied service preview; not boot/creation acceptance',
+        report = {'status': 'failed', 'scope': 'native ISO options/export/unapplied preview and optional OVA inspection cancellation; not boot/creation acceptance',
                   'hostname': socket.gethostname(), 'uid': os.getuid(), 'binary': str(binary),
                   'binarySHA256': args.binary_sha256, 'source': str(iso), 'sourceGeneration': generation(source_before),
                   'connection': args.connection, 'pythonVersion': sys.version,
+                  'ovaSource': str(ova) if ova else None, 'ovaGeneration': generation(ova_before) if ova_before else None,
                   'startedUTC': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
                   'guestMutationSubmitted': False, 'durablePlanPreviewsOnly': True, 'checks': runner.checks}
         runner.save('intent.json', report)
@@ -259,6 +344,8 @@ def main():
             runner.save('baseline.json', {'vms': baseline, 'jobs': prior_jobs})
             for size in ((80, 24), (120, 36)):
                 walkthrough(runner, iso, *size)
+            if ova is not None:
+                ova_cancellation_walkthrough(runner, ova)
             report['status'] = 'passed'
         except BaseException as error:
             report['error'] = type(error).__name__ + ': ' + str(error)
@@ -270,10 +357,11 @@ def main():
                 report['jobStatesPreserved'] = prior_jobs is not None and after_jobs == prior_jobs
                 report['noOperationCreated'] = prior_jobs is not None and set(after_jobs) == set(prior_jobs)
                 report['sourceMetadataPreserved'] = generation(source_before) == generation(iso.lstat())
+                report['ovaMetadataPreserved'] = ova is None or generation(ova_before) == generation(ova.lstat())
                 report['binaryPreserved'] = generation(before) == generation(os.fstat(fd)) == generation(binary.lstat())
                 runner.save('after.json', {'vms': after, 'jobs': after_jobs})
                 require(all(report[k] for k in ('nativeInventoryPreserved', 'jobStatesPreserved', 'noOperationCreated',
-                                                'sourceMetadataPreserved', 'binaryPreserved')), 'preservation check failed')
+                                                'sourceMetadataPreserved', 'ovaMetadataPreserved', 'binaryPreserved')), 'preservation check failed')
             except BaseException as error:
                 report['preservationError'] = type(error).__name__ + ': ' + str(error)
                 report['status'] = 'failed'
@@ -334,6 +422,7 @@ class ProbeTests(unittest.TestCase):
         self.assertFalse(args.execute_disposable)
         self.assertIsNone(args.binary_sha256)
         self.assertIsNone(args.iso)
+        self.assertIsNone(args.ova)
 
 
 if __name__ == '__main__':

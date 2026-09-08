@@ -198,6 +198,9 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 			writers = append(writers, &content)
 		}
 		n, e := io.Copy(io.MultiWriter(writers...), &contextReader{ctx, tr})
+		if errors.Is(e, context.Canceled) || errors.Is(e, context.DeadlineExceeded) {
+			return out, e
+		}
 		if e != nil || n != entry.Size {
 			return out, errors.New("truncated archive member")
 		}
@@ -216,8 +219,9 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 	}
 	// Consume trailing tar padding into the digest; reject hidden nonzero payload.
 	tail := make([]byte, 4096)
+	padding := &contextReader{ctx, r}
 	for {
-		n, e := r.Read(tail)
+		n, e := padding.Read(tail)
 		if n > 0 {
 			h.Write(tail[:n])
 			for _, b := range tail[:n] {

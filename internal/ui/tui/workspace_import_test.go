@@ -1,15 +1,78 @@
 package tui
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"virmill.local/core/internal/app"
 	"virmill.local/core/internal/app/importer"
+	"virmill.local/core/internal/domain"
 )
+
+type blockingImportClient struct{ started chan context.Context }
+
+func (c blockingImportClient) Call(ctx context.Context, _ string, _ app.Request) (app.Response, error) {
+	c.started <- ctx
+	<-ctx.Done()
+	return app.Response{}, ctx.Err()
+}
+
+func TestImportInspectionWaitCancelAndFocusedErrors(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Client = blockingImportClient{started: make(chan context.Context, 1)}
+	f := NewImportForm("ova")
+	f.Draft.Source = "/media/appliance.ova"
+	f = importFocus(t, f, "next")
+	m.Import = &f
+	m.Width = 120
+	m, cmd := wk(m, "enter")
+	if !strings.Contains(m.View(), "Checking appliance") || strings.Contains(m.View(), "Plugins") || strings.Contains(m.View(), "All tools") {
+		t.Fatal("busy import should show only the current task", m.View())
+	}
+	call := cmd().(tea.BatchMsg)[0]
+	result := make(chan tea.Msg, 1)
+	go func() { result <- call() }()
+	ctx := <-m.Client.(blockingImportClient).started
+	deadline, ok := ctx.Deadline()
+	if !ok || time.Until(deadline) < 19*time.Minute {
+		t.Fatal("large import still has a short deadline")
+	}
+	m, _ = wk(m, "enter")
+	select {
+	case reply := <-result:
+		n, _ := m.Update(reply)
+		m = n.(Workspace)
+	case <-time.After(time.Second):
+		t.Fatal("cancel did not stop the request")
+	}
+	if m.Busy || m.Error != "" || m.Import.Error != "" || m.Notice != "Inspection canceled." {
+		t.Fatal("canceled read leaked a stale error", m.View())
+	}
+	m.Pending["import-inspect"] = 101
+	m.Busy = true
+	n, _ := m.Update(workspaceReply{Kind: "import-inspect", Token: 101, Err: domain.Fail("WAIT_TIMEOUT", "internal timeout; accepted jobs continue")})
+	m = n.(Workspace)
+	view := m.View()
+	if m.Error != "" || m.Busy || strings.Contains(view, "jobs continue") || strings.Contains(view, "WAIT_TIMEOUT") || !strings.Contains(view, "Retry") {
+		t.Fatal("failed inspection should show one actionable message", view)
+	}
+}
+
+func TestImportInspectionContinuesSingleAppliance(t *testing.T) {
+	m := fixtureWorkspace()
+	f := NewImportForm("ova")
+	f.Draft.Source = "/media/appliance.ova"
+	m.Import = &f
+	m.importInspection(importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "guest", DiskIDs: []string{"root"}}}, Disks: []importer.Disk{{ID: "root", Path: "root.raw", Format: "raw"}}})
+	if m.Import.Page != 1 || len(m.Import.Draft.Disks) != 1 || m.Import.Error != "" {
+		t.Fatal("Continue must inspect then advance without another manual step")
+	}
+}
 
 func importWorkspace(t *testing.T) Workspace {
 	t.Helper()
@@ -97,12 +160,12 @@ func TestImportWorkspaceSourceChangeAndCanceledInspectionInvalidateState(t *test
 	}
 	f := NewImportForm("ova")
 	f.Draft.Source = "/media/appliance.ova"
-	f = importFocus(t, f, "inspect")
+	f = importFocus(t, f, "next")
 	m.Import = &f
 	c := m.Client.(*workspaceClient)
 	c.response = app.Response{Data: importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "guest", DiskIDs: []string{"root"}}}, Disks: []importer.Disk{{ID: "root", Path: "root.raw", Format: "raw"}}}}
 	m, cmd := wk(m, "enter")
-	reply := cmd()
+	reply := cmd().(tea.BatchMsg)[0]()
 	m, _ = wk(m, "esc")
 	n, _ := m.Update(reply)
 	m = n.(Workspace)

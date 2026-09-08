@@ -39,7 +39,7 @@ Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 
 Use "virmill [command] --help" for more information about a command.
@@ -65,7 +65,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -88,7 +88,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -111,7 +111,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -135,7 +135,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -159,7 +159,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -183,7 +183,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -206,7 +206,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -229,7 +229,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -248,7 +248,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -271,7 +271,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -294,7 +294,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -313,7 +313,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -336,7 +336,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -360,7 +360,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -379,7 +379,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -402,7 +402,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -425,7 +425,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -448,7 +448,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -471,7 +471,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -494,7 +494,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -518,7 +518,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -542,7 +542,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -566,7 +566,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -589,7 +589,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -612,7 +612,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -635,7 +635,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -658,7 +658,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -682,7 +682,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -705,7 +705,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -729,7 +729,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -752,7 +752,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -775,7 +775,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -798,7 +798,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -821,7 +821,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -844,7 +844,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -867,7 +867,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -891,7 +891,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -917,7 +917,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -940,7 +940,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -964,7 +964,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -988,7 +988,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1012,7 +1012,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1038,7 +1038,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1061,7 +1061,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1089,7 +1089,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1116,7 +1116,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1140,7 +1140,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1164,7 +1164,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1187,7 +1187,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1211,7 +1211,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1234,7 +1234,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1258,7 +1258,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1281,7 +1281,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1304,7 +1304,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1330,7 +1330,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1353,7 +1353,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1377,7 +1377,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1400,7 +1400,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1424,7 +1424,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1447,7 +1447,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1471,7 +1471,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1494,7 +1494,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1518,7 +1518,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1541,7 +1541,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1564,7 +1564,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1583,7 +1583,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1602,7 +1602,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1626,7 +1626,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1649,7 +1649,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1673,7 +1673,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1697,7 +1697,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1721,7 +1721,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1744,7 +1744,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1768,7 +1768,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1791,7 +1791,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1815,7 +1815,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1838,7 +1838,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1862,7 +1862,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1885,7 +1885,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1908,7 +1908,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1932,7 +1932,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1956,7 +1956,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -1980,7 +1980,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -2004,7 +2004,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -2027,7 +2027,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -2051,7 +2051,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
@@ -2076,7 +2076,7 @@ Global Flags:
       --non-interactive     Never prompt
       --output string       table, json or ndjson (default "table")
       --quiet               Suppress human output
-      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
       --verbose             Verbose diagnostics
 ```
 
