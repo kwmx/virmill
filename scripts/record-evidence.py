@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -26,6 +27,33 @@ if not command:
     p.error('command required')
 if not all(c.isalnum() or c in '-_' for c in a.id):
     p.error('invalid evidence ID')
+# Acceptance attribution belongs to the preserved specification, independently
+# of which implementation checkout --source-root selects. Validate before any
+# command (including Git inspection), log creation or ledger append. Empty CSV
+# fields retain the historical no-attribution/default behavior.
+requirements = [item for item in a.requirements.split(',') if item]
+if len(requirements) != len(set(requirements)):
+    p.error('duplicate acceptance requirement IDs are not allowed')
+if requirements:
+    try:
+        catalog_path = ROOT / 'virmill-v1-spec/contracts/requirements.json'
+        with catalog_path.open('rb') as f:
+            catalog_bytes = f.read((256 << 10) + 1)
+        if len(catalog_bytes) > 256 << 10:
+            raise ValueError('catalog exceeds bounds')
+        catalog = json.loads(catalog_bytes)
+        records = catalog.get('requirements') if isinstance(catalog, dict) else None
+        if not isinstance(records, list) or len(records) != 71:
+            raise ValueError('expected the immutable 71 acceptance requirements')
+        accepted = [record.get('id') if isinstance(record, dict) else None for record in records]
+        if any(not isinstance(item, str) or not re.fullmatch(r'[A-Z]+-[0-9]{2}', item)
+               for item in accepted) or len(set(accepted)) != 71:
+            raise ValueError('invalid or duplicate acceptance IDs in specification catalog')
+    except (OSError, ValueError, UnicodeError) as error:
+        p.error('cannot validate acceptance requirements against the preserved specification: ' + str(error))
+    unknown = [item for item in requirements if item not in accepted]
+    if unknown:
+        p.error('unknown acceptance requirement IDs: ' + ', '.join(repr(item) for item in unknown))
 source_root = (ROOT / a.source_root).resolve()
 try:
     source_relative = source_root.relative_to(ROOT).as_posix()
@@ -70,7 +98,7 @@ log.write_text(output)
 entry = dict(id=a.id, at=at, revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip(),
              sourceDigest=digest, evidenceClass=a.evidence_class, command=command, cwd=a.cwd,
              exitCode=code, result='passed' if code == 0 else 'failed',
-             requirements=[s for s in a.requirements.split(',') if s], environment='environment.json',
+             requirements=requirements, environment='environment.json',
              log=log.relative_to(ROOT/'docs/evidence').as_posix(), logSHA256=hashlib.sha256(log.read_bytes()).hexdigest())
 entry['fixtureDigests'] = {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in a.fixtures.split(',') if name}
 entry['sourceDigestScope'] = 'implementation-tree-v1: cmd, internal, sdk, schemas, contracts, scripts, tests, packaging, go.mod, go.sum; excludes interpreter caches'
