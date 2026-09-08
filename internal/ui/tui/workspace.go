@@ -23,8 +23,11 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
-	ButtonFocus bool
-	ButtonIndex int
+	Import             *ImportForm
+	ExportForm         *GuidedForm
+	ImportPickerTarget string
+	ButtonFocus        bool
+	ButtonIndex        int
 
 	CatalogSection, CatalogIndex int
 	CatalogSearch                string
@@ -319,6 +322,12 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	m.ActionTitle = actionLabel(a)
 	vm := m.selectedVM()
 	switch a.Command {
+	case "import prepare":
+		return m.openImport("ova")
+	case "import prepare-install":
+		return m.openImport("iso")
+	case "import prepare-disks":
+		return m.openImport("disks")
 	case "vm start", "vm stop", "vm reboot", "vm pause", "vm resume":
 		if vm.Key.UUID != "" {
 			m.Advanced = false
@@ -395,6 +404,23 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	switch v := msg.(type) {
+	case importExportReply:
+		if m.Pending["import-export"] != v.Token {
+			return m, nil
+		}
+		m.Pending = maps.Clone(m.Pending)
+		delete(m.Pending, "import-export")
+		m.Busy = false
+		m.Notice = ""
+		if v.Err != nil {
+			if m.ExportForm != nil {
+				m.ExportForm.Error = validation.SafeText(v.Err.Error())
+			}
+			return m, nil
+		}
+		m.ExportForm = nil
+		m.Notice = "Settings exported: " + validation.SafeText(v.Path)
+		return m, nil
 	case tea.WindowSizeMsg:
 		m.Width = v.Width
 		m.Height = v.Height
@@ -421,12 +447,16 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			text := validation.SafeText(err.Error())
 			m.Errors[v.Kind] = text
-			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" {
+			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "import-inspect" {
 				m.Error = text
 				m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
 				m.Notice = ""
 			}
+			if v.Kind == "import-inspect" && m.Import != nil {
+				m.Import.Error = text
+			}
 			if v.Kind == "apply" {
+				m.Import = nil
 				m.Plan = nil
 				m.Reviewing = false
 				m.Notice = "Submission failed or its reply was lost. Check Jobs before submitting again."
@@ -436,6 +466,8 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		delete(m.Errors, v.Kind)
 		data := generic(v.Response.Data)
 		switch v.Kind {
+		case "import-inspect":
+			m.importInspection(v.Response.Data)
 		case "plan":
 			m.Busy = false
 			m.Notice = ""
@@ -460,6 +492,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ActionForm = nil
 			m.Advanced = false
 		case "apply":
+			m.Import = nil
 			m.Busy = false
 			m.Plan = nil
 			m.Reviewing = false
@@ -517,11 +550,15 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if v.Type == tea.KeyEsc {
 				m.Form = nil
 				m.ActionForm = nil
+				m.Import = nil
+				m.ExportForm = nil
 				m.Plan = nil
 				m.Advanced = false
 				m.Help = false
 				m.Pending = maps.Clone(m.Pending)
 				delete(m.Pending, "plan")
+				delete(m.Pending, "import-inspect")
+				m.Busy = m.Pending["apply"] != 0 || m.Pending["import-export"] != 0
 			}
 			return m, nil
 		}
@@ -530,6 +567,12 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Help = false
 			}
 			return m, nil
+		}
+		if m.ExportForm != nil {
+			return m.updateImportExport(v)
+		}
+		if m.Import != nil && m.Plan == nil {
+			return m.updateImport(v)
 		}
 		if (m.ActionForm != nil || m.Form != nil) && v.Type == tea.KeyCtrlO {
 			return m, m.browseField()
@@ -980,6 +1023,12 @@ func (m Workspace) hints() string {
 	if m.Picker != nil {
 		return "Enter Open / choose    Backspace Up    Esc Back"
 	}
+	if m.ExportForm != nil {
+		return "Ctrl+O Choose folder   Enter Export   Esc Back"
+	}
+	if m.Import != nil && m.Plan == nil {
+		return "Tab Next option   Space Toggle   Enter Choose   Esc Back"
+	}
 	if m.ActionForm != nil {
 		return m.formHints()
 	}
@@ -1021,6 +1070,12 @@ func (m Workspace) content(width, height int) []string {
 	}
 	if m.Help {
 		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest recipe.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
+	}
+	if m.ExportForm != nil {
+		return m.importExportView(width, height)
+	}
+	if m.Import != nil && m.Plan == nil {
+		return strings.Split(m.Import.View(width, height), "\n")
 	}
 	if m.ActionForm != nil {
 		return strings.Split(m.ActionForm.View(width, height), "\n")
@@ -1284,7 +1339,7 @@ func (m Workspace) buttons() []workspaceButton {
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
-	if m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

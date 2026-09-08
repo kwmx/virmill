@@ -22,7 +22,7 @@ func TestImportOpensBrowserAndSelectionOnlyFillsSource(t *testing.T) {
 	m.Section = 1
 	m, _ = wk(m, "i")
 	m, cmd := wk(m, "enter")
-	if m.Picker == nil || m.ActionForm == nil || cmd == nil {
+	if m.Picker == nil || m.Import == nil || cmd == nil {
 		t.Fatal("import must open explorer")
 	}
 	next, _ := m.Update(cmd())
@@ -36,14 +36,14 @@ func TestImportOpensBrowserAndSelectionOnlyFillsSource(t *testing.T) {
 	}
 	next, _ = m.Update(cmd())
 	m = next.(Workspace)
-	if m.Picker != nil || m.ActionForm.Form.Fields[0].Value != source || m.Busy || m.Plan != nil {
+	if m.Picker != nil || m.Import.Draft.Source != source || m.Busy || m.Plan != nil {
 		t.Fatal("selection must only edit field", m.View())
 	}
 	if len(m.Client.(*workspaceClient).calls) != 0 {
 		t.Fatal("selecting file called service")
 	}
 	m, cmd = wk(m, "esc")
-	if cmd != nil || m.ActionForm != nil || !m.Advanced {
+	if cmd != nil || m.Import != nil || !m.Advanced {
 		t.Fatal("back must return to import choices")
 	}
 }
@@ -56,12 +56,12 @@ func TestPickerCancelAndResizeCannotSubmitUnderlyingForm(t *testing.T) {
 	m, cmd := wk(m, "enter")
 	pending := cmd()
 	m, _ = wk(m, "esc")
-	if m.Picker != nil || m.ActionForm == nil {
+	if m.Picker != nil || m.Import == nil {
 		t.Fatal("picker cancel lost form")
 	}
 	n, _ := m.Update(pending)
 	m = n.(Workspace)
-	if m.Picker != nil || m.ActionForm.Form.Fields[0].Value != "" {
+	if m.Picker != nil || m.Import.Draft.Source != "" {
 		t.Fatal("late reply changed canceled picker")
 	}
 	n, cmd = m.Update(tea.KeyMsg{Type: tea.KeyCtrlO})
@@ -153,11 +153,11 @@ func TestUnsupportedPickerPathReturnsEditableForm(t *testing.T) {
 	m, cmd = wk(m, "enter")
 	n, _ = m.Update(cmd())
 	m = n.(Workspace)
-	if m.Picker != nil || m.ActionForm == nil || m.ActionForm.Form.Error == "" {
+	if m.Picker != nil || m.Import == nil || m.Import.Error == "" {
 		t.Fatal("unsupported path trapped closed picker")
 	}
 	m, _ = wk(m, "esc")
-	if m.ActionForm != nil {
+	if m.Import != nil {
 		t.Fatal("cannot cancel form after rejected picker result")
 	}
 }

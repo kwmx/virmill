@@ -71,11 +71,16 @@ func (m Workspace) updatePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 	p, cmd, result := m.Picker.Update(msg)
 	m.Picker = &p
 	if result.Cancel {
+		m.ImportPickerTarget = ""
 		m.Picker = nil
 		return m, cmd
 	}
 	if result.Path == "" {
 		return m, cmd
+	}
+	if m.ImportPickerTarget != "" {
+		m.importPicked(result.Path)
+		return m, nil
 	}
 	var f *GuidedForm
 	if m.PickerAction && m.ActionForm != nil {

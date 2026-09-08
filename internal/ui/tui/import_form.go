@@ -1,0 +1,502 @@
+package tui
+
+import (
+	"fmt"
+	"slices"
+	"strings"
+	"unicode/utf8"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/ansi"
+	"virmill.local/core/internal/validation"
+)
+
+// ImportForm collects options only. Browsing, inspection, export and preview are
+// intents handled by the workspace through its existing service boundary.
+type ImportForm struct {
+	Draft                   ImportDraft
+	Error                   string
+	Page, Focus, Disk, File int
+	cursor                  int
+	cursorField             string
+	advanced                bool
+}
+
+type importControl struct {
+	id, label, help, kind, value string
+	choices                      []string
+}
+
+func importText(id, label, help, value string) importControl {
+	return importControl{id: id, label: label, help: help, kind: "text", value: value}
+}
+func importButton(id, label, help string) importControl {
+	return importControl{id: id, label: label, help: help, kind: "button"}
+}
+func importPath(id, label, help, value string) importControl {
+	return importControl{id: id, label: label, help: help, kind: "path", value: value}
+}
+
+func (f ImportForm) View(width, height int) string {
+	if width <= 0 || height <= 0 {
+		return ""
+	}
+	clean := func(s string) string {
+		return ansi.Truncate(strings.NewReplacer("\n", " ", "\t", " ").Replace(validation.SafeText(s)), width, "…")
+	}
+	if width < 40 || height < 10 {
+		return strings.Join([]string{clean("Resize to continue editing."), clean("Esc goes back; options are retained.")}[:min(height, 2)], "\n")
+	}
+	title := map[string]string{"ova": "Import an appliance", "iso": "Prepare installation media", "disks": "Import disk images"}[f.Draft.Kind]
+	if title == "" {
+		title = "Import options"
+	}
+	steps := []string{"Source", "Destination", "Disks"}
+	page := max(0, min(f.Page, 2))
+	for i := range steps {
+		if i == page {
+			steps[i] = "[" + steps[i] + "]"
+		}
+	}
+	lines := []string{clean(title), clean(strings.Join(steps, "  >  ")), ""}
+	controls := f.controls()
+	if len(controls) == 0 {
+		return strings.Join(append(lines, clean("Unsupported source type. Esc returns.")), "\n")
+	}
+	focus := max(0, min(f.Focus, len(controls)-1))
+	footer := []string{clean(controls[focus].help), clean("Tab Next option   Enter Choose   Esc Back")}
+	if f.Error != "" {
+		footer = append([]string{clean("Error: " + f.Error)}, footer...)
+	}
+	room := max(1, height-len(lines)-len(footer))
+	first := max(0, focus-room+1)
+	if first > 0 {
+		lines[2] = clean(fmt.Sprintf("%d earlier options; Shift+Tab to return", first))
+	}
+	for i := first; i < min(len(controls), first+room); i++ {
+		c := controls[i]
+		prefix := "  "
+		if i == focus {
+			prefix = "> "
+		}
+		value := strings.NewReplacer("\n", " ", "\t", " ").Replace(validation.SafeText(c.value))
+		var row string
+		switch c.kind {
+		case "button":
+			row = "[ " + c.label + " ]"
+		case "toggle":
+			mark := " "
+			if c.value == "true" {
+				mark = "x"
+			}
+			row = "[" + mark + "] " + c.label
+		case "choice":
+			row = c.label + ": < " + value + " >"
+		case "path":
+			if value == "" {
+				value = "Choose…"
+			}
+			value = ansi.TruncateLeft(value, max(1, width-ansi.StringWidth(c.label)-8), "…")
+			row = c.label + ": [ " + value + " ]"
+		default:
+			if i == focus {
+				runes := []rune(value)
+				cursor := len(runes)
+				if f.cursorField == c.id {
+					cursor = max(0, min(f.cursor, len(runes)))
+				}
+				before := string(runes[:cursor])
+				available := max(2, width-ansi.StringWidth(c.label)-8)
+				before = ansi.TruncateLeft(before, available-1, "…")
+				value = before + "|" + string(runes[cursor:])
+			}
+			row = c.label + ": [" + value + "]"
+		}
+		lines = append(lines, clean(prefix+row))
+	}
+	lines = append(lines, footer...)
+	return strings.Join(lines[:min(height, len(lines))], "\n")
+}
+
+func (f *ImportForm) edit(c importControl, key tea.KeyMsg) {
+	runes := []rune(c.value)
+	if f.cursorField != c.id {
+		f.cursor = len(runes)
+		f.cursorField = c.id
+	}
+	f.cursor = max(0, min(f.cursor, len(runes)))
+	value := c.value
+	switch key.Type {
+	case tea.KeyLeft:
+		f.cursor = max(0, f.cursor-1)
+	case tea.KeyRight:
+		f.cursor = min(len(runes), f.cursor+1)
+	case tea.KeyHome:
+		f.cursor = 0
+	case tea.KeyEnd:
+		f.cursor = len(runes)
+	case tea.KeyCtrlU:
+		value = ""
+		f.cursor = 0
+	case tea.KeyBackspace:
+		if f.cursor > 0 {
+			value = string(runes[:f.cursor-1]) + string(runes[f.cursor:])
+			f.cursor--
+		}
+	case tea.KeyDelete:
+		if f.cursor < len(runes) {
+			value = string(runes[:f.cursor]) + string(runes[f.cursor+1:])
+		}
+	case tea.KeyRunes, tea.KeySpace:
+		text := string(key.Runes)
+		if key.Type == tea.KeySpace {
+			text = " "
+		}
+		if key.Alt || !guidedPrintable(text) {
+			f.Error = "Use printable text."
+			return
+		}
+		limit := 4096
+		if c.id == "size" {
+			limit = 12
+		}
+		if c.id == "diskID" || c.id == "mediaID" || c.id == "folder" {
+			limit = 255
+		}
+		if len(value)+len(text) > limit {
+			f.Error = "This value is too long."
+			return
+		}
+		value = string(runes[:f.cursor]) + text + string(runes[f.cursor:])
+		f.cursor += utf8.RuneCountInString(text)
+	}
+	if value != c.value {
+		f.setText(c.id, value)
+		f.Error = ""
+	}
+}
+
+func importCycle(value string, options []string, direction int) string {
+	if len(options) == 0 {
+		return value
+	}
+	i := slices.Index(options, value)
+	if i < 0 {
+		if direction < 0 {
+			return options[len(options)-1]
+		}
+		return options[0]
+	}
+	return options[(i+direction+len(options))%len(options)]
+}
+
+func NewImportForm(kind string) ImportForm {
+	f := ImportForm{Draft: ImportDraft{Kind: kind}}
+	if kind == "iso" {
+		f.Draft.MediaID = "installer"
+		f.Draft.Disks = []ImportDisk{{ID: "disk1", SizeMiB: "32768"}}
+	}
+	return f
+}
+
+func (f ImportForm) controls() []importControl {
+	if !slices.Contains([]string{"ova", "iso", "disks"}, f.Draft.Kind) {
+		return nil
+	}
+	d := f.Draft
+	var controls []importControl
+	switch f.Page {
+	case 0:
+		label, help := "OVA file", "Choose an appliance archive. Original files stay untouched."
+		if d.Kind == "iso" {
+			label, help = "ISO file", "Choose installation media. This prepares disks; it does not install the OS."
+		}
+		if d.Kind == "disks" {
+			label, help = "Source folder", "Choose the folder containing your disks and any backing files."
+		}
+		controls = append(controls, importPath("source", label, help, d.Source))
+		if d.Kind == "ova" {
+			controls = append(controls, importButton("inspect", "Inspect appliance", "Read the appliance's systems and disks before choosing options."))
+			if d.Report != nil {
+				choices := []string{}
+				for _, sys := range d.Report.Systems {
+					choices = append(choices, sys.ID)
+				}
+				value := d.SystemID
+				for _, system := range d.Report.Systems {
+					if system.ID == d.SystemID && system.Name != "" && system.Name != system.ID {
+						value = system.Name + " (" + system.ID + ")"
+					}
+				}
+				if value == "" {
+					value = "Choose an appliance"
+				}
+				controls = append(controls, importControl{id: "system", label: "Appliance", kind: "choice", value: value, choices: choices, help: "Left/Right selects a system. Its complete disk list is included."})
+			}
+		}
+		if d.Kind == "iso" {
+			controls = append(controls, importText("mediaID", "Media name", "A short name identifying the installer in the prepared image.", d.MediaID))
+			controls = append(controls, importButton("advanced", "Advanced verification", "Optional: compare the ISO against a publisher's SHA-256 checksum."))
+			if f.advanced {
+				controls = append(controls, importText("sha256", "Expected SHA-256", "Optional publisher checksum; leave blank if unavailable.", d.SHA256))
+			}
+		}
+		controls = append(controls, importButton("next", "Next: Destination", "Choose where the prepared copy will be saved."))
+	case 1:
+		controls = append(controls,
+			importPath("destination", "Save in", "Choose an existing parent folder with enough free space.", d.DestinationParent),
+			importText("folder", "New folder name", "A new folder for this import. Existing files are never overwritten.", d.DestinationName),
+			importButton("back", "Back: Source", "Change the source without leaving this form."),
+			importButton("next", "Next: Disks", "Set disk sizes and review which files will be copied."))
+	case 2:
+		if len(d.Disks) > 0 {
+			index := max(0, min(f.Disk, len(d.Disks)-1))
+			disk := d.Disks[index]
+			choices := []string{}
+			for i, row := range d.Disks {
+				choices = append(choices, fmt.Sprintf("%d/%d  %s", i+1, len(d.Disks), row.ID))
+			}
+			controls = append(controls, importControl{id: "disk", label: "Disk", kind: "choice", value: choices[index], choices: choices, help: "Left/Right switches disks. Each disk keeps its own options."})
+			if d.Kind == "ova" {
+				controls = append(controls, importButton("diskInfo", "Source: "+disk.Path, "The inspected source and disk ID are preserved for this appliance."))
+			} else {
+				controls = append(controls, importText("diskID", "Disk name", "A unique short name; letters, numbers, dots, dashes and underscores.", disk.ID))
+			}
+			if d.Kind == "disks" {
+				controls = append(controls, importPath("diskPath", "Disk file", "Choose the top-level disk file within the source folder.", disk.Path))
+			}
+			if d.Kind != "iso" {
+				controls = append(controls, importControl{id: "format", label: "Source format", kind: "choice", value: disk.Format, choices: []string{"qcow2", "raw", "vmdk", "vdi", "vpc", "vhdx"}, help: "Left/Right chooses the existing format. VPC means VHD; this is not auto-detection."})
+			}
+			label, help := "Size (MiB)", "Blank disk capacity: 32768 MiB = 32 GiB. It is not allocated in full now."
+			if d.Kind != "iso" {
+				label, help = "Maximum size (MiB)", "Safety limit for the source disk's virtual capacity. This does not resize it."
+			}
+			controls = append(controls, importText("size", label, help, disk.SizeMiB))
+		}
+		if d.Kind != "ova" {
+			label := "Add blank disk"
+			if d.Kind == "disks" {
+				label = "Add disk file"
+			}
+			controls = append(controls, importButton("addDisk", label, "Add another disk to this import."))
+			if len(d.Disks) > 0 {
+				controls = append(controls, importButton("removeDisk", "Remove selected disk", "Remove this disk from the draft. No source file is deleted."))
+			}
+		}
+		if d.Kind == "disks" {
+			controls = append(controls, importButton("addBacking", "Add backing / extent file", "Include files needed by the disk chain, without creating extra guest disks."))
+			if len(d.Files) > 0 {
+				index := max(0, min(f.File, len(d.Files)-1))
+				choices := []string{}
+				for i, file := range d.Files {
+					choices = append(choices, fmt.Sprintf("%d/%d  %s", i+1, len(d.Files), file.Path))
+				}
+				controls = append(controls, importControl{id: "file", label: "Included file", kind: "choice", value: choices[index], choices: choices, help: "Left/Right checks every source file included in the copy."})
+				controls = append(controls, importButton("fileOptions", "File verification / removal", "Optional checksum or remove an unneeded backing file from the draft."))
+				if f.advanced {
+					controls = append(controls, importText("fileSHA256", "Expected SHA-256", "Optional publisher checksum for this selected source file.", d.Files[index].SHA256), importButton("removeFile", "Remove included file", "A disk's root file cannot be removed while its disk is selected for import."))
+				}
+			}
+		}
+		if d.Kind != "ova" {
+			controls = append(controls, importControl{id: "offline", label: "Source images are not in use", kind: "toggle", value: fmt.Sprint(d.Offline), help: "Space toggles. Stop any VM or program using these source images first."})
+		}
+		controls = append(controls, importButton("back", "Back: Destination", "Change where the copied images will be saved."), importButton("preview", "Preview import", "Review storage needs and safety checks before applying anything."), importButton("export", "Export settings", "Save these options for reuse. Export does not start the import."))
+	}
+	return controls
+}
+
+func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
+	f.Draft.Disks = slices.Clone(f.Draft.Disks)
+	f.Draft.Files = slices.Clone(f.Draft.Files)
+	none := ImportIntent{}
+	if key.Type == tea.KeyEsc {
+		if f.Page > 0 {
+			f.Page--
+			f.Focus = 0
+			f.Error = ""
+			return f, none
+		}
+		return f, ImportIntent{Kind: "cancel"}
+	}
+	controls := f.controls()
+	if len(controls) == 0 {
+		f.Error = "Choose a supported source type."
+		return f, none
+	}
+	f.Focus = max(0, min(f.Focus, len(controls)-1))
+	switch key.Type {
+	case tea.KeyTab, tea.KeyDown:
+		f.Focus = (f.Focus + 1) % len(controls)
+		return f, none
+	case tea.KeyShiftTab, tea.KeyUp:
+		f.Focus = (f.Focus + len(controls) - 1) % len(controls)
+		return f, none
+	}
+	c := controls[f.Focus]
+	if key.Type == tea.KeyCtrlO && c.kind == "path" {
+		return f, f.browse(c.id)
+	}
+	activate := key.Type == tea.KeyEnter || key.Type == tea.KeySpace
+	if c.kind == "choice" && (key.Type == tea.KeyLeft || key.Type == tea.KeyRight || activate) {
+		direction := 1
+		if key.Type == tea.KeyLeft {
+			direction = -1
+		}
+		switch c.id {
+		case "disk":
+			f.Disk = (max(0, min(f.Disk, len(f.Draft.Disks)-1)) + direction + len(f.Draft.Disks)) % len(f.Draft.Disks)
+		case "file":
+			f.File = (max(0, min(f.File, len(f.Draft.Files)-1)) + direction + len(f.Draft.Files)) % len(f.Draft.Files)
+		case "system":
+			id := importCycle(f.Draft.SystemID, c.choices, direction)
+			if id != f.Draft.SystemID {
+				if err := f.Draft.SelectSystem(id); err != nil {
+					f.Error = err.Error()
+				} else {
+					f.Disk = 0
+					f.Error = ""
+				}
+			}
+		case "format":
+			f.Draft.Disks[max(0, min(f.Disk, len(f.Draft.Disks)-1))].Format = importCycle(c.value, c.choices, direction)
+		}
+		f.cursorField = ""
+		return f, none
+	}
+	if c.kind == "toggle" && activate {
+		f.Draft.Offline = !f.Draft.Offline
+		f.Error = ""
+		return f, none
+	}
+	if c.kind == "path" && key.Type == tea.KeyEnter {
+		return f, f.browse(c.id)
+	}
+	if c.kind == "button" && activate {
+		switch c.id {
+		case "back":
+			f.Page = max(0, f.Page-1)
+			f.Focus = 0
+			f.Error = ""
+		case "next":
+			if f.Page == 0 && (!guidedPath(f.Draft.Source) || (f.Draft.Kind == "ova" && (f.Draft.Report == nil || f.Draft.SystemID == ""))) {
+				f.Error = "Choose a source and, for OVA, inspect and select its appliance."
+				return f, none
+			}
+			if f.Page == 1 && (f.Draft.DestinationParent == "" || f.Draft.DestinationName == "") {
+				f.Error = "Choose a parent folder and enter a new folder name."
+				return f, none
+			}
+			f.Page = min(2, f.Page+1)
+			f.Focus = 0
+			f.Error = ""
+		case "inspect":
+			return f, ImportIntent{Kind: "inspect"}
+		case "preview", "export":
+			return f, ImportIntent{Kind: c.id}
+		case "advanced", "fileOptions":
+			f.advanced = !f.advanced
+		case "addDisk":
+			if len(f.Draft.Disks) >= 64 {
+				f.Error = "An import supports up to 64 disks."
+				return f, none
+			}
+			id := f.nextDiskID()
+			disk := ImportDisk{ID: id}
+			if f.Draft.Kind == "iso" {
+				disk.SizeMiB = "32768"
+			}
+			f.Draft.Disks = append(f.Draft.Disks, disk)
+			f.Disk = len(f.Draft.Disks) - 1
+			f.Focus = 0
+			if f.Draft.Kind == "disks" {
+				return f, ImportIntent{Kind: "browse", Target: "disk", Index: f.Disk}
+			}
+		case "removeDisk":
+			i := max(0, min(f.Disk, len(f.Draft.Disks)-1))
+			f.Draft.Disks = slices.Delete(f.Draft.Disks, i, i+1)
+			f.Disk = max(0, min(i, len(f.Draft.Disks)-1))
+			f.Focus = 0
+		case "addBacking":
+			return f, ImportIntent{Kind: "browse", Target: "backing"}
+		case "removeFile":
+			i := max(0, min(f.File, len(f.Draft.Files)-1))
+			for _, disk := range f.Draft.Disks {
+				if disk.Path == f.Draft.Files[i].Path {
+					f.Error = "Remove the corresponding disk before removing its root file."
+					return f, none
+				}
+			}
+			f.Draft.Files = slices.Delete(f.Draft.Files, i, i+1)
+			f.File = max(0, min(i, len(f.Draft.Files)-1))
+			f.Focus = 0
+		}
+		f.cursorField = ""
+		return f, none
+	}
+	if c.kind == "text" || c.kind == "path" {
+		f.edit(c, key)
+	}
+	return f, none
+}
+
+func (f ImportForm) browse(id string) ImportIntent {
+	target := id
+	if id == "diskPath" {
+		target = "disk"
+	}
+	return ImportIntent{Kind: "browse", Target: target, Index: f.Disk}
+}
+
+func (f ImportForm) nextDiskID() string {
+	for i := 1; ; i++ {
+		id := fmt.Sprintf("disk%d", i)
+		if !slices.ContainsFunc(f.Draft.Disks, func(d ImportDisk) bool { return d.ID == id }) {
+			return id
+		}
+	}
+}
+
+func (f *ImportForm) setText(id, value string) {
+	switch id {
+	case "source":
+		f.Draft.Source = value
+		f.Draft.Report = nil
+		f.Draft.SystemID = ""
+		if f.Draft.Kind != "iso" {
+			f.Draft.Disks = nil
+			f.Draft.Files = nil
+			f.Disk = 0
+			f.File = 0
+		}
+		f.Draft.SHA256 = ""
+		f.Draft.Offline = false
+	case "destination":
+		f.Draft.DestinationParent = value
+	case "folder":
+		f.Draft.DestinationName = value
+	case "mediaID":
+		f.Draft.MediaID = value
+	case "sha256":
+		f.Draft.SHA256 = value
+	case "fileSHA256":
+		if len(f.Draft.Files) > 0 {
+			f.Draft.Files[max(0, min(f.File, len(f.Draft.Files)-1))].SHA256 = value
+		}
+	case "diskID", "size", "diskPath":
+		if len(f.Draft.Disks) == 0 {
+			return
+		}
+		d := &f.Draft.Disks[max(0, min(f.Disk, len(f.Draft.Disks)-1))]
+		switch id {
+		case "diskID":
+			d.ID = value
+		case "size":
+			d.SizeMiB = value
+		case "diskPath":
+			d.Path = value
+			f.Draft.Offline = false
+		}
+	}
+}

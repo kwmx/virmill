@@ -54,6 +54,52 @@ anything. The explorer reads names and metadata only. It does not extract media
 or create folders. Permission errors stay visible; links and special files are
 not offered. New destination names can be typed after choosing their parent.
 
+## Import options
+
+Choose **Import**, then OVA, ISO or existing disks. Each opens a three-page form;
+no settings file is required. **Tab / Shift-Tab** moves between options,
+**Enter** activates the selected button or file explorer, left/right changes
+selectors, and **Space** changes a checkbox. A short explanation follows the
+focused option. **Back** or Esc returns one page without losing your choices.
+
+1. **Source:** choose an OVA/ISO file or the folder containing existing disks.
+   For OVA, select **Inspect appliance**, then choose the appliance member when
+   the archive contains several systems. For ISO, the media name identifies the
+   installer; **Advanced verification** accepts an optional publisher checksum.
+2. **Destination:** choose an existing parent with **Save in**, then enter a new
+   folder name. The reviewed import creates that folder; browsing does not.
+   Existing output folders and original media are preserved.
+3. **Disks:** use the disk selector to edit each disk. ISO imports offer
+   **Add blank disk**, a disk name and capacity in MiB. OVA retains every disk
+   attached to the selected appliance. OVA and existing disks require an explicit
+   source format and maximum virtual-size limit; that limit does not resize the
+   disk. Existing disks offer separate **Add disk file** and
+   **Add backing / extent file** buttons. Include every file needed by the chain;
+   backing files do not become extra guest disks.
+
+For ISO and existing disks, stop any program or VM using the source images, then
+explicitly check **Source images are not in use**. Check every disk's size and
+format before selecting **Preview import**. Changing the source clears dependent
+inspection and source-confirmation choices. The backend repeats source, format,
+dependency and space checks; selecting a filename does not certify its contents.
+
+**Export settings** is optional. It saves the current validated options to a new
+private JSON file; choose its folder and filename, then Enter to export. Existing
+files are never replaced. The exported object can be reused with the existing
+CLI `--input` option, supplying the source path separately. For example:
+
+```sh
+virmill import prepare-install /path/to/installer.iso \
+  --input "$(cat -- "$HOME/virmill-import-settings.json")"
+```
+
+Use `import prepare` for OVA or `import prepare-disks` for a disk-source folder.
+Exporting does not create a plan or start an import. The settings file contains
+the chosen destination and disk options; check those before reusing it elsewhere.
+
+These workflows **prepare images**. Applying their plans does not define a VM,
+boot it or install a guest OS. VM creation remains a separate action.
+
 ## Forms and review
 
 CPU/RAM, cold capture, guest recipes, and repository initialization/checks have
@@ -62,7 +108,8 @@ for the focused field. CPU/RAM fields left blank remain unchanged. A stopped
 VM is required for the implemented next-boot resource edit. Enter validates the
 form and requests a service plan; it does not apply the changes.
 
-Every other implemented action is also reachable through the catalog. Its form
+Other implemented actions are also reachable through the catalog. Where a
+dedicated form is not yet available, the catalog form
 collects a stable ID or explicit path, with a **Settings file** field for
 advanced mappings. That file contains the JSON object described by the CLI
 `--input` documentation. The TUI does not ask you to type a shell command or paste
@@ -97,8 +144,8 @@ Untrusted names/output are sanitized before rendering; detail pages wrap complet
 identifiers instead of silently truncating them to a table cell.
 
 The catalog covers every currently implemented program action. It does not create
-missing backend features: full creation/import wizards, multi-NIC editing, USB
+missing backend features: the complete VM creation wizard, multi-NIC editing, USB
 attachment/reconnection and the complete lab/protection workflows still need
-implementation or qualification. Advanced creation and import mappings currently
-use parameter files rather than a full multi-step wizard. All 71 complete-v1
+implementation or qualification. Import preparation has native controls; advanced
+VM creation mappings still use parameter files. All 71 complete-v1
 acceptance scenarios remain required. See the [evidence matrix](requirements-to-evidence.md).
