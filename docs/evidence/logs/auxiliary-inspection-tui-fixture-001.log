@@ -1,0 +1,18 @@
+test_child_output_timeout_and_own_child_cleanup (__main__.SelfTests.test_child_output_timeout_and_own_child_cleanup) ... ok
+test_cli_typed_denial_stderr_is_required (__main__.SelfTests.test_cli_typed_denial_stderr_is_required) ... ok
+test_denial_current_page_navigation_and_no_old_success (__main__.SelfTests.test_denial_current_page_navigation_and_no_old_success) ... ok
+test_exact_successful_native_prerequisite_only (__main__.SelfTests.test_exact_successful_native_prerequisite_only) ... ok
+test_host_environment_and_mutation_refusal (__main__.SelfTests.test_host_environment_and_mutation_refusal) ... ok
+test_missing_changed_and_revisited_pages_fail (__main__.SelfTests.test_missing_changed_and_revisited_pages_fail) ... ok
+test_modes_require_exact_prepared_public_policy (__main__.SelfTests.test_modes_require_exact_prepared_public_policy) ... ok
+test_offline_strict_parsers (__main__.SelfTests.test_offline_strict_parsers) ... ok
+test_pool_parser_preserves_configuration (__main__.SelfTests.test_pool_parser_preserves_configuration) ... ok
+test_positive_does_not_fall_back_to_denial (__main__.SelfTests.test_positive_does_not_fall_back_to_denial) ... ok
+test_positive_pages_reconstruct_with_only_new_nonce_values (__main__.SelfTests.test_positive_pages_reconstruct_with_only_new_nonce_values) ... ok
+test_screen_incremental_cursor_and_unsupported_controls (__main__.SelfTests.test_screen_incremental_cursor_and_unsupported_controls) ... ok
+test_volume_only_access_time_can_change (__main__.SelfTests.test_volume_only_access_time_can_change) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.110s
+
+OK

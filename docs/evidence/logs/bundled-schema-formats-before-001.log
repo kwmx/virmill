@@ -1,0 +1,35 @@
+=== RUN   TestSpecificationPlanDateTimeFormats
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/not-a-date
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-02-30T01:02:03Z
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T25:02:03Z
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03+24:00
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/not-a-date
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-02-30T01:02:03Z
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T25:02:03Z
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03+24:00
+    specification_parity_test.go:166: accepted invalid date-time required by normative FormatChecker
+--- FAIL: TestSpecificationPlanDateTimeFormats (0.02s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/createdAt/not-a-date (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/createdAt/2026-02-30T01:02:03Z (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T25:02:03Z (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03 (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03+24:00 (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/expiresAt/not-a-date (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/expiresAt/2026-02-30T01:02:03Z (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T25:02:03Z (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03 (0.00s)
+    --- FAIL: TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03+24:00 (0.00s)
+FAIL
+FAIL	virmill.local/core/internal/validation	0.021s
+FAIL

@@ -1,0 +1,18 @@
+test_actual_tui_report_required_without_denial_or_false_proof (__main__.SelfTests.test_actual_tui_report_required_without_denial_or_false_proof) ... ok
+test_concurrent_policy_generation_never_replaced (__main__.SelfTests.test_concurrent_policy_generation_never_replaced) ... ok
+test_durable_intent_precedes_first_grant_attempt (__main__.SelfTests.test_durable_intent_precedes_first_grant_attempt) ... ok
+test_known_grant_restores_and_rechecks_original_metadata (__main__.SelfTests.test_known_grant_restores_and_rechecks_original_metadata) ... ok
+test_lost_grant_ack_never_reads_or_restores_policy (__main__.SelfTests.test_lost_grant_ack_never_reads_or_restores_policy) ... ok
+test_lost_restore_ack_stays_uncertain_no_retry (__main__.SelfTests.test_lost_restore_ack_stays_uncertain_no_retry) ... ok
+test_original_generation_access_metadata_and_bytes_are_required (__main__.SelfTests.test_original_generation_access_metadata_and_bytes_are_required) ... ok
+test_pinned_import_refuses_changed_bytes_before_execution (__main__.SelfTests.test_pinned_import_refuses_changed_bytes_before_execution) ... ok
+test_positive_invocation_exact_pins_and_no_denial_fallback (__main__.SelfTests.test_positive_invocation_exact_pins_and_no_denial_fallback) ... ok
+test_saved_grant_reconstruction_rejects_broader_scope_or_metadata (__main__.SelfTests.test_saved_grant_reconstruction_rejects_broader_scope_or_metadata) ... ok
+test_source_leaf_and_ancestor_symlinks_refused (__main__.SelfTests.test_source_leaf_and_ancestor_symlinks_refused) ... ok
+test_tui_pass_does_not_make_failed_policy_window_pass (__main__.SelfTests.test_tui_pass_does_not_make_failed_policy_window_pass) ... ok
+test_wrapper_restricts_imported_native_mutation_methods (__main__.SelfTests.test_wrapper_restricts_imported_native_mutation_methods) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.029s
+
+OK

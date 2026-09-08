@@ -14,6 +14,14 @@ builds use an exact Git checkout; package file manifests and artifact digests bi
 their additional inputs. A working-tree digest or embedded HEAD alone is not a
 complete release source attestation.
 
+When a command runs in an isolated source checkout, pass both `--cwd` and
+`--source-root` to `scripts/record-evidence.py`. The latter binds the selected
+checkout's revision and implementation digest while logs still go into this
+repository's ledger. Its omission intentionally retains the historical recorder
+root scope. Do not interpret an older `--cwd` value alone as changing that scope.
+The auxiliary inventory record documents one such provenance correction without
+overwriting the original log or digest.
+
 `requirements.json` maps all 71 immutable acceptance IDs to implementation,
 planned tests, evidence and remaining work. Generated `../implementation-status.md`
 is a readable view. No row passes solely because a related unit test passed.
@@ -28,6 +36,9 @@ unverified. Failed observer attempts and both firmware outcomes are retained.
 
 Current integration: [durable creation declaration binding](nvram-binding-run.md),
 with legacy compatibility, cancellation and immutable recovery-result checks.
+The [authenticated auxiliary inventory](auxiliary-inventory-run.md) adds explicit
+policy and filesystem member metadata through CLI/TUI; complete capture remains
+unimplemented and unqualified.
 
 Earlier native evidence: [multi-disk import and active upload crash](multidisk-crash-run.md).
 The generated split-VMDK probe passed preparation, an actual interrupted native

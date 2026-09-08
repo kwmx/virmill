@@ -1,0 +1,113 @@
+{
+  "revision": "490b88cba5bf6e0837e2cb5780e56211c22a7d27",
+  "sourceInventorySHA256": "f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576",
+  "frozenPackageScriptSHA256": "a0dad88927b983778a1e40e66b84be67a152f76488ddc3e14942ea5c0f16977f",
+  "manifests": {
+    "virmill": {
+      "sha256": "21daefa8c91ce144a3b586a593f5fd8af911c354455c0572e1b744d7078b0f97",
+      "files": 174,
+      "markdown": 102
+    },
+    "virmill-host-helper": {
+      "sha256": "d51b177c87d01232460bcef5f5f733dc2d09f778abcfe610c6065fe549e15e7e",
+      "files": 5,
+      "markdown": 0
+    }
+  },
+  "sourceTargetFilesVerified": 440,
+  "sourceTargetDirectoriesVerified": 2,
+  "markdownBytes": 927487,
+  "counts": {
+    "external": 95,
+    "installed": 132,
+    "relocated-example": 10,
+    "host-absolute": 1,
+    "omitted-test-fixture": 16,
+    "excluded-evidence-log": 1150,
+    "omitted-specification": 4,
+    "omitted-implementation": 56,
+    "relocated-schema": 2,
+    "source-root-doc-detour": 2,
+    "nonportable-line-suffix": 19,
+    "omitted-contract": 2,
+    "omitted-vendor": 7
+  },
+  "totalLinks": 1496,
+  "missingOccurrences": 1269,
+  "missingUniqueTargets": 397,
+  "missingDocuments": 31,
+  "classes": {
+    "excluded-evidence-log": {
+      "occurrences": 1150,
+      "uniqueTargets": 309,
+      "documents": 9,
+      "sourcePresent": 1150
+    },
+    "host-absolute": {
+      "occurrences": 1,
+      "uniqueTargets": 1,
+      "documents": 1,
+      "sourcePresent": 0
+    },
+    "nonportable-line-suffix": {
+      "occurrences": 19,
+      "uniqueTargets": 19,
+      "documents": 1,
+      "sourcePresent": 0
+    },
+    "omitted-contract": {
+      "occurrences": 2,
+      "uniqueTargets": 2,
+      "documents": 1,
+      "sourcePresent": 2
+    },
+    "omitted-implementation": {
+      "occurrences": 56,
+      "uniqueTargets": 36,
+      "documents": 9,
+      "sourcePresent": 56
+    },
+    "omitted-specification": {
+      "occurrences": 4,
+      "uniqueTargets": 3,
+      "documents": 4,
+      "sourcePresent": 4
+    },
+    "omitted-test-fixture": {
+      "occurrences": 16,
+      "uniqueTargets": 11,
+      "documents": 11,
+      "sourcePresent": 16
+    },
+    "omitted-vendor": {
+      "occurrences": 7,
+      "uniqueTargets": 3,
+      "documents": 1,
+      "sourcePresent": 7
+    },
+    "relocated-example": {
+      "occurrences": 10,
+      "uniqueTargets": 9,
+      "documents": 6,
+      "sourcePresent": 10
+    },
+    "relocated-schema": {
+      "occurrences": 2,
+      "uniqueTargets": 2,
+      "documents": 1,
+      "sourcePresent": 2
+    },
+    "source-root-doc-detour": {
+      "occurrences": 2,
+      "uniqueTargets": 2,
+      "documents": 2,
+      "sourcePresent": 2
+    }
+  },
+  "checkerSelfTestsPassed": 9
+}
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from pathlib import Path; text=Path("docs/reviews/installed-document-links-490b88c.md").read_text(); code=text.split("```python\n",1)[1].split("\n```",1)[0]; exec(compile(code,"<frozen-document-link-audit>","exec")); assert result["missingOccurrences"] == 0, "Installed package has unresolved local documentation links"
+                                                                                                                                                                                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Installed package has unresolved local documentation links

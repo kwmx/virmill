@@ -1,0 +1,49 @@
+{
+  "allOwnedChildrenReaped": true,
+  "checks": [],
+  "childrenStarted": 3,
+  "completeCaptureVerified": false,
+  "diagnostics": [
+    {
+      "pid": 3076468,
+      "returncode": 0,
+      "role": "version",
+      "stderrBase64": "",
+      "stdoutBase64": "VFBNIGVtdWxhdG9yIHZlcnNpb24gMC4xMC4yLCBDb3B5cmlnaHQgKGMpIDIwMTQtMjAyMiBJQk0gQ29ycC4gYW5kIG90aGVycwo="
+    },
+    {
+      "pid": 3076469,
+      "returncode": 0,
+      "role": "initialized",
+      "stderrBase64": "c3d0cG06IEZvcm1hdHRpbmcgJ2ZpbGU6Ly8vdG1wL3ZtbC1maWxlLWhpbjFrZ2U1L2luaXRpYWxpemVkJyBhcyBuZXcgbGluZWFyIE5WUkFNIHN0b3JlCnN3dHBtOiBXYXJuaW5nOiBQcm9maWxlLWVuYWJsZWQgYWxnb3JpdGhtcyBjb250YWluIGRpc2FibGVkICdSU0EtMTAyNC1zaWduKFNIQTEsIHBrY3MxLXBzcyknCnN3dHBtOiBXYXJuaW5nOiBTZXR0aW5nIE9QRU5TU0xfRU5BQkxFX1NIQTFfU0lHTkFUVVJFUz0xCg==",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3076470,
+      "returncode": 1,
+      "role": "initialized",
+      "stderrBase64": "c3d0cG06IFNXVFBNX05WUkFNX0xpbmVhckZpbGVfTG9jazogQ291bGQgbm90IGxvY2sgYmFja2VuZC11cmkgZmlsZTovLy90bXAvdm1sLWZpbGUtaGluMWtnZTUvaW5pdGlhbGl6ZWQ6IFJlc291cmNlIHRlbXBvcmFyaWx5IHVuYXZhaWxhYmxlCg==",
+      "stdoutBase64": ""
+    }
+  ],
+  "failures": [
+    "Failure: producer failure lacked the exact FILE lock diagnostic"
+  ],
+  "fixture": "swtpm-file-lock-probe-v1",
+  "generatedScratchRemoved": true,
+  "guestIdentityVerified": false,
+  "hardwareVerified": false,
+  "kernel": "7.1.13-200.fc44.x86_64",
+  "nativeProbeExecuted": true,
+  "publicDependencySHA256": {
+    "/usr/bin/swtpm": "bebe173c8305178c21c6ae7cb75ee43eca5405fa384d6eef422d99dd21671e18",
+    "/usr/lib64/libtpms.so.0.10.2": "d6f88b903d975e106b01e36e100806fcdee237dc89b91a67bfc27705f37f349b",
+    "/usr/lib64/swtpm/libswtpm_libtpms.so.0.0.0": "5ac6156459945433c289263ab36a893304a569c169cc08c201e61d99aba10c25"
+  },
+  "python": "3.14.6",
+  "scratchRoot": "/tmp/vml-file-hin1kge5",
+  "stateBytesReadByProbe": false,
+  "status": "failed",
+  "swtpmVersion": "TPM emulator version 0.10.2, Copyright (c) 2014-2022 IBM Corp. and others",
+  "uid": 1000
+}

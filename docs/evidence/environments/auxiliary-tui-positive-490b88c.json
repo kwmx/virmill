@@ -1,0 +1,159 @@
+{
+  "actualTUIObserved": true,
+  "auxiliaryPayloadBytesRead": false,
+  "captureVerified": false,
+  "checks": [
+    "current 80x24 TUI pages preserve CLI fields and typed fresh read correlation; no apply/proof promotion",
+    "pinned CLI JSON/NDJSON/table and actual TUI positive observation"
+  ],
+  "commandCount": 142,
+  "deploymentManifestSHA256": "5c9945fcfabe2808ff941ef57144f0f7985edba60fe7358b6e18ae2c71bf739c",
+  "failures": [],
+  "filesPreserved": true,
+  "freshRootHelperExecutableHashVerified": false,
+  "guestBootVerified": false,
+  "guestsPreserved": true,
+  "historicalMediaHashes": {
+    "/home/virmill-test/virmill-tests/run-65930c6-20260907/sources/uefi-tpm-probe-v1/probe-fat.img": "1945000ea87359d92f6fcb3413549fe477884012d631c66a058c71a1dda9e483",
+    "/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-666c692d-da0e-4119-9554-727c4af3c751-disk-000.qcow2": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51",
+    "/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-d4c95f21-28bc-428d-9e5f-ceda025d279e-disk-000.qcow2": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51",
+    "/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-f78674f3-bf3a-43e5-81f9-4283e2472024-disk-000.qcow2": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51"
+  },
+  "historicalMediaHashesRechecked": false,
+  "independentRestoreVerified": false,
+  "journalPreserved": true,
+  "mediaPayloadBytesRead": false,
+  "mediaPreserved": true,
+  "mode": "positive",
+  "nativeFixture": {
+    "recipe": "auxiliary-inspection-native-003",
+    "recipeSHA256": "32b047be8a48c1a2b1d191b1515d3d632329a0eacc6322bb661e7ccc91d36bcc",
+    "reportSHA256": "4447e177dd0df0aabfbda022495a0f081c1a23ec5d747c5458105d8207377d8c",
+    "status": "passed",
+    "vmID": "074d9083-1953-4941-b006-9e301bb6d907"
+  },
+  "nativeReportSHA256": "4447e177dd0df0aabfbda022495a0f081c1a23ec5d747c5458105d8207377d8c",
+  "noApplyOrLifecycleSubmitted": true,
+  "pageCount": 17,
+  "policyChangedByRecipe": false,
+  "policyPreserved": true,
+  "poolsPreserved": true,
+  "positivePolicyRestorationOwnedByParent": true,
+  "preparedPolicySHA256": "8f390c2cd5726afa3c5d97d800377eed4f3446bb83e85634209d6d9025301f08",
+  "priorNativeFixtures": [
+    {
+      "failures": [
+        "RuntimeError: command failed; inspect command-084.json",
+        "final pools observation: existing pool configuration/volume inventory changed"
+      ],
+      "recipe": "auxiliary-inspection-native-001",
+      "reportSHA256": "47bdd7c341d0eb41c07c96b759e2077a6ec842001d044f1f1b93d3064d5196dd",
+      "status": "uncertain-preserve-resources"
+    },
+    {
+      "failures": [
+        "RuntimeError: unclean machine response"
+      ],
+      "recipe": "auxiliary-inspection-native-002",
+      "reportSHA256": "4d20997a454d2ac700d4e0f0def001171f14f39271a785f79fa4e7e96c665ce4",
+      "status": "uncertain-preserve-resources"
+    }
+  ],
+  "recipe": "auxiliary-inspection-tui-001",
+  "recipeSHA256": "b3a80e536dc644037c486d6f6e7dd8f1a35001e2d4a4c5d47474ac4d1f75a925",
+  "revision": "490b88cba5bf6e0837e2cb5780e56211c22a7d27",
+  "runtime": {
+    "binarySHA256": {
+      "virmill": "9cc64d8aa14e7f5d5992514910364f316d3d12fab784393630d7c160628ac886",
+      "virmill-host-helper": "4d67ec32a0aa891d16af237885fe45ba95ee5377829f86ab4761aba89b42917a",
+      "virmilld": "44522f6cbe2dd7eb54134038adfee4bd650ced9e4ae5aafe4e042471158cd7aa"
+    },
+    "helperPID": "31125",
+    "helperStartMonotonic": "51386551107",
+    "pid": "30897",
+    "unit": "virmill-test-490b88c.service"
+  },
+  "sourceDigest": "26e4f8410395a37606d577073d0bdff424610ae04b83df678e61d618ae38eb06",
+  "sourceInventorySHA256": "f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576",
+  "status": "passed",
+  "terminal": {
+    "columns": 80,
+    "rows": 24
+  },
+  "volumeAccessTimeObservations": [
+    {
+      "atime": {
+        "virmill-3cc290fc-5c68-475b-8d43-44989ee02e50-disk-000.qcow2": "1788795053.369374320",
+        "virmill-3cc290fc-5c68-475b-8d43-44989ee02e50-disk-001.qcow2": "1788795053.496610670",
+        "virmill-b9496482-2eeb-40e1-892b-4e291c108c52-disk-000.qcow2": "1788800377.968165598",
+        "virmill-b9496482-2eeb-40e1-892b-4e291c108c52-disk-001.qcow2": "1788795519.981088013"
+      },
+      "poolID": "36ab8b28-60d8-4495-9046-6f2f6bfc23b2"
+    },
+    {
+      "atime": {
+        "nested-fedora-seed.iso": "1788774256.609405725",
+        "nested-fedora.qcow2": "1788824533.020229771"
+      },
+      "poolID": "41455c0b-3d5a-4a4b-be8a-0089330265cc"
+    },
+    {
+      "atime": {
+        "virmill-ae630461-91d3-4f07-ad88-e6842c3dc3ea-disk-000.qcow2": "1788824533.090231223"
+      },
+      "poolID": "44bac6cf-3da8-4aed-a62c-cf74be34de6f"
+    },
+    {
+      "atime": {
+        "virmill-666c692d-da0e-4119-9554-727c4af3c751-disk-000.qcow2": "1788819082.110040667",
+        "virmill-d4c95f21-28bc-428d-9e5f-ceda025d279e-disk-000.qcow2": "1788813831.214172201",
+        "virmill-f78674f3-bf3a-43e5-81f9-4283e2472024-disk-000.qcow2": "1788812656.492657492"
+      },
+      "poolID": "95b94843-0db0-46ac-9bbf-a2fa3c183818"
+    },
+    {
+      "atime": {
+        "virmill-a19bf9ee-cd7f-4921-baac-39ce1694eb35-disk-000.qcow2": "1788824533.293235434",
+        "virmill-boot-media-fixture.iso": "1788786775.007491237"
+      },
+      "poolID": "eede6ba7-13a9-48d6-8cba-b8611d36513b"
+    },
+    {
+      "atime": {
+        "virmill-3cc290fc-5c68-475b-8d43-44989ee02e50-disk-000.qcow2": "1788795053.369374320",
+        "virmill-3cc290fc-5c68-475b-8d43-44989ee02e50-disk-001.qcow2": "1788795053.496610670",
+        "virmill-b9496482-2eeb-40e1-892b-4e291c108c52-disk-000.qcow2": "1788800377.968165598",
+        "virmill-b9496482-2eeb-40e1-892b-4e291c108c52-disk-001.qcow2": "1788795519.981088013"
+      },
+      "poolID": "36ab8b28-60d8-4495-9046-6f2f6bfc23b2"
+    },
+    {
+      "atime": {
+        "nested-fedora-seed.iso": "1788774256.609405725",
+        "nested-fedora.qcow2": "1788824533.020229771"
+      },
+      "poolID": "41455c0b-3d5a-4a4b-be8a-0089330265cc"
+    },
+    {
+      "atime": {
+        "virmill-ae630461-91d3-4f07-ad88-e6842c3dc3ea-disk-000.qcow2": "1788824533.090231223"
+      },
+      "poolID": "44bac6cf-3da8-4aed-a62c-cf74be34de6f"
+    },
+    {
+      "atime": {
+        "virmill-666c692d-da0e-4119-9554-727c4af3c751-disk-000.qcow2": "1788819082.110040667",
+        "virmill-d4c95f21-28bc-428d-9e5f-ceda025d279e-disk-000.qcow2": "1788813831.214172201",
+        "virmill-f78674f3-bf3a-43e5-81f9-4283e2472024-disk-000.qcow2": "1788812656.492657492"
+      },
+      "poolID": "95b94843-0db0-46ac-9bbf-a2fa3c183818"
+    },
+    {
+      "atime": {
+        "virmill-a19bf9ee-cd7f-4921-baac-39ce1694eb35-disk-000.qcow2": "1788824533.293235434",
+        "virmill-boot-media-fixture.iso": "1788786775.007491237"
+      },
+      "poolID": "eede6ba7-13a9-48d6-8cba-b8611d36513b"
+    }
+  ]
+}

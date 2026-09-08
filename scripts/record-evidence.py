@@ -17,6 +17,8 @@ p.add_argument('--requirements', default='')
 p.add_argument('--fixtures', default='')
 p.add_argument('--timeout', type=int, default=120)
 p.add_argument('--cwd', default='.')
+p.add_argument('--source-root', default='.',
+               help='Repository checkout whose source/revision is tested; defaults to the recorder repository')
 p.add_argument('command', nargs=argparse.REMAINDER)
 a = p.parse_args()
 command = a.command[1:] if a.command and a.command[0] == '--' else a.command
@@ -24,6 +26,21 @@ if not command:
     p.error('command required')
 if not all(c.isalnum() or c in '-_' for c in a.id):
     p.error('invalid evidence ID')
+source_root = (ROOT / a.source_root).resolve()
+try:
+    source_relative = source_root.relative_to(ROOT).as_posix()
+except ValueError:
+    p.error('source root must stay inside the recorder repository')
+if not source_root.is_dir() or not (source_root / 'go.mod').is_file() or not (source_root / 'go.sum').is_file():
+    p.error('source root must contain the selected Go source checkout')
+try:
+    git_root = Path(subprocess.check_output(
+        ['git', 'rev-parse', '--show-toplevel'], cwd=source_root,
+        text=True, stderr=subprocess.DEVNULL).strip()).resolve()
+except (OSError, subprocess.CalledProcessError):
+    p.error('source root must be a Git checkout root')
+if git_root != source_root:
+    p.error('source root must be a Git checkout root, not a nested source directory')
 logs = ROOT / 'docs/evidence/logs'
 log = logs / (a.id + '.log')
 ledger = ROOT / 'docs/evidence/ledger.jsonl'
@@ -32,11 +49,11 @@ if log.exists() or a.id in known:
     sys.exit('Evidence ID already exists; command was not rerun. Choose a new ID to preserve history.')
 files = []
 for top in ('cmd', 'internal', 'sdk', 'schemas', 'contracts', 'scripts', 'tests', 'packaging'):
-    for f in sorted((ROOT / top).rglob('*')):
+    for f in sorted((source_root / top).rglob('*')):
         if f.is_file() and '__pycache__' not in str(f):
-            files.append((f.relative_to(ROOT).as_posix(), hashlib.sha256(f.read_bytes()).hexdigest()))
+            files.append((f.relative_to(source_root).as_posix(), hashlib.sha256(f.read_bytes()).hexdigest()))
 for name in ('go.mod', 'go.sum'):
-    files.append((name, hashlib.sha256((ROOT / name).read_bytes()).hexdigest()))
+    files.append((name, hashlib.sha256((source_root / name).read_bytes()).hexdigest()))
 digest = hashlib.sha256(json.dumps(files, separators=(',', ':')).encode()).hexdigest()
 at = datetime.datetime.now(datetime.timezone.utc).isoformat()
 try:
@@ -50,13 +67,16 @@ logs.mkdir(exist_ok=True)
 if log.exists():
     sys.exit('Evidence ID already exists; choose a new ID to preserve history.')
 log.write_text(output)
-entry = dict(id=a.id, at=at, revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+entry = dict(id=a.id, at=at, revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip(),
              sourceDigest=digest, evidenceClass=a.evidence_class, command=command, cwd=a.cwd,
              exitCode=code, result='passed' if code == 0 else 'failed',
              requirements=[s for s in a.requirements.split(',') if s], environment='environment.json',
              log=log.relative_to(ROOT/'docs/evidence').as_posix(), logSHA256=hashlib.sha256(log.read_bytes()).hexdigest())
 entry['fixtureDigests'] = {name: hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in a.fixtures.split(',') if name}
 entry['sourceDigestScope'] = 'implementation-tree-v1: cmd, internal, sdk, schemas, contracts, scripts, tests, packaging, go.mod, go.sum; excludes interpreter caches'
+if source_relative != '.':
+    entry['sourceRoot'] = source_relative
+    entry['recorderRevision'] = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
 entry['testEnvironment'] = {key: os.environ[key] for key in ('VIRMILL_TEST_CONFORMANCE', 'VIRMILL_TEST_REQUIRE_IPC', 'VIRMILL_TEST_DISK_TOOLS', 'SOURCE_DATE_EPOCH', 'CGO_ENABLED', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'GOPROXY') if key in os.environ}
 if 'SKIP' in output or '[no test files]' in output or 'BLOCKED' in output:
     entry['limitations'] = 'Review log for skipped/unavailable paths; command success is not acceptance of those paths.'

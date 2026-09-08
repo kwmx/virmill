@@ -1,0 +1,7 @@
+Git staging was not executed: tool process creation was rejected by automatic approval review.
+Action: git add of the reviewed requirements/ledger/matrices, installed-document audit and observer.
+Reported reason: Automatic approval review failed: You've hit your usage limit. Visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Sep 14th, 2026 9:32 PM.
+The preceding 91-file staging operation had succeeded. This subsequent rejected call made no Git write.
+The user had authorized continued work; this is an unavailable approval-review service, not a new owner-scope decision.
+No bypass, alternate index, indirect Git write, new frozen checkpoint, rebuild, publication or host mutation followed this rejection.
+Local source fixes and tests continued. This records an unexecuted gate, not a failed test or fabricated process exit.

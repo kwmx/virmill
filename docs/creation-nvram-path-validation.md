@@ -34,7 +34,7 @@ the filesystem. It cannot establish that the destination exists, is an ordinary
 file, has no symlink components, belongs to the operation, or contains fresh
 firmware state. Source generation, approved roots, file ownership and lifecycle
 readiness need the separate contract described in
-[the NVRAM binding review](/home/faisal/project/virmill/docs/reviews/creation-nvram-binding-review.md).
+[the NVRAM binding review](reviews/creation-nvram-binding-review.md).
 It grants no capture, restore, reset or deletion authority.
 
 Reproduce the focused checks with the pinned toolchain and offline dependencies:

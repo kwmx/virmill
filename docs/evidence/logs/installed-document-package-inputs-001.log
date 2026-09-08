@@ -1,0 +1,28 @@
+test_exact_checkout_root_required (__main__.PackageInputs.test_exact_checkout_root_required) ... ok
+test_exact_output_inventory_excludes_stale_and_refuses_any_missing_output (__main__.PackageInputs.test_exact_output_inventory_excludes_stale_and_refuses_any_missing_output) ... ok
+test_exact_rpm_copy_excludes_stale_siblings_and_requires_expected_output (__main__.PackageInputs.test_exact_rpm_copy_excludes_stale_siblings_and_requires_expected_output) ... ok
+test_generated_binary_symlink_ancestor_is_refused (__main__.PackageInputs.test_generated_binary_symlink_ancestor_is_refused) ... ok
+test_generated_binary_symlink_is_refused (__main__.PackageInputs.test_generated_binary_symlink_is_refused) ... ok
+test_index_symlink_mode_is_refused_even_if_working_file_is_regular (__main__.PackageInputs.test_index_symlink_mode_is_refused_even_if_working_file_is_regular) ... ok
+test_installed_document_links_use_manifest_mapping_without_copying_source (__main__.PackageInputs.test_installed_document_links_use_manifest_mapping_without_copying_source) ... ok
+test_linked_worktree_is_an_exact_checkout_root (__main__.PackageInputs.test_linked_worktree_is_an_exact_checkout_root) ... ok
+test_output_file_and_directory_symlinks_are_refused (__main__.PackageInputs.test_output_file_and_directory_symlinks_are_refused) ... ok
+test_package_control_archive_retains_original_layout (__main__.PackageInputs.test_package_control_archive_retains_original_layout) ... ok
+test_package_orchestration_reports_only_four_new_expected_artifacts (__main__.PackageInputs.test_package_orchestration_reports_only_four_new_expected_artifacts) ... ok
+test_protocol_destination_collision_refused (__main__.PackageInputs.test_protocol_destination_collision_refused) ... ok
+test_required_protocol_and_document_targets_fail_closed (__main__.PackageInputs.test_required_protocol_and_document_targets_fail_closed) ... ok
+test_reset_refuses_symlink_root_and_ancestor (__main__.PackageInputs.test_reset_refuses_symlink_root_and_ancestor) ... ok
+test_reset_removes_only_owned_output_and_preserves_link_targets (__main__.PackageInputs.test_reset_removes_only_owned_output_and_preserves_link_targets) ... ok
+test_rpm_literals_preserve_spaces_and_shell_metacharacters (__main__.PackageInputs.test_rpm_literals_preserve_spaces_and_shell_metacharacters) ... ok
+test_rpm_macro_and_control_paths_are_refused_before_packaging (__main__.PackageInputs.test_rpm_macro_and_control_paths_are_refused_before_packaging) ... ok
+test_selected_fifo_directory_and_missing_file_are_refused (__main__.PackageInputs.test_selected_fifo_directory_and_missing_file_are_refused) ... ok
+test_selected_source_symlink_ancestor_is_refused (__main__.PackageInputs.test_selected_source_symlink_ancestor_is_refused) ... ok
+test_selected_source_symlink_is_refused (__main__.PackageInputs.test_selected_source_symlink_is_refused) ... ok
+test_static_source_must_also_be_tracked (__main__.PackageInputs.test_static_source_must_also_be_tracked) ... ok
+test_successful_rpmbuild_exit_without_expected_output_is_failure (__main__.PackageInputs.test_successful_rpmbuild_exit_without_expected_output_is_failure) ... ok
+test_tracked_source_contract_excludes_untracked_and_ignored_siblings (__main__.PackageInputs.test_tracked_source_contract_excludes_untracked_and_ignored_siblings) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.260s
+
+OK

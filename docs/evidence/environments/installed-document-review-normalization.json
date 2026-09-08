@@ -1,0 +1,8 @@
+{
+  "sourcePath": "docs/reviews/installed-document-links-490b88c.md",
+  "executedReviewSHA256": "158fbf372ea05ad38b79338d877b50ef7f621e09cc61a1786436f9a67e31310b",
+  "normalizedReviewSHA256": "7e6bb146a6a0e2a5c69a542939bbc93c5e115d6ba63f6c8c70b974cbc71d6fbc",
+  "executedAuditCodeSHA256": "5b8d8b89460b2d8fdf54eae475d13ca0d9267956ff805ade9b1deaf512da0e1b",
+  "reconstructExecutedBytes": "Append exactly one LF byte to the normalized review file; the executed code fence is unchanged.",
+  "reason": "Remove the extra final blank line found by git diff --cached --check after staging."
+}

@@ -26,6 +26,8 @@ var loadErr error
 func initSchemas() {
 	compiled = map[string]*jsonschema.Schema{}
 	c := jsonschema.NewCompiler()
+	// Match the normative validator: bundled date-time formats are constraints.
+	c.AssertFormat()
 	c.UseLoader(offlineLoader{})
 	c.UseRegexpEngine(func(pattern string) (jsonschema.Regexp, error) {
 		r, err := regexp2.Compile(pattern, regexp2.ECMAScript)

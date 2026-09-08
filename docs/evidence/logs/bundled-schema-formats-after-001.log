@@ -1,0 +1,62 @@
+=== RUN   TestColdRecoveryPointSchemaIsOfflineStrictAndExplicit
+--- PASS: TestColdRecoveryPointSchemaIsOfflineStrictAndExplicit (0.02s)
+=== RUN   TestPluginSchemasAreOfflineAndValidateResults
+--- PASS: TestPluginSchemasAreOfflineAndValidateResults (0.00s)
+=== RUN   TestBundledExamplesOffline
+--- PASS: TestBundledExamplesOffline (0.00s)
+=== RUN   TestYAMLAndTerminalSafety
+--- PASS: TestYAMLAndTerminalSafety (0.00s)
+=== RUN   TestSpecificationPreviouslyUnvisitedExamples
+=== RUN   TestSpecificationPreviouslyUnvisitedExamples/root_backup_policy
+=== RUN   TestSpecificationPreviouslyUnvisitedExamples/plugin_manifest
+--- PASS: TestSpecificationPreviouslyUnvisitedExamples (0.00s)
+    --- PASS: TestSpecificationPreviouslyUnvisitedExamples/root_backup_policy (0.00s)
+    --- PASS: TestSpecificationPreviouslyUnvisitedExamples/plugin_manifest (0.00s)
+=== RUN   TestSpecificationLabSchemaRejectsUnknownField
+--- PASS: TestSpecificationLabSchemaRejectsUnknownField (0.00s)
+=== RUN   TestSpecificationLabSemanticNegatives
+=== RUN   TestSpecificationLabSemanticNegatives/unresolved_network
+=== RUN   TestSpecificationLabSemanticNegatives/dependency_cycle
+=== RUN   TestSpecificationLabSemanticNegatives/duplicate_machine_identity
+=== RUN   TestSpecificationLabSemanticNegatives/invalid_cidr
+--- PASS: TestSpecificationLabSemanticNegatives (0.00s)
+    --- PASS: TestSpecificationLabSemanticNegatives/unresolved_network (0.00s)
+    --- PASS: TestSpecificationLabSemanticNegatives/dependency_cycle (0.00s)
+    --- PASS: TestSpecificationLabSemanticNegatives/duplicate_machine_identity (0.00s)
+    --- PASS: TestSpecificationLabSemanticNegatives/invalid_cidr (0.00s)
+=== RUN   TestSpecificationPluginManifestNegatives
+=== RUN   TestSpecificationPluginManifestNegatives/entrypoint_traversal
+=== RUN   TestSpecificationPluginManifestNegatives/unimplemented_protocol_version
+--- PASS: TestSpecificationPluginManifestNegatives (0.00s)
+    --- PASS: TestSpecificationPluginManifestNegatives/entrypoint_traversal (0.00s)
+    --- PASS: TestSpecificationPluginManifestNegatives/unimplemented_protocol_version (0.00s)
+=== RUN   TestSpecificationRPCEnvelopeAlternatives
+=== RUN   TestSpecificationRPCEnvelopeAlternatives/both_result_and_error
+=== RUN   TestSpecificationRPCEnvelopeAlternatives/numeric_identifier
+--- PASS: TestSpecificationRPCEnvelopeAlternatives (0.00s)
+    --- PASS: TestSpecificationRPCEnvelopeAlternatives/both_result_and_error (0.00s)
+    --- PASS: TestSpecificationRPCEnvelopeAlternatives/numeric_identifier (0.00s)
+=== RUN   TestSpecificationPlanDateTimeFormats
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/not-a-date
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-02-30T01:02:03Z
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T25:02:03Z
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03
+=== RUN   TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03+24:00
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/not-a-date
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-02-30T01:02:03Z
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T25:02:03Z
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03
+=== RUN   TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03+24:00
+--- PASS: TestSpecificationPlanDateTimeFormats (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/createdAt/not-a-date (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/createdAt/2026-02-30T01:02:03Z (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T25:02:03Z (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03 (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/createdAt/2026-09-08T01:02:03+24:00 (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/expiresAt/not-a-date (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/expiresAt/2026-02-30T01:02:03Z (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T25:02:03Z (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03 (0.00s)
+    --- PASS: TestSpecificationPlanDateTimeFormats/expiresAt/2026-09-08T01:02:03+24:00 (0.00s)
+PASS
+ok  	virmill.local/core/internal/validation	0.034s

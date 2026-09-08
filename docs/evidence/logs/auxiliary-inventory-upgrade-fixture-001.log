@@ -1,0 +1,16 @@
+test_deployment_hash_and_identity (__main__.self_test.<locals>.Checks.test_deployment_hash_and_identity) ... ok
+test_duplicate_and_nonfinite_json (__main__.self_test.<locals>.Checks.test_duplicate_and_nonfinite_json) ... ok
+test_new_revision_exact (__main__.self_test.<locals>.Checks.test_new_revision_exact) ... ok
+test_no_deployment_commands_in_self_test (__main__.self_test.<locals>.Checks.test_no_deployment_commands_in_self_test) ... ok
+test_package_boundaries (__main__.self_test.<locals>.Checks.test_package_boundaries) ... ok
+test_path_rules (__main__.self_test.<locals>.Checks.test_path_rules) ... ok
+test_prior_identity (__main__.self_test.<locals>.Checks.test_prior_identity) ... ok
+test_regular_input_and_symlink_refusal (__main__.self_test.<locals>.Checks.test_regular_input_and_symlink_refusal) ... ok
+test_saved_journal_exact_cells (__main__.self_test.<locals>.Checks.test_saved_journal_exact_cells) ... ok
+test_single_use_output (__main__.self_test.<locals>.Checks.test_single_use_output) ... ok
+test_start_scope (__main__.self_test.<locals>.Checks.test_start_scope) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.006s
+
+OK

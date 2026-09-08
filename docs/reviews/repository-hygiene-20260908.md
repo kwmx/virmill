@@ -131,3 +131,23 @@ PyYAML 6.0.3 available, but no `jsonschema` module. The default Python remains
 still lacks a complete runtime in either inspected interpreter. No dependency
 was installed, and the separate passing vendored Go schema/example checks are
 not represented as an execution of that Python validator.
+
+## Auxiliary-inventory checkpoint follow-up
+
+At the frozen implementation checkpoint `490b88c`, the parent subsequently
+checked 2,031 indexed regular entries and found zero tracked ignored files or
+tracked symlinks. Additional `.zip`, `.tar`, `.tar.gz`, `.tgz`, `.tar.bz2`, `.tbz2`,
+`.tar.xz`, `.txz` and `.tar.zst` rules protect source-media/archive downloads
+outside the normal ignored output roots. None hid an existing tracked path.
+Twenty-eight hypothetical artifact/private paths were ignored and seven required
+source/evidence/example paths remained eligible. The current observed prospective
+file count/size is in `auxiliary-repository-hygiene-001`; all were regular, with
+the largest being the 373,439-byte public complete source inventory. This is a
+path/type/policy audit, not exhaustive secret-content inspection. No push occurred.
+
+The build outputs, package archives, local test-host configuration, signing keys,
+source media and generated firmware/TPM state stay excluded. Original recipes,
+failed-run records, public build inventories and explicit qualification limits
+remain intentional release-engineering source. New standalone Python QA runtime
+inspection also found the bundled Python3.12.14 lacks both PyYAML and jsonschema;
+this does not change the earlier unexecuted normative Python validator claim.

@@ -1,0 +1,20 @@
+test_argv_environment_boundary (__main__.SelfTests.test_argv_environment_boundary) ... ok
+test_capabilities_uses_only_fixed_read_query_on_normal_connection (__main__.SelfTests.test_capabilities_uses_only_fixed_read_query_on_normal_connection) ... ok
+test_embedded_administration_compiles_without_execution (__main__.SelfTests.test_embedded_administration_compiles_without_execution) ... ok
+test_generated_xml_scope (__main__.SelfTests.test_generated_xml_scope) ... ok
+test_inventory_exact_payload_and_no_proof (__main__.SelfTests.test_inventory_exact_payload_and_no_proof) ... ok
+test_machine_refusal (__main__.SelfTests.test_machine_refusal) ... ok
+test_native_execution_requires_review_and_all_pins (__main__.SelfTests.test_native_execution_requires_review_and_all_pins) ... ok
+test_policy_compare_access_and_generation (__main__.SelfTests.test_policy_compare_access_and_generation) ... ok
+test_policy_scope_and_preservation (__main__.SelfTests.test_policy_scope_and_preservation) ... ok
+test_pool_numeric_drift_only (__main__.SelfTests.test_pool_numeric_drift_only) ... ok
+test_strict_json (__main__.SelfTests.test_strict_json) ... ok
+test_uncertain_policy_acknowledgement_never_replays_or_restores (__main__.SelfTests.test_uncertain_policy_acknowledgement_never_replays_or_restores) ... ok
+test_uuid_inventory (__main__.SelfTests.test_uuid_inventory) ... ok
+test_volume_access_time_only_is_excluded (__main__.SelfTests.test_volume_access_time_only_is_excluded) ... ok
+test_volume_table (__main__.SelfTests.test_volume_table) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.164s
+
+OK

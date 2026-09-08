@@ -46,6 +46,7 @@ class PackageInputs(unittest.TestCase):
             'packaging/completions/virmill.zsh': b'fixture zsh\n',
             'packaging/completions/virmill.fish': b'fixture fish\n',
             'docs/guide.md': b'# Original fixture documentation\n',
+            'virmill-v1-spec/docs/12-plugin-protocol.md': b'# Original public wire protocol fixture\n',
             'docs/evidence/logs/diagnostic.json': b'{"intentionallyExcluded":true}\n',
             'schemas/fixture.json': b'{"type":"object"}\n',
             'sdk/go/sdk.go': b'package sdk\n',
@@ -74,6 +75,41 @@ class PackageInputs(unittest.TestCase):
         with self.assertRaises((OSError, ValueError)):
             action()
 
+    def test_installed_document_links_use_manifest_mapping_without_copying_source(self):
+        original = (b'[schema](../schemas/fixture.json)\n'
+                    b'[wire](../virmill-v1-spec/docs/12-plugin-protocol.md)\n'
+                    b'[source](../internal/original.go:7)\n'
+                    b'[record](evidence/logs/diagnostic.json)\n')
+        self.write('docs/guide.md', original)
+        self.write('internal/original.go', b'package original\n')
+        self.git('add', 'internal/original.go')
+        core = packages.collect_package_files(self.root)['virmill']
+        installed = core['usr/share/doc/virmill/guide.md'][0].decode()
+        self.assertIn('../../virmill/schemas/fixture.json', installed)
+        self.assertIn('(virmill-v1-spec/docs/12-plugin-protocol.md)', installed)
+        self.assertIn('source checkout:', installed)
+        self.assertIn('internal/original.go', installed)
+        self.assertIn('evidence/logs/diagnostic.json', installed)
+        self.assertEqual(core[packages.PROTOCOL_TARGET][0], self.files[packages.PROTOCOL_SOURCE])
+        self.assertEqual((self.root/'docs/guide.md').read_bytes(), original)
+        self.assertFalse(any('internal/original.go' in path or 'evidence/logs' in path for path in core))
+
+    def test_required_protocol_and_document_targets_fail_closed(self):
+        self.write('docs/guide.md', b'[unknown](../missing.md)\n')
+        with self.assertRaises(ValueError):
+            packages.collect_package_files(self.root)
+        self.write('docs/guide.md', self.files['docs/guide.md'])
+        self.git('rm', '--cached', packages.PROTOCOL_SOURCE)
+        with self.assertRaisesRegex(ValueError, 'indexed regular file'):
+            packages.collect_package_files(self.root)
+
+    def test_protocol_destination_collision_refused(self):
+        conflict = 'docs/virmill-v1-spec/docs/12-plugin-protocol.md'
+        self.write(conflict, b'conflicting fixture\n')
+        self.git('add', conflict)
+        with self.assertRaisesRegex(ValueError, 'Duplicate package'):
+            packages.collect_package_files(self.root)
+
     def test_tracked_source_contract_excludes_untracked_and_ignored_siblings(self):
         omitted = ('docs/untracked.md', 'docs/credentials/token.json', 'docs/.env.json',
                    'schemas/untracked.json', 'sdk/go/untracked.go', 'examples/untracked.py',
@@ -98,7 +134,7 @@ class PackageInputs(unittest.TestCase):
         all_paths = set(core) | set(actual['virmill-host-helper'])
         self.assertFalse(any('untracked' in path or 'credentials' in path or '.env' in path or 'unrelated' in path for path in all_paths))
         self.assertFalse(any('evidence/logs' in path or 'unsupported.txt' in path for path in all_paths))
-        self.assertEqual(len(core), 13)
+        self.assertEqual(len(core), 14)
         self.assertEqual(len(actual['virmill-host-helper']), 5)
 
     def test_static_source_must_also_be_tracked(self):

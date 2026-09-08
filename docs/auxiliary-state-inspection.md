@@ -57,7 +57,11 @@ autostart, and no managed-save state. It changes none of those settings. NVRAM
 must be an explicit nonempty ordinary file. An emulator TPM must identify an
 explicit `file` or `dir` source and declared version. Many libvirt definitions
 omit the TPM state path; those remain unsupported here. Do not invent a path or
-alter an existing guest merely to make an inspection pass.
+alter an existing guest merely to make an inspection pass. The current adapter
+returns `INVALID_INPUT` with a native-path diagnostic when the source path is
+absent; this is an unsupported configuration, not an invitation to supply a
+guessed path. On failure, JSON/NDJSON stdout contains the typed error envelope
+and stderr contains its matching human-readable summary.
 
 The response contains root, directory and member generations, timestamps,
 ownership, modes and hexadecimal ACL/SELinux attributes. It includes hidden

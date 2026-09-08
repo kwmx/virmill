@@ -72,9 +72,25 @@ lock-disabled producers bypass that exclusion. The
 that the native `,lock` selection depends on a private feature bitmap, not a
 public XML or domain-capability field. Neither observation proves safe capture.
 File/block/shared-storage capture and implicit TPM path resolution remain open.
+The [implicit-source review](../reviews/libvirt-implicit-tpm-state-resolution.md)
+also identifies omitted-source parser/formatter ambiguity; public XML omission
+and distribution defaults cannot establish the last-used state path. The current
+permission requires one exact owner/group for all members. Mixed native NVRAM/TPM
+ownership needs an independently verified future policy contract; the generated
+single-owner fixture cannot qualify that configuration.
 
 This adds no persistent coordinator schema and requires no data migration. The
 optional policy extension fails closed on older policy files; old software must
 be upgraded together with its helper before an administrator adds new fields.
 There is no new dependency, publication destination or product scope exclusion.
 All 71 acceptance scenarios remain required and unaccepted.
+
+Parent qualification subsequently executed the generated FILE-backend cases
+recorded in `swtpm-file-lock-native-003`: exact lock refusal preserved one
+initialized file's observed metadata, while explicit-mode and short-file starts
+changed metadata/size before refusal, and replacement admitted a different
+writer inode. All nine owned children were reaped and generated scratch removed.
+This supports the existing requirement for independently bound source identity
+and producer exclusion; it does not enable capture dispatch or qualify real TPM
+state. The [integration ledger narrative](../evidence/auxiliary-inventory-run.md)
+retains both preceding failed probe attempts and the corrected successor.

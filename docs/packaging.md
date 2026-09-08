@@ -11,6 +11,14 @@ SHA-256 metadata. Version is `0.0.0` development; the artifacts are unsigned and
 not release-qualified. Building a DEB on Fedora does not establish Debian/Ubuntu
 installation compatibility. No package is uploaded, signed or installed by the build.
 
+Package assembly relocates Markdown links to the actual installed examples,
+schemas, SDK and documents. The language-neutral plugin protocol ships with the
+author guide. References to development source or evidence omitted from runtime
+packages are labeled with their source-checkout path; their payloads remain in
+the source repository. Unknown local destinations fail the build. The source
+documents retain their checkout links, and manifests hash the transformed
+installed bytes. See [the packaging decision](adr/0024-installed-documentation-links.md).
+
 The helper package installs no authorization policy and its socket defaults to root
 access only. The example grants nothing. In addition to UUID-named directory
 preparation, the helper supports explicit [managed-volume read grants and exact

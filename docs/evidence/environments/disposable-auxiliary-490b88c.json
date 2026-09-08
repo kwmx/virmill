@@ -1,0 +1,65 @@
+{
+  "allJournalRowsAndSchemaPreserved": true,
+  "apiVersion": "virmill/v1",
+  "captureVerified": false,
+  "deploymentManifestSHA256": "5c9945fcfabe2808ff941ef57144f0f7985edba60fe7358b6e18ae2c71bf739c",
+  "generatedNeverStartedFixture": {
+    "inactiveXMLSHA256": "7630c6b47171115d4825fac5918749ab805f6272144d16002de6b8b6a2184908",
+    "name": "virmill-auxiliary-fixture-003",
+    "stateAccount": {
+      "gid": 107,
+      "group": "qemu",
+      "uid": 107,
+      "user": "qemu"
+    },
+    "stateRoot": "/var/lib/virmill-host-helper/auxiliary-fixture-003",
+    "uuid": "074d9083-1953-4941-b006-9e301bb6d907",
+    "validFirmwareOrTPMState": false
+  },
+  "guestBootVerified": false,
+  "independentRestoreVerified": false,
+  "journalCounts": {
+    "dedup": 32,
+    "events": 177,
+    "jobs": 32,
+    "locks": 0,
+    "metadata": 24,
+    "plans": 36
+  },
+  "journalTriggers": 0,
+  "nativeRecipe": {
+    "id": "auxiliary-inspection-native-003",
+    "ledgerID": "auxiliary-inspection-native-003",
+    "logSHA256": "d1dfe428700d1d0bb7fbb4ce2de294eda9c6a55097edc058a7ba1f1b1c2a3e42",
+    "reportSHA256": "4447e177dd0df0aabfbda022495a0f081c1a23ec5d747c5458105d8207377d8c",
+    "sha256": "32b047be8a48c1a2b1d191b1515d3d632329a0eacc6322bb661e7ccc91d36bcc"
+  },
+  "observedAt": "2026-09-07T23:58:02.813434+00:00",
+  "observedStoppedDomainUUIDs": [
+    "074d9083-1953-4941-b006-9e301bb6d907",
+    "2ec994ce-2950-498c-8b19-d2f7dbb53a78",
+    "50a0583b-3587-495f-90f4-9a42b8ad2fa3",
+    "666c692d-da0e-4119-9554-727c4af3c751",
+    "a19bf9ee-cd7f-4921-baac-39ce1694eb35",
+    "ae630461-91d3-4f07-ad88-e6842c3dc3ea",
+    "b9496482-2eeb-40e1-892b-4e291c108c52",
+    "d4c95f21-28bc-428d-9e5f-ceda025d279e",
+    "f78674f3-bf3a-43e5-81f9-4283e2472024"
+  ],
+  "qualification": "metadata-only development fixture; no complete acceptance",
+  "released": false,
+  "restoredPolicySHA256": "1ec86a37a44cac12e7fa7c16c542ec83e552e348ea2f2cec841597dc999d6ed4",
+  "revision": "490b88cba5bf6e0837e2cb5780e56211c22a7d27",
+  "runtime": {
+    "binarySHA256": {
+      "virmill": "9cc64d8aa14e7f5d5992514910364f316d3d12fab784393630d7c160628ac886",
+      "virmill-host-helper": "4d67ec32a0aa891d16af237885fe45ba95ee5377829f86ab4761aba89b42917a",
+      "virmilld": "44522f6cbe2dd7eb54134038adfee4bd650ced9e4ae5aafe4e042471158cd7aa"
+    },
+    "helperPID": "31125",
+    "pid": "30897",
+    "unit": "virmill-test-490b88c.service"
+  },
+  "sourceDigest": "26e4f8410395a37606d577073d0bdff424610ae04b83df678e61d618ae38eb06",
+  "sourceInventorySHA256": "f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576"
+}

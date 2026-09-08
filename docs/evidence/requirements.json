@@ -1566,7 +1566,10 @@
         "docs/auxiliary-state-inspection.md",
         "docs/evidence/auxiliary-inventory-run.md",
         "docs/reviews/swtpm-cold-writer-exclusion.md",
-        "docs/reviews/libvirt-swtpm-lock-selection.md"
+        "docs/reviews/libvirt-swtpm-lock-selection.md",
+        "docs/reviews/libvirt-implicit-tpm-state-resolution.md",
+        "docs/reviews/swtpm-file-writer-exclusion.md",
+        "docs/reviews/auxiliary-native-fixture-review.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-01",
@@ -1620,7 +1623,21 @@
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
         "internal/ui/tui/auxiliary_test.go",
-        "tests/fixtures/protection/swtpm-lock-probe/probe.py"
+        "tests/fixtures/protection/swtpm-lock-probe/probe.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.py",
+        "tests/fixtures/protection/swtpm-file-lock-probe.md",
+        "tests/fixtures/protection/swtpm-file-lock-probe.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.py",
+        "tests/fixtures/protection/swtpm-file-lock-probe-v2.md",
+        "tests/fixtures/protection/swtpm-file-lock-probe-v2.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1680,7 +1697,23 @@
         "nvram-binding-tui-fixture-003",
         "nvram-binding-tui-003",
         "auxiliary-inventory-core-001",
-        "auxiliary-swtpm-lock-probe-001"
+        "auxiliary-swtpm-lock-probe-001",
+        "auxiliary-inspection-native-fixture-001",
+        "auxiliary-inspection-native-001",
+        "auxiliary-inspection-native-fixture-002",
+        "auxiliary-inspection-native-002",
+        "auxiliary-native-failure-review-001",
+        "swtpm-file-lock-self-tests-001",
+        "swtpm-file-lock-native-001",
+        "swtpm-file-lock-native-002",
+        "auxiliary-inspection-native-fixture-003",
+        "auxiliary-inspection-native-003",
+        "swtpm-file-lock-self-tests-002",
+        "swtpm-file-lock-native-003",
+        "auxiliary-inspection-tui-fixture-001",
+        "auxiliary-inspection-tui-denial-001",
+        "auxiliary-tui-policy-window-fixture-001",
+        "auxiliary-inspection-tui-positive-001"
       ],
       "outstanding": [
         "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
@@ -1689,7 +1722,8 @@
         "A distinct native 4 MiB non-Secure-Boot TPM2 CRB probe reported SEEDED then PRESERVED for both public markers, with unchanged boot disk and earlier guests retained. Native CLI/TUI inspection still reports unspecified TPM source storage; no path was guessed. Typed authorized capture, durable complete publication and independent recovery remain unimplemented/unverified.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
         "Additional generated-data race tests verify explicit-empty completeness, distinct secret/TPM role bindings, aggregate source limits and refusal to promote forged auxiliary content to verified capture/recovery/boot. This remains declaration/member-integrity checking; authenticated provenance and actual complete recovery are still required.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
+        "Generated swtpm0.10.2 FILE experiments passed same-inode writer refusal but also demonstrated mode change and empty-file growth before refusal and successful starts on a replacement inode. No existing state or VM was used. Cooperative locking alone is insufficient for capture; native source provenance, whole-set producer exclusion, durable publication and recovery remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1800,7 +1834,8 @@
         "docs/evidence/cold-fixes-native-run.md",
         "docs/reviews/uefi-tcg2-probe-review.md",
         "docs/reviews/uefi-console-observer-review.md",
-        "docs/reviews/native-tpm-state-resolution.md"
+        "docs/reviews/native-tpm-state-resolution.md",
+        "docs/reviews/libvirt-implicit-tpm-state-resolution.md"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-01",
@@ -2770,7 +2805,9 @@
         "docs/auxiliary-state-inspection.md",
         "docs/evidence/auxiliary-inventory-run.md",
         "docs/reviews/swtpm-cold-writer-exclusion.md",
-        "docs/reviews/libvirt-swtpm-lock-selection.md"
+        "docs/reviews/libvirt-swtpm-lock-selection.md",
+        "docs/reviews/libvirt-implicit-tpm-state-resolution.md",
+        "docs/reviews/auxiliary-native-fixture-review.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -2798,7 +2835,21 @@
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
         "internal/ui/tui/auxiliary_test.go",
-        "tests/fixtures/protection/swtpm-lock-probe/probe.py"
+        "tests/fixtures/protection/swtpm-lock-probe/probe.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inventory-upgrade-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inventory-upgrade-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -2825,13 +2876,29 @@
         "cold-source-required-ipc-001",
         "auxiliary-inventory-core-001",
         "auxiliary-inventory-vet-001",
-        "auxiliary-swtpm-lock-probe-001"
+        "auxiliary-swtpm-lock-probe-001",
+        "auxiliary-inventory-packages-001",
+        "auxiliary-inventory-upgrade-fixture-001",
+        "auxiliary-inventory-upgrade-native-001",
+        "auxiliary-inspection-native-fixture-001",
+        "auxiliary-helper-activation-native-001",
+        "auxiliary-inspection-native-001",
+        "auxiliary-inspection-native-fixture-002",
+        "auxiliary-inspection-native-002",
+        "auxiliary-native-failure-review-001",
+        "auxiliary-inspection-native-fixture-003",
+        "auxiliary-inspection-native-003",
+        "auxiliary-inspection-tui-fixture-001",
+        "auxiliary-inspection-tui-denial-001",
+        "auxiliary-tui-policy-window-fixture-001",
+        "auxiliary-inspection-tui-positive-001",
+        "auxiliary-helper-deactivation-native-001"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2919,7 +2986,9 @@
         "internal/helper/auxiliary_server_linux.go",
         "docs/adr/0022-authenticated-auxiliary-inventory.md",
         "docs/auxiliary-state-inspection.md",
-        "docs/evidence/auxiliary-inventory-run.md"
+        "docs/evidence/auxiliary-inventory-run.md",
+        "docs/reviews/swtpm-file-writer-exclusion.md",
+        "docs/reviews/auxiliary-native-fixture-review.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-03",
@@ -2949,7 +3018,19 @@
         "internal/helper/auxiliary_transport_linux_test.go",
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
-        "internal/ui/tui/auxiliary_test.go"
+        "internal/ui/tui/auxiliary_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.py",
+        "tests/fixtures/protection/swtpm-file-lock-probe.md",
+        "tests/fixtures/protection/swtpm-file-lock-probe.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.py",
+        "tests/fixtures/protection/swtpm-file-lock-probe-v2.md",
+        "tests/fixtures/protection/swtpm-file-lock-probe-v2.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2971,13 +3052,27 @@
         "cold-source-manifest-fuzz-001",
         "cold-source-xml-fuzz-001",
         "auxiliary-inventory-core-001",
-        "auxiliary-inventory-vet-001"
+        "auxiliary-inventory-vet-001",
+        "auxiliary-inspection-native-fixture-001",
+        "auxiliary-helper-activation-native-001",
+        "auxiliary-inspection-native-001",
+        "auxiliary-inspection-native-fixture-002",
+        "auxiliary-inspection-native-002",
+        "swtpm-file-lock-self-tests-001",
+        "swtpm-file-lock-native-001",
+        "swtpm-file-lock-native-002",
+        "auxiliary-inspection-native-fixture-003",
+        "auxiliary-inspection-native-003",
+        "swtpm-file-lock-self-tests-002",
+        "swtpm-file-lock-native-003",
+        "auxiliary-helper-deactivation-native-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
+        "Generated swtpm0.10.2 FILE experiments passed same-inode writer refusal but also demonstrated mode change and empty-file growth before refusal and successful starts on a replacement inode. No existing state or VM was used. Cooperative locking alone is insufficient for capture; native source provenance, whole-set producer exclusion, durable publication and recovery remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3055,7 +3150,12 @@
         "internal/helper/sealed_linux.go",
         "docs/evidence/cold-prerequisites-run.md",
         "docs/evidence/environments/local-cold-24858d4.json",
-        "internal/backend/coldfiles/source_linux.go"
+        "internal/backend/coldfiles/source_linux.go",
+        "internal/validation/validate.go",
+        "docs/evidence/environments/specification-source-20260908.json",
+        "docs/adr/0023-bundled-schema-format-assertions.md",
+        "docs/reviews/specification-validator-parity.md",
+        "docs/evidence/schema-and-package-qualification-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
@@ -3079,7 +3179,8 @@
         "internal/app/protection/manifest_test.go",
         "internal/helper/sealed_linux_test.go",
         "internal/backend/coldfiles/source_linux_test.go",
-        "internal/backend/coldfiles/source_qemu_linux_test.go"
+        "internal/backend/coldfiles/source_qemu_linux_test.go",
+        "internal/validation/specification_parity_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3103,7 +3204,11 @@
         "cold-sealed-sandbox-observation-001",
         "cold-required-ipc-approval-blocked-001",
         "cold-source-qemu-transfer-001",
-        "cold-source-required-ipc-001"
+        "cold-source-required-ipc-001",
+        "bundled-schema-formats-before-001",
+        "bundled-schema-formats-after-001",
+        "schema-format-integrated-core-001",
+        "schema-format-integrated-vet-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -3128,14 +3233,20 @@
         "internal/plugins/runner.go",
         "internal/plugins/actions.go",
         "internal/validation/dynamic.go",
-        "docs/evidence/downtime-estimates-run.md"
+        "docs/evidence/downtime-estimates-run.md",
+        "internal/validation/validate.go",
+        "docs/evidence/environments/specification-source-20260908.json",
+        "docs/adr/0023-bundled-schema-format-assertions.md",
+        "docs/reviews/specification-validator-parity.md",
+        "docs/evidence/schema-and-package-qualification-run.md"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-01",
       "tests": [
         "sdk/go/server_test.go",
         "internal/plugins/runner_test.go",
-        "internal/plugins/actions_test.go"
+        "internal/plugins/actions_test.go",
+        "internal/validation/specification_parity_test.go"
       ],
       "evidence": [
         "plugin-conformance-001",
@@ -3151,7 +3262,11 @@
         "cold-sdk-traceability-correction-001",
         "cold-source-go-sdk-001",
         "nvram-binding-frozen-core-001",
-        "nvram-binding-packages-001"
+        "nvram-binding-packages-001",
+        "bundled-schema-formats-before-001",
+        "bundled-schema-formats-after-001",
+        "schema-format-integrated-core-001",
+        "schema-format-integrated-vet-001"
       ],
       "outstanding": [
         "Confined Go/Python summary and installed schema-checked Python action pass on synthetic records; full extension conformance matrix remains."
@@ -3405,7 +3520,10 @@
         "internal/helper/auxiliary_server_linux.go",
         "docs/adr/0022-authenticated-auxiliary-inventory.md",
         "docs/auxiliary-state-inspection.md",
-        "docs/evidence/auxiliary-inventory-run.md"
+        "docs/evidence/auxiliary-inventory-run.md",
+        "docs/reviews/auxiliary-native-fixture-review.md",
+        "docs/evidence/environments/specification-source-20260908.json",
+        "internal/validation/validate.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -3471,7 +3589,18 @@
         "internal/helper/auxiliary_transport_linux_test.go",
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
-        "internal/ui/tui/auxiliary_test.go"
+        "internal/ui/tui/auxiliary_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.py",
+        "internal/validation/specification_parity_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3524,7 +3653,17 @@
         "cold-prerequisites-core-sandbox-001",
         "cold-source-required-ipc-001",
         "cold-source-packaging-001",
-        "auxiliary-inventory-core-001"
+        "auxiliary-inventory-core-001",
+        "auxiliary-inspection-native-001",
+        "auxiliary-inspection-native-fixture-002",
+        "auxiliary-inspection-native-002",
+        "auxiliary-inspection-native-fixture-003",
+        "auxiliary-inspection-native-003",
+        "auxiliary-inspection-tui-fixture-001",
+        "auxiliary-inspection-tui-denial-001",
+        "auxiliary-tui-policy-window-fixture-001",
+        "auxiliary-inspection-tui-positive-001",
+        "schema-format-integrated-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -3540,7 +3679,7 @@
         "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3589,7 +3728,7 @@
       ],
       "outstanding": [
         "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3648,7 +3787,10 @@
         "internal/helper/auxiliary_server_linux.go",
         "docs/adr/0022-authenticated-auxiliary-inventory.md",
         "docs/auxiliary-state-inspection.md",
-        "docs/evidence/auxiliary-inventory-run.md"
+        "docs/evidence/auxiliary-inventory-run.md",
+        "docs/reviews/auxiliary-native-fixture-review.md",
+        "docs/evidence/environments/specification-source-20260908.json",
+        "internal/validation/validate.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -3691,7 +3833,18 @@
         "internal/helper/auxiliary_transport_linux_test.go",
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
-        "internal/ui/tui/auxiliary_test.go"
+        "internal/ui/tui/auxiliary_test.go",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-002.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-native-003.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.py",
+        "internal/validation/specification_parity_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3725,14 +3878,27 @@
         "nvram-binding-tui-fixture-002",
         "nvram-binding-tui-fixture-003",
         "nvram-binding-tui-003",
-        "auxiliary-inventory-core-001"
+        "auxiliary-inventory-core-001",
+        "auxiliary-inventory-packages-001",
+        "auxiliary-inspection-native-fixture-001",
+        "auxiliary-inspection-native-001",
+        "auxiliary-inspection-native-fixture-002",
+        "auxiliary-inspection-native-002",
+        "auxiliary-native-failure-review-001",
+        "auxiliary-inspection-native-fixture-003",
+        "auxiliary-inspection-native-003",
+        "auxiliary-inspection-tui-fixture-001",
+        "auxiliary-inspection-tui-denial-001",
+        "auxiliary-tui-policy-window-fixture-001",
+        "auxiliary-inspection-tui-positive-001",
+        "schema-format-integrated-core-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3771,7 +3937,12 @@
         "docs/evidence/discovery-plugin-run.md",
         "docs/evidence/cold-fixes-native-run.md",
         "scripts/reproducibility.py",
-        "docs/reviews/repository-hygiene-20260908.md"
+        "docs/reviews/repository-hygiene-20260908.md",
+        "scripts/record-evidence.py",
+        "docs/reviews/evidence-source-root-review.md",
+        "scripts/package_docs.py",
+        "docs/adr/0024-installed-documentation-links.md",
+        "docs/evidence/schema-and-package-qualification-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -3792,7 +3963,11 @@
         "internal/backend/fileaccess/acl_linux_test.go",
         "tests/fixtures/protection/disposable-recorded-run/cold-source-upgrade-001.py",
         "tests/fixtures/protection/disposable-recorded-run/cold-fixes-upgrade-001.py",
-        "tests/integration/package_inputs_test.py"
+        "tests/integration/package_inputs_test.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inventory-upgrade-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inventory-upgrade-001.py",
+        "tests/integration/evidence_source_root_test.py",
+        "tests/integration/package_docs_test.py"
       ],
       "evidence": [
         "artifact-tests-001",
@@ -3865,7 +4040,19 @@
         "nvram-package-inputs-001",
         "nvram-binding-repro-001",
         "nvram-binding-packages-001",
-        "nvram-binding-upgrade-001"
+        "nvram-binding-upgrade-001",
+        "auxiliary-inventory-repro-001",
+        "auxiliary-inventory-packages-001",
+        "auxiliary-inventory-upgrade-fixture-001",
+        "auxiliary-inventory-upgrade-native-001",
+        "evidence-source-root-regression-002",
+        "evidence-source-root-regression-003",
+        "auxiliary-repository-hygiene-001",
+        "installed-document-transform-tests-001",
+        "installed-document-package-inputs-001",
+        "installed-document-observer-before-001",
+        "installed-document-observer-after-001",
+        "source-freeze-approval-blocked-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -3898,7 +4085,9 @@
       "plannedTest": "tests/integration/release/REL-02",
       "tests": [
         "internal/backend/xmlpatch/boot_captured_test.go",
-        "tests/integration/package_inputs_test.py"
+        "tests/integration/package_inputs_test.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py"
       ],
       "evidence": [
         "cross-build-001",
@@ -3932,7 +4121,11 @@
         "cold-native-cross-001",
         "nvram-package-inputs-001",
         "nvram-binding-repro-001",
-        "nvram-binding-cross-001"
+        "nvram-binding-cross-001",
+        "auxiliary-inventory-repro-001",
+        "auxiliary-inventory-cross-001",
+        "auxiliary-repository-hygiene-001",
+        "auxiliary-helper-deactivation-native-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support.",
@@ -4050,7 +4243,22 @@
         "internal/helper/auxiliary_server_linux.go",
         "docs/adr/0022-authenticated-auxiliary-inventory.md",
         "docs/auxiliary-state-inspection.md",
-        "docs/evidence/auxiliary-inventory-run.md"
+        "docs/evidence/auxiliary-inventory-run.md",
+        "scripts/record-evidence.py",
+        "docs/reviews/evidence-source-root-review.md",
+        "internal/validation/validate.go",
+        "docs/evidence/environments/specification-python-20260908.json",
+        "docs/evidence/environments/specification-source-20260908.json",
+        "tests/qa/spec-python-requirements.lock",
+        "virmill-v1-spec/qa/validate_package.py",
+        "docs/adr/0023-bundled-schema-format-assertions.md",
+        "docs/reviews/specification-validator-parity.md",
+        "docs/evidence/schema-and-package-qualification-run.md",
+        "docs/reviews/specification-python-validator.md",
+        "tests/qa/README.md",
+        "scripts/package_docs.py",
+        "docs/adr/0024-installed-documentation-links.md",
+        "docs/reviews/installed-document-links-490b88c.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -4144,7 +4352,13 @@
         "internal/helper/auxiliary_transport_linux_test.go",
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
-        "internal/ui/tui/auxiliary_test.go"
+        "internal/ui/tui/auxiliary_test.go",
+        "tests/integration/evidence_source_root_test.py",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inventory-upgrade-001.md",
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-inventory-upgrade-001.py",
+        "internal/validation/specification_parity_test.go",
+        "tests/integration/package_docs_test.py",
+        "tests/integration/installed_documents_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4277,7 +4491,26 @@
         "nvram-binding-tui-fixture-003",
         "nvram-binding-tui-003",
         "auxiliary-inventory-core-001",
-        "auxiliary-inventory-vet-001"
+        "auxiliary-inventory-vet-001",
+        "auxiliary-inventory-repro-001",
+        "auxiliary-inventory-packages-001",
+        "evidence-source-root-regression-001",
+        "auxiliary-inventory-upgrade-fixture-001",
+        "auxiliary-inventory-upgrade-native-001",
+        "evidence-source-root-regression-002",
+        "evidence-source-root-regression-003",
+        "auxiliary-repository-hygiene-001",
+        "bundled-schema-formats-before-001",
+        "bundled-schema-formats-after-001",
+        "specification-python-validator-001",
+        "schema-format-integrated-core-001",
+        "schema-format-integrated-vet-001",
+        "installed-document-transform-tests-001",
+        "installed-document-package-inputs-001",
+        "installed-documents-before-001",
+        "installed-document-observer-before-001",
+        "installed-document-observer-after-001",
+        "source-freeze-approval-blocked-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -4296,7 +4529,8 @@
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
         "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence.",
-        "Authenticated VM-specific auxiliary member metadata inspection now has shared CLI/TUI access and integrated race/private-IPC checks. It reads no state content, holds no producer lease after return, creates no job, and proves no capture, independent restore or boot. Installed-helper/native qualification and full mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
+        "Bundled schema format assertions now reject ten reproduced malformed timestamps; additional normative example/negative tests pass. The unchanged supplied Python validator executes with exact build-only dependencies but fails the known missing kickoff-document link from ADR0001. Installed-document link repair and complete tutorial/help/workflow qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false

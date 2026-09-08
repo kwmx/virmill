@@ -11,6 +11,8 @@ import stat
 import subprocess
 import tarfile
 
+from package_docs import rewrite_markdown
+
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_NAMES = ('virmill', 'virmill-host-helper')
 BINARY_PATHS = tuple('build/bin/' + name for name in ('virmill', 'virmilld', 'virmill-host-helper'))
@@ -22,6 +24,8 @@ SOURCE_TREES = (('docs', 'usr/share/doc/virmill'),
                 ('sdk/go', 'usr/share/virmill/sdk/go'),
                 ('examples', 'usr/share/virmill/examples'))
 SOURCE_SUFFIXES = ('.md', '.json', '.go', '.yaml', '.py', '.mod')
+PROTOCOL_SOURCE = 'virmill-v1-spec/docs/12-plugin-protocol.md'
+PROTOCOL_TARGET = 'usr/share/doc/virmill/virmill-v1-spec/docs/12-plugin-protocol.md'
 
 
 def relative_parts(path):
@@ -135,19 +139,31 @@ def collect_package_files(root):
             raise ValueError(f'Package source is not an indexed regular file: {path}')
         return read_regular(root, path), mode
 
-    core = {
-        'usr/bin/virmill': content('build/bin/virmill', 0o755),
-        'usr/bin/virmilld': content('build/bin/virmilld', 0o755),
-        'usr/lib/systemd/user/virmilld.service': content('packaging/systemd/virmilld.service'),
-        'usr/share/licenses/virmill/LICENSE': content('LICENSE'),
-        'usr/share/bash-completion/completions/virmill': content('packaging/completions/virmill.bash'),
-        'usr/share/zsh/site-functions/_virmill': content('packaging/completions/virmill.zsh'),
-        'usr/share/fish/vendor_completions.d/virmill.fish': content('packaging/completions/virmill.fish'),
-    }
+    core, installed_by_source = {}, {}
+
+    def add_core(source, target, mode=0o644):
+        if target in core or source in installed_by_source:
+            raise ValueError(f'Duplicate package source or destination: {source} -> {target}')
+        core[target] = content(source, mode)
+        installed_by_source[source] = target
+
+    add_core('build/bin/virmill', 'usr/bin/virmill', 0o755)
+    add_core('build/bin/virmilld', 'usr/bin/virmilld', 0o755)
+    add_core('packaging/systemd/virmilld.service', 'usr/lib/systemd/user/virmilld.service')
+    add_core('LICENSE', 'usr/share/licenses/virmill/LICENSE')
+    add_core('packaging/completions/virmill.bash', 'usr/share/bash-completion/completions/virmill')
+    add_core('packaging/completions/virmill.zsh', 'usr/share/zsh/site-functions/_virmill')
+    add_core('packaging/completions/virmill.fish', 'usr/share/fish/vendor_completions.d/virmill.fish')
+    add_core(PROTOCOL_SOURCE, PROTOCOL_TARGET)
     for path in sorted(tracked):
         for tree, target in SOURCE_TREES:
             if path.startswith(tree + '/') and PurePosixPath(path).suffix in SOURCE_SUFFIXES and 'evidence/logs' not in path:
-                core[target + '/' + path[len(tree) + 1:]] = content(path)
+                add_core(path, target + '/' + path[len(tree) + 1:])
+    known_sources = set(tracked) | set(BINARY_PATHS)
+    for source, target in installed_by_source.items():
+        if source.endswith('.md'):
+            data, mode = core[target]
+            core[target] = (rewrite_markdown(source, target, data, installed_by_source, known_sources), mode)
     helper = {
         'usr/libexec/virmill-host-helper': content('build/bin/virmill-host-helper', 0o755),
         'usr/lib/systemd/system/virmill-host-helper.service': content('packaging/systemd/virmill-host-helper.service'),

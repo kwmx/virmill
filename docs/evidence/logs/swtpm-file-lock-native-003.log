@@ -1,0 +1,199 @@
+{
+  "allOwnedChildrenReaped": true,
+  "checks": [
+    {
+      "after": {
+        "ctimeNS": 1788825616780882137,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593009,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616780882137,
+        "size": 8384,
+        "uid": 1000
+      },
+      "before": {
+        "ctimeNS": 1788825616780882137,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593009,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616780882137,
+        "size": 8384,
+        "uid": 1000
+      },
+      "name": "initialized-file-guard",
+      "passed": true,
+      "sameInodeCooperatingWriterRefused": true
+    },
+    {
+      "after": {
+        "ctimeNS": 1788825616798617387,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593016,
+        "links": 1,
+        "mode": 416,
+        "mtimeNS": 1788825616795026694,
+        "size": 8384,
+        "uid": 1000
+      },
+      "before": {
+        "ctimeNS": 1788825616795585938,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593016,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616795026694,
+        "size": 8384,
+        "uid": 1000
+      },
+      "modeChangedWhileOFDGuardHeld": true,
+      "name": "explicit-mode-before-lock",
+      "passed": true
+    },
+    {
+      "after": {
+        "ctimeNS": 1788825616803504720,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593020,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616803504720,
+        "size": 2240,
+        "uid": 1000
+      },
+      "before": {
+        "ctimeNS": 1788825616798617387,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593020,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616798617387,
+        "size": 0,
+        "uid": 1000
+      },
+      "fileGrewWhileOFDGuardHeld": true,
+      "name": "short-file-before-lock",
+      "passed": true
+    },
+    {
+      "heldOriginal": {
+        "ctimeNS": 1788825616812747226,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593027,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616812747226,
+        "size": 8384,
+        "uid": 1000
+      },
+      "name": "replaced-file-bypasses-old-guard",
+      "namedVersusHeldMismatchDetected": true,
+      "newProducerAdmittedOnDifferentInode": true,
+      "passed": true,
+      "replacement": {
+        "ctimeNS": 1788825616822397758,
+        "device": 52,
+        "gid": 1000,
+        "inode": 593031,
+        "links": 1,
+        "mode": 384,
+        "mtimeNS": 1788825616821704976,
+        "size": 8384,
+        "uid": 1000
+      }
+    }
+  ],
+  "childrenStarted": 9,
+  "completeCaptureVerified": false,
+  "diagnostics": [
+    {
+      "pid": 3077470,
+      "returncode": 0,
+      "role": "version",
+      "stderrBase64": "",
+      "stdoutBase64": "VFBNIGVtdWxhdG9yIHZlcnNpb24gMC4xMC4yLCBDb3B5cmlnaHQgKGMpIDIwMTQtMjAyMiBJQk0gQ29ycC4gYW5kIG90aGVycwo="
+    },
+    {
+      "pid": 3077471,
+      "returncode": 0,
+      "role": "initialized",
+      "stderrBase64": "c3d0cG06IEZvcm1hdHRpbmcgJ2ZpbGU6Ly8vdG1wL3ZtbC1maWxlLTlkMXViZWV1L2luaXRpYWxpemVkJyBhcyBuZXcgbGluZWFyIE5WUkFNIHN0b3JlCnN3dHBtOiBXYXJuaW5nOiBQcm9maWxlLWVuYWJsZWQgYWxnb3JpdGhtcyBjb250YWluIGRpc2FibGVkICdSU0EtMTAyNC1zaWduKFNIQTEsIHBrY3MxLXBzcyknCnN3dHBtOiBXYXJuaW5nOiBTZXR0aW5nIE9QRU5TU0xfRU5BQkxFX1NIQTFfU0lHTkFUVVJFUz0xCg==",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077472,
+      "returncode": 1,
+      "role": "initialized",
+      "stderrBase64": "c3d0cG06IFNXVFBNX05WUkFNX0xpbmVhckZpbGVfTG9jazogQ291bGQgbm90IGxvY2sgYmFja2VuZC11cmkgZmlsZTovLy90bXAvdm1sLWZpbGUtOWQxdWJlZXUvaW5pdGlhbGl6ZWQ6IFJlc291cmNlIHRlbXBvcmFyaWx5IHVuYXZhaWxhYmxlCg==",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077473,
+      "returncode": 0,
+      "role": "explicit-mode",
+      "stderrBase64": "c3d0cG06IEZvcm1hdHRpbmcgJ2ZpbGU6Ly8vdG1wL3ZtbC1maWxlLTlkMXViZWV1L2V4cGxpY2l0LW1vZGUnIGFzIG5ldyBsaW5lYXIgTlZSQU0gc3RvcmUKc3d0cG06IFdhcm5pbmc6IFByb2ZpbGUtZW5hYmxlZCBhbGdvcml0aG1zIGNvbnRhaW4gZGlzYWJsZWQgJ1JTQS0xMDI0LXNpZ24oU0hBMSwgcGtjczEtcHNzKScKc3d0cG06IFdhcm5pbmc6IFNldHRpbmcgT1BFTlNTTF9FTkFCTEVfU0hBMV9TSUdOQVRVUkVTPTEK",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077474,
+      "returncode": 1,
+      "role": "explicit-mode",
+      "stderrBase64": "c3d0cG06IFNXVFBNX05WUkFNX0xpbmVhckZpbGVfTG9jazogQ291bGQgbm90IGxvY2sgYmFja2VuZC11cmkgZmlsZTovLy90bXAvdm1sLWZpbGUtOWQxdWJlZXUvZXhwbGljaXQtbW9kZTogUmVzb3VyY2UgdGVtcG9yYXJpbHkgdW5hdmFpbGFibGUK",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077475,
+      "returncode": 1,
+      "role": "short",
+      "stderrBase64": "c3d0cG06IEZvcm1hdHRpbmcgJ2ZpbGU6Ly8vdG1wL3ZtbC1maWxlLTlkMXViZWV1L3Nob3J0JyBhcyBuZXcgbGluZWFyIE5WUkFNIHN0b3JlCnN3dHBtOiBTV1RQTV9OVlJBTV9MaW5lYXJGaWxlX0xvY2s6IENvdWxkIG5vdCBsb2NrIGJhY2tlbmQtdXJpIGZpbGU6Ly8vdG1wL3ZtbC1maWxlLTlkMXViZWV1L3Nob3J0OiBSZXNvdXJjZSB0ZW1wb3JhcmlseSB1bmF2YWlsYWJsZQo=",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077476,
+      "returncode": 0,
+      "role": "replace-target",
+      "stderrBase64": "c3d0cG06IEZvcm1hdHRpbmcgJ2ZpbGU6Ly8vdG1wL3ZtbC1maWxlLTlkMXViZWV1L3JlcGxhY2UtdGFyZ2V0JyBhcyBuZXcgbGluZWFyIE5WUkFNIHN0b3JlCnN3dHBtOiBXYXJuaW5nOiBQcm9maWxlLWVuYWJsZWQgYWxnb3JpdGhtcyBjb250YWluIGRpc2FibGVkICdSU0EtMTAyNC1zaWduKFNIQTEsIHBrY3MxLXBzcyknCnN3dHBtOiBXYXJuaW5nOiBTZXR0aW5nIE9QRU5TU0xfRU5BQkxFX1NIQTFfU0lHTkFUVVJFUz0xCg==",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077477,
+      "returncode": 0,
+      "role": "replace-source",
+      "stderrBase64": "c3d0cG06IEZvcm1hdHRpbmcgJ2ZpbGU6Ly8vdG1wL3ZtbC1maWxlLTlkMXViZWV1L3JlcGxhY2Utc291cmNlJyBhcyBuZXcgbGluZWFyIE5WUkFNIHN0b3JlCnN3dHBtOiBXYXJuaW5nOiBQcm9maWxlLWVuYWJsZWQgYWxnb3JpdGhtcyBjb250YWluIGRpc2FibGVkICdSU0EtMTAyNC1zaWduKFNIQTEsIHBrY3MxLXBzcyknCnN3dHBtOiBXYXJuaW5nOiBTZXR0aW5nIE9QRU5TU0xfRU5BQkxFX1NIQTFfU0lHTkFUVVJFUz0xCg==",
+      "stdoutBase64": ""
+    },
+    {
+      "pid": 3077478,
+      "returncode": 0,
+      "role": "replace-target",
+      "stderrBase64": "c3d0cG06IFdhcm5pbmc6IFByb2ZpbGUtZW5hYmxlZCBhbGdvcml0aG1zIGNvbnRhaW4gZGlzYWJsZWQgJ1JTQS0xMDI0LXNpZ24oU0hBMSwgcGtjczEtcHNzKScKc3d0cG06IFdhcm5pbmc6IFNldHRpbmcgT1BFTlNTTF9FTkFCTEVfU0hBMV9TSUdOQVRVUkVTPTEK",
+      "stdoutBase64": ""
+    }
+  ],
+  "failures": [],
+  "fixture": "swtpm-file-lock-probe-v2",
+  "generatedScratchRemoved": true,
+  "guestIdentityVerified": false,
+  "hardwareVerified": false,
+  "kernel": "7.1.13-200.fc44.x86_64",
+  "nativeProbeExecuted": true,
+  "publicDependencySHA256": {
+    "/usr/bin/swtpm": "bebe173c8305178c21c6ae7cb75ee43eca5405fa384d6eef422d99dd21671e18",
+    "/usr/lib64/libtpms.so.0.10.2": "d6f88b903d975e106b01e36e100806fcdee237dc89b91a67bfc27705f37f349b",
+    "/usr/lib64/swtpm/libswtpm_libtpms.so.0.0.0": "5ac6156459945433c289263ab36a893304a569c169cc08c201e61d99aba10c25"
+  },
+  "python": "3.14.6",
+  "scratchRoot": "/tmp/vml-file-9d1ubeeu",
+  "stateBytesReadByProbe": false,
+  "status": "passed",
+  "swtpmVersion": "TPM emulator version 0.10.2, Copyright (c) 2014-2022 IBM Corp. and others",
+  "uid": 1000
+}

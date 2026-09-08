@@ -1,0 +1,21 @@
+{
+  "allOwnedChildrenReaped": true,
+  "checks": [],
+  "childrenStarted": 0,
+  "completeCaptureVerified": false,
+  "diagnostics": [],
+  "failures": [
+    "Failure: public dependency SHA256 mismatch: /usr/lib64/swtpm/libswtpm_libtpms.so.0.0.0"
+  ],
+  "fixture": "swtpm-file-lock-probe-v1",
+  "generatedScratchRemoved": true,
+  "guestIdentityVerified": false,
+  "hardwareVerified": false,
+  "kernel": "7.1.13-200.fc44.x86_64",
+  "nativeProbeExecuted": false,
+  "python": "3.14.6",
+  "scratchRoot": "/tmp/vml-file-57cu56uh",
+  "stateBytesReadByProbe": false,
+  "status": "failed",
+  "uid": 1000
+}

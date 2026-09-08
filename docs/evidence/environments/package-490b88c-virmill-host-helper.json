@@ -1,0 +1,32 @@
+{
+  "product": "Virmill",
+  "package": "virmill-host-helper",
+  "releaseQualified": false,
+  "files": [
+    {
+      "path": "usr/lib/systemd/system/virmill-host-helper.service",
+      "sha256": "29c5417f58dcd543d8965ed83ae302f59abd29c72f07cad40585ff8ff783f8f2",
+      "mode": 420
+    },
+    {
+      "path": "usr/lib/systemd/system/virmill-host-helper.socket",
+      "sha256": "5784c5ea8dd95708dd38fb0b22fe5db0829c0d6fe9ba26b1e26de1d56bc4030d",
+      "mode": 420
+    },
+    {
+      "path": "usr/libexec/virmill-host-helper",
+      "sha256": "4d67ec32a0aa891d16af237885fe45ba95ee5377829f86ab4761aba89b42917a",
+      "mode": 493
+    },
+    {
+      "path": "usr/share/doc/virmill-host-helper/helper-policy.example.json",
+      "sha256": "db2cbcbf18c326d9c9d759fb00df1ab101ecec9d61eca85ee5bd6d631dfd1569",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/licenses/virmill-host-helper/LICENSE",
+      "sha256": "c7cd4e300553fa2e0454874b188ae0a8b0a25461464e1d639bd368f3f208cb8b",
+      "mode": 420
+    }
+  ]
+}

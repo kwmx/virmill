@@ -1,0 +1,247 @@
+[
+  {
+    "path": "AGENTS.md",
+    "sha256": "7973667a10d6ea66219aa5c23fbd8f96271b8413f69f0a716edfec0347f9aa1f",
+    "size": 3832
+  },
+  {
+    "path": "PACKAGE-CONTENTS.json",
+    "sha256": "ef6f148c1a49f837ab94cc47dcd85f87d868aefa07bcede52189969bd49ae551",
+    "size": 8193
+  },
+  {
+    "path": "README.md",
+    "sha256": "a695424c0a1c6653565a36fb8f936e300747e53e7027f42b4fc0d97eff016b71",
+    "size": 6771
+  },
+  {
+    "path": "SHIP-CHECKLIST.md",
+    "sha256": "e3609a1414b3a523986e69ade1b93a5603600bcc2cf6eb942faa02aa216db30a",
+    "size": 2238
+  },
+  {
+    "path": "contracts/requirements.json",
+    "sha256": "f339738ee66672dc2fbfeff6cada47a0c07d8327b33cd5b9faf08c9615476598",
+    "size": 16457
+  },
+  {
+    "path": "docs/00-product-and-scope.md",
+    "sha256": "baf766b03476c32886bb646ba5d5ea3a9ffd57b2213cffd67aadf86afe61e10c",
+    "size": 8006
+  },
+  {
+    "path": "docs/01-architecture-and-go-decision.md",
+    "sha256": "2b3e1c00a1ff313e43f588a638aed7b28ecbbeda4689be3ab4ae08efa132c58f",
+    "size": 10133
+  },
+  {
+    "path": "docs/02-domain-model-and-contracts.md",
+    "sha256": "ca5bea110cda0b6850c58acb3ec0c280c0a8226f15d93545895c4b753be11683",
+    "size": 8763
+  },
+  {
+    "path": "docs/03-cli-specification.md",
+    "sha256": "53679599c7108573748b1670386fdc8743fcfc189f266e3d3432c7a4380546d2",
+    "size": 6877
+  },
+  {
+    "path": "docs/04-tui-specification.md",
+    "sha256": "cd36a3bcde5ec99891abb945e0c9fee1c680f5d0d39e06ecac5231cb408a6cd4",
+    "size": 6002
+  },
+  {
+    "path": "docs/05-import-and-creation.md",
+    "sha256": "0b238e797456b3ac2f8d1e5d5be235e75005196d62ced2c34315a54a69a63280",
+    "size": 9682
+  },
+  {
+    "path": "docs/06-networking.md",
+    "sha256": "c901bf51896fb342968db879d43943ff54dee8dc87f06f9fbeb5ccba3f4db0aa",
+    "size": 9917
+  },
+  {
+    "path": "docs/07-storage-snapshots-backups.md",
+    "sha256": "ae513cbc2f43e02dbe9d43fbcb0dfcf4c00b0f786e850038c7dbcd78ad5e1bb6",
+    "size": 11415
+  },
+  {
+    "path": "docs/08-devices-and-guest-setup.md",
+    "sha256": "4251dd0f2db72a46a9cb4047fc35009bec983d8cdadab86eeb82305e0d7691ed",
+    "size": 7206
+  },
+  {
+    "path": "docs/09-labs-and-templates.md",
+    "sha256": "c23e3891f797f08cdac24ec1faa3c73fc9e2e92ff49be59aeb7fb8b1d59458cd",
+    "size": 6822
+  },
+  {
+    "path": "docs/10-jobs-security-and-recovery.md",
+    "sha256": "fd18398c1090042482fb00d31d4086646f5432bc5a5e06b568e9cb3e61533e12",
+    "size": 10524
+  },
+  {
+    "path": "docs/11-plugin-development.md",
+    "sha256": "0a67d2e264fdf1e2b2e0a3a8b582d789a8042ab52141c4f8311c674e4d55be57",
+    "size": 10449
+  },
+  {
+    "path": "docs/12-plugin-protocol.md",
+    "sha256": "1c8f3cb751585222ffc7945a2f91fee376c5d042ce8f40fc27685961d8eb5cb9",
+    "size": 9051
+  },
+  {
+    "path": "docs/13-testing-and-acceptance.md",
+    "sha256": "2ba7d02f927a1f6904936c710f7eac3b09bf1de155de6b16053b4a46c48da080",
+    "size": 12729
+  },
+  {
+    "path": "docs/14-agent-implementation-plan.md",
+    "sha256": "6105a38ce463c7a6c7afba5c6cdee4e1f3a5b14e1e0d06b505e97130d33afb99",
+    "size": 5607
+  },
+  {
+    "path": "docs/15-packaging-and-operations.md",
+    "sha256": "be91f990824ba6bc54703dc337c6d09a4394b065c5a2767b925c5b9dd5b3ec34",
+    "size": 9861
+  },
+  {
+    "path": "docs/16-references-and-input-audit.md",
+    "sha256": "2f478d1dfe099b431b19b1f8f9614283b62cd3c502da2dcc5eabace53e3a1d01",
+    "size": 7080
+  },
+  {
+    "path": "docs/17-risks-and-capability-policy.md",
+    "sha256": "a5b4884cd7e2032cdb6e52f52f79b0f4d0f5829b3e1c80a7a0d4f49475011afc",
+    "size": 3971
+  },
+  {
+    "path": "examples/README.md",
+    "sha256": "af0d25bd5ef67d80b24b137a6398ca304ce28ebfcccd209bff5b90ab4b365768",
+    "size": 1102
+  },
+  {
+    "path": "examples/backup-policy.yaml",
+    "sha256": "f9a77e25f7b64b9148e47a16b445891cfd63d8c8e10ca3bfda64563552761586",
+    "size": 512
+  },
+  {
+    "path": "examples/labs/multi-network-lab.yaml",
+    "sha256": "c68b857367080af1a443bd83dde332c96b41380dcd40bf6e36cafbae6b69b547",
+    "size": 2384
+  },
+  {
+    "path": "examples/networks/guest-only.yaml",
+    "sha256": "a5bc1324db4244639e99f593648d51a9a5aa83ca6dc21e6474f0f7f536bb5d91",
+    "size": 236
+  },
+  {
+    "path": "examples/networks/internet.yaml",
+    "sha256": "58c7aa02080814de3d251b4383b0b627417567c5312b714aecde0af890b52d14",
+    "size": 227
+  },
+  {
+    "path": "examples/plugins/vm-summary/README.md",
+    "sha256": "789a5bfa0598f4a24e100b84a73a9433c73c707ffd5448e97c20c6c67860f83f",
+    "size": 2683
+  },
+  {
+    "path": "examples/plugins/vm-summary/go.mod",
+    "sha256": "70628ab5636fecb7843840c3df11acb5c5e1957d53bb30239dbc9659ba196911",
+    "size": 51
+  },
+  {
+    "path": "examples/plugins/vm-summary/main.go",
+    "sha256": "94de71d641b52d30c01e82f5d38c676b9d36a9463ef671998dae7d88b65a1fff",
+    "size": 11257
+  },
+  {
+    "path": "examples/plugins/vm-summary/main_test.go",
+    "sha256": "2f9a74a02fa66483cbf26afaffc608f021c92fee43c4c1a40af91255ac909de3",
+    "size": 1045
+  },
+  {
+    "path": "examples/plugins/vm-summary/manifest.json",
+    "sha256": "e08c30929655d14fc97e2b06999e75cec3c00acc0f180d4f110b86b00d5fd5f8",
+    "size": 452
+  },
+  {
+    "path": "examples/plugins/vm-summary/smoke_test.py",
+    "sha256": "8016902fb38342337be41f49eaf3a114b303030e1c39b348c649cb6b5dfa292d",
+    "size": 4627
+  },
+  {
+    "path": "examples/vms/workstation.yaml",
+    "sha256": "aa25478ab2a149b31f90438c86108082d6ff29d60835e62c68a66b9a70cbcf63",
+    "size": 539
+  },
+  {
+    "path": "qa/VALIDATION-REPORT.md",
+    "sha256": "62dc16886d41dd068479edc292c524ddef16a48a9f7722131eedff4f4a1b9d57",
+    "size": 2947
+  },
+  {
+    "path": "qa/contract-checks.json",
+    "sha256": "eb90f191ced7e98f03d26d83bdbff27caf564ec7bea9f1ad43e64bac8d4f15fd",
+    "size": 874
+  },
+  {
+    "path": "qa/example-build-tests.json",
+    "sha256": "c813f4bdc469d26334fb780cfbe3e7d57358611a70192f118d33621b2700265d",
+    "size": 2727
+  },
+  {
+    "path": "qa/identity-checks.json",
+    "sha256": "d60786959d50bbf77e902a46071fd05a6e27e3234b4c58b859492b6afee77bcb",
+    "size": 1054
+  },
+  {
+    "path": "qa/validate_package.py",
+    "sha256": "82533fbc05f1176dd518f2a3638ea6b11205955a2bee2a562bea379ea3ca8caa",
+    "size": 7509
+  },
+  {
+    "path": "schemas/README.md",
+    "sha256": "4716ebbc9906ba70dcd319ca35f3ffb36619bac0351164202eb4f1d25fb51401",
+    "size": 2046
+  },
+  {
+    "path": "schemas/backup-policy.schema.json",
+    "sha256": "8dda2d2d229cc5d07426a62594b492ea9fe206741999fb7ac5febeb6e4cf70cd",
+    "size": 4399
+  },
+  {
+    "path": "schemas/common.schema.json",
+    "sha256": "de0e8d5d0304636ba11e9458882efffd0bfa7177697b56cd7600af4d2bbd05c7",
+    "size": 12512
+  },
+  {
+    "path": "schemas/lab.schema.json",
+    "sha256": "a4c8b2f74369bde30907d45cc9edb37e7463218ca0af55aad5ac5b283f7218d3",
+    "size": 3807
+  },
+  {
+    "path": "schemas/network.schema.json",
+    "sha256": "fa11e2a6c3b98ff8a3fac3f42fb930483b949d00c878896479b543196128f80f",
+    "size": 636
+  },
+  {
+    "path": "schemas/operation-plan.schema.json",
+    "sha256": "37b05ef58d72eb468e52cafa109689d4eac4a099ac991f890a67032fcad24653",
+    "size": 3601
+  },
+  {
+    "path": "schemas/plugin-manifest.schema.json",
+    "sha256": "18e16377f94636731b5d3ef5cb06ace1120f2e68b81bab7d948d3175b4a0fb9e",
+    "size": 3578
+  },
+  {
+    "path": "schemas/plugin-rpc-envelope.schema.json",
+    "sha256": "b0abfa27ed129496836dabb3a411260e4da4f9ab8558e5dbb6217d979419b327",
+    "size": 2219
+  },
+  {
+    "path": "schemas/vm.schema.json",
+    "sha256": "292c6e73689638e9148c53675b19d97447d8030dde53f87ae108842c7bed3fa4",
+    "size": 616
+  }
+]
