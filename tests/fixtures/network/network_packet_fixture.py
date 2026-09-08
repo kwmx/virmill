@@ -802,10 +802,19 @@ def assigned_host_target(rows, target, excluded_bridge):
     for row in rows:
         require(isinstance(row, dict) and isinstance(row.get("addr_info"), list), "malformed host address inventory")
         for item in row["addr_info"]:
+            require(isinstance(item, dict), "malformed host address entry")
             if item.get("family") == "inet" and item.get("local") == target:
                 require(row.get("ifname") != excluded_bridge and "UP" in row.get("flags", []) and
                         item.get("scope") == "global" and not item.get("tentative") and not item.get("dadfailed"),
                         "host target is not a ready assigned address outside the selected bridge")
+                require(type(row.get("ifindex")) is int and row["ifindex"] > 0 and
+                        isinstance(row.get("ifname"), str) and
+                        re.fullmatch(r"[A-Za-z0-9_.:-]{1,15}", row["ifname"]) and
+                        isinstance(row.get("address"), str) and
+                        re.fullmatch(r"[0-9a-f]{2}(?::[0-9a-f]{2}){5}", row["address"]) and
+                        row["address"] != "00:00:00:00:00:00" and not int(row["address"][:2], 16) & 1 and
+                        type(item.get("prefixlen")) is int and 0 <= item["prefixlen"] <= 32,
+                        "host target requires complete canonical link and IPv4 identity")
                 matches.append({"ifindex": row["ifindex"], "ifname": row["ifname"],
                                 "address": row["address"], "target": target, "prefixlen": item["prefixlen"]})
     require(len(matches) == 1, "host target must be exactly one already assigned IPv4 address")
@@ -931,7 +940,9 @@ class Fixture:
         self.network, self.gateway, self.ranges = network, gateway, ranges
 
     def host_target_state(self):
-        rows = json.loads(self.ip("-j", "-4", "address", "show")["stdout"])
+        # iproute2's -4 view omits link-layer fields, including the MAC that
+        # binds the selected target. Observe the combined view, then select IPv4.
+        rows = json.loads(self.ip("-j", "address", "show")["stdout"])
         return assigned_host_target(rows, self.a.host4_target, self.a.bridge)
 
     def observation_boundary(self, label):

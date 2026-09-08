@@ -751,6 +751,24 @@ class ProtectedProfileTests(unittest.TestCase):
             self.assertFalse(fixture.tcp_expectation(value, False))
         self.assertTrue(fixture.tcp_expectation({"status": "not_connected", "boundedNetworkRefusal": True}, False))
 
+    def test_guest_host_target_uses_complete_iproute_address_identity(self):
+        # Native iproute2 -4 address output lacks address/link_type. A combined
+        # address view retains the link identity and may also contain IPv6.
+        row = {"ifindex": 2, "ifname": "ens18", "flags": ["UP", "LOWER_UP"],
+               "address": "02:00:00:00:00:03", "link_type": "ether",
+               "addr_info": [{"family": "inet", "local": "192.168.90.1", "prefixlen": 24, "scope": "global"},
+                             {"family": "inet6", "local": "fe80::3", "prefixlen": 64, "scope": "link"}]}
+        filtered = {key: value for key, value in row.items() if key not in ("address", "link_type")}
+        f = fixture.Fixture.__new__(fixture.Fixture)
+        f.a = fixture.argparse.Namespace(host4_target="192.168.90.1", bridge="vm123456781234")
+        f.ip = lambda *args: {"stdout": json.dumps([filtered if "-4" in args else row])}
+        self.assertEqual(f.host_target_state(), {"ifindex": 2, "ifname": "ens18", "address": row["address"],
+                                                "target": "192.168.90.1", "prefixlen": 24})
+        for bad in (filtered, {**row, "address": "00:00:00:00:00:00"}, {**row, "address": "ff:ff:ff:ff:ff:ff"},
+                    {**row, "ifindex": True}, {**row, "addr_info": [None]}):
+            with self.subTest(row=bad), self.assertRaises(fixture.Refusal):
+                fixture.assigned_host_target([bad], "192.168.90.1", f.a.bridge)
+
     def test_connected_handshake_with_failed_token_cannot_be_a_negative_pass(self):
         sock = mock.MagicMock()
         sock.__enter__.return_value = sock
