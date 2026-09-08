@@ -1,0 +1,75 @@
+{
+  "productionRevision": "66c2d1fcf6f7248a6da53f210f86ce0f2eea39cb",
+  "productionDigest": "2ac46f59a679eb1ad61b858a3e98ebcf414b29b095bdc80a74186e0917a4d566",
+  "fixtures": {
+    ".virmill-local/automatic-allocation-native-001/allocation-settings.json": "6bed6e4fd41ab24c6db616549b0cfcf1cd0f96bd08074903adae8164e6f2f7eb",
+    ".virmill-local/automatic-allocation-native-001/binaries.json": "55fba2125ff4ca73ac810f1d3ce8158e500296f8af4be34e2e455663eb8e85b0",
+    "tests/fixtures/network/network_packet_fixture.py": "d87cc1d563188aa2bdddac849cddc4625840d7d62c10ded9131e4f512e2e4916",
+    "tests/fixtures/network_parent/create_native.py": "50d871688267139fbdff75891526c7ff6426db77431e4e4b0e9bc5e480888c34"
+  },
+  "binaries": {
+    "virmill": "223094c437d19efa52e3877a4d2da89e74e8aca383d170d4daf683cfa2ef0334",
+    "virmilld": "02f749c665d2d8eee0e6f268634517114d4b01d46fa4e9495e88e6e788046811",
+    "virmill-host-helper": "19d71d2fea3050b5cdc67f72f114be2b6b4cd364c47f7193360a3902a9aba072"
+  },
+  "packageArtifacts": {
+    "build/bin/virmill": "223094c437d19efa52e3877a4d2da89e74e8aca383d170d4daf683cfa2ef0334",
+    "build/bin/virmill-host-helper": "19d71d2fea3050b5cdc67f72f114be2b6b4cd364c47f7193360a3902a9aba072",
+    "build/bin/virmilld": "02f749c665d2d8eee0e6f268634517114d4b01d46fa4e9495e88e6e788046811",
+    "dist/virmill-0.0.0-0.dev.x86_64.rpm": "84e254270e727c62d161a3354db28342e2ce194eabea30e09560065b35f59009",
+    "dist/virmill-host-helper-0.0.0-0.dev.x86_64.rpm": "532d788973b467921c3ebb39ea42adc6cd5ecf860b5bf4f364e4e4f4645efb00",
+    "dist/virmill-host-helper_0.0.0~dev_amd64.deb": "cf0adb1f54bc4b493214ce30c33462cbbbe1c0385a5239ea2445d860d26b7e3e",
+    "dist/virmill_0.0.0~dev_amd64.deb": "1c6e0bb970bf031c4677426588c9c6c8e6f493776aafd24458ef5ce7d0f48e3e"
+  },
+  "packageInstallManifestSHA256": {
+    "virmill": "aaf451c89e8aaa3b0039b27685c2220acf89c583d07e4c001392c9535b9e3851",
+    "virmill-host-helper": "8f5c91990e487e2c56c89b0b947c186dbb8af070d4606911bbbf18bf92d0a17e"
+  },
+  "nativeRunID": "automatic-allocation-native-001",
+  "nativeReportSHA256": "fd930f811603a02254b492454d8e5e9ea9f7f345ce587659334e7ef041d36890",
+  "nativeCommandsSHA256": "5152f146ceae207f788030b9e64d6a203a1e86772ff57767ed903a2d0f46a87e",
+  "allocationSettings": {
+    "version": 1,
+    "ranges": [
+      {
+        "cidr": "10.193.76.0/22",
+        "prefixLength": 24
+      }
+    ],
+    "planned": [
+      {
+        "id": "76e1eaa8-42b2-46ac-93d3-be9d5a31caac",
+        "cidr": "10.193.78.0/24"
+      },
+      {
+        "id": "ac06e66c-5f16-4997-b02a-55b327c522e6",
+        "cidr": "10.193.75.0/24"
+      },
+      {
+        "id": "fixture-pending-lab",
+        "cidr": "10.193.77.0/24"
+      }
+    ]
+  },
+  "nativeDefinition": {
+    "advertiseDefaultRoute": false,
+    "bridge": "vm2159dd520b7f",
+    "dhcpEnabled": true,
+    "egress": "none",
+    "hostAccess": "allow",
+    "ipv4CIDR": "10.193.79.0/24",
+    "ipv6Mode": "disabled",
+    "name": "virmill-2159dd52-0b7f-47cb-8403-d5921231b305",
+    "type": "lab",
+    "uuid": "2159dd52-0b7f-47cb-8403-d5921231b305"
+  },
+  "planID": "e68d43c2-0529-48f3-b7cd-c6d30e4f96ae",
+  "planDigest": "e53a380b49f546958da5b10f9e624758a90edc051ce370483ccfae7622e83a6c",
+  "operationID": "d12a1d88-e0b0-4bf5-a99d-8d16475eab22",
+  "preservation": {
+    "existingResourcesPreserved": true,
+    "existingFirewallPreserved": true,
+    "policyRestored": true
+  },
+  "scope": "Native definition/activation and bounded namespace packets on authorized Fedora VM; not guest, physical hardware or full release qualification"
+}

@@ -1164,7 +1164,9 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "docs/evidence/automatic-allocation-run.md",
+        "docs/evidence/automatic-allocation-artifacts.json"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-02",
@@ -1196,10 +1198,12 @@
         "owned-network-native-005",
         "owned-network-packet-parsers-005",
         "owned-network-environment-001",
-        "owned-network-nm-diagnostic-001"
+        "owned-network-nm-diagnostic-001",
+        "automatic-allocation-native-001"
       ],
       "outstanding": [
-        "NoCloud IPv4 routing intent and actual namespace DHCP router-option differences are tested. Real multi-NIC guest route/DNS, asymmetric routing, forwarding and isolation qualification remain required."
+        "NoCloud IPv4 routing intent and actual namespace DHCP router-option differences are tested. Real multi-NIC guest route/DNS, asymmetric routing, forwarding and isolation qualification remain required.",
+        "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -1425,7 +1429,14 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "internal/app/network/allocation.go",
+        "internal/networksettings/load.go",
+        "internal/app/network_allocation.go",
+        "docs/network-allocation.md",
+        "docs/adr/0029-configurable-network-allocation.md",
+        "docs/evidence/automatic-allocation-run.md",
+        "docs/evidence/automatic-allocation-artifacts.json"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-06",
@@ -1445,7 +1456,13 @@
         "internal/helper/network_authorization_test.go",
         "tests/fixtures/network/network_packet_fixture.py",
         "tests/fixtures/network/test_packet_parsers.py",
-        "tests/fixtures/network_parent/create_native.py"
+        "tests/fixtures/network_parent/create_native.py",
+        "internal/app/network/allocation_test.go",
+        "internal/networksettings/load_linux_test.go",
+        "internal/app/network_allocation_test.go",
+        "internal/ui/cli/network_allocation_test.go",
+        "internal/ui/tui/network_allocation_test.go",
+        "internal/validation/network_allocation_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -1463,10 +1480,15 @@
         "owned-network-packet-parsers-005",
         "owned-network-environment-001",
         "owned-network-nm-diagnostic-001",
-        "protected-network-race-001"
+        "protected-network-race-001",
+        "automatic-allocation-race-001",
+        "automatic-allocation-static-001",
+        "automatic-allocation-native-001"
       ],
       "outstanding": [
-        "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic."
+        "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic.",
+        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
+        "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2756,7 +2778,15 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "internal/app/network/allocation.go",
+        "internal/networksettings/load.go",
+        "internal/app/network_allocation.go",
+        "internal/app/host_inventory.go",
+        "docs/network-allocation.md",
+        "docs/adr/0029-configurable-network-allocation.md",
+        "docs/evidence/automatic-allocation-run.md",
+        "docs/evidence/automatic-allocation-artifacts.json"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -2827,7 +2857,13 @@
         "internal/helper/network_authorization_test.go",
         "tests/fixtures/network/network_packet_fixture.py",
         "tests/fixtures/network/test_packet_parsers.py",
-        "tests/fixtures/network_parent/create_native.py"
+        "tests/fixtures/network_parent/create_native.py",
+        "internal/app/network/allocation_test.go",
+        "internal/networksettings/load_linux_test.go",
+        "internal/app/network_allocation_test.go",
+        "internal/ui/cli/network_allocation_test.go",
+        "internal/ui/tui/network_allocation_test.go",
+        "internal/validation/network_allocation_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2900,7 +2936,10 @@
         "nvram-binding-native-001",
         "nvram-binding-native-002",
         "nvram-binding-tui-fixture-003",
-        "nvram-binding-tui-003"
+        "nvram-binding-tui-003",
+        "automatic-allocation-race-001",
+        "automatic-allocation-static-001",
+        "automatic-allocation-native-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -2913,7 +2952,9 @@
         "One actual coordinator SIGKILL during second-disk upload preserved the complete first copy and incomplete second copy. Restart/reconcile held all locks without replay; explicit TUI retention closed the partial recipe. Host reboot/power loss, libvirt-daemon faults, other boundaries and every required handler remain unqualified.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
-        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open."
+        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open.",
+        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
+        "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3189,7 +3230,9 @@
         "docs/network-helper.md",
         "docs/evidence/owned-network-run.md",
         "docs/evidence/protected-network-run.md",
-        "internal/helper/protected_network_rules_linux.go"
+        "internal/helper/protected_network_rules_linux.go",
+        "docs/evidence/automatic-allocation-run.md",
+        "docs/evidence/automatic-allocation-artifacts.json"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -3289,14 +3332,16 @@
         "protected-network-vet-001",
         "protected-network-native-001",
         "protected-network-native-002",
-        "protected-network-native-003"
+        "protected-network-native-003",
+        "automatic-allocation-native-001"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
-        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open."
+        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open.",
+        "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3942,7 +3987,13 @@
         "docs/evidence/auxiliary-inventory-run.md",
         "docs/reviews/auxiliary-native-fixture-review.md",
         "docs/evidence/environments/specification-source-20260908.json",
-        "internal/validation/validate.go"
+        "internal/validation/validate.go",
+        "internal/app/network/allocation.go",
+        "internal/networksettings/load.go",
+        "internal/app/network_allocation.go",
+        "internal/app/network_creation.go",
+        "docs/network-allocation.md",
+        "docs/adr/0029-configurable-network-allocation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4019,7 +4070,13 @@
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.py",
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.md",
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.py",
-        "internal/validation/specification_parity_test.go"
+        "internal/validation/specification_parity_test.go",
+        "internal/app/network/allocation_test.go",
+        "internal/networksettings/load_linux_test.go",
+        "internal/app/network_allocation_test.go",
+        "internal/ui/cli/network_allocation_test.go",
+        "internal/ui/tui/network_allocation_test.go",
+        "internal/validation/network_allocation_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4085,7 +4142,9 @@
         "schema-format-integrated-core-001",
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
-        "lifecycle-policy-search-artifacts-001"
+        "lifecycle-policy-search-artifacts-001",
+        "automatic-allocation-race-001",
+        "automatic-allocation-static-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4101,7 +4160,8 @@
         "Read-only native PCI discovery, nullable topology, bounded group consistency and shared CLI/TUI access implemented. In-memory native and parser/fuzz tests do not qualify physical PCI/IOMMU or passthrough. Physical DEV-03 remains required.",
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
-        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
+        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4227,7 +4287,14 @@
         "internal/validation/validate.go",
         "internal/ui/cli/events_stream.go",
         "docs/cli-streaming.md",
-        "internal/domain/domain.go"
+        "internal/domain/domain.go",
+        "internal/app/network/allocation.go",
+        "internal/networksettings/load.go",
+        "internal/app/network_allocation.go",
+        "internal/app/host_inventory.go",
+        "internal/app/network_creation.go",
+        "docs/network-allocation.md",
+        "docs/adr/0029-configurable-network-allocation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -4284,7 +4351,13 @@
         "internal/validation/specification_parity_test.go",
         "internal/ui/cli/events_stream_test.go",
         "internal/domain/exit_code_test.go",
-        "tests/integration/cli_streaming_test.py"
+        "tests/integration/cli_streaming_test.py",
+        "internal/app/network/allocation_test.go",
+        "internal/networksettings/load_linux_test.go",
+        "internal/app/network_allocation_test.go",
+        "internal/ui/cli/network_allocation_test.go",
+        "internal/ui/tui/network_allocation_test.go",
+        "internal/validation/network_allocation_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4339,14 +4412,17 @@
         "interface-cli-stream-001",
         "interface-artifacts-001",
         "protected-network-race-001",
-        "protected-network-artifacts-001"
+        "protected-network-artifacts-001",
+        "automatic-allocation-race-001",
+        "automatic-allocation-static-001"
       ],
       "outstanding": [
         "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
-        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
+        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4390,7 +4466,9 @@
         "docs/reviews/evidence-source-root-review.md",
         "scripts/package_docs.py",
         "docs/adr/0024-installed-documentation-links.md",
-        "docs/evidence/schema-and-package-qualification-run.md"
+        "docs/evidence/schema-and-package-qualification-run.md",
+        "docs/evidence/automatic-allocation-run.md",
+        "docs/evidence/automatic-allocation-artifacts.json"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-01",
@@ -4505,12 +4583,16 @@
         "lifecycle-policy-search-repro-001",
         "protected-network-repro-001",
         "protected-network-staged-docs-001",
-        "protected-network-artifacts-001"
+        "protected-network-artifacts-001",
+        "automatic-allocation-repro-001",
+        "automatic-allocation-documents-002",
+        "automatic-allocation-artifacts-002"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence."
+        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence.",
+        "Frozen 66c2d1f produced two identical offline native builds of three binaries/four packages; 62 package-input/staged-document checks and all three package/private-coordinator tests passed. The initial document check ran before staging and failed; the first artifact run skipped the IPC opt-in, with corrected evidence retained separately. Signing/publication and the full installation/distribution/release matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4721,7 +4803,15 @@
         "docs/cli-streaming.md",
         "docs/tui-terminal-contract.md",
         "docs/cross-builds.md",
-        "docs/evidence/interface-integration-run.md"
+        "docs/evidence/interface-integration-run.md",
+        "internal/app/network/allocation.go",
+        "internal/networksettings/load.go",
+        "internal/app/network_allocation.go",
+        "internal/app/network_creation.go",
+        "docs/network-allocation.md",
+        "docs/adr/0029-configurable-network-allocation.md",
+        "docs/evidence/automatic-allocation-run.md",
+        "docs/evidence/automatic-allocation-artifacts.json"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -4822,7 +4912,13 @@
         "internal/validation/specification_parity_test.go",
         "tests/integration/package_docs_test.py",
         "tests/integration/installed_documents_test.py",
-        "tests/integration/evidence_recorder_test.py"
+        "tests/integration/evidence_recorder_test.py",
+        "internal/app/network/allocation_test.go",
+        "internal/networksettings/load_linux_test.go",
+        "internal/app/network_allocation_test.go",
+        "internal/ui/cli/network_allocation_test.go",
+        "internal/ui/tui/network_allocation_test.go",
+        "internal/validation/network_allocation_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4984,7 +5080,12 @@
         "interface-documents-001",
         "interface-artifacts-001",
         "protected-network-documents-001",
-        "protected-network-staged-docs-001"
+        "protected-network-staged-docs-001",
+        "automatic-allocation-race-001",
+        "automatic-allocation-static-001",
+        "automatic-allocation-repro-001",
+        "automatic-allocation-documents-002",
+        "automatic-allocation-artifacts-002"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",
@@ -5005,7 +5106,9 @@
         "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Bundled schema format assertions now reject ten reproduced malformed timestamps; additional normative example/negative tests pass. The unchanged supplied Python validator executes with exact build-only dependencies but fails the known missing kickoff-document link from ADR0001. Installed-document link repair and complete tutorial/help/workflow qualification remain required.",
-        "The recorder now rejects unknown or duplicate acceptance IDs against the preserved 71-ID contract before executing commands or writing evidence. Ten generated-file tests passed; this does not qualify incomplete workflows."
+        "The recorder now rejects unknown or duplicate acceptance IDs against the preserved 71-ID contract before executing commands or writing evidence. Ten generated-file tests passed; this does not qualify incomplete workflows.",
+        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
+        "Frozen 66c2d1f produced two identical offline native builds of three binaries/four packages; 62 package-input/staged-document checks and all three package/private-coordinator tests passed. The initial document check ran before staging and failed; the first artifact run skipped the IPC opt-in, with corrected evidence retained separately. Signing/publication and the full installation/distribution/release matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
