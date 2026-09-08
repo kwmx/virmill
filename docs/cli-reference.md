@@ -42,6 +42,52 @@ Flags:
 Use "virmill [command] --help" for more information about a command.
 ```
 
+## `virmill backup policy preview`
+
+Preview scheduled instants in the declared timezone without creating capture jobs
+
+```text
+Usage:
+  virmill backup policy preview PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup policy validate`
+
+Validate backup policy selectors, cron and timezone without installing a schedule
+
+```text
+Usage:
+  virmill backup policy validate PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill backup verify-manifest`
 
 Check declared recovery metadata and optional member integrity; no complete-capture or boot proof
@@ -1398,6 +1444,30 @@ Plan pause
 ```text
 Usage:
   virmill vm pause ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm reboot`
+
+Plan one graceful reboot verified by a selected-domain event; no hard-stop fallback
+
+```text
+Usage:
+  virmill vm reboot ID [flags]
 
 Flags:
       --after int      Event cursor
