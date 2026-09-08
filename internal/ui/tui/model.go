@@ -4,8 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
+	"maps"
 	"strings"
+	"unicode"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/ansi"
 	"virmill.local/core/internal/app"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/operations"
@@ -15,6 +19,8 @@ import (
 )
 
 var sections = []string{"Overview", "VMs", "Networks", "Storage", "Templates", "Labs", "Protection", "Devices", "Jobs", "Plugins", "Settings"}
+
+const maxSearchRunes = 128
 
 type resultMsg struct {
 	response app.Response
@@ -36,6 +42,10 @@ type Model struct {
 	Plan       *domain.Plan
 	Confirm    bool
 	Quit       bool
+	Search     string
+	Searching  bool
+	SearchNote string
+	selection  map[string]string
 }
 
 func New(c ui.Client, connection string) Model {
@@ -44,14 +54,135 @@ func New(c ui.Client, connection string) Model {
 func (m Model) Init() tea.Cmd { return nil }
 func (m Model) actions() []ui.Action {
 	out := []ui.Action{}
+	if m.Section < 0 || m.Section >= len(sections) {
+		return out
+	}
+	terms := strings.Fields(searchText(m.Search))
 	for _, a := range ui.Actions {
 		if a.Section == sections[m.Section] {
-			out = append(out, a)
+			text := searchText(a.Command + " " + a.Summary)
+			matches := true
+			for _, term := range terms {
+				if !strings.Contains(text, term) {
+					matches = false
+					break
+				}
+			}
+			if matches {
+				out = append(out, a)
+			}
 		}
 	}
 	return out
 }
+
+func searchText(text string) string {
+	return strings.Map(func(r rune) rune {
+		folded := r
+		for next := unicode.SimpleFold(r); next != r; next = unicode.SimpleFold(next) {
+			folded = min(folded, next)
+		}
+		return folded
+	}, text)
+}
+
+func (m *Model) clampSelection() {
+	if m.Section < 0 || m.Section >= len(sections) {
+		m.Section = 0
+	}
+	m.Selected = max(0, min(m.Selected, len(m.actions())-1))
+}
+
+func (m *Model) rememberSelection() {
+	actions := m.actions()
+	if m.Selected >= 0 && m.Selected < len(actions) {
+		m.selection = maps.Clone(m.selection)
+		if m.selection == nil {
+			m.selection = make(map[string]string)
+		}
+		m.selection[sections[m.Section]] = actions[m.Selected].Command
+	}
+}
+
+func (m *Model) restoreSelection() {
+	m.Selected = 0
+	for i, action := range m.actions() {
+		if action.Command == m.selection[sections[m.Section]] {
+			m.Selected = i
+			return
+		}
+	}
+}
+
+func (m *Model) changeSection(delta int) {
+	if m.Search == "" || m.selection[sections[m.Section]] == "" {
+		m.rememberSelection()
+	}
+	m.Section = (m.Section + len(sections) + delta) % len(sections)
+	m.restoreSelection()
+}
+
+func (m *Model) clearSearch() {
+	m.Search, m.SearchNote = "", ""
+	m.Searching = false
+	m.restoreSelection()
+}
+
+func (m *Model) searchKey(v tea.KeyMsg) {
+	if v.Type == tea.KeyRunes || v.Type == tea.KeySpace {
+		incoming := v.Runes
+		if v.Type == tea.KeySpace {
+			incoming = []rune{' '}
+		}
+		if len([]rune(m.Search))+len(incoming) > maxSearchRunes {
+			m.SearchNote = "Search limit: 128 characters; new text was not added."
+			return
+		}
+		text := string(incoming)
+		if validation.SafeText(text) != text || strings.ContainsAny(text, "\r\n\t") {
+			m.SearchNote = "Search accepts printable text; new text was not added."
+			return
+		}
+		for _, r := range incoming {
+			if unicode.IsControl(r) {
+				m.SearchNote = "Search accepts printable text; new text was not added."
+				return
+			}
+		}
+		m.Search += text
+		m.SearchNote = ""
+		m.restoreSelection()
+		return
+	}
+	switch v.String() {
+	case "esc":
+		m.clearSearch()
+	case "enter":
+		m.rememberSelection()
+		m.Searching = false
+		m.SearchNote = ""
+	case "backspace":
+		runes := []rune(m.Search)
+		if len(runes) > 0 {
+			m.Search = string(runes[:len(runes)-1])
+		}
+		m.SearchNote = ""
+		m.restoreSelection()
+	case "tab":
+		m.changeSection(1)
+	case "shift+tab":
+		m.changeSection(-1)
+	case "up":
+		m.Selected = max(0, m.Selected-1)
+		m.rememberSelection()
+	case "down":
+		m.Selected = max(0, min(m.Selected+1, len(m.actions())-1))
+		m.rememberSelection()
+	}
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.clampSelection()
 	switch v := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = v.Width
@@ -76,7 +207,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case tea.KeyMsg:
 		key := v.String()
-		if key == "ctrl+c" {
+		if v.Type == tea.KeyCtrlC {
 			m.Quit = true
 			return m, tea.Quit
 		}
@@ -115,7 +246,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					r.ID = m.Input
 				}
-				if a.Argument == "parameters" || a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "storage.access.grant" || a.Method == "vm.recovery.auxiliary.inspect" || a.Method == "backup.verify-manifest" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || a.Method == "vm.creation.accept" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
+				if a.Argument == "parameters" || a.Mutation == "set" || a.Mutation == "autostart" || a.Method == "storage.access.grant" || a.Method == "vm.recovery.auxiliary.inspect" || a.Method == "backup.verify-manifest" || a.Method == "backup.policy.preview" || a.Method == "vm.create" || a.Method == "vm.creation.cleanup" || a.Method == "vm.creation.accept" || (a.Mutation != "" && (strings.HasPrefix(a.Command, "plugin ") || strings.HasPrefix(a.Command, "import "))) {
 					var form struct {
 						ID    string         `json:"id"`
 						Path  string         `json:"path"`
@@ -145,31 +276,43 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+		if m.Searching {
+			m.searchKey(v)
+			return m, nil
+		}
 		switch key {
+		case "/":
+			m.rememberSelection()
+			m.Searching = true
+			m.SearchNote = ""
 		case "q":
 			m.Quit = true
 			return m, tea.Quit
 		case "?":
 			m.Help = !m.Help
 		case "tab":
-			m.Section = (m.Section + 1) % len(sections)
-			m.Selected = 0
+			m.changeSection(1)
 		case "shift+tab":
-			m.Section = (m.Section + len(sections) - 1) % len(sections)
-			m.Selected = 0
+			m.changeSection(-1)
 		case "up", "k":
 			if m.Selected > 0 {
 				m.Selected--
+				m.rememberSelection()
 			}
 		case "down", "j":
 			if m.Selected+1 < len(m.actions()) {
 				m.Selected++
+				m.rememberSelection()
 			}
 		case "pgdown":
-			m.Offset += 10
+			m.Offset += min(10, max(1, m.outputRows()))
 		case "pgup":
-			m.Offset = max(0, m.Offset-10)
+			m.Offset = max(0, m.Offset-min(10, max(1, m.outputRows())))
 		case "esc":
+			if m.Search != "" {
+				m.clearSearch()
+				break
+			}
 			m.Help = false
 			m.Plan = nil
 			m.Offset = 0
@@ -209,73 +352,126 @@ func (m Model) call(method string, r app.Request) tea.Cmd {
 		return resultMsg{resp, e}
 	}
 }
-func (m Model) View() string {
-	if m.Quit {
-		return ""
+func (m Model) menuLines() []string {
+	width, height := max(1, m.Width), max(1, m.Height)
+	clip := func(text string) string {
+		tail := "…"
+		if width == 1 {
+			tail = ""
+		}
+		return ansi.Truncate(validation.SafeText(text), width, tail)
 	}
-	var b strings.Builder
-	fmt.Fprintf(&b, "Virmill | %s | %s\n", validation.SafeText(m.Connection), sections[m.Section])
-	b.WriteString("Tab: section  Enter: action  ?: help  PgUp/PgDn: details  q: detach\n")
+	lines := []string{
+		clip(fmt.Sprintf("Virmill | %s | %s", m.Connection, sections[m.Section])),
+		clip("Tab: section  /: search  Enter: action  ?: help  PgUp/PgDn: details  q: detach"),
+	}
+	if m.Searching || m.Search != "" {
+		prefix := "Filter: "
+		if m.Searching {
+			prefix = "Search> "
+			lines[1] = clip("Type to filter; Up/Down: select  Enter: leave search  Esc: clear  Tab: section")
+		}
+		query := validation.SafeText(m.Search)
+		if query == "" {
+			query = "(all actions)"
+		}
+		room := max(1, width-ansi.StringWidth(prefix))
+		if cells := ansi.StringWidth(query); cells > room {
+			query = "…" + ansi.Cut(query, cells-room+1, cells)
+		}
+		lines = append(lines, clip(prefix+query))
+	}
+	if m.SearchNote != "" {
+		lines = append(lines, clip(m.SearchNote))
+	}
 	if m.Help {
-		b.WriteString("Choose an action with Up/Down. Inputs use stable VM UUIDs. Plans show exact effects and acknowledgements. Press a on a plan to review and confirm its digest. Jobs continue after leaving the interface. Use Jobs to cancel or reconcile.\n")
+		lines = append(lines, clip("Up/Down selects. / searches this section. Plans: a reviews digest approval. Jobs continue after detaching."))
+	}
+	var tail []string
+	if m.Busy {
+		tail = append(tail, clip("Request in progress; UI remains available."))
+	}
+	if m.Editing {
+		input := wrap(validation.SafeText(m.Input), max(1, width-2))
+		if len(input) > 3 {
+			input = append([]string{"… earlier input hidden"}, input[len(input)-2:]...)
+		}
+		tail = append(tail, clip("Input: path/ID or JSON {id/path,input}; Esc cancels:"))
+		for i, line := range input {
+			prefix := "  "
+			if i == 0 {
+				prefix = "> "
+			}
+			tail = append(tail, clip(prefix+line))
+		}
+	}
+	if m.Confirm && m.Plan != nil {
+		text := fmt.Sprintf("Approve plan %s. Required acknowledgements: %s\nType the full plan digest; Esc cancels:\n%s\n> %s",
+			m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, m.Input)
+		tail = append(tail, wrap(validation.SafeText(text), width)...)
+	}
+	if m.Plan != nil && !m.Confirm {
+		tail = append(tail, clip("Plan is a preview. Press a to review authorization."))
 	}
 	actions := m.actions()
-	if len(actions) == 0 {
-		b.WriteString("This section has no completed workflow yet; 1.0 release remains blocked.\n")
-	}
-	// Keep keyboard-selected actions visible without overflowing an 80x24 terminal.
-	menuRows := max(3, min(8, m.Height/3))
+	// Reserve room for state and result details. Even a compact menu keeps the
+	// selected action visible; scrolling never changes the selected identity.
+	menuRows := max(1, min(8, height/3, height-len(lines)-len(tail)-3))
 	first := max(0, m.Selected-menuRows+1)
 	last := min(len(actions), first+menuRows)
+	if len(actions) == 0 {
+		message := "This section has no completed workflow yet; 1.0 release remains blocked."
+		if strings.TrimSpace(m.Search) != "" {
+			message = "No actions match the search. Esc clears; Tab changes section."
+		}
+		lines = append(lines, clip(message))
+	}
 	for i := first; i < last; i++ {
-		a := actions[i]
 		prefix := "  "
 		if i == m.Selected {
 			prefix = "> "
 		}
-		line := prefix + a.Command + " — " + a.Summary
-		if len([]rune(line)) > max(20, m.Width) {
-			line = string([]rune(line)[:max(20, m.Width)-1]) + "…"
-		}
-		fmt.Fprintln(&b, line)
+		lines = append(lines, clip(prefix+actions[i].Command+" — "+actions[i].Summary))
 	}
-	if len(actions) > menuRows {
-		fmt.Fprintf(&b, "Actions %d–%d of %d; Up/Down scrolls\n", first+1, last, len(actions))
+	if len(actions) > menuRows && len(lines)+len(tail) < height-1 {
+		lines = append(lines, clip(fmt.Sprintf("Actions %d–%d of %d; Up/Down scrolls", first+1, last, len(actions))))
 	}
-	if m.Busy {
-		b.WriteString("Request in progress; UI remains available.\n")
-	}
-	if m.Editing {
-		lines := wrap(validation.SafeText(m.Input), max(20, m.Width-2))
-		if len(lines) > 3 {
-			lines = append([]string{"… earlier input hidden"}, lines[len(lines)-2:]...)
-		}
-		b.WriteString("Input: path/ID, or JSON {id/path,input} for parameter forms (CIDR checks use {input}). Esc cancels:\n> " + strings.Join(lines, "\n  ") + "\n")
-	}
-	if m.Confirm {
-		fmt.Fprintf(&b, "Approve plan %s. Required acknowledgements: %s\nType the full plan digest to authorize these exact effects; Esc cancels:\n%s\n> %s\n", m.Plan.ID, strings.Join(m.Plan.Acknowledgements, ", "), m.Plan.Digest, validation.SafeText(m.Input))
-	}
-	if m.Plan != nil && !m.Confirm {
-		b.WriteString("Plan is a preview. Press a to review authorization.\n")
-	}
-	available := max(3, m.Height-strings.Count(b.String(), "\n")-1)
-	lines := wrap(m.Output, max(20, m.Width))
-	start := min(m.Offset, len(lines))
-	end := min(start+available, len(lines))
-	b.WriteString(strings.Join(lines[start:end], "\n"))
-	return b.String() + "\n"
+	lines = append(lines, tail...)
+	return lines[:min(len(lines), height)]
 }
-func wrap(s string, width int) []string {
-	out := []string{}
-	for _, line := range strings.Split(s, "\n") {
-		r := []rune(line)
-		for len(r) > width {
-			out = append(out, string(r[:width]))
-			r = r[width:]
-		}
-		out = append(out, string(r))
+
+func (m Model) outputRows() int {
+	return max(0, m.Height-len(m.menuLines())-1)
+}
+
+func (m Model) View() string {
+	if m.Quit || m.Width <= 0 || m.Height <= 0 {
+		return ""
 	}
-	return out
+	m.clampSelection()
+	if m.Width < 12 || m.Height < 4 {
+		lines := []string{"Terminal too small; resize.", "Selection and input are retained."}
+		lines = lines[:min(len(lines), m.Height)]
+		for i := range lines {
+			lines[i] = ansi.Truncate(lines[i], m.Width, "")
+		}
+		return strings.Join(lines, "\n") + "\n"
+	}
+	prefix := m.menuLines()
+	lines := wrap(validation.SafeText(m.Output), m.Width)
+	start := max(0, min(m.Offset, len(lines)))
+	end := min(start+m.outputRows(), len(lines))
+	return strings.Join(append(prefix, lines[start:end]...), "\n") + "\n"
+}
+
+func wrap(s string, width int) []string {
+	width = max(1, width)
+	lines := strings.Split(ansi.Hardwrap(s, width, true), "\n")
+	for i := range lines {
+		// A single grapheme can be wider than an extremely narrow terminal.
+		lines[i] = ansi.Truncate(lines[i], width, "")
+	}
+	return lines
 }
 func Run(c ui.Client, connection string) error {
 	_, e := tea.NewProgram(New(c, connection), tea.WithAltScreen()).Run()

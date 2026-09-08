@@ -77,3 +77,29 @@ checkpoint or corrected native package build is claimed. No alternate Git write
 or approval bypass was attempted. Local fixes and regression tests continued.
 The source is prepared for a reviewed freeze, two native package builds and
 independent stage/link/private-CLI checks when approval review is available.
+
+Approval subsequently returned and the reviewed source was committed as
+`e4f63ff19a0a0a53f09fc0e230b9208308d4c3f6`. The frozen checkout inventory covers
+2,113 tracked regular files and remained exact after both builds and checks.
+`schema-package-repro-001` passed two offline builds in the same environment:
+all three binaries and four development RPM/DEB archives were byte-identical.
+`schema-package-artifacts-001` passed all three actual archive metadata,
+staged install/uninstall and private-daemon CLI tests, including generated OVA,
+disk and ISO preparation. `schema-package-cross-001` passed the declared common
+package/SDK/sample-plugin cross-compilation targets; those binaries were not run.
+
+`schema-package-documents-001` passed using the separately hashed, corrected
+independent observer against the frozen stage: 199 payloads, 113 Markdown files,
+177 resolved local links, zero missing targets, and exact essential protocol
+bytes. These are stage integrity and link checks, not an independent comparison
+of every extracted RPM/DEB payload. The original frozen binaries are not newly
+installed on the disposable host by any of these checks.
+
+Review then found escaped-opening backticks in the transformer and unequal runs
+in the observer could hide visible links. Before/after failures remain recorded
+as `installed-document-escaped-before-001` and
+`installed-document-backticks-before-001`; corrected tests passed in
+`installed-document-transform-tests-002` (31 methods) and
+`installed-document-backticks-after-001` (seven observer methods). The e4f63ff
+artifacts retain their original source; this later parser correction requires a
+subsequent source build and does not retroactively alter their provenance.

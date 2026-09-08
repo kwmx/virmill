@@ -70,10 +70,19 @@ def _mask_inline(text):
         runs = list(re.finditer(r'`+', paragraph))
         if len(runs) > MAX_LINKS * 2:
             raise ValueError('Documentation code-span limit exceeded')
-        following, previous = {}, {}
+        following, previous, opening_starts = {}, {}, {}
         for index in range(len(runs) - 1, -1, -1):
             length = len(runs[index][0])
-            following[index] = previous.get(length)
+            start = runs[index].start()
+            before = start
+            while before > 0 and paragraph[before - 1] == '\\':
+                before -= 1
+            escaped = (start - before) % 2
+            opening_starts[index] = start + escaped
+            # Outside code, an odd backslash count escapes the first backtick
+            # only. Inside code, a backslash does not escape a closing run.
+            opening_length = length - escaped
+            following[index] = previous.get(opening_length) if opening_length else None
             previous[length] = index
         cursor, index, parts = 0, 0, []
         while index < len(runs):
@@ -81,7 +90,7 @@ def _mask_inline(text):
             if close is None:
                 index += 1
                 continue
-            start, end = runs[index].start(), runs[close].end()
+            start, end = opening_starts[index], runs[close].end()
             parts.extend((paragraph[cursor:start], _blank(paragraph[start:end])))
             cursor, index = end, close + 1
         parts.append(paragraph[cursor:])

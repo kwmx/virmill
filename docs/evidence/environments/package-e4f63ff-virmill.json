@@ -1,0 +1,977 @@
+{
+  "product": "Virmill",
+  "package": "virmill",
+  "releaseQualified": false,
+  "files": [
+    {
+      "path": "usr/bin/virmill",
+      "sha256": "5482c73c2ebee2b8d068693788712dcbbba8046da49a23dedddf2900707ffa17",
+      "mode": 493
+    },
+    {
+      "path": "usr/bin/virmilld",
+      "sha256": "8547b54535547f12812c4328e31fe9ecd553b57189a2450bd182da2e52f2b550",
+      "mode": 493
+    },
+    {
+      "path": "usr/lib/systemd/user/virmilld.service",
+      "sha256": "8a4e2f7fb5fe7cdd4e8410e490af77ede726f61d09897a25a3594cd6a65250b4",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/bash-completion/completions/virmill",
+      "sha256": "a8c38f5f129bc1a17124994ca251777bb3aaeed392ca5cea799b7bb63e511b30",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0001-intake-and-precedence.md",
+      "sha256": "d49498afcf912c694620e98eb0fa90c134d7b15c7064fcae672f2a182cba9117",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0002-build-and-platform-boundaries.md",
+      "sha256": "c3893aac2594fec098ad0227cfaae18f57fae818866d3f085280fb6e73d385f1",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0003-operation-and-confinement-boundaries.md",
+      "sha256": "d2a04c32d91f1800f3b4cf57234fd8780d50c6e289ffc8f6787c758a92a1e6cc",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0004-plugin-installation-and-review.md",
+      "sha256": "23a500fca8882d30c1e9978c9bbd872c33044dd7e342abd00a1e38b8017fb19d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0005-import-artifacts-and-development-milestone.md",
+      "sha256": "602330a0614a2d5aaccd27350a6c27a7b4488855c11f80656f1f9ef54281fc5d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0006-create-last-and-reviewed-recovery.md",
+      "sha256": "c58a4630f1b3599bb3a4c375e01a788cc4ac323a6477e4bced66974c986e0256",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0007-creation-disposition-and-file-generation.md",
+      "sha256": "932233d40b62d8123e6d219398899c16713f7fff64d37e920815703bfa5f9c4b",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0008-selected-disk-files-and-offline-guards.md",
+      "sha256": "7d3eaec3b78febb9c9a807f747d1b89b9c53f12ff8884dfb0fd71f5ce950a210",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0009-installation-artifacts-and-readonly-media.md",
+      "sha256": "3eb6c4142a2eb4a36aafdf7a0dc6fe099fdfd7695dea528a83c56e0a7a0b158a",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0010-identity-bound-nocloud-seeds.md",
+      "sha256": "d7aaa418bb99523c3651a0eab42b49ba6b39e812f0ba292194f38732034f2290",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0011-fixed-resource-configuration-preservation.md",
+      "sha256": "6278e2cee9b97c78f38f5069503a00a800bd05481764d58f9addc8e007553ea9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0012-native-domain-capability-access.md",
+      "sha256": "067b31d2af75885bb79caed66e3346054c3594c28f7f46bb0b7ec84317105784",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0013-reviewed-creation-device-policy.md",
+      "sha256": "0ec595fd2f91423d57a5d51175b695a45d33340f4919cc442a0e1bd2b1ecdc36",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0014-boot-order-and-retained-media-edits.md",
+      "sha256": "a4a4e419b1a7571fb101bd905411ac9a11584aae03a5aa286c123a97d8abf85d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0015-operation-downtime-estimates.md",
+      "sha256": "f3022130185612bd97a8a4557cb94c79656a658c2fbbac3ff56cdd6a1edb6846",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0016-active-creation-result-observations.md",
+      "sha256": "934a42267d5b2da31355e4f284639b82c35558aa98996ab0a42990b383f3f172",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0017-reviewed-creation-acceptance.md",
+      "sha256": "9f31a53b9fcecfa448f28dda07e4bf94be96675831a6dd939dba6fb0aad85ba1",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0018-managed-volume-read-access.md",
+      "sha256": "aea738b1105c65317d0343e51c8fcba7a2ae1864de7ea31eedd1ae678ee4a409",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0019-discovery-and-plugin-session-failure.md",
+      "sha256": "6f546ece0bbe7864b578720d5d5a7caa1f197d04a72696bb16d4cb23c7898ece",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0020-cold-recovery-boundary.md",
+      "sha256": "af80b54cc4e38eb6ec65b9e589e656bb83d9e8d50a2cafc5864441b1392faae0",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0021-creation-nvram-declaration-binding.md",
+      "sha256": "d4446004dcecc71a959c710939597b8aaf3992ea256344a4552167ae806bf695",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0022-authenticated-auxiliary-inventory.md",
+      "sha256": "027021ffabe66aaf4a165abe4a2facdf7720c281398062b9bc8fa45a11262aeb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0023-bundled-schema-format-assertions.md",
+      "sha256": "47febe4d0e1ec41b135c29b9f6829fdf07561c1b13fcffb73512c6fe19e1c442",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/adr/0024-installed-documentation-links.md",
+      "sha256": "bda9ec1119a7fa2256db93fc91fedb85b1b3135a9aace4d31619a54b608fccd7",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/auxiliary-state-inspection.md",
+      "sha256": "8d5d29e8956602854ff5c2e2769b74555510f0817d6db64d24cc0073f0165038",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/cli-reference.md",
+      "sha256": "a0a813bcfca89bc4e05ff80dc934d3af23909666f8c74464a9018920e64df139",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/cloud-provisioning.md",
+      "sha256": "af4dafe6979198c96214840e4e869123beb7bc15a19c5a16bb494524f67d266c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/cold-capture-manifest.md",
+      "sha256": "3df793083c96a3136d18ffb8d36c708c77414f219127ad9b5ca297842842bdbb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/cold-source-files.md",
+      "sha256": "06a1ebfad36a40a43b099d249f4c30701d2738aaa93058e1b58fcb47e93642cf",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/cold-source-layout.md",
+      "sha256": "e8957a92b6cd29a21c09e784493bc57299b7202c98e89705fd617283a1d3677d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/cold-state-layout.md",
+      "sha256": "54db161a610473ded934ab984f96d14c011306318d84a4e096f2d23df8a60ac8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/creation-acceptance.md",
+      "sha256": "b90d5b616209558eec7866e0427540ac8966276b1eabc988e48a5933c71200cf",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/creation-cleanup.md",
+      "sha256": "256f99ea116948812a89ed3c85d192ec8ba5296a2f55b91b24ededde724c8c93",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/creation-firmware-normalization.md",
+      "sha256": "8aa4d9a9c4b3d39db725302f221baf45b66b60620f97517d70c0cf5c88cc2603",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/creation-nvram-binding.md",
+      "sha256": "dee1a63f66894092e42e178c8439f666d556498248fda8b82016b301011591f9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/creation-nvram-path-validation.md",
+      "sha256": "6253b19b341f89f36cec04022fe13baeb2f3ac1707e52bc7488f044bc62b4eca",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/creation-space-estimates.md",
+      "sha256": "e84fea9a1641efb9ac17718b9ec454286813b509e0756eb3359524d9d7d88a54",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/disposable-qualification.md",
+      "sha256": "85c608a0eb18fef35dde004dec588dd23a2dc00ce9f5e7877f590177b7b6d8c4",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/README.md",
+      "sha256": "8829cec5a2b62185eaa5fe3e277b5d856dfabd477620cb08b5457f262497fa7e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/auxiliary-inventory-run.md",
+      "sha256": "f91e255d6aaf0716c8c56b42f0ff5a3aa7466651bc9314e82db2a8c39b12dc94",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/boot-media-run.md",
+      "sha256": "62bc6175ac8ae5e6e7125bcf046f0af4fcebe39cf2a82cc44938fb1a7a1fe2ec",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/cleanup-slice.md",
+      "sha256": "0578a05ac1dd4f1fb84e73260f78183dd6e900d466d2fcfa7cbb904defc66b14",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/cold-fixes-native-run.md",
+      "sha256": "854ca0d871b46ff480cf0dc3b2c5a6652bb1f1f590d23145d4d5f0c5af1a126c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/cold-prerequisites-run.md",
+      "sha256": "73b33e9996262c44fec1889a9c96ec9bcc423fe1416b6d78f330e119bcdddd34",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/cold-source-integration-run.md",
+      "sha256": "f614577c32bfde17202cc34b5db2abc851513158f2e9312889f152b223b969a8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/configuration-slice.md",
+      "sha256": "1ac6bf48fbad352ae37c35fcee91249d3f2bb437656c381225276a3a0cb7d7ee",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/creation-acceptance-run.md",
+      "sha256": "ec4824dff3dea4bfbb5e4f344f8e63c47e47cc6e145c8b7c620df15d20184f6a",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/creation-slice.md",
+      "sha256": "4a0ee3c4bd70c251a71ace6a4bd2160005e400ef48d0131b594a7d39be7c9e8c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/device-policy-run.md",
+      "sha256": "97c19b1f47c3e392e5f22b4b63da5e600dcfebf7604fa5889709be0b6b6edd87",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/discovery-plugin-run.md",
+      "sha256": "5c7d16c3611fcb08719f8e7d86a5886b456056060995aea0967c4b4c33265849",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/disk-set-slice.md",
+      "sha256": "28e2a410a9fc077942b37d2a433696f020a9835ab1fa98fd2528df18dab90aa9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/disposable-first-run.md",
+      "sha256": "fd0bfef16d471ca346d76983e493a4479783776523a55b268ba4c73f030fc707",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/downtime-estimates-run.md",
+      "sha256": "43d12d4be0675b73d49bcb0f7ac31f2e796210467364d706af08a5ae8dbd2b5f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environment.json",
+      "sha256": "a36c5ea34dfe427312d39e7a31cbfc6d69afa343df45ab5c2785e2229a19fcf0",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/auxiliary-tui-policy-window-490b88c.json",
+      "sha256": "6797ebef8cece52582d4b170c1b6d67c1e4c8a64e6d244959a9ecf136a37b599",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/auxiliary-tui-positive-490b88c.json",
+      "sha256": "e211e6c53c1afe8c2d15699d63fbbff15eb85c89cafc4b238be64646deffd297",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-auxiliary-490b88c.json",
+      "sha256": "ed6a42a0082a4649bc4675957be62c72303c32449743bc788a5f8f2e0cb4fd52",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-cold-4c58176.json",
+      "sha256": "7ed7eef0ab689895c29f7fa0adbb2b4870f4bd2d6ed947a706741f504878a569",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-cold-ad60807.json",
+      "sha256": "3537cd68801258736aef935eee604ffe9e6a9594889fc05f57132f5fddd7ed4e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-fedora44-20260907.json",
+      "sha256": "950cccbedeb9ecb338e055d5c453098b1fec635fe01811eb63ad5d995f16f78f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-fedora44-acceptance-20260907.json",
+      "sha256": "db507a52b25546867111dc8e5f7e9c8721c902b91408b1d4b624ca013a81be76",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-fedora44-discovery-20260907.json",
+      "sha256": "560bb3449d94c44744b37a4ae369e7d0c51651f496389c9eb9c895eaad80e4f8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-fedora44-helper-access-20260907.json",
+      "sha256": "c15155cb43a9d329324052f02ff8ce8ebf853687508d8c1714424a2f2547dc11",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-fedora44-multidisk-20260907.json",
+      "sha256": "cc7d688f03ef32c1255dfe7dd80255d213c71f9b0fe8d56f23bc4ce152713a24",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/disposable-nvram-dc2ab1a.json",
+      "sha256": "78f2dca449318465d31fe0645b8617e09d24ee50483b5bed462484c64b05ebcd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/installed-document-review-normalization.json",
+      "sha256": "ac954e93fe66684872ef59dd5583b0451aec2937faededae93f69f86982deb8e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/local-cold-24858d4.json",
+      "sha256": "4d12d3e8487431fc0ae6e1e603513debca36fd7b106b31b03b1f38302e76f8e9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/package-490b88c-virmill-host-helper.json",
+      "sha256": "d51b177c87d01232460bcef5f5f733dc2d09f778abcfe610c6065fe549e15e7e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/package-490b88c-virmill.json",
+      "sha256": "21daefa8c91ce144a3b586a593f5fd8af911c354455c0572e1b744d7078b0f97",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/package-dc2ab1a-virmill-host-helper.json",
+      "sha256": "d96e3e4558429210f9154cd5744834f305d507a761a9341ab781a7396da58399",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/package-dc2ab1a-virmill.json",
+      "sha256": "7909be5fe11eaa269f1818e3a708c852ecfee224cc6972f37420aece93294a58",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/source-490b88c.json",
+      "sha256": "f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/source-dc2ab1a.json",
+      "sha256": "197c73a2257aa5e162ca0c3a3e07cd42e5ca250292fc8f9dbf4d1d900b5000eb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/specification-python-20260908.json",
+      "sha256": "125a2a9d21711044b0653bf67542a8987a236d51ba333059cd492386042df81d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/environments/specification-source-20260908.json",
+      "sha256": "87cd721ca194c52c8c6a5710ea71f2813059ecbfd42590c1838812b0376c7e57",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/fixtures/disposable-samples-20260907.json",
+      "sha256": "84249d83072fd46e4e98bf274e6540c430c5f85cd2e4a8bf821a1e353ea0b2b5",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/installation-slice.md",
+      "sha256": "91c0b717643ac364c47c1089de59c7aa9ba580d1ced233f930c0d3d123c81452",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/managed-access-run.md",
+      "sha256": "21934724b4babb04e7a9d595e00628a96c9e45f6de7c4d6701a5055d86f93ab9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/multidisk-crash-run.md",
+      "sha256": "e4a555cbe4a9824767d411b695a462f040bd467d34cd382edb243fcd8dd1b409",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/nocloud-slice.md",
+      "sha256": "10a3a1c0d287f698d7c5bec0fb405b21973751e892c6abc07dd9f8053323445c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/nvram-binding-run.md",
+      "sha256": "039d61437053a045cfacd9d5775d29854ff6cfadd800fa8557707fc667845a42",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/requirements.json",
+      "sha256": "e896f7ebc81d54947c2bc2a10935a00fbcfb05473d387ea295ca3cd631b25542",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/result-progress-run.md",
+      "sha256": "cf09884437031d4e4b3e85d2f90525552bf391506c48c0eb69db50a4763c1c71",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/schema-and-package-qualification-run.md",
+      "sha256": "9f3fa9c1ed6567969e5ce46ff2359ce9ead645b3d79d6ec4e88a00a14dac345a",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/evidence/team-integration-20260908.md",
+      "sha256": "f043f3c0df3cd9fa6fae06eb3d49d3df64c9e517e86562da12b3e19386fcca5c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/existing-disk-preparation.md",
+      "sha256": "9aba8cc80fa6745d3554ce174b8341332b17c84113b3b4a4c3ba3385c85e73fd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/gate-report.md",
+      "sha256": "6d1dee133fc95f51fccafd3b9b41c990230a3aab738baf85621234ce94436e0e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/getting-started.md",
+      "sha256": "3461026afa9f338c9da8404ab1bc7814d5d5332f197263086df58a994e52c31c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/host-network-discovery.md",
+      "sha256": "45e9be6765f928b578a61e3f231acab76a137cb99c459683c67743cb4f02b2cd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/host-prefix-observer.md",
+      "sha256": "bb9dbab08219ba45287e7eb7661ddcdc93745c70768ee713b570daf8d45ec8b9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/implementation-status.md",
+      "sha256": "c85ad77aecd9a1104b1fc82a69d6b5b65fd5269a27615218ff0de00f22d7671b",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/import-preparation.md",
+      "sha256": "4bc8baf46d70c30c11dff4bb6aef51d0e72f1faf2528076b9ce57253477f8ef7",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/installation-preparation.md",
+      "sha256": "c6d5387e12b0f7adff1b79533242d9c0b4ec685d2d67d8a6f2824260267d4dc4",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/local-api.md",
+      "sha256": "d2bb22bd5ec6ad9711568a16db749439884c3a864b782510ba77b3effa9c0b72",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/managed-volume-access.md",
+      "sha256": "190655bec923b981789fbd29ea419b3d828e218598bfae69ba34f8c6a661fcb0",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/operator-workflows.md",
+      "sha256": "8c4c5d36d0996c303bfe977484a8cab7095a48c3c030c1572868d4fa2bbe4fac",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/packaging.md",
+      "sha256": "e57ef1847b5656652202eec1d3836ad258d1d88febaa931019b46339334ea8da",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/pci-discovery-adapter.md",
+      "sha256": "138bf1e35c7a935d15e90639390fe2a8bcb6e59197cd4cdc42180f559c992127",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/plugin-author-guide.md",
+      "sha256": "809df97338a33b8c95ee46e173d982e403abae6244225868bac723b982a40007",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/plugin-protocol-fault-fixtures.md",
+      "sha256": "de0ae6c77f028b2ff7a5294952fc11356a987e42f793d6ab357556789d1315fb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/recovery-manifest-verification.md",
+      "sha256": "68cf1b43581c8489ace0d5ad5e7c108f65475a05910e54bbe7fbe36558d02194",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/repository-hygiene.md",
+      "sha256": "b6b2228d920cb4de9dd83124558d8cf1b4551a59e7f3ea3c50ee3db93539612f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/requirements-to-evidence.md",
+      "sha256": "9e9124b2cda53f1e14f3ddaa27d2ef3912cac59d3e7f761e046509ef27e4e86c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/auxiliary-authorization-tests.md",
+      "sha256": "c18fbacda7d2bf23d8ec34817da4b28c9ef37516c69c791909eee9fc74c0a7dd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/auxiliary-integration-review.md",
+      "sha256": "9f18093ec973e4c723b5bfe62d3aaeb51d4834e3ef93415a36647d7a702a81f5",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/auxiliary-inventory.md",
+      "sha256": "9a26e5b43c0e5ac72bd7309cbe0d9a6c9a00b0e3cb6563005aaecebd599a9cc8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/auxiliary-native-fixture-review.md",
+      "sha256": "d54e0684833797a5e09191f31c5970a1f1a3c9739da63871106f2b1b97c85361",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/auxiliary-transport-tests.md",
+      "sha256": "a1a39ef9f12c2c5a403607ed444bb8b40563dac906ea93313254a96b4d45a5bf",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/auxiliary-ui-tests.md",
+      "sha256": "8c8982fdce053d2397285ab2b456f3aa8aebd129597c07a50b84e76c43db9324",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/cold-capture-endpoint-readiness.md",
+      "sha256": "36860b65ed0215f357cc8d234e9682388efa299e33bf261f5a0cb39b7e33fcb1",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/cold-point-adversarial.md",
+      "sha256": "70f259de5f52fc90f1e4ad7834d9bb672461eef0ad001edb9a753069e9781f9e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/creation-nvram-binding-implementation-review.md",
+      "sha256": "6520a5c6847ed24ef916389efbd2437d697717571534f9b24ac3072c5ed6c1b8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/creation-nvram-binding-review.md",
+      "sha256": "2c70522d9e23c8bd4960733bdbb33d596a13e4441e9a40074e7f540aea6cabb1",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/creation-tpm-capability-regressions.md",
+      "sha256": "e3847ab516b158947e416c2d91e8352909504623c78b1f985355e4139aaa6b6c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/creation-tpm-firmware-capability-review.md",
+      "sha256": "6dd843ae2d62399d95944571f03c40926bf200cb4c0c91fe79b01da8b4c54807",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/evidence-source-root-review.md",
+      "sha256": "476c1a12f1962487519cf2f554b421d813212dcd00a52bff84a54af49e1e3e94",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/installed-document-links-490b88c.md",
+      "sha256": "7e6bb146a6a0e2a5c69a542939bbc93c5e115d6ba63f6c8c70b974cbc71d6fbc",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/libvirt-implicit-tpm-state-resolution.md",
+      "sha256": "884c94568800b2d6d690a2b3d3acc025731f197dd2f5c27b5e4653c7bfbfca12",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/libvirt-swtpm-lock-selection.md",
+      "sha256": "f1c7267fe2c72f152968fb8b31e3c781c7a96c3a8b6ce6ac69c17ade5caef545",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/native-tpm-state-resolution.md",
+      "sha256": "078a7e2f6e4d3458ed0f5cf3123064626409a8adf437d7213c2909b31b10607a",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/reconcile-integrity-compatibility.md",
+      "sha256": "b08ff13a8e50739fd81a60f442139d521090a34eccf5379361ed17d2023c6ecb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/repository-hygiene-20260908.md",
+      "sha256": "db7e4491fc1d8753ac741a8804d698ba8e59fe06f1e0539b26047d31b87096f9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/specification-python-validator.md",
+      "sha256": "5f1006e0691baf5436f611c296b91bd09c21d49e6ca2f539f85580296aaf8d49",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/specification-validator-parity.md",
+      "sha256": "7e987e62bb6765081dcbff512ff716da9b3fc4ac1e731295e3bf3136015be288",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/swtpm-cold-writer-exclusion.md",
+      "sha256": "9afa41353ba170279229590234c5f97391870c188c5d8875b985b99d72a09c7f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/swtpm-file-writer-exclusion.md",
+      "sha256": "ece8a0fd8e73bd569f19efe2140b54f2ce699a644b251b38815d6d7f55b6ebc4",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/uefi-console-observer-review.md",
+      "sha256": "5e965f71674385b55f6353e1801390ea6b68bc3fc0086b158f6aa38ba93fa4d8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/reviews/uefi-tcg2-probe-review.md",
+      "sha256": "4227b3e3e4c750bc4c44ffe7e56e24a5a5171e3ba624f1a28b8bdadf4092f01c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/support-matrix.md",
+      "sha256": "244947ac580e073040b18d9262242c51ca8518812c6c7335c5e16b8e3fa851c4",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/tui-navigation.md",
+      "sha256": "d7c86a662295688405c1a6b6ec81e0a2b9a62b06efc19b40a284af7a63042a0a",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/uefi-tpm-probe.md",
+      "sha256": "776468e2b15fc2f0155ba2ca7f3d7bc94d2f5376b6519439a5f2c7e0eebb38cf",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/unknowns.md",
+      "sha256": "bff06d357c28c0e3f72529647aa786abb20108def15f692002bf450f290630f2",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/virmill-v1-spec/docs/12-plugin-protocol.md",
+      "sha256": "1c8f3cb751585222ffc7945a2f91fee376c5d042ce8f40fc27685961d8eb5cb9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/vm-configuration.md",
+      "sha256": "c9829eb18523f70c9af056c4a25b41cfecb5c6d19a0ce2e957d9354b049721b5",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/doc/virmill/vm-creation.md",
+      "sha256": "ddce434cd7f7ce25754edabafff38faf089292f041fff45fbbc99b1e22b22134",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/fish/vendor_completions.d/virmill.fish",
+      "sha256": "e55607285421561d5ff7b44bd29bc042bd0925bc23a47ea3752aec9867199489",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/licenses/virmill/LICENSE",
+      "sha256": "c7cd4e300553fa2e0454874b188ae0a8b0a25461464e1d639bd368f3f208cb8b",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/README.md",
+      "sha256": "af0d25bd5ef67d80b24b137a6398ca304ce28ebfcccd209bff5b90ab4b365768",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/backup-policy.yaml",
+      "sha256": "f9a77e25f7b64b9148e47a16b445891cfd63d8c8e10ca3bfda64563552761586",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/configuration/finish-installation.json",
+      "sha256": "b988724751d06b1854fd6d3047ef1eaa1c56eaf2f14ede7c1821b32a633965cb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/configuration/fixed-resources.json",
+      "sha256": "6a20cd6bcb2040521bf83b3c637aeb0f3ca63b24de5c39e5e36d340a0a1d720f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/creation/accept-retained-devices.json",
+      "sha256": "4727231f1dae585321c12e96f3562200bf8b6bdbaf58bf8a684696255d610fa9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/creation/nocloud.json",
+      "sha256": "84699345d066674e8705e17c91384324b7eb31c0eae2723a2634382ae29bbfc6",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/creation/prepared-disks.json",
+      "sha256": "5f79e10eec62f96e85753dab88ea1445237ee9ed8188786b608619ae9f29c90f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/creation/prepared-installation.json",
+      "sha256": "d3ef6898db97eadb0db2a9a27c7ac73e2f05500b41b82aea03172cdb8103a57d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/creation/prepared-ova.json",
+      "sha256": "fe590b80e76ec66db6772b411ac6d748d6956ebef1105d70b6c9841622c67ca8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/import/installation.json",
+      "sha256": "6fcc1ff6732befd1d08af1bddc953f1cc902f336f8dce3839669e3c62965d361",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/import/selected-disks.json",
+      "sha256": "6d639cc801bb8188d7d0268eeb48b58ca76beeba95714c49641f4f27b455c8b9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/labs/multi-network-lab.yaml",
+      "sha256": "c68b857367080af1a443bd83dde332c96b41380dcd40bf6e36cafbae6b69b547",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/networks/guest-only.yaml",
+      "sha256": "a5bc1324db4244639e99f593648d51a9a5aa83ca6dc21e6474f0f7f536bb5d91",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/networks/internet.yaml",
+      "sha256": "58c7aa02080814de3d251b4383b0b627417567c5312b714aecde0af890b52d14",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/plugins/vm-summary/README.md",
+      "sha256": "789a5bfa0598f4a24e100b84a73a9433c73c707ffd5448e97c20c6c67860f83f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/plugins/vm-summary/go.mod",
+      "sha256": "70628ab5636fecb7843840c3df11acb5c5e1957d53bb30239dbc9659ba196911",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/plugins/vm-summary/main.go",
+      "sha256": "94de71d641b52d30c01e82f5d38c676b9d36a9463ef671998dae7d88b65a1fff",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/plugins/vm-summary/main_test.go",
+      "sha256": "2f9a74a02fa66483cbf26afaffc608f021c92fee43c4c1a40af91255ac909de3",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/plugins/vm-summary/manifest.json",
+      "sha256": "e08c30929655d14fc97e2b06999e75cec3c00acc0f180d4f110b86b00d5fd5f8",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/plugins/vm-summary/smoke_test.py",
+      "sha256": "8016902fb38342337be41f49eaf3a114b303030e1c39b348c649cb6b5dfa292d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/examples/vms/workstation.yaml",
+      "sha256": "aa25478ab2a149b31f90438c86108082d6ff29d60835e62c68a66b9a70cbcf63",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/auxiliary-inspect-input.schema.json",
+      "sha256": "8d67eb290f9c1dd6ec7c9f5e8a82c8a901990ba66aa580c35357c161a57df5eb",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/auxiliary-vm-identity.schema.json",
+      "sha256": "5faa25ce5908b9c88698928dae8ec2239d48a4e79e599b0096d7b3b3b9b5dd75",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/backup-policy.schema.json",
+      "sha256": "8dda2d2d229cc5d07426a62594b492ea9fe206741999fb7ac5febeb6e4cf70cd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/cold-recovery-point.schema.json",
+      "sha256": "b3031b7d76beebe3f51b33fca1024d5f45a7c553b3065ecb04cc71e63d1f6f36",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/common.schema.json",
+      "sha256": "6336a5568d24fed265bb4ef4d6e45561b6e163f0f05cb57b2cfb2cddf0b324dd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/disk-set-preparation-input.schema.json",
+      "sha256": "5e232feee53728b9659252ef0b80167b43a322802dee1af0faf04ccd26a22582",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/embed.go",
+      "sha256": "3b973cab17a0c020362cdda5fae09cf7b18f59231d8f900f9583354e5b76570a",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/import-preparation-input.schema.json",
+      "sha256": "4515c22db9240276ba76ad5edf61fe5284d71e5183ee72446cdd9f2970ca0337",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/installation-preparation-input.schema.json",
+      "sha256": "516b819bf2f694f4eabdf83763adddd97d0b717e209386368dfc2cbca95d4bfa",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/lab.schema.json",
+      "sha256": "a4c8b2f74369bde30907d45cc9edb37e7463218ca0af55aad5ac5b283f7218d3",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/network-cidr-input.schema.json",
+      "sha256": "3e9a1841567c8007affa876da297a8c355b937f2cfe1f777957f457d1bfe2013",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/network.schema.json",
+      "sha256": "fa11e2a6c3b98ff8a3fac3f42fb930483b949d00c878896479b543196128f80f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/nocloud-config.schema.json",
+      "sha256": "08b918d3fe9df3bc9bd6cca334319e6ccab0c418eb661efb5cbd42e8b9f206dd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/operation-plan.schema.json",
+      "sha256": "d6473fc2ad80bb6bb08260c0a9e2d84874c245793be1f648412d0991cb3b2792",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/plugin-manifest.schema.json",
+      "sha256": "18e16377f94636731b5d3ef5cb06ace1120f2e68b81bab7d948d3175b4a0fb9e",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/plugin-rpc-envelope.schema.json",
+      "sha256": "b0abfa27ed129496836dabb3a411260e4da4f9ab8558e5dbb6217d979419b327",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/prepared-disk-set.schema.json",
+      "sha256": "51148f5f9312b8c417b91ce1c7837568fab6f7bf9d9509e62083affc1fc160b6",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/prepared-import.schema.json",
+      "sha256": "4dc6a4bd6b00fac5d3ad162c770936f1e4672e00b32468ff960706f118c24ba0",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/prepared-installation.schema.json",
+      "sha256": "9cdebb20e377807c33c7c441dde46a846968f8b870fe17d3d46d790a4318d903",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/storage-access-grant-input.schema.json",
+      "sha256": "fb6e61c71f665f6798d8390810a2a087c4013d14a0bb4a14e62ccf84ce2a87ed",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/vm-creation-accept-input.schema.json",
+      "sha256": "cb11006b31e4c53c3aa3b0bc5d48cbb5be32dd17661fa5b09e20b2ac822a0b7d",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/vm-creation-cleanup-input.schema.json",
+      "sha256": "81597603e157f44470dadac02631e26e91ae712a07714a936c6d7672cc5f0a09",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/vm-creation-input.schema.json",
+      "sha256": "e4f8af8538e55e313a9529ed36fafc246c5b7cd47e0f680b95d840eb58e78f0b",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/vm-hardware-edit-input.schema.json",
+      "sha256": "ffc960b38f7dcbdad0c98a6b65166d5f825d8521aede38165ef6af7eb7591643",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/vm-resource-edit-input.schema.json",
+      "sha256": "e7aa99e61756f8371dbf00dee6e367b6cc9bb2217766019efb3db321b89e5d08",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/schemas/vm.schema.json",
+      "sha256": "292c6e73689638e9148c53675b19d97447d8030dde53f87ae108842c7bed3fa4",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/sdk/go/example/summary.go",
+      "sha256": "f86ff1807e462b317d1b85e393d0cd646d184eade6c4e8c99ded29db5a3e19a9",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/sdk/go/go.mod",
+      "sha256": "fbe6827f6f99d25f158634d2b4495978a6d418458a23b988fddd5fa511187b2f",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/sdk/go/protocol/json.go",
+      "sha256": "98f7af407537cdbd58c60a6c87e10bda71347010d3d10ed173c808f34720d89c",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/sdk/go/server.go",
+      "sha256": "8f6fa5f84f9225d76f8c39989b62b7c1d85e1ed680edde63743351d1b77334dd",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/virmill/sdk/go/server_test.go",
+      "sha256": "34f6c9443774aef47232a673ee758900724c31ef9045d485490829502bb42e02",
+      "mode": 420
+    },
+    {
+      "path": "usr/share/zsh/site-functions/_virmill",
+      "sha256": "827955bf1d86b048bdb44811b1bdc227c2496d4208e233edd81e9b102208e4c2",
+      "mode": 420
+    }
+  ]
+}

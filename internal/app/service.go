@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"virmill.local/core/contracts"
 	"virmill.local/core/internal/app/importer"
 	"virmill.local/core/internal/app/lab"
@@ -51,6 +50,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	// preservation contract through their legacy vm.set handler.
 	e.Handlers["vm.configure-resources"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.configure-hardware"] = &vmHandler{s: s, action: "set"}
+	e.Handlers["vm.reboot"] = &rebootHandler{s: s}
 	return s
 }
 func (s *Service) Call(ctx context.Context, uid uint32, method string, r Request) Response {
@@ -205,8 +205,10 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return s.Engine.Reconcile(ctx, r.ID)
 	case "import.inspect":
 		return importer.Inspect(ctx, r.Path, importer.DefaultLimits())
+	case "backup.policy.validate", "backup.policy.preview":
+		return s.backupPolicy(ctx, method, r)
 	case "lab.validate", "document.validate":
-		b, e := os.ReadFile(r.Path)
+		b, e := readDeclaration(ctx, r.Path)
 		if e != nil {
 			return nil, e
 		}
@@ -230,8 +232,17 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			json.Unmarshal(b, &n)
 			e = network.Validate(n)
 			return map[string]any{"valid": e == nil, "policyEnforced": false}, e
+		case "BackupPolicy":
+			report, err := protection.ValidatePolicy(raw)
+			if err != nil {
+				return nil, err
+			}
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			return report, nil
 		default:
-			return map[string]any{"schemaValid": true, "semanticValidation": "not-implemented"}, domain.Fail("NOT_IMPLEMENTED", "backup policy semantic validation is not yet integrated")
+			return nil, domain.Fail("INVALID_INPUT", "unsupported declaration kind")
 		}
 	case "backup.verify-manifest":
 		if r.Path == "" || r.ID != "" || r.Action != "" || r.Apply != nil || r.After != 0 {
@@ -269,6 +280,9 @@ func (s *Service) GetVM(ctx context.Context, connection, id string) (domain.VM, 
 	return s.InventoryVM(ctx, vm)
 }
 func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Plan, error) {
+	if r.Action == "reboot" {
+		return s.planReboot(ctx, uid, r)
+	}
 	var empty domain.Plan
 	if r.ID == "" {
 		return empty, domain.Fail("INVALID_INPUT", "stable VM UUID required")

@@ -70,7 +70,11 @@
         "docs/adr/0015-operation-downtime-estimates.md",
         "docs/evidence/downtime-estimates-run.md",
         "docs/evidence/multidisk-crash-run.md",
-        "docs/evidence/cold-fixes-native-run.md"
+        "docs/evidence/cold-fixes-native-run.md",
+        "internal/domain/reboot.go",
+        "internal/app/reboot.go",
+        "internal/backend/libvirt/reboot_linux.go",
+        "docs/vm-reboot.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -85,7 +89,11 @@
         "internal/ui/tui/model_test.go",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-start-capture.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-stop-preserve.py",
-        "tests/fixtures/protection/disposable-recorded-run/cold-probe-first-boot-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-probe-first-boot-001.py",
+        "internal/app/reboot_test.go",
+        "internal/backend/libvirt/reboot_linux_test.go",
+        "internal/ui/cli/reboot_test.go",
+        "internal/ui/tui/reboot_test.go"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -107,7 +115,8 @@
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, reboot, autostart and safe removal remain incomplete.",
-        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
+        "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt; no running-state inference or uncertain replay. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native copied-guest reboot and the full lifecycle matrix remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2006,14 +2015,24 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 5,
-      "status": "not-implemented",
-      "implementationPaths": [],
+      "status": "in-progress",
+      "implementationPaths": [
+        "internal/app/protection/policy.go",
+        "internal/app/policy.go",
+        "docs/backup-policy-validation.md"
+      ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-05",
-      "tests": [],
+      "tests": [
+        "internal/app/protection/policy_test.go",
+        "internal/app/policy_test.go",
+        "internal/ui/cli/policy_test.go",
+        "internal/ui/tui/policy_test.go"
+      ],
       "evidence": [],
       "outstanding": [
-        "Scheduled capture obeys timezone, missed-run and credential-unavailable policy; no silent consistency downgrade."
+        "Scheduled capture obeys timezone, missed-run and credential-unavailable policy; no silent consistency downgrade.",
+        "Offline BackupPolicy semantic validation and bounded timezone-aware occurrence previews are available through shared CLI/TUI. Cron, DST, impossible schedules, duplicate selectors and cancellation are covered. Persistent scheduler installation, missed-run/credential/overlap handling and actual complete captures remain unimplemented and required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3704,7 +3723,8 @@
         "internal/helper/auxiliary_server_linux.go",
         "docs/adr/0022-authenticated-auxiliary-inventory.md",
         "docs/auxiliary-state-inspection.md",
-        "docs/evidence/auxiliary-inventory-run.md"
+        "docs/evidence/auxiliary-inventory-run.md",
+        "docs/tui-navigation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -3718,7 +3738,8 @@
         "internal/helper/auxiliary_transport_linux_test.go",
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
-        "internal/ui/tui/auxiliary_test.go"
+        "internal/ui/tui/auxiliary_test.go",
+        "internal/ui/tui/search_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3728,7 +3749,8 @@
       ],
       "outstanding": [
         "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains.",
-        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open."
+        "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
+        "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required."
       ],
       "hardwareVerified": false,
       "released": false

@@ -175,6 +175,39 @@ class PackageDocuments(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.rewrite('An unmatched ` [target](missing.md)')
 
+    def test_escaped_opening_backtick_leaves_visible_dependency(self):
+        for count in (1, 3):
+            original = '\\' * count + '` [missing](missing.md) `'
+            with self.subTest(backslashes=count), self.assertRaises(ValueError):
+                self.rewrite(original)
+
+    def test_even_backslash_prefix_opens_inline_code(self):
+        for count in (2, 4):
+            original = '\\' * count + '` [literal](missing.md) `'
+            with self.subTest(backslashes=count):
+                self.assertEqual(self.rewrite(original), original)
+
+    def test_backslash_before_closing_backtick_remains_inside_code(self):
+        for count in (1, 3):
+            original = '` [literal](missing.md) ' + '\\' * count + '`'
+            with self.subTest(backslashes=count):
+                self.assertEqual(self.rewrite(original), original)
+
+    def test_escaped_first_backtick_can_leave_shorter_opening_run(self):
+        # Outside code, a backslash escapes one backtick, not an entire run.
+        # The remaining opening run must match a complete later closing run.
+        with self.subTest(closing_backticks=1):
+            original = '\\`` [literal](missing.md) `'
+            self.assertEqual(self.rewrite(original), original)
+        with self.subTest(closing_backticks=2), self.assertRaises(ValueError):
+            self.rewrite('\\`` [missing](missing.md) ``')
+
+    def test_unmatched_and_unequal_backtick_runs_do_not_hide_links(self):
+        for original in ('` [missing](missing.md) ``', '`` [missing](missing.md) `',
+                         '\\` [missing](missing.md)', '\\`` [missing](missing.md) ```'):
+            with self.subTest(original=original), self.assertRaises(ValueError):
+                self.rewrite(original)
+
     def test_multiline_and_nested_labels_and_repeated_links(self):
         original = '[CPU [core]\nreview](adr/0020-cold-recovery-boundary.md) [again](adr/0020-cold-recovery-boundary.md)'
         self.assertEqual(self.rewrite(original), original)

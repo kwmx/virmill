@@ -6,6 +6,7 @@ import the transformer, install packages, start services or resolve host paths.
 """
 import hashlib
 import contextlib
+from collections import defaultdict, deque
 import io
 import json
 import os
@@ -19,6 +20,31 @@ from unittest import mock
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def visible_inline(text):
+    output = []
+    for line in text.splitlines(keepends=True):
+        runs = list(re.finditer(r'`+', line))
+        by_length = defaultdict(deque)
+        for i, run in enumerate(runs):
+            by_length[len(run[0])].append(i)
+        cursor = 0
+        for i, run in enumerate(runs):
+            if run.start() < cursor:
+                continue
+            slashes = len(line[:run.start()]) - len(line[:run.start()].rstrip('\\'))
+            if slashes % 2:
+                continue
+            candidates = by_length[len(run[0])]
+            while candidates and candidates[0] <= i:
+                candidates.popleft()
+            if candidates:
+                end = runs[candidates[0]].end()
+                output.extend((line[cursor:run.start()], ' ' * (end-run.start())))
+                cursor = end
+        output.append(line[cursor:])
+    return ''.join(output)
 
 
 def destinations(text):
@@ -41,7 +67,7 @@ def destinations(text):
         raise ValueError('Unsupported reference/HTML link')
     # This independent audit deliberately supports the actual installed corpus,
     # with conservative refusal if more complex inline syntax is introduced.
-    visible = re.sub(r'(`+)([^\n]*?)\1', lambda m: ' ' * len(m[0]), visible)
+    visible = visible_inline(visible)
     found = re.findall(r'\[[^\]]*\]\((<[^>\n]*>|[^()\s]+)\)', visible)
     if len(found) != visible.count(']('):
         raise ValueError('Unsupported or malformed inline destination')
@@ -73,6 +99,17 @@ class ParserTests(unittest.TestCase):
 
     def test_nested_fence_and_multiline_label(self):
         self.assertEqual(destinations('~~~~\n```\n[x](missing)\n~~~~\n[first\nsecond](next.md#part)'), ['next.md#part'])
+
+    def test_unequal_backtick_runs_do_not_hide_dependencies(self):
+        for text in ('`[bad](missing.md)``', '``[bad](missing.md)`',
+                     '` [bad](missing.md) ``', '`` [bad](missing.md) `'):
+            with self.subTest(text=text):
+                self.assertEqual(destinations(text), ['missing.md'])
+
+    def test_escaped_opening_and_literal_closing_backticks(self):
+        self.assertEqual(destinations(r'\` [bad](missing.md) `'), ['missing.md'])
+        self.assertEqual(destinations(r'\\` [code](missing.md) `'), [])
+        self.assertEqual(destinations(r'` [code](missing.md) \` [real](next.md)'), ['next.md'])
 
     def test_unsupported_syntax_refuses(self):
         for text in ('[x](two words.md)', '[x]: next.md\n[x]', '<a href="next.md">x</a>', '```\nunclosed'):

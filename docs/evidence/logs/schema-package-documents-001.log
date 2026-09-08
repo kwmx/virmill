@@ -1,0 +1,14 @@
+{"essentialProtocolInstalled": true, "explicitSourceReferences": 1373, "externalOrFragmentLinks": 130, "manifestSHA256": {"virmill": "57101cc1ee0112d556c31e9daf56a79f0e64e045a386ebf96253565ce0209f52", "virmill-host-helper": "d51b177c87d01232460bcef5f5f733dc2d09f778abcfe610c6065fe549e15e7e"}, "markdownFiles": 113, "missingLocalTargets": 0, "payloadFiles": 199, "resolvedLocalLinks": 177, "scope": "staged hashes/modes/inventory and local file targets; no fragment, URL availability, tutorial, renderer or host installation qualification", "status": "passed"}
+test_staged_payload_integrity_and_document_closure (installed_documents.InstalledDocuments.test_staged_payload_integrity_and_document_closure) ... ok
+test_code_is_not_a_dependency (installed_documents.ParserTests.test_code_is_not_a_dependency) ... ok
+test_escaped_opening_and_literal_closing_backticks (installed_documents.ParserTests.test_escaped_opening_and_literal_closing_backticks) ... ok
+test_generated_manifest_with_excluded_log_is_rejected (installed_documents.ParserTests.test_generated_manifest_with_excluded_log_is_rejected) ... ok
+test_nested_fence_and_multiline_label (installed_documents.ParserTests.test_nested_fence_and_multiline_label) ... ok
+test_resolution_uses_virtual_package_root (installed_documents.ParserTests.test_resolution_uses_virtual_package_root) ... ok
+test_unequal_backtick_runs_do_not_hide_dependencies (installed_documents.ParserTests.test_unequal_backtick_runs_do_not_hide_dependencies) ... ok
+test_unsupported_syntax_refuses (installed_documents.ParserTests.test_unsupported_syntax_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.184s
+
+OK
