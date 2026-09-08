@@ -58,11 +58,12 @@ examples use the default local `qemu:///system`. Some VM workflows also accept
 `qemu:///session`; network creation and privileged capture require system mode.
 Keep the selected connection consistent across planning, applying and inspection.
 
-In the TUI, Tab/Shift-Tab changes sections, arrows select actions, `/` searches
-the current section, and Enter opens an action. Search Enter only leaves search;
-it does not execute. PgUp/PgDn pages results; Esc leaves a form or approval.
-Use an 80×24 or larger terminal and `?` for help. The same shared service backs
-both interfaces; see [navigation](tui-navigation.md).
+Bare `virmill` opens the resource workspace. Select a VM row and press Enter for
+its details; Tab focuses visible action buttons. `a` opens the current section's
+actions and `:` shows the full action catalog. Use labeled forms for common
+workflows and parameter files for advanced mappings. Read the current
+[TUI navigation guide](tui-navigation.md) for focus, search, review and terminal
+options. CLI and TUI use the same shared service.
 
 ## Review every mutation
 
@@ -83,8 +84,9 @@ virmill plan apply PLAN_ID --digest REVIEWED_FULL_DIGEST \
 
 Repeat `--ack` for **every** required acknowledgement in that exact plan; omit
 the placeholder when none is required. Use a fresh request key for a new approved
-operation. In the TUI, press `a` on the reviewed plan, review acknowledgements
-and confirm its full digest. Cancellation, stale state or missing authority must
+operation. In the TUI, open the plan confirmation, explicitly check its acknowledgements,
+select **Apply reviewed plan**, and press Enter. The interface submits the exact
+reviewed digest. Cancellation, stale state or missing authority must
 produce an error, not a reduced policy or successful result. A lost response
 does not authorize another apply.
 
@@ -179,11 +181,10 @@ from the [creation space budget](creation-space-estimates.md).
    the intended guest data. See [capture and restore](cold-capture-and-restore.md)
    for refusal cases and retained partial resources.
 
-The equivalent TUI capture form is
-`{"id":"VM_UUID","input":{"sourceRoot":"/absolute/approved-disk-root"}}`;
-restore uses `{"id":"SNAPSHOT_UUID","input":{"name":"Restored beta guest","poolID":"POOL_UUID"}}`.
-CLI `--input` contains only the inner input object. Both views retain the same
-plan ID and digest.
+In the TUI, select the VM and choose **Capture** to enter the source directory.
+For restore, choose **Snapshot restore** in Protection, use the capture ID field
+and a parameters file containing the inner name/poolID object. Both views retain
+the same plan ID and digest.
 
 Then test [encrypted local repository backup and fresh-profile recovery](local-backups.md).
 `backup create` performs an independent restored-set verification before success;

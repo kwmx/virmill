@@ -576,6 +576,13 @@ func wrap(s string, width int) []string {
 	return lines
 }
 func Run(c ui.Client, connection string) error {
-	_, e := tea.NewProgram(New(c, connection), tea.WithAltScreen()).Run()
+	_, e := tea.NewProgram(NewWorkspace(c, connection), tea.WithAltScreen()).Run()
 	return e
+}
+
+func RunOptions(c ui.Client, connection string, noColor bool) error {
+	m := NewWorkspace(c, connection)
+	m.NoColor = m.NoColor || noColor
+	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	return err
 }

@@ -4199,7 +4199,12 @@
         "internal/app/network_allocation.go",
         "internal/app/network_creation.go",
         "docs/network-allocation.md",
-        "docs/adr/0029-configurable-network-allocation.md"
+        "docs/adr/0029-configurable-network-allocation.md",
+        "internal/ui/tui/workspace.go",
+        "internal/ui/tui/guided_forms.go",
+        "internal/ui/tui/action_forms.go",
+        "internal/ui/tui/presentation.go",
+        "docs/tui-navigation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4282,7 +4287,12 @@
         "internal/app/network_allocation_test.go",
         "internal/ui/cli/network_allocation_test.go",
         "internal/ui/tui/network_allocation_test.go",
-        "internal/validation/network_allocation_test.go"
+        "internal/validation/network_allocation_test.go",
+        "internal/ui/tui/workspace_test.go",
+        "internal/ui/tui/guided_forms_test.go",
+        "internal/ui/tui/action_forms_test.go",
+        "internal/ui/tui/presentation_test.go",
+        "tests/fixtures/release/tui_workspace_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4350,7 +4360,10 @@
         "lifecycle-policy-search-core-002",
         "lifecycle-policy-search-artifacts-001",
         "automatic-allocation-race-001",
-        "automatic-allocation-static-001"
+        "automatic-allocation-static-001",
+        "tui-workspace-native-001",
+        "tui-workspace-native-002",
+        "tui-workspace-race-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4394,7 +4407,11 @@
         "docs/auxiliary-state-inspection.md",
         "docs/evidence/auxiliary-inventory-run.md",
         "docs/tui-navigation.md",
-        "docs/tui-terminal-contract.md"
+        "docs/tui-terminal-contract.md",
+        "internal/ui/tui/workspace.go",
+        "internal/ui/tui/guided_forms.go",
+        "internal/ui/tui/action_forms.go",
+        "internal/ui/tui/presentation.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4411,7 +4428,12 @@
         "internal/ui/tui/auxiliary_test.go",
         "internal/ui/tui/search_test.go",
         "internal/ui/tui/terminal_contract_test.go",
-        "tests/integration/provider_conformance_ui_test.py"
+        "tests/integration/provider_conformance_ui_test.py",
+        "internal/ui/tui/workspace_test.go",
+        "internal/ui/tui/guided_forms_test.go",
+        "internal/ui/tui/action_forms_test.go",
+        "internal/ui/tui/presentation_test.go",
+        "tests/fixtures/release/tui_workspace_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4423,7 +4445,10 @@
         "lifecycle-policy-search-artifacts-001",
         "interface-race-001",
         "interface-provider-ui-001",
-        "interface-artifacts-001"
+        "interface-artifacts-001",
+        "tui-workspace-native-001",
+        "tui-workspace-native-002",
+        "tui-workspace-race-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
@@ -4500,7 +4525,12 @@
         "internal/app/host_inventory.go",
         "internal/app/network_creation.go",
         "docs/network-allocation.md",
-        "docs/adr/0029-configurable-network-allocation.md"
+        "docs/adr/0029-configurable-network-allocation.md",
+        "internal/ui/tui/workspace.go",
+        "internal/ui/tui/guided_forms.go",
+        "internal/ui/tui/action_forms.go",
+        "internal/ui/tui/presentation.go",
+        "docs/tui-navigation.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -4563,7 +4593,12 @@
         "internal/app/network_allocation_test.go",
         "internal/ui/cli/network_allocation_test.go",
         "internal/ui/tui/network_allocation_test.go",
-        "internal/validation/network_allocation_test.go"
+        "internal/validation/network_allocation_test.go",
+        "internal/ui/tui/workspace_test.go",
+        "internal/ui/tui/guided_forms_test.go",
+        "internal/ui/tui/action_forms_test.go",
+        "internal/ui/tui/presentation_test.go",
+        "tests/fixtures/release/tui_workspace_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4620,7 +4655,10 @@
         "protected-network-race-001",
         "protected-network-artifacts-001",
         "automatic-allocation-race-001",
-        "automatic-allocation-static-001"
+        "automatic-allocation-static-001",
+        "tui-workspace-native-001",
+        "tui-workspace-native-002",
+        "tui-workspace-race-001"
       ],
       "outstanding": [
         "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",

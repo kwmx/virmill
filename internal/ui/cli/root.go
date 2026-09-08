@@ -57,7 +57,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 	}
 	root.RunE = func(c *cobra.Command, args []string) error {
 		if term.IsTerminal(int(os.Stdin.Fd())) && o.Output == "table" && !o.NonInteractive {
-			return tui.Run(client, o.Connection)
+			return tui.RunOptions(client, o.Connection, o.NoColor)
 		}
 		return c.Help()
 	}
@@ -91,7 +91,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		if o.NonInteractive {
 			return domain.Fail("INVALID_INPUT", "TUI requires an interactive terminal")
 		}
-		return tui.Run(client, o.Connection)
+		return tui.RunOptions(client, o.Connection, o.NoColor)
 	}})
 	parents := map[string]*cobra.Command{"": root}
 	add := func(path string, leaf *cobra.Command) {
