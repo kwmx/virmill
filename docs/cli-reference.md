@@ -15,6 +15,7 @@ Available Commands:
   backup      Manage backup
   completion  Generate shell completions
   config      Manage config
+  device      Manage device
   doctor      Read-only prerequisites; never applies repairs
   help        Help about any command
   host        Manage host
@@ -41,6 +42,30 @@ Flags:
       --verbose             Verbose diagnostics
 
 Use "virmill [command] --help" for more information about a command.
+```
+
+## `virmill backup create`
+
+Plan an encrypted backup of a complete capture with independent restore and full member verification
+
+```text
+Usage:
+  virmill backup create ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
 ```
 
 ## `virmill backup policy preview`
@@ -73,6 +98,101 @@ Validate backup policy selectors, cron and timezone without installing a schedul
 ```text
 Usage:
   virmill backup policy validate PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup repository check`
+
+Plan a full local repository data-integrity check with durable evidence
+
+```text
+Usage:
+  virmill backup repository check PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup repository init`
+
+Plan a new private encrypted local restic repository using an explicit credential file
+
+```text
+Usage:
+  virmill backup repository init PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup restore`
+
+Plan recovery from an exact repository snapshot into an absent local capture identity
+
+```text
+Usage:
+  virmill backup restore ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup result`
+
+Read durable repository and recovery proof by operation UUID
+
+```text
+Usage:
+  virmill backup result ID [flags]
 
 Flags:
       --after int      Event cursor
@@ -138,6 +258,29 @@ Validate a bundled declarative document offline
 ```text
 Usage:
   virmill config validate PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill device usb list`
+
+Discover USB identity, serial and observed physical port; discovery does not authorize attachment
+
+```text
+Usage:
+  virmill device usb list [flags]
 
 Flags:
       --after int      Event cursor

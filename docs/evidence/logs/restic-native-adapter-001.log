@@ -1,0 +1,6 @@
+697407ab36e48427085bb89b82b0f89df354a1e3b0f194ce371d8639ed341025  /home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001/restic-native.test
+=== RUN   TestResticGeneratedRepository
+    native_linux_test.go:27: restic identity: {Path:/usr/bin/restic SHA256:b49f2d88cb0407b782081b14ec7393f9e83a9e43be73e4560fe0bd4c1a4f2bad Version:restic 0.19.1 compiled with go1.26.5-X:nodwarf5 on linux/amd64}
+    native_linux_test.go:45: INCOMPLETE_BACKUP: restic repository check reported damaged or missing data
+--- FAIL: TestResticGeneratedRepository (7.21s)
+FAIL

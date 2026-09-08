@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"virmill.local/core/internal/buildinfo"
 	platform "virmill.local/core/internal/platform/linux"
 	"virmill.local/core/internal/wire"
 )
@@ -310,7 +311,7 @@ func Conformance(ctx context.Context, exe, workspace string, m Manifest) (Confor
 		defer c()
 		return s.Call(ctx, method, p)
 	}
-	init, e := call("initialize", map[string]any{"protocolVersions": []string{"1.0"}, "host": map[string]string{"version": "0.0.0-dev", "os": "linux", "arch": "amd64"}, "sessionID": "conformance", "permissions": m.Permissions, "limits": map[string]int{"maxMessageBytes": wire.MaxFrame}})
+	init, e := call("initialize", map[string]any{"protocolVersions": []string{"1.0"}, "host": map[string]string{"version": buildinfo.Version, "os": "linux", "arch": "amd64"}, "sessionID": "conformance", "permissions": m.Permissions, "limits": map[string]int{"maxMessageBytes": wire.MaxFrame}})
 	if e != nil {
 		return report, e
 	}

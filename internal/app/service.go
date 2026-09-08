@@ -87,6 +87,22 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "selected backend does not expose PCI discovery")
 		}
 		return inventory.InspectPCI(ctx, r.Connection)
+	case "device.usb.list":
+		if r.ID != "" || r.Path != "" || r.Action != "" || len(r.Input) != 0 || r.After != 0 || r.Apply != nil {
+			return nil, domain.Fail("INVALID_INPUT", "USB discovery accepts only a local connection")
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		inventory, ok := s.Provider.(domain.USBInventoryProvider)
+		if !ok {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "selected backend does not expose USB discovery")
+		}
+		devices, err := inventory.InspectUSB(ctx, r.Connection)
+		if err != nil {
+			return nil, err
+		}
+		return devices, ctx.Err()
 	case "network.cidr.check":
 		return s.checkCIDRs(ctx, r)
 	case "network.create":
@@ -260,6 +276,8 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 				return nil, err
 			}
 			return report, nil
+		case "GuestRecipe":
+			return map[string]any{"valid": true, "hostPreflight": "not-run", "guestExecution": "not-run"}, ctx.Err()
 		default:
 			return nil, domain.Fail("INVALID_INPUT", "unsupported declaration kind")
 		}

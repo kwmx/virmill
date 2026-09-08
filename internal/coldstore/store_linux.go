@@ -344,6 +344,35 @@ func Inspect(ctx context.Context, root, snapshotID string) (out Receipt, err err
 	return inspectSet(ctx, catalog, snapshotID, snapshotID, localDurability{})
 }
 
+// SealRestored verifies a restored set before removing write permission from its
+// root. Restic's `backup .` preserves member modes but does not restore the root
+// mode. The caller must persist destination-specific intent before this mutation.
+// A previously sealed set is verified without changing its permissions.
+func SealRestored(ctx context.Context, root, snapshotID, expectedManifestSHA256 string) (out Receipt, err error) {
+	if !validID(snapshotID) || len(expectedManifestSHA256) != 64 || strings.Trim(expectedManifestSHA256, "0123456789abcdef") != "" {
+		return Receipt{}, invalid("exact snapshot UUID and manifest SHA-256 required for restored publication")
+	}
+	catalog, err := openCatalog(ctx, root)
+	if err != nil {
+		return Receipt{}, err
+	}
+	defer func() {
+		err = errors.Join(err, catalog.file.Close())
+		if err != nil {
+			out = Receipt{}
+		}
+	}()
+	var st unix.Stat_t
+	if err = unix.Fstatat(int(catalog.file.Fd()), snapshotID, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return Receipt{}, err
+	}
+	mode := st.Mode & 07777
+	if st.Mode&unix.S_IFMT != unix.S_IFDIR || (mode != 0500 && mode != 0700) {
+		return Receipt{}, incomplete("restored set root must be a private directory with mode 0500 or 0700")
+	}
+	return inspectSetMode(ctx, catalog, snapshotID, snapshotID, localDurability{}, mode, expectedManifestSHA256)
+}
+
 func readDocument(ctx context.Context, f *node) ([]byte, error) {
 	if f.identity.Size == 0 || f.identity.Size > documentLimit {
 		return nil, incomplete("capture metadata outside nonempty document bound")
@@ -363,10 +392,14 @@ func readDocument(ctx context.Context, f *node) ([]byte, error) {
 }
 
 func inspectSet(ctx context.Context, catalog *node, name, snapshotID string, disk durability) (out Receipt, err error) {
+	return inspectSetMode(ctx, catalog, name, snapshotID, disk, 0500, "")
+}
+
+func inspectSetMode(ctx context.Context, catalog *node, name, snapshotID string, disk durability, rootMode uint32, expectedManifest string) (out Receipt, err error) {
 	if err = ctx.Err(); err != nil {
 		return Receipt{}, err
 	}
-	set, err := openNode(int(catalog.file.Fd()), name, true, 0500, false)
+	set, err := openNode(int(catalog.file.Fd()), name, true, rootMode, false)
 	if err != nil {
 		return Receipt{}, err
 	}
@@ -406,6 +439,9 @@ func inspectSet(ctx context.Context, catalog *node, name, snapshotID string, dis
 		return Receipt{}, incomplete("invalid capture receipt JSON")
 	}
 	want := Receipt{Version: 1, SnapshotID: manifest.ID, OperationID: manifest.OperationID, ManifestSHA256: digest(raw), Manifest: manifest}
+	if expectedManifest != "" && want.ManifestSHA256 != expectedManifest {
+		return Receipt{}, incomplete("restored manifest differs from the exact approved digest")
+	}
 	wantRaw, err := json.Marshal(want)
 	if err != nil || !bytes.Equal(receiptRaw, wantRaw) {
 		return Receipt{}, incomplete("capture receipt differs from the exact manifest and operation")
@@ -511,6 +547,29 @@ func inspectSet(ctx context.Context, catalog *node, name, snapshotID string, dis
 	}
 	if err = recheckCatalog(ctx, catalog); err != nil {
 		return Receipt{}, err
+	}
+	if rootMode == 0700 {
+		if expectedManifest == "" {
+			return Receipt{}, incomplete("restored sealing requires an approved manifest digest")
+		}
+		if err = unix.Fchmod(int(set.file.Fd()), 0500); err != nil {
+			return Receipt{}, err
+		}
+		if err = disk.Sync(set.file); err != nil {
+			return Receipt{}, err
+		}
+		if err = disk.Sync(catalog.file); err != nil {
+			return Receipt{}, err
+		}
+		current, e := openNode(int(catalog.file.Fd()), name, true, 0500, false)
+		if e != nil {
+			return Receipt{}, e
+		}
+		after, e := inspectOwned(set.file, true, 0500)
+		closeErr := current.file.Close()
+		if e != nil || closeErr != nil || after != current.identity || after.Generation != set.identity.Generation {
+			return Receipt{}, errors.Join(domain.Fail("SOURCE_CHANGED", "restored root changed during sealing"), e, closeErr)
+		}
 	}
 	return want, ctx.Err()
 }

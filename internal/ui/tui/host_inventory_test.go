@@ -11,6 +11,7 @@ func TestReadOnlyHostInventoryNavigation(t *testing.T) {
 		form                     bool
 	}{
 		{"host pci list", "Devices", "host.pci.list", false},
+		{"device usb list", "Devices", "device.usb.list", false},
 		{"network cidr check", "Networks", "network.cidr.check", true},
 	} {
 		r := &recorder{}

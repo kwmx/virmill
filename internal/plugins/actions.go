@@ -11,6 +11,7 @@ import (
 	"sort"
 	"time"
 	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/buildinfo"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/operations"
 	"virmill.local/core/internal/validation"
@@ -94,7 +95,7 @@ func limitedCall(ctx context.Context, s *Session, method string, p any, limit ti
 }
 
 func negotiate(ctx context.Context, s *Session, v InstalledVersion) ([]actionDescription, error) {
-	data, err := limitedCall(ctx, s, "initialize", map[string]any{"protocolVersions": []string{"1.0"}, "host": map[string]string{"version": "0.0.0-dev", "os": "linux", "arch": "amd64"}, "sessionID": domain.ID(), "permissions": Effective(v.Manifest.Permissions, v.Grants, v.Grants), "limits": map[string]int{"maxMessageBytes": wire.MaxFrame}}, 10*time.Second)
+	data, err := limitedCall(ctx, s, "initialize", map[string]any{"protocolVersions": []string{"1.0"}, "host": map[string]string{"version": buildinfo.Version, "os": "linux", "arch": "amd64"}, "sessionID": domain.ID(), "permissions": Effective(v.Manifest.Permissions, v.Grants, v.Grants), "limits": map[string]int{"maxMessageBytes": wire.MaxFrame}}, 10*time.Second)
 	if err != nil {
 		return nil, err
 	}

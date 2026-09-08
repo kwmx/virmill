@@ -38,6 +38,7 @@ class PackageInputs(unittest.TestCase):
         self.files = {
             '.gitignore': b'build/\ncredentials/\n.env.*\n',
             'LICENSE': b'original fixture license\n',
+            'internal/buildinfo/version.go': b'package buildinfo\n\nconst Version = "1.0.0-beta.1"\n',
             'packaging/systemd/virmilld.service': b'fixture user unit\n',
             'packaging/systemd/virmill-host-helper.service': b'fixture helper unit\n',
             'packaging/systemd/virmill-host-helper.socket': b'fixture helper socket\n',
@@ -235,7 +236,7 @@ class PackageInputs(unittest.TestCase):
         self.assertEqual((outside / 'keep').read_bytes(), b'keep target')
 
     def test_exact_rpm_copy_excludes_stale_siblings_and_requires_expected_output(self):
-        expected = 'virmill-0.0.0-0.dev.x86_64.rpm'
+        expected = 'virmill-1.0.0-0.beta.1.x86_64.rpm'
         source = self.write('build/rpm/virmill/RPMS/x86_64/' + expected, b'expected rpm fixture')
         self.write('build/rpm/virmill/RPMS/other/old.rpm', b'stale rpm fixture')
         retained = self.write('dist/retained.rpm', b'unrelated retained output')
@@ -307,7 +308,7 @@ class PackageInputs(unittest.TestCase):
             invoked.append(name)
             self.assertFalse((self.root / f'build/rpm/{name}/RPMS/x86_64/old.rpm').exists())
             self.assertFalse((self.root / f'build/package-stage/{name}/old').exists())
-            self.write(f'build/rpm/{name}/RPMS/x86_64/{name}-0.0.0-0.dev.x86_64.rpm', b'original fake RPM output: ' + name.encode())
+            self.write(f'build/rpm/{name}/RPMS/x86_64/{name}-1.0.0-0.beta.1.x86_64.rpm', b'original fake RPM output: ' + name.encode())
             self.write(f'build/rpm/{name}/RPMS/other/unexpected.rpm', b'not selected')
             return subprocess.CompletedProcess(command, 0, 'test-only rpmbuild transport seam\n', '')
 
@@ -335,7 +336,7 @@ class PackageInputs(unittest.TestCase):
                 self.assertEqual(item['sha256'], hashlib.sha256((stage / item['path']).read_bytes()).hexdigest())
 
     def test_successful_rpmbuild_exit_without_expected_output_is_failure(self):
-        expected = 'virmill-0.0.0-0.dev.x86_64.rpm'
+        expected = 'virmill-1.0.0-0.beta.1.x86_64.rpm'
         self.write('build/rpm/virmill/RPMS/x86_64/' + expected, b'old source RPM')
         retained = self.write('dist/' + expected, b'old destination RPM')
         original_run = subprocess.run

@@ -25,7 +25,7 @@ def main():
     p.add_argument('--source-root', type=Path, required=True)
     p.add_argument('--pool', required=True)
     args=p.parse_args()
-    assert socket.gethostname()=='virmill-test' and os.getuid()==1000
+    assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000
     root=args.root.resolve(strict=True)
     assert root.is_relative_to(Path.home()/'virmill-tests')
     assert str(uuid.UUID(args.source_vm))==args.source_vm and str(uuid.UUID(args.pool))==args.pool

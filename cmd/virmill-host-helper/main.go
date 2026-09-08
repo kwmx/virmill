@@ -8,12 +8,13 @@ import (
 	"os"
 	"strconv"
 	backend "virmill.local/core/internal/backend/libvirt"
+	"virmill.local/core/internal/buildinfo"
 	"virmill.local/core/internal/helper"
 )
 
 func main() {
 	if len(os.Args) == 2 && os.Args[1] == "--version" {
-		fmt.Println("virmill-host-helper 0.0.0-dev; protocol virmill/v1")
+		fmt.Printf("virmill-host-helper %s; protocol virmill/v1\n", buildinfo.Version)
 		return
 	}
 	pid, _ := strconv.Atoi(os.Getenv("LISTEN_PID"))

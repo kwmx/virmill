@@ -1,0 +1,19 @@
+{
+  "apiVersion": "virmill/v1",
+  "kind": "GuestRecipe",
+  "metadata": {
+    "name": "posix-readiness",
+    "version": "1.0.0"
+  },
+  "spec": {
+    "profile": "linux-posix",
+    "privilege": "non-root",
+    "transport": "ssh",
+    "idempotent": true,
+    "timeoutSeconds": 15,
+    "check": "set -eu\ntest \"$(id -u)\" -ne 0\nprintf \"non-root POSIX session is ready\\n\"\n",
+    "apply": "exit 1\n",
+    "verify": "set -eu\ntest \"$(id -u)\" -ne 0\ntest -n \"$HOME\"\ntest -d \"$HOME\"\n",
+    "reboot": "never"
+  }
+}

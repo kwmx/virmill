@@ -159,7 +159,7 @@ func Document(b []byte) (map[string]any, []byte, error) {
 		return nil, nil, e
 	}
 	kind, _ := value["kind"].(string)
-	name := map[string]string{"VM": "vm", "Network": "network", "Lab": "lab", "BackupPolicy": "backup-policy"}[kind]
+	name := map[string]string{"VM": "vm", "Network": "network", "Lab": "lab", "BackupPolicy": "backup-policy", "GuestRecipe": "guest-recipe"}[kind]
 	if name == "" {
 		return nil, nil, errors.New("unknown declarative kind")
 	}

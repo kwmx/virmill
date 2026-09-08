@@ -5,6 +5,7 @@ import io
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import shlex
 import shutil
 import stat
@@ -16,9 +17,7 @@ from package_docs import rewrite_markdown
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_NAMES = ('virmill', 'virmill-host-helper')
 BINARY_PATHS = tuple('build/bin/' + name for name in ('virmill', 'virmilld', 'virmill-host-helper'))
-PACKAGE_ARTIFACTS = tuple(sorted(
-    filename for name in PACKAGE_NAMES for filename in
-    (f'{name}_0.0.0~dev_amd64.deb', f'{name}-0.0.0-0.dev.x86_64.rpm')))
+VERSION_SOURCE = 'internal/buildinfo/version.go'
 SOURCE_TREES = (('docs', 'usr/share/doc/virmill'),
                 ('schemas', 'usr/share/virmill/schemas'),
                 ('sdk/go', 'usr/share/virmill/sdk/go'),
@@ -88,6 +87,51 @@ def read_regular(root, relative):
             return source.read()
     finally:
         os.close(parent)
+
+
+def parse_product_version(data):
+    """Read one literal beta constant; never accept an environment-selected version."""
+    if len(data) > 16384:
+        raise ValueError('Product version source exceeds 16 KiB')
+    text = data.decode('utf-8', errors='strict')
+    declarations = re.findall(r'(?m)^(?:const|var)\s+Version\b[^\n]*$', text)
+    if len(declarations) != 1:
+        raise ValueError('Product version requires exactly one literal const Version declaration')
+    match = re.fullmatch(r'const Version = "([^"]+)"', declarations[0])
+    if not match:
+        raise ValueError('Product version requires a literal const Version declaration')
+    version = match.group(1)
+    beta_version_parts(version)
+    return version
+
+
+def beta_version_parts(version):
+    # Restrict packaging to the explicitly implemented beta naming policy.
+    # A final release or a different prerelease family needs a reviewed change.
+    number = r'(?:0|[1-9][0-9]{0,8})'
+    match = re.fullmatch(rf'({number}\.{number}\.{number})-beta\.([1-9][0-9]{{0,8}})', version)
+    if not match:
+        raise ValueError('Unsupported product version; expected canonical MAJOR.MINOR.PATCH-beta.N')
+    base, beta = match.groups()
+    return f'{base}~beta.{beta}', base, f'0.beta.{beta}'
+
+
+PRODUCT_VERSION = parse_product_version(read_regular(ROOT, VERSION_SOURCE))
+DEBIAN_VERSION, RPM_VERSION, RPM_RELEASE = beta_version_parts(PRODUCT_VERSION)
+
+
+def package_filename(name, kind):
+    if name not in PACKAGE_NAMES:
+        raise ValueError(f'Unknown package: {name}')
+    if kind == 'deb':
+        return f'{name}_{DEBIAN_VERSION}_amd64.deb'
+    if kind == 'rpm':
+        return f'{name}-{RPM_VERSION}-{RPM_RELEASE}.x86_64.rpm'
+    raise ValueError(f'Unknown package format: {kind}')
+
+
+PACKAGE_ARTIFACTS = tuple(sorted(package_filename(name, kind)
+                                 for name in PACKAGE_NAMES for kind in ('deb', 'rpm')))
 
 
 def write_regular(root, relative, data, mode=0o644):
@@ -221,9 +265,7 @@ def ar_bytes(members, epoch):
 
 
 def copy_expected_rpm(root, name):
-    if name not in PACKAGE_NAMES:
-        raise ValueError(f'Unknown package: {name}')
-    filename = f'{name}-0.0.0-0.dev.x86_64.rpm'
+    filename = package_filename(name, 'rpm')
     data = read_regular(root, f'build/rpm/{name}/RPMS/x86_64/{filename}')
     write_regular(root, 'dist/' + filename, data)
 
@@ -235,6 +277,11 @@ def package_artifacts(root):
 
 def build_packages(root=ROOT):
     root = Path(root).absolute()
+    tracked = tracked_inputs(root)
+    if tracked.get(VERSION_SOURCE) not in (b'100644', b'100755'):
+        raise ValueError('Product version source is not an indexed regular file')
+    if parse_product_version(read_regular(root, VERSION_SOURCE)) != PRODUCT_VERSION:
+        raise ValueError('Package source root version does not match the executing package builder')
     epoch = int(os.environ.get('SOURCE_DATE_EPOCH', '0'))
     packages = collect_package_files(root)
     os.close(directory_fd(root / 'dist', create=True))
@@ -242,12 +289,12 @@ def build_packages(root=ROOT):
         stage = reset_owned_directory(root, f'build/package-stage/{name}')
         rpm = reset_owned_directory(root, f'build/rpm/{name}')
         dependencies = 'libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, util-linux, xorriso' if name == 'virmill' else 'libc6, libvirt0'
-        description = 'Virmill development build; incomplete and not release-qualified'
-        control = f'Package: {name}\nVersion: 0.0.0~dev\nArchitecture: amd64\nMaintainer: Virmill contributors\nSection: admin\nPriority: optional\nDepends: {dependencies}\nDescription: {description}\n'
+        description = f'Virmill {PRODUCT_VERSION} owner-test beta; incomplete and not release-qualified'
+        control = f'Package: {name}\nVersion: {DEBIAN_VERSION}\nArchitecture: amd64\nMaintainer: Virmill contributors\nSection: admin\nPriority: optional\nDepends: {dependencies}\nDescription: {description}\n'
         deb = ar_bytes([('debian-binary', b'2.0\n'),
                         ('control.tar.xz', tar_bytes({'control': (control.encode(), 0o644)}, epoch)),
                         ('data.tar.xz', tar_bytes(files, epoch))], epoch)
-        write_regular(root, f'dist/{name}_0.0.0~dev_amd64.deb', deb)
+        write_regular(root, 'dist/' + package_filename(name, 'deb'), deb)
         for path, (data, mode) in files.items():
             write_regular(root, f'build/package-stage/{name}/' + path, data, mode)
         for folder in ('BUILD', 'BUILDROOT', 'SPECS', 'SOURCES', 'RPMS', 'SRPMS'):
@@ -255,8 +302,8 @@ def build_packages(root=ROOT):
         filelist = '\n'.join(rpm_file_path('/' + path) for path in sorted(files))
         requirements = 'Requires: libvirt-libs, qemu-kvm, qemu-img, bubblewrap, util-linux, xorriso\n' if name == 'virmill' else 'Requires: libvirt-libs\n'
         spec = f'''Name: {name}
-Version: 0.0.0
-Release: 0.dev
+Version: {RPM_VERSION}
+Release: {RPM_RELEASE}
 Summary: {description}
 License: MIT
 BuildArch: x86_64

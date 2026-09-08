@@ -12,7 +12,7 @@ import (
 func NormalizeRequest(method string, r app.Request) (app.Request, error) {
 	// Recovery verification rejects lexical aliases before Abs can clean away
 	// a symlink/parent traversal. Canonical relative paths still resolve locally.
-	if method == "backup.verify-manifest" {
+	if method == "backup.verify-manifest" || strings.HasPrefix(method, "backup.repository.") {
 		root, _ := r.Input["root"].(string)
 		for _, value := range []string{r.Path, root} {
 			if value != "" && filepath.Clean(value) != value {

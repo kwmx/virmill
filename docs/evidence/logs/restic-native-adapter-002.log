@@ -1,0 +1,6 @@
+ac2d8ad8249abf748b956bd2ecf7022cebfcbb117ef5a9729c4fc71bb6476588  /home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001/restic-native.test
+=== RUN   TestResticGeneratedRepository
+    native_linux_test.go:27: restic identity: {Path:/usr/bin/restic SHA256:b49f2d88cb0407b782081b14ec7393f9e83a9e43be73e4560fe0bd4c1a4f2bad Version:restic 0.19.1 compiled with go1.26.5-X:nodwarf5 on linux/amd64}
+    native_linux_test.go:49: OPERATION_FAILED: restic command failed; diagnostics withheld and effects require observation
+--- FAIL: TestResticGeneratedRepository (8.61s)
+FAIL

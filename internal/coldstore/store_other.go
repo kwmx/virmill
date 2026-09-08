@@ -20,3 +20,7 @@ func Inspect(ctx context.Context, _, _ string) (Receipt, error) {
 	}
 	return Receipt{}, domain.Fail("UNSUPPORTED_CAPABILITY", "cold capture inspection requires Linux amd64")
 }
+
+func SealRestored(ctx context.Context, _, _, _ string) (Receipt, error) {
+	return Inspect(ctx, "", "")
+}

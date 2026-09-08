@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/guest-recipe.schema.json",
+  "title": "Virmill approved guest recipe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "kind": {
+      "const": "GuestRecipe"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,62}$"
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "privilege",
+        "transport",
+        "idempotent",
+        "timeoutSeconds",
+        "check",
+        "apply",
+        "verify",
+        "reboot"
+      ],
+      "properties": {
+        "profile": {
+          "const": "linux-posix"
+        },
+        "privilege": {
+          "const": "non-root"
+        },
+        "transport": {
+          "const": "ssh"
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "reboot": {
+          "const": "never"
+        },
+        "check": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "apply": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "verify": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        }
+      }
+    }
+  }
+}

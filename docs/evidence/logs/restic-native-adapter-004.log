@@ -1,0 +1,5 @@
+d49a19cfc5468970251bfa5399fcba60f94c24a8b47ec027fe98a65455717307  /home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001/restic-native.test
+=== RUN   TestResticGeneratedRepository
+    native_linux_test.go:27: restic identity: {Path:/usr/bin/restic SHA256:b49f2d88cb0407b782081b14ec7393f9e83a9e43be73e4560fe0bd4c1a4f2bad Version:restic 0.19.1 compiled with go1.26.5-X:nodwarf5 on linux/amd64}
+--- PASS: TestResticGeneratedRepository (9.19s)
+PASS

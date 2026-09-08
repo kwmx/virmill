@@ -10,6 +10,8 @@ remain required. See [implementation status](docs/implementation-status.md),
 An executable build or simulated test does not establish hardware support.
 
 Build and run the current development tools using [getting started](docs/getting-started.md).
+The owner-test `1.0.0-beta.1` installation and test sequence is in the
+[beta guide](docs/beta-testing.md).
 The [OVA preparation workflow](docs/import-preparation.md) converts complete disk
 sets into verified independent artifacts through the CLI or TUI. The
 [existing-disk preparation workflow](docs/existing-disk-preparation.md) copies
@@ -31,6 +33,8 @@ CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-co
 Graceful reboot with durable event verification: [reboot guide](docs/vm-reboot.md).
 Backup declarations and timezone-aware occurrence previews:
 [backup policy guide](docs/backup-policy-validation.md).
+Encrypted local repositories and independent recovery:
+[backup and restore guide](docs/local-backups.md).
 Keyboard action search and compact navigation: [TUI guide](docs/tui-navigation.md).
 
 Managed-volume read access: [reviewed helper workflow](docs/managed-volume-access.md)
@@ -47,7 +51,11 @@ Recovery prerequisites: [native firmware/TPM inspection](docs/cold-state-layout.
 and [declared manifest verification](docs/recovery-manifest-verification.md).
 New UEFI creation also records a [durable NVRAM declaration binding](docs/creation-nvram-binding.md).
 An explicit administrator policy enables [auxiliary member metadata inspection](docs/auxiliary-state-inspection.md).
-These observations do not establish complete capture or independent recovery.
+The [cold capture and restore workflow](docs/cold-capture-and-restore.md) now
+captures complete supported stopped sets and restores BIOS sets into new
+disconnected guests. The [live two-disk recovery evidence](docs/evidence/cold-recovery-run.md)
+records an actual restored boot; firmware/TPM restoration remains open.
+USB device facts are available through [USB discovery](docs/usb-discovery.md).
 
 Reference provider development: [fixture guide](tests/fixtures/plugins/provider/README.md)
 and [accepted simulated-contract evidence](docs/evidence/provider-conformance-run.md).

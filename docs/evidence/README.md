@@ -33,7 +33,12 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest native evidence: [firmware reconciliation and TPM/NVRAM persistence](cold-fixes-native-run.md).
+Latest recovery evidence: [two-disk cold capture and independent BIOS boot](cold-recovery-run.md).
+The complete stopped BIOS set was restored into new volumes and a new guest;
+the restored display verified the second disk. Source bytes, ACLs and all prior
+guest definitions were preserved. Firmware/TPM restoration remains unqualified.
+
+Earlier native evidence: [firmware reconciliation and TPM/NVRAM persistence](cold-fixes-native-run.md).
 A distinct 4 MiB firmware probe reported SEEDED then PRESERVED across two KVM
 boots; the retained 2 MiB probe failed TCG2 lookup. CLI/TUI inspection continues
 to report unresolved TPM storage. Complete capture and independent restore remain
@@ -42,8 +47,8 @@ unverified. Failed observer attempts and both firmware outcomes are retained.
 Current integration: [durable creation declaration binding](nvram-binding-run.md),
 with legacy compatibility, cancellation and immutable recovery-result checks.
 The [authenticated auxiliary inventory](auxiliary-inventory-run.md) adds explicit
-policy and filesystem member metadata through CLI/TUI; complete capture remains
-unimplemented and unqualified.
+policy and filesystem member metadata through CLI/TUI. Its original evidence
+does not qualify the later complete capture implementation.
 
 Earlier native evidence: [multi-disk import and active upload crash](multidisk-crash-run.md).
 The generated split-VMDK probe passed preparation, an actual interrupted native

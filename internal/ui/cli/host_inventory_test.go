@@ -11,6 +11,7 @@ func TestReadOnlyHostInventoryCommands(t *testing.T) {
 		method string
 	}{
 		{[]string{"host", "pci", "list"}, "host.pci.list"},
+		{[]string{"device", "usb", "list"}, "device.usb.list"},
 		{[]string{"network", "cidr", "check", "--input", `{"candidates":["10.77.0.0/24"],"planned":[{"id":"lab","cidr":"10.78.0.0/24"}]}`}, "network.cidr.check"},
 	} {
 		r := &recorder{}

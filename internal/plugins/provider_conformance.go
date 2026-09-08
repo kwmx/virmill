@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"virmill.local/core/internal/buildinfo"
 
 	"virmill.local/core/internal/validation"
 	"virmill.local/core/internal/wire"
@@ -272,7 +273,7 @@ func (h *providerHarness) call(method string, params any) (json.RawMessage, erro
 	return raw, nil
 }
 func (h *providerHarness) initialize(m Manifest) error {
-	raw, err := h.call("initialize", map[string]any{"protocolVersions": []string{"1.0"}, "host": map[string]string{"version": "0.0.0-dev", "os": "linux", "arch": "amd64"}, "sessionID": "simulated-provider-conformance", "permissions": []Permission{}, "limits": map[string]int{"maxMessageBytes": wire.MaxFrame}})
+	raw, err := h.call("initialize", map[string]any{"protocolVersions": []string{"1.0"}, "host": map[string]string{"version": buildinfo.Version, "os": "linux", "arch": "amd64"}, "sessionID": "simulated-provider-conformance", "permissions": []Permission{}, "limits": map[string]int{"maxMessageBytes": wire.MaxFrame}})
 	if err != nil {
 		return err
 	}
