@@ -8,7 +8,9 @@ Restart=on-failure
 RestartSec=3
 UMask=0077
 NoNewPrivileges=yes
-PrivateTmp=yes
+# User-service PrivateTmp implicitly remaps host UIDs, breaking root-owned tool
+# verification and helper peer identity. Untrusted workers have their own sandbox.
+PrivateTmp=no
 
 [Install]
 WantedBy=default.target
