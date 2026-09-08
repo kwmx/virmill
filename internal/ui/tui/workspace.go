@@ -29,6 +29,7 @@ type Workspace struct {
 	CatalogSection, CatalogIndex int
 	CatalogSearch                string
 	CatalogSearching             bool
+	CatalogMode                  string
 	ActionForm                   *ActionForm
 	ActionTitle                  string
 
@@ -300,27 +301,7 @@ func (m *Workspace) advanced() {
 	m.CatalogIndex = 0
 	m.CatalogSearch = ""
 	m.CatalogSearching = false
-}
-func (m Workspace) catalog() []ui.Action {
-	out := []ui.Action{}
-	for _, a := range ui.Actions {
-		if m.CatalogSection >= 0 && a.Section != sections[m.CatalogSection] {
-			continue
-		}
-		if m.CatalogSearch != "" && !strings.Contains(strings.ToLower(a.Command+" "+a.Summary), strings.ToLower(m.CatalogSearch)) {
-			continue
-		}
-		out = append(out, a)
-	}
-	sort.SliceStable(out, func(i, j int) bool { return out[i].Command < out[j].Command })
-	return out
-}
-func actionLabel(a ui.Action) string {
-	label := strings.ToUpper(a.Command[:1]) + a.Command[1:]
-	for _, pair := range [][2]string{{"Vm ", "VM "}, {"Usb ", "USB "}, {"Pci ", "PCI "}} {
-		label = strings.ReplaceAll(label, pair[0], pair[1])
-	}
-	return label
+	m.CatalogMode = ""
 }
 func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	if m.Busy || m.Pending["apply"] != 0 {
@@ -333,6 +314,11 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	m.ActionTitle = actionLabel(a)
 	vm := m.selectedVM()
 	switch a.Command {
+	case "vm start", "vm stop", "vm reboot", "vm pause", "vm resume":
+		if vm.Key.UUID != "" {
+			m.Advanced = false
+			return m.preview(a.Mutation)
+		}
 	case "vm set":
 		if vm.Key.UUID != "" {
 			m.guided("resources")
@@ -537,6 +523,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.ActionForm = nil
 				m.Pending = maps.Clone(m.Pending)
 				delete(m.Pending, "plan")
+				delete(m.Pending, "detail")
 				m.Busy = false
 				m.Notice = ""
 				return m, nil
@@ -589,7 +576,21 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			switch v.String() {
 			case "esc":
-				m.Advanced = false
+				if m.CatalogSearch != "" {
+					m.CatalogSearch = ""
+					m.CatalogIndex = 0
+				} else {
+					m.Advanced = false
+				}
+			case "left", "right":
+				if m.CatalogMode == "all" {
+					delta := 1
+					if v.String() == "left" {
+						delta = -1
+					}
+					m.CatalogSection = (m.CatalogSection+1+delta+len(sections)+1)%(len(sections)+1) - 1
+					m.CatalogIndex = 0
+				}
 			case "/":
 				m.CatalogSearching = true
 			case "up", "k":
@@ -763,6 +764,13 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+		if strings.HasPrefix(key, "action:") {
+			for _, a := range ui.Actions {
+				if a.Command == strings.TrimPrefix(key, "action:") {
+					return m, m.openAction(a)
+				}
+			}
+		}
 		switch key {
 		case "q":
 			m.Quit = true
@@ -771,6 +779,13 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Help = !m.Help
 		case ":":
 			m.advanced()
+			m.CatalogMode = "all"
+		case "i":
+			if m.Section == 0 || m.Section == 1 {
+				m.advanced()
+				m.CatalogSection = 1
+				m.CatalogMode = "import"
+			}
 		case "a":
 			m.advanced()
 			m.CatalogSection = m.Section
@@ -955,16 +970,16 @@ func (m Workspace) hints() string {
 		return "Type a name, state or ID   Enter Keep filter   Esc Clear"
 	}
 	if m.Section == 0 || m.Section == 1 {
-		return "[ Enter Details ]  [ a Actions ]  [ e Edit ]  [ / Search ]  [ : All actions ]"
+		return "[ Enter Details ]  [ a More ]  [ e Edit ]  [ / Search ]  [ : All tools ]"
 	}
 	if m.Section == 6 {
-		return "[ Enter Details ]  [ n New repository ]  [ v Verify ]  [ a Actions ]"
+		return "[ Enter Details ]  [ n New repository ]  [ v Verify ]  [ a More ]"
 	}
-	return "[ Enter Details ]   [ a Actions ]   [ / Search ]   [ r Refresh ]"
+	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
 	if m.Help {
-		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest recipe.", "Every VM change opens a review before it can be submitted.", ": opens all action buttons; a shows this section's actions.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
+		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest recipe.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
 	}
 	if m.ActionForm != nil {
 		return strings.Split(m.ActionForm.View(width, height), "\n")
@@ -1010,7 +1025,7 @@ func (m Workspace) content(width, height int) []string {
 		lines := []string{m.DetailTitle, ""}
 		if m.Section == 1 && m.DetailTitle == "VM details" {
 			vm := m.selectedVM()
-			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "s Start  t Stop  b Reboot  p Pause  u Resume", "e CPU/RAM  c Capture  g Guest setup  x Raw details", "")
+			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Use the buttons below to manage this VM. More groups the remaining tasks.", "")
 		}
 		if m.Raw {
 			b, _ := json.MarshalIndent(m.Detail, "", "  ")
@@ -1061,7 +1076,7 @@ func (m Workspace) content(width, height int) []string {
 		lines = append(lines, m.color(sections[m.Section], "1"))
 	}
 	if kind == "" {
-		return append(lines, "", "Press a to open the available actions for this section.", "The complete workflow is still under development.")
+		return append(lines, "", "Use More for the available tasks in this section.", "The complete workflow is still under development.")
 	}
 	if err := m.Errors[kind]; err != "" {
 		return append(lines, "", "Could not load "+sections[m.Section]+":", err, "", "Press r to retry. The existing selection is retained.")
@@ -1080,7 +1095,7 @@ func (m Workspace) content(width, height int) []string {
 		if m.Search != "" {
 			return append(lines, "", "No resources match this search. Esc clears it.")
 		}
-		return append(lines, "", "No resources to display.", "[ a Actions ] opens the available creation and import tools.")
+		return append(lines, "", "No resources to display.", "Use the buttons below to create or import a resource.")
 	}
 	left := max(20, width-26)
 	lines = append(lines, m.color("  "+padCell("NAME", left)+"  "+padCell("STATE", 18), "2"))
@@ -1187,63 +1202,88 @@ func (m Workspace) View() string {
 		message = "Working... " + message
 	}
 	if message == "" {
-		message = m.status() + "   |   Tab Focus   ? Help   q Quit"
+		message = m.status() + " | Tab Buttons  / Search  : All tools  ? Help"
 	}
 	lines = append(lines, clipCell(message, width), m.color(strings.Repeat(rule, width), "2"), ansi.Truncate(m.footerButtons(), width, ""))
 	return strings.Join(lines[:min(height, len(lines))], "\n")
 }
 
-func (m Workspace) catalogLines(width, height int) []string {
-	title := "Actions - all tools"
-	if m.CatalogSection >= 0 {
-		title = "Actions - " + sections[m.CatalogSection]
-	}
-	out := []string{m.color(title, "1"), ""}
-	if m.CatalogSearching || m.CatalogSearch != "" {
-		out = append(out, "Find action: "+m.CatalogSearch)
-	}
-	rows := m.catalog()
-	if len(rows) == 0 {
-		return append(out, "No matching actions.", "Esc returns to your resources.")
-	}
-	selected := max(0, min(m.CatalogIndex, len(rows)-1))
-	count := max(1, height-len(out)-5)
-	start := max(0, selected-count+1)
-	for i := start; i < min(len(rows), start+count); i++ {
-		label := "  [ " + actionLabel(rows[i]) + " ]"
-		if i == selected {
-			label = m.color("> [ "+actionLabel(rows[i])+" ]", "1;30;46")
-		}
-		out = append(out, label)
-	}
-	out = append(out, "", clipCell(rows[selected].Summary, width), fmt.Sprintf("%d of %d actions  |  / finds an action", selected+1, len(rows)))
-	return out
-}
-
 type workspaceButton struct{ label, key string }
 
 func (m Workspace) buttons() []workspaceButton {
-	if m.Detail != nil && m.Section == 1 && m.DetailTitle == "VM details" {
-		return []workspaceButton{{"Start", "s"}, {"Stop", "t"}, {"Edit", "e"}, {"Capture", "c"}, {"Actions", "a"}, {"Back", "esc"}}
+	if m.Section == 0 || m.Section == 1 {
+		out := []workspaceButton{{"Details", "enter"}}
+		vm := m.selectedVM()
+		if vm.Key.UUID != "" {
+			switch vm.State {
+			case "running":
+				out = append(out, workspaceButton{"Shut down", "t"})
+			case "paused":
+				out = append(out, workspaceButton{"Resume", "u"})
+			case "stopped", "shut off":
+				out = append(out, workspaceButton{"Start", "s"})
+			}
+		}
+		if m.Detail != nil {
+			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
+		}
+		return append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"})
 	}
-	return []workspaceButton{{"Details", "enter"}, {"Actions", "a"}, {"Refresh", "r"}, {"Search", "/"}, {"All actions", ":"}}
+	primary := map[int][]workspaceButton{
+		2:  {{"Details", "enter"}, {"Create network", "action:network create"}},
+		3:  {{"Details", "enter"}, {"Refresh", "r"}},
+		4:  {},
+		5:  {{"Validate lab", "action:lab validate"}},
+		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"New repository", "n"}},
+		7:  {{"USB devices", "action:device usb list"}, {"PCI devices", "action:host pci list"}},
+		8:  {{"Details", "enter"}, {"Events", "action:operation watch"}, {"Refresh", "r"}},
+		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
+		10: {{"Host capabilities", "action:host capabilities"}, {"All tools", ":"}},
+	}
+	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
 	if m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
-	out := []string{}
-	for i, b := range m.buttons() {
-		label := "[ " + b.key + " " + b.label + " ]"
-		if b.key == "enter" {
-			label = "[ Enter " + b.label + " ]"
+	buttons := m.buttons()
+	labels := make([]string, len(buttons))
+	for i, b := range buttons {
+		key := b.key
+		if strings.HasPrefix(key, "action:") {
+			key = ""
+		} else if key == "enter" {
+			key = "Enter"
 		}
-		if m.ButtonFocus && i == m.ButtonIndex {
-			label = m.color(">"+label, "1;30;46")
+		labels[i] = "[ " + strings.TrimSpace(key+" "+b.label) + " ]"
+	}
+	// Keep every focused button visible, including in narrow terminals.
+	selected := min(m.ButtonIndex, len(buttons)-1)
+	start := 0
+	if m.ButtonFocus {
+		for start < selected && ansi.StringWidth(strings.Join(labels[start:selected+1], " "))+4 > m.Width {
+			start++
+		}
+	}
+	out := ""
+	if start > 0 {
+		out = "< "
+	}
+	for i := start; i < len(labels); i++ {
+		label := labels[i]
+		if m.ButtonFocus && i == selected {
+			label = ">" + label
+		}
+		if ansi.StringWidth(out)+ansi.StringWidth(label)+3 > m.Width {
+			out += " >"
+			break
+		}
+		if m.ButtonFocus && i == selected {
+			label = m.color(label, "1;30;46")
 		} else {
 			label = m.color(label, "36")
 		}
-		out = append(out, label)
+		out += label + " "
 	}
-	return strings.Join(out, "  ")
+	return strings.TrimSpace(out)
 }

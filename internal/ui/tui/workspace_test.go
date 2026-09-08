@@ -78,7 +78,7 @@ func testWorkspacePlan(t *testing.T) domain.Plan {
 func TestWorkspaceResourceFirstDefaultAndNativeUUID(t *testing.T) {
 	m := fixtureWorkspace()
 	view := m.View()
-	for _, text := range []string{"Overview", "Virtual machines", "Recovery workstation", "Build guest", "[ a Actions ]"} {
+	for _, text := range []string{"Overview", "Virtual machines", "Recovery workstation", "Build guest", "[ a More ]"} {
 		if !strings.Contains(view, text) {
 			t.Fatal("missing", text, view)
 		}
@@ -210,7 +210,7 @@ func TestWorkspaceEveryRegisteredActionIsSelectable(t *testing.T) {
 			t.Fatal(a.Command)
 		}
 	}
-	if strings.Contains(m.View(), "Advanced commands") || !strings.Contains(m.View(), "Actions - all tools") {
+	if strings.Contains(m.View(), "Advanced commands") || !strings.Contains(m.View(), "All tools") {
 		t.Fatal("old command UI remains default")
 	}
 	m, _ = wk(m, "esc")
@@ -334,7 +334,9 @@ func TestWorkspaceActionButtonsAreKeyboardSelectable(t *testing.T) {
 	if !m.ButtonFocus || m.NavFocus {
 		t.Fatal("buttons cannot receive focus")
 	}
-	m, _ = wk(m, "down")
+	for m.buttons()[m.ButtonIndex].key != "a" {
+		m, _ = wk(m, "down")
+	}
 	m, cmd := wk(m, "enter")
 	if cmd != nil || !m.Advanced || m.CatalogSection != 0 {
 		t.Fatal("Actions button did not open catalog")

@@ -4,7 +4,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/ansi"
@@ -68,22 +67,7 @@ func NewActionForm(action ui.Action, selectedID string) (ActionForm, error) {
 	return f, nil
 }
 
-func (f ActionForm) Title() string {
-	words := strings.Fields(strings.ReplaceAll(f.Action.Command, "-", " "))
-	for i, word := range words {
-		switch word {
-		case "vm", "pci", "usb", "cidr":
-			words[i] = strings.ToUpper(word)
-		default:
-			runes := []rune(word)
-			if len(runes) != 0 {
-				runes[0] = unicode.ToUpper(runes[0])
-				words[i] = string(runes)
-			}
-		}
-	}
-	return strings.Join(words, " ")
-}
+func (f ActionForm) Title() string { return actionLabel(f.Action) }
 
 func (f ActionForm) Update(key tea.KeyMsg) (ActionForm, bool, bool) {
 	if key.Type != tea.KeyEnter {
@@ -117,7 +101,7 @@ func (f ActionForm) View(width, height int) string {
 		lines[0] = clean(f.Title())
 	}
 	if len(lines) > 1 {
-		lines[1] = clean(f.Action.Summary)
+		lines[1] = clean(actionDescription(f.Action))
 	}
 	if len(f.Form.Fields) == 0 && len(lines) > 2 {
 		lines[2] = clean("No input is required for this action.")

@@ -9,7 +9,7 @@ pool storage and durable jobs. It is a resource workspace, not a command prompt.
 The connection remains visible. At 105 columns and wider, sections appear in a
 sidebar; smaller terminals use a single content pane and compact navigation.
 
-## Navigate and select actions
+## Choose a task
 
 - **Tab / Shift-Tab** moves between content, action buttons and navigation.
   Use left/right on buttons, up/down in lists, then Enter to activate.
@@ -18,16 +18,23 @@ sidebar; smaller terminals use a single content pane and compact navigation.
 - **Enter** on a resource opens its complete details, including stable IDs.
   **/** filters resource names, states and IDs. Enter keeps the filter;
   Esc clears it. Search text never acts as a command.
-- **a Actions** opens the current section's action buttons. **: All actions**
-  exposes every implemented service action, including import/create, protection,
-  devices, guest recipes and plugin tools. Search this catalog with /.
+- Common tasks have direct buttons: VM Start/Shut down/Resume follows the
+  observed state; Create VM and Import sit beside Details. Other sections expose
+  tasks such as Create network, Restore, Read job events and Install plugin.
+- **a More** groups remaining tasks by purpose (Power, Configure, Create and
+  import, Inspect, Recovery). The selected VM stays visible above the list.
+  Each task has a plain name and an explanation before you open it.
+- **: All tools** exposes all implemented actions. Left/Right switches sections;
+  **/** searches task names and descriptions (for example, CPU). Esc clears a
+  search, then returns to the resource page. **i Import** opens source preparation
+  choices directly from Overview or VMs.
 - **r** refreshes observations. **x** in a details page toggles raw data/native
   XML. PgUp/PgDn scrolls long details or plans.
 - **?** opens modal help. **Esc** returns to the previous page or cancels a form.
   **q / Ctrl-C** detaches; accepted daemon jobs keep running.
 
-VM details also show labeled shortcuts for Start, Stop, Reboot, Pause, Resume,
-Edit CPU/RAM, Capture and Guest setup. These use the selected stable VM identity;
+VM details show state-sensitive power controls, CPU/RAM, Capture and More.
+Restart, Pause, saved-state controls and Guest setup are grouped under More. These use the selected stable VM identity;
 refreshing a list preserves that identity. If it disappears or becomes ambiguous,
 select a row again before acting. Neither list selection nor navigation starts a VM.
 
@@ -59,9 +66,9 @@ undersized terminal cannot submit an action. Lost replies direct you to Jobs;
 there is no automatic retry with a new operation identity.
 
 Accepted operations open Job details. Refresh to observe progress; detaching does
-not cancel them. Use the job's Actions catalog for explicit cancellation or
+not cancel them. Use the job's More menu for explicit cancellation or
 reconciliation. Reconciliation observes uncertain effects; it does not blindly
-replay them. Reopen an existing plan with **Plan show** in Jobs to review it.
+replay them. Reopen an existing plan with **Review saved plan** in Jobs to review it.
 
 ## Terminal options and current boundaries
 

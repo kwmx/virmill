@@ -13,8 +13,9 @@ Example (parent executes only on the authorized disposable machine):
     --output /home/virmill-test/virmill-tests/RUN/workspace-001
 
 All output is retained on failure. Never reuse the output directory. The script
-only invokes version/vm list/operation list and the TUI. Its key sequence contains
-navigation, filtering, details and quit; no lifecycle, approval or apply keys.
+only invokes version/vm list/operation list and the TUI. Its key sequence opens
+a lifecycle plan and its confirmation, then cancels without applying. Durable
+plan-preview records are expected; no guest operation may be created.
 """
 
 import argparse
@@ -435,26 +436,52 @@ def walkthrough(runner, vms, selected, columns, rows):
         terminal.wait('Esc dismisses the unapplied plan', lambda text: detail_page(text) and selected in text,
                       terminal.send(b'\x1b'))
         terminal.wait('Esc leaves filtered details', vm_table, terminal.send(b'\x1b'))
+        focused = terminal.wait('Tab focuses Details button for selected VM', lambda text:
+                               vm_table(text) and '>[ Enter Details ]' in text,
+                               terminal.send(b'\t'))
+        # Walk the actual visible buttons, never activate a lifecycle button.
+        # Their state-sensitive number/order may differ for a running VM.
+        for index in range(8):
+            if '>[ a More ]' in focused:
+                break
+            prior_button = re.search(r'>\[ [^\n]*? \]', focused)
+            require(prior_button is not None, 'focused action button not visible')
+            prior_button = prior_button.group(0)
+            focused = terminal.wait(f'Right moves button focus {index + 1}', lambda text:
+                                    vm_table(text) and '>[' in text and prior_button not in text,
+                                    terminal.send(b'\x1b[C'))
+        require('>[ a More ]' in focused, 'More button not reachable by keyboard')
+        more_menu = lambda text: 'VMs / More tasks' in text and vms[selected]['name'] in text
+        terminal.wait('Enter opens selected VM More menu with task groups', lambda text:
+                      more_menu(text) and 'Power' in text,
+                      terminal.send(b'\r'))
+        terminal.wait('Task search has focus before typing', lambda text:
+                      more_menu(text) and re.search(r'Find (?:task|action):', text) is not None,
+                      terminal.send(b'/'))
+        terminal.wait('Plain CPU search finds the resource editor', lambda text:
+                      more_menu(text) and re.search(r'Find (?:task|action): CPU', text) is not None and
+                      re.search(r'CPU (?:and|&) (?:RAM|memory)', text, re.IGNORECASE) is not None,
+                      terminal.send(b'CPU'))
+        terminal.wait('First Esc clears task search and restores groups', lambda text:
+                      more_menu(text) and 'Power' in text and
+                      re.search(r'Find (?:task|action): CPU', text) is None,
+                      terminal.send(b'\x1b'))
+        terminal.wait('Second Esc closes More and restores selected row', lambda text:
+                      vm_table(text) and vms[selected]['name'][:16] in text and '1 of 1 selected' in text,
+                      terminal.send(b'\x1b'))
         terminal.wait('Esc clears filter and restores observed rows', lambda text: vm_table(text) and 'Search:' not in text and
                       f'1 of {len(vms)} selected' in text, terminal.send(b'\x1b'))
         terminal.wait('Jobs workspace has loaded observations', lambda text: page(text, 'Jobs') and
                       ('NAME' in text and 'STATE' in text or 'No resources to display.' in text) and
                       'Could not load' not in text, terminal.send(b'9'))
         terminal.wait('Overview after Jobs', overview, terminal.send(b'1'))
-        terminal.wait('Tab focuses Details button', lambda text: overview(text) and '>[ Enter Details ]' in text,
-                      terminal.send(b'\t'))
-        terminal.wait('Right selects Actions button', lambda text: overview(text) and '>[ a Actions ]' in text,
-                      terminal.send(b'\x1b[C'))
-        terminal.wait('Enter activates focused Actions button', lambda text: 'Actions - Overview' in text,
-                      terminal.send(b'\r'))
-        terminal.wait('Esc returns from focused action catalog', overview, terminal.send(b'\x1b'))
         new_size = (120, 36) if columns == 80 else (80, 24)
         terminal.wait('Overview redraw after resize', overview, terminal.resize(*new_size))
-        terminal.wait('Actions catalog exposes Enter and Esc navigation', lambda text: 'Actions' in text and
-                      'Enter' in text and 'Esc' in text and 'Virtual machines' not in text and
+        terminal.wait('All tools exposes Enter and Back navigation', lambda text: 'All tools' in text and
+                      'Enter' in text and 'Back' in text and 'Virtual machines' not in text and
                       'Advanced commands' not in text,
                       terminal.send(b':'))
-        terminal.wait('Esc returns from Actions to Overview', overview, terminal.send(b'\x1b'))
+        terminal.wait('Esc returns from All tools to Overview', overview, terminal.send(b'\x1b'))
         terminal.send(b'q')
         deadline = time.monotonic() + 5
         while terminal.process.poll() is None and time.monotonic() < deadline:
