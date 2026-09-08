@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Owner-authorized disposable network creation; never changes existing guests/media."""
-import argparse, hashlib, json, os, pathlib, re, shutil, subprocess, time, uuid, xml.etree.ElementTree as ET
+import argparse, hashlib, ipaddress, json, os, pathlib, re, shutil, subprocess, time, uuid, xml.etree.ElementTree as ET
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=pathlib.Path,required=True);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=pathlib.Path,required=True);p.add_argument('--lab-cidr',required=True);p.add_argument('--nat-cidr',required=True);a=p.parse_args()
+ networks=[ipaddress.IPv4Network(c) for c in (a.lab_cidr,a.nat_cidr)];assert all(n.is_private and n.prefixlen==24 for n in networks) and not networks[0].overlaps(networks[1])
  root=a.root.resolve(strict=True);assert root.is_relative_to(pathlib.Path.home()/'virmill-tests') and os.getuid()!=0
  run_id=uuid.uuid4().hex;results=root/'results';results.mkdir(mode=0o700)
  env=dict(os.environ);events=[];created=[];daemon=None;policy_before=None;dropin=None;dropin_installed=False;current_policy_sha=None;helper_root='/run/virmill-network-fixture-'+run_id
@@ -17,7 +18,7 @@ def main():
   return out
  def virsh(*args):return run(['virsh','--readonly','-c','qemu:///system',*args]).stdout
  def cli(*args,check=True):
-  out=run([str(root/'bin/virmill'),*args,'--output','json','--non-interactive'],check=check,timeout=120)
+  out=run([str(root/'bin/virmill'),*args,'--output','json','--non-interactive','--timeout','180s'],check=check,timeout=240)
   value=json.loads(out.stdout)
   if check:assert value['error'] is None,value
   return value
@@ -69,7 +70,7 @@ def main():
   assert run(['sudo','-n','sha256sum',helper_root+'/network_packet_fixture.py']).stdout.split()[0]==packet_sha
   policy=json.loads(policy_before);policy.setdefault('keys',{})[identity['keyID']]=identity['publicKey'];policy.setdefault('actors',[])
   if identity['actorUID'] not in policy['actors']:policy['actors'].append(identity['actorUID'])
-  for kind,cidr in [('lab','10.197.238.0/24'),('nat','10.197.239.0/24')]:
+  for kind,cidr in [('lab',a.lab_cidr),('nat',a.nat_cidr)]:
    doc={'apiVersion':'virmill/v1','kind':'Network','metadata':{'name':'native-'+kind,'tags':['disposable-fixture']},'spec':{'type':kind,'hostAccess':'allow','egress':'none' if kind=='lab' else 'any','ipv4':{'cidr':cidr,'dhcp':{'enabled':True,'advertiseDefaultRoute':kind=='nat'}},'ipv6':{'mode':'disabled'}}}
    path=root/(kind+'.json');path.write_text(json.dumps(doc)+'\n')
    plan=cli('network','create',str(path),'--plan')['data'];d=plan['review']['definition'];assert d['type']==kind and re.fullmatch(r'vm[0-9a-f]{12}',d['bridge'])
@@ -90,6 +91,9 @@ def main():
    assert packet.returncode==0,item['packetReport']
   report['status']='passed-native-creation';save()
  finally:
+  # Stop every test writer before any cleanup, including after a detached client.
+  if daemon is not None:daemon.terminate();daemon.wait(timeout=20);daemon=None
+  if dropin_installed:run(['sudo','-n','systemctl','stop','virmill-host-helper.socket','virmill-host-helper.service'],check=False)
   # Shut down only networks named by this run. Definitions, reservations and journals remain.
   for item in reversed(created):
    net=run(['virsh','--readonly','-c','qemu:///system','net-info',item['uuid']],check=False)

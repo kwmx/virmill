@@ -165,8 +165,8 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 					} else {
 						// A bounded separate deadline covers the fixed runtime/permanent
 						// firewalld requests after authentication has completed.
-						networkCtx, networkCancel := context.WithTimeout(context.Background(), 30*time.Second)
-						_ = conn.SetDeadline(time.Now().Add(30 * time.Second))
+						networkCtx, networkCancel := context.WithTimeout(context.Background(), 90*time.Second)
+						_ = conn.SetDeadline(time.Now().Add(90 * time.Second))
 						var observed NetworkResponse
 						observed, err = (NetworkExecutor{Backend: provider}).Execute(networkCtx, r, p)
 						networkCancel()

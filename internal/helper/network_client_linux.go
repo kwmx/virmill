@@ -14,7 +14,7 @@ func (c Client) NetworkFilter(ctx context.Context, r Request) (NetworkResponse, 
 	if r.Operation != "network.ipv6-filter" || r.Network == nil || r.Access != nil || r.Auxiliary != nil {
 		return out, domain.Fail("INVALID_INPUT", "dedicated network filter request required")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	conn, r, err := c.connectRequest(ctx, r)
 	if err != nil {

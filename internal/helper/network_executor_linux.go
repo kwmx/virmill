@@ -592,7 +592,7 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 	if e.Backend == nil {
 		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "independent native network observer unavailable")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	ctx, expire := context.WithDeadline(ctx, r.ExpiresAt)
 	defer expire()

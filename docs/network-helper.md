@@ -49,3 +49,8 @@ only because ordinary zones cannot block IPv6 frames bridged between guests.
 Native behavior, reload/reboot restoration, and the full IPv6 matrix still need
 release evidence on each supported distribution. Presence in firewalld is a
 configuration observation; helper responses always keep `packetVerified: false`.
+
+The fixed helper operation has a 90-second overall limit and 5-second child
+command limits. Native observation found that 93 separately acknowledged
+firewalld calls exceeded the initial 30-second limit. A client wait can use
+`--timeout 180s`; detachment never cancels or silently retries the durable job.

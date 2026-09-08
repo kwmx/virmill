@@ -26,7 +26,7 @@ Apply the exact returned plan ID/digest and all its acknowledgements:
 virmill plan apply PLAN_ID --digest PLAN_DIGEST \
   --idempotency-key UNIQUE_REQUEST_ID --ack host-mutation \
   --ack network-host-access --ack network-firewall \
-  --ack exclusive-network-writer --wait
+  --ack exclusive-network-writer --wait --timeout 180s
 virmill network creation result OPERATION_ID
 ```
 
