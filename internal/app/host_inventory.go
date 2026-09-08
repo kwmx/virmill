@@ -52,6 +52,12 @@ func canonicalPrefix(s string) (netip.Prefix, error) {
 // checkCIDRs observes all host tables and selected local libvirt network layers.
 // It grants no reservation and performs no network or journal mutation.
 func (s *Service) checkCIDRs(ctx context.Context, r Request) (any, error) {
+	return s.checkCIDRsExcept(ctx, r, "")
+}
+
+// The exclusion is internal to a journaled creation whose exact inactive
+// definition has already been verified. Public CIDR checks cannot select it.
+func (s *Service) checkCIDRsExcept(ctx context.Context, r Request, excludeNetwork string) (any, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -81,6 +87,17 @@ func (s *Service) checkCIDRs(ctx context.Context, r Request) (any, error) {
 		candidates = append(candidates, p)
 	}
 	occupied := []prefixConflict{}
+	if s.Engine != nil && s.Engine.Store != nil {
+		reserved, err := s.networkRecords()
+		if err != nil {
+			return nil, err
+		}
+		for _, record := range reserved {
+			if record.Connection == r.Connection && record.Definition.UUID != excludeNetwork {
+				occupied = append(occupied, prefixConflict{CIDR: record.Definition.IPv4CIDR, Source: "application-reservation", ID: record.Definition.UUID})
+			}
+		}
+	}
 	ids := map[string]bool{}
 	for _, planned := range in.Planned {
 		if ids[planned.ID] {
@@ -141,6 +158,9 @@ func (s *Service) checkCIDRs(ctx context.Context, r Request) (any, error) {
 			return nil, domain.Fail("INVALID_STATE", "missing or duplicate network identity")
 		}
 		netIDs[n.Key.UUID] = true
+		if n.Key.UUID == excludeNetwork {
+			continue
+		}
 		if !n.Active && !n.Persistent || n.Active && n.LiveXML == "" || n.Persistent && n.PersistentXML == "" {
 			return nil, domain.Fail("INVALID_STATE", "network configuration observation incomplete")
 		}

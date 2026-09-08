@@ -33,12 +33,13 @@ type Response struct {
 	Error      *domain.Error `json:"error"`
 }
 type Service struct {
-	Provider     domain.ComputeProvider
-	Engine       *operations.Engine
-	Inspector    func() []domain.Capability
-	HostPrefixes func(context.Context) (domain.HostNetworkPrefixes, error)
-	Extensions   map[string]func(context.Context, uint32, Request) (any, error)
-	InventoryVM  func(context.Context, domain.VM) (domain.VM, error)
+	Provider        domain.ComputeProvider
+	Engine          *operations.Engine
+	Inspector       func() []domain.Capability
+	HostPrefixes    func(context.Context) (domain.HostNetworkPrefixes, error)
+	Extensions      map[string]func(context.Context, uint32, Request) (any, error)
+	InventoryVM     func(context.Context, domain.VM) (domain.VM, error)
+	NetworkFirewall NetworkFirewall
 }
 
 func New(p domain.ComputeProvider, e *operations.Engine) *Service {
@@ -51,6 +52,8 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	e.Handlers["vm.configure-resources"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.configure-hardware"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.reboot"] = &rebootHandler{s: s}
+	e.Handlers["network.create"] = &networkCreationHandler{s: s}
+	e.Handlers["network.creation.resume"] = &networkResumeHandler{networkCreationHandler{s: s}}
 	return s
 }
 func (s *Service) Call(ctx context.Context, uid uint32, method string, r Request) Response {
@@ -85,6 +88,12 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return inventory.InspectPCI(ctx, r.Connection)
 	case "network.cidr.check":
 		return s.checkCIDRs(ctx, r)
+	case "network.create":
+		return s.planNetworkCreation(ctx, uid, r)
+	case "network.creation.resume":
+		return s.planNetworkResume(ctx, uid, r)
+	case "network.creation.result":
+		return s.networkCreationResult(ctx, uid, r)
 	case "host.capabilities":
 		suite, err := contracts.Capabilities()
 		if err != nil {

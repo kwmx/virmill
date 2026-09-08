@@ -15,7 +15,7 @@ import (
 // descriptor is always refused and closed, including on malformed responses.
 // Capture and delivery need their own durable operation; inspection creates none.
 func (c Client) InspectAuxiliary(ctx context.Context, r Request) (AuxiliaryResponse, error) {
-	if r.Operation != "state.auxiliary" || r.Mode != "inspect" || r.Access != nil || r.Auxiliary == nil || r.Auxiliary.Expected != nil {
+	if r.Operation != "state.auxiliary" || r.Mode != "inspect" || r.Access != nil || r.Network != nil || r.Auxiliary == nil || r.Auxiliary.Expected != nil {
 		return AuxiliaryResponse{}, domain.Fail("INVALID_INPUT", "dedicated auxiliary inspection request required")
 	}
 	// The descriptor-aware receiver applies its context's deadline to the socket.
@@ -47,7 +47,7 @@ func receiveAuxiliaryInspection(ctx context.Context, conn *net.UnixConn, r Reque
 	if err = wire.Decode(frame, &response); err != nil {
 		return AuxiliaryResponse{}, err
 	}
-	if response.APIVersion != domain.APIVersion || response.Access != nil {
+	if response.APIVersion != domain.APIVersion || response.Access != nil || response.Network != nil {
 		return AuxiliaryResponse{}, domain.Fail("RECOVERY_REQUIRED", "helper response contract differs from auxiliary inspection")
 	}
 	if !response.Success {

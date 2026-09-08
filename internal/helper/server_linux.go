@@ -156,8 +156,25 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 			}
 			var access json.RawMessage
 			var auxiliary *AuxiliaryResponse
+			var networkResponse *NetworkResponse
 			if err == nil {
-				if r.Operation == "state.auxiliary" {
+				if r.Operation == "network.ipv6-filter" {
+					provider, ok := backend.(domain.NetworkCreationProvider)
+					if !ok {
+						err = domain.Fail("UNSUPPORTED_CAPABILITY", "helper native network inspection unavailable")
+					} else {
+						// A bounded separate deadline covers the fixed runtime/permanent
+						// firewalld requests after authentication has completed.
+						networkCtx, networkCancel := context.WithTimeout(context.Background(), 30*time.Second)
+						_ = conn.SetDeadline(time.Now().Add(30 * time.Second))
+						var observed NetworkResponse
+						observed, err = (NetworkExecutor{Backend: provider}).Execute(networkCtx, r, p)
+						networkCancel()
+						if err == nil {
+							networkResponse = &observed
+						}
+					}
+				} else if r.Operation == "state.auxiliary" {
 					auxiliary, err = inspectAuxiliaryRequest(ctx, backend, r, p)
 				} else if r.Operation == "storage.prepare-directory" {
 					err = Execute(r, p)
@@ -169,7 +186,7 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 					}
 				}
 			}
-			result := Response{APIVersion: "virmill/v1", Success: err == nil, Access: access, Auxiliary: auxiliary}
+			result := Response{APIVersion: "virmill/v1", Success: err == nil, Access: access, Auxiliary: auxiliary, Network: networkResponse}
 			if err != nil {
 				result.Access, result.Auxiliary = nil, nil
 				result.Error = err.Error()

@@ -11,6 +11,7 @@ import (
 	backend "virmill.local/core/internal/backend/libvirt"
 	"virmill.local/core/internal/creating"
 	"virmill.local/core/internal/importing"
+	"virmill.local/core/internal/networkfirewall"
 	"virmill.local/core/internal/operations"
 	platform "virmill.local/core/internal/platform/linux"
 	"virmill.local/core/internal/plugins"
@@ -44,6 +45,7 @@ func run() error {
 	creating.Register(service, p.Cache)
 	storageaccess.Register(service, p.Config)
 	auxiliary.Register(service, p.Config)
+	networkfirewall.Register(service, p.Config)
 	if e = platform.PrivateDir(p.Cache); e != nil {
 		return e
 	}

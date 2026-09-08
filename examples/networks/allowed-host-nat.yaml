@@ -1,0 +1,17 @@
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: allowed-host-nat
+  displayName: NAT with explicitly allowed host access
+  tags: [example]
+spec:
+  type: nat
+  ipv4:
+    cidr: 10.197.239.0/24
+    dhcp:
+      enabled: true
+      advertiseDefaultRoute: true
+  ipv6:
+    mode: disabled
+  hostAccess: allow
+  egress: any

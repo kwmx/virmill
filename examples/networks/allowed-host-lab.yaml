@@ -1,0 +1,17 @@
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: allowed-host-lab
+  displayName: Lab with explicitly allowed host access
+  tags: [example]
+spec:
+  type: lab
+  ipv4:
+    cidr: 10.197.238.0/24
+    dhcp:
+      enabled: true
+      advertiseDefaultRoute: false
+  ipv6:
+    mode: disabled
+  hostAccess: allow
+  egress: none

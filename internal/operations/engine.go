@@ -18,6 +18,11 @@ type Handler interface {
 	Reconcile(context.Context, domain.Plan, []byte, domain.Step) (bool, error)
 }
 
+// PartialEffectHandler opts a cumulative workflow into retaining its complete
+// lock set if cancellation or validation stops a later step. Previously verified
+// external effects still need an explicit recovery disposition.
+type PartialEffectHandler interface{ RetainCompletedEffects() bool }
+
 // PlanReviewer supplies explicit, non-secret effect details for human approval.
 // Those details are included in the same immutable digest as execution authority.
 type PlanReviewer interface {
@@ -210,8 +215,12 @@ func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
 		}
 		j.CancelRequested = fresh.CancelRequested
 		j.Step = i
+		retainPartial := false
+		if cumulative, ok := h.(PartialEffectHandler); ok && i > 0 {
+			retainPartial = cumulative.RetainCompletedEffects()
+		}
 		if j.CancelRequested {
-			if j.RecoveryOf != "" {
+			if j.RecoveryOf != "" || retainPartial {
 				_ = e.transition(&j, "recovery-required", "Recovery canceled; inherited uncertain resources remain locked", domain.Fail("RECOVERY_REQUIRED", "review another recovery operation"))
 			} else {
 				_ = e.transition(&j, "canceled", "Canceled at a safe step boundary", nil)
@@ -225,7 +234,7 @@ func (e *Engine) run(j domain.Job, p domain.Plan, input []byte, h Handler) {
 		}
 		e.mu.Unlock()
 		if err = h.Validate(ctx, p, input); err != nil {
-			if j.RecoveryOf != "" {
+			if j.RecoveryOf != "" || retainPartial {
 				_ = e.transition(&j, "recovery-required", "Recovery preconditions failed; inherited resources remain locked", err)
 			} else {
 				_ = e.transition(&j, "failed", "Preconditions failed; no new step effect", err)

@@ -26,6 +26,7 @@ type Request struct {
 	Mode       string            `json:"mode,omitempty"`
 	Access     *AccessRequest    `json:"access,omitempty"`
 	Auxiliary  *AuxiliaryRequest `json:"auxiliary,omitempty"`
+	Network    *NetworkRequest   `json:"network,omitempty"`
 }
 type AccessRequest struct {
 	Mapping            domain.ManagedFileVolume `json:"mapping"`
@@ -41,6 +42,7 @@ type Response struct {
 	Access     json.RawMessage    `json:"access,omitempty"`
 	Auxiliary  *AuxiliaryResponse `json:"auxiliary,omitempty"`
 	ErrorCode  string             `json:"errorCode,omitempty"`
+	Network    *NetworkResponse   `json:"network,omitempty"`
 }
 type Policy struct {
 	APIVersion string                `json:"apiVersion"`
@@ -48,6 +50,7 @@ type Policy struct {
 	Roots      map[string]string     `json:"roots"`
 	Actors     []uint32              `json:"actors"`
 	Auxiliary  []AuxiliaryPermission `json:"auxiliary,omitempty"`
+	Networks   []NetworkPermission   `json:"networks,omitempty"`
 }
 
 var uuid = regexp.MustCompile(`^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
@@ -70,16 +73,23 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 		return errors.New("peer not allowed by administrator policy")
 	}
 	switch r.Operation {
+	case "network.ipv6-filter":
+		if err := authorizeNetwork(r, p); err != nil {
+			return err
+		}
 	case "state.auxiliary":
+		if r.Network != nil {
+			return errors.New("auxiliary operation cannot carry network authority")
+		}
 		if err := authorizeAuxiliary(r, p); err != nil {
 			return err
 		}
 	case "storage.prepare-directory":
-		if r.Mode != "" || r.Access != nil || r.Auxiliary != nil {
+		if r.Mode != "" || r.Access != nil || r.Auxiliary != nil || r.Network != nil {
 			return errors.New("legacy directory operation cannot carry access authority")
 		}
 	case "storage.grant-read", "storage.revoke-read":
-		if r.Auxiliary != nil || r.Access == nil || (r.Mode != "check" && r.Mode != "apply" && r.Mode != "observe") {
+		if r.Network != nil || r.Auxiliary != nil || r.Access == nil || (r.Mode != "check" && r.Mode != "apply" && r.Mode != "observe") {
 			return errors.New("typed access request and explicit mode required")
 		}
 		if r.Access.Mapping.VMID != r.ResourceID || !uuid.MatchString(r.Access.Mapping.PoolID) {
@@ -112,7 +122,7 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 	if !now.Before(r.ExpiresAt) || r.ExpiresAt.Sub(now) > 15*time.Minute {
 		return errors.New("grant expired or duration exceeds limit")
 	}
-	if p.Roots[r.RootID] == "" {
+	if r.Operation != "network.ipv6-filter" && p.Roots[r.RootID] == "" {
 		return errors.New("unapproved storage root")
 	}
 	pub, e := hex.DecodeString(p.Keys[r.KeyID])

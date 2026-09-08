@@ -179,7 +179,7 @@ func (c Client) connectRequest(ctx context.Context, r Request) (*net.UnixConn, R
 
 func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
 	var result AccessResult
-	if r.Operation == "state.auxiliary" || r.Auxiliary != nil {
+	if r.Operation == "state.auxiliary" || r.Auxiliary != nil || r.Network != nil || r.Operation == "network.ipv6-filter" {
 		return result, domain.Fail("INVALID_INPUT", "auxiliary requests require the dedicated typed client")
 	}
 	conn, r, err := c.connectRequest(ctx, r)
@@ -197,7 +197,7 @@ func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
 	if err = wire.Decode(frame, &response); err != nil {
 		return result, err
 	}
-	if response.APIVersion != domain.APIVersion || !response.Success || response.Auxiliary != nil {
+	if response.APIVersion != domain.APIVersion || !response.Success || response.Auxiliary != nil || response.Network != nil {
 		return result, domain.Fail("OPERATION_FAILED", "host helper refused or could not confirm the operation: "+response.Error)
 	}
 	if err = wire.Decode(response.Access, &result); err != nil {
