@@ -1,0 +1,113 @@
+{
+  "binaries": {
+    "virmill": "f23f748cd2ba67540ea6f061529d7ddb0db1943c38d3d0df71d9dcba112daafd",
+    "virmilld": "31bd93b5a5ce3c8f4a3f527d78ece26de43732aef80036c5500fdca69ee99729"
+  },
+  "cleanupForceStop": true,
+  "priorDefinitionsPreserved": true,
+  "rebootPlan": {
+    "acknowledgements": [
+      "host-mutation",
+      "guest-reboot",
+      "exclusive-lifecycle-writer"
+    ],
+    "actorUID": 1000,
+    "apiVersion": "virmill/v1",
+    "beforeFingerprints": {
+      "libvirt|qemu:///system|vm|3d47f209-5242-4d5f-8a0c-d2607db362af": "37a395a793b1a658f301c299aa5e6d0828e5955353f868da5783f542d3331c66"
+    },
+    "connectionID": "qemu:///system",
+    "createdAt": "2026-09-08T03:17:15.967740332Z",
+    "estimates": {
+      "additionalBytes": 0,
+      "notes": "One graceful reboot; guest outage duration depends on its OS and services. No disk allocation is requested.",
+      "requiresDowntime": true
+    },
+    "expiresAt": "2026-09-08T03:32:15.967740332Z",
+    "inputDigest": "70379defb37899dab5890326e6a514ebd07c6c7ea9456053641768971e7a2ac7",
+    "operation": "vm.reboot",
+    "planDigest": "b2e80328120c5a6e9d050470294c297a40cc230e81afa3378c400adc6adaaee3",
+    "planID": "1c657e53-d9e3-4e87-bde7-9bb8de76f18a",
+    "requiredGrants": [
+      {
+        "operation": "vm.reboot",
+        "resourceID": "libvirt|qemu:///system|vm|3d47f209-5242-4d5f-8a0c-d2607db362af"
+      }
+    ],
+    "resourceIDs": [
+      "libvirt|qemu:///system|vm|3d47f209-5242-4d5f-8a0c-d2607db362af"
+    ],
+    "review": {
+      "action": "reboot",
+      "completion": "selected-domain reboot event",
+      "diskDeletion": false,
+      "guestReadinessVerified": false,
+      "hardStopFallback": false,
+      "request": "graceful",
+      "resource": {
+        "connectionID": "qemu:///system",
+        "kind": "vm",
+        "providerID": "libvirt",
+        "resourceUUID": "3d47f209-5242-4d5f-8a0c-d2607db362af"
+      }
+    },
+    "risks": [
+      "Guest execution is interrupted by one graceful reboot request; no reset or hard-stop fallback",
+      "A reboot event verifies the transition, not guest login, services or network readiness",
+      "Coordinate other lifecycle writers: libvirt events do not carry a request ID; missing events or a lost receipt require recovery without replay"
+    ],
+    "steps": [
+      {
+        "action": "vm.reboot",
+        "compensation": "Preserve the VM and its disks; inspect an uncertain request",
+        "completionPredicate": "Selected-domain reboot event recorded after the graceful request; guest readiness unverified",
+        "id": "reboot",
+        "idempotency": "non-repeatable",
+        "preconditions": [
+          "unchanged running VM",
+          "reboot event subscription before request"
+        ],
+        "reconciliation": "Read the durable selected-domain reboot event receipt; running state alone proves nothing"
+      }
+    ]
+  },
+  "rebootResult": {
+    "apiVersion": "virmill/v1",
+    "data": {
+      "cancelRequested": false,
+      "createdAt": "2026-09-08T03:17:15.9953417Z",
+      "error": null,
+      "operationID": "41476503-1caa-4a86-b83f-cd0b6d03a5ea",
+      "planID": "1c657e53-d9e3-4e87-bde7-9bb8de76f18a",
+      "state": "succeeded",
+      "step": 0
+    },
+    "error": null,
+    "warnings": []
+  },
+  "receipt": {
+    "guestReady": false,
+    "observation": {
+      "evidence": "libvirt-reboot-event",
+      "observedAt": "2026-09-08T03:17:17.174639741Z",
+      "resource": {
+        "connectionID": "qemu:///system",
+        "kind": "vm",
+        "providerID": "libvirt",
+        "resourceUUID": "3d47f209-5242-4d5f-8a0c-d2607db362af"
+      }
+    },
+    "operationID": "41476503-1caa-4a86-b83f-cd0b6d03a5ea",
+    "planDigest": "b2e80328120c5a6e9d050470294c297a40cc230e81afa3378c400adc6adaaee3",
+    "planID": "1c657e53-d9e3-4e87-bde7-9bb8de76f18a",
+    "version": 1
+  },
+  "scope": "one copied BIOS Kali guest; native event and durable receipt, not OS readiness or full lifecycle qualification",
+  "sourcePreserved": true,
+  "sourceSHA256": "f77815e0b96b406e4c432637c504394e7c6ba662967dd271e3fa39e93e3cd08a",
+  "sourceVM": "a19bf9ee-cd7f-4921-baac-39ce1694eb35",
+  "status": "passed",
+  "testDisk": "/var/lib/libvirt/images/virmill-reboot-3d47f209-5242-4d5f-8a0c-d2607db362af.qcow2",
+  "testVM": "3d47f209-5242-4d5f-8a0c-d2607db362af",
+  "testVMStopped": true
+}

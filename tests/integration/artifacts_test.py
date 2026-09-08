@@ -65,6 +65,19 @@ class Artifacts(unittest.TestCase):
                     self.assertEqual(response['apiVersion'],'virmill/v1')
                     self.assertIsNone(response['error'])
                 self.assertEqual(socket.stat().st_mode & 0o777,0o600)
+                policy = str(ROOT/'virmill-v1-spec/examples/backup-policy.yaml')
+                for action in ('validate', 'preview'):
+                    args = [str(ROOT/'build/bin/virmill'),'backup','policy',action,policy,'--output','json','--non-interactive']
+                    if action == 'preview':
+                        args += ['--input','{"after":"2026-09-08T00:00:00Z","count":2}']
+                    reply = json.loads(subprocess.check_output(args,env=env,text=True))
+                    self.assertIsNone(reply['error'])
+                    self.assertTrue(reply['data']['valid'])
+                    self.assertFalse(reply['data']['scheduleInstalled'])
+                    self.assertFalse(reply['data']['captureVerified'])
+                    if action == 'preview':
+                        self.assertEqual(reply['data']['nextRuns'], ['2026-09-08T23:00:00Z','2026-09-09T23:00:00Z'])
+                self.check_tui_search(root, env)
                 # CLI paths originate in this temporary client directory, while
                 # the coordinator was started from the repository directory.
                 command = [str(ROOT/'build/bin/virmill')]
@@ -103,6 +116,46 @@ class Artifacts(unittest.TestCase):
                 daemon.terminate()
                 daemon.wait(timeout=5)
                 log.close()
+
+    def check_tui_search(self, root, env):
+        import fcntl
+        import pty
+        import select
+        import struct
+        import termios
+        master, slave = pty.openpty()
+        fcntl.ioctl(slave,termios.TIOCSWINSZ,struct.pack('HHHH',24,80,0,0))
+        proc = subprocess.Popen([str(ROOT/'build/bin/virmill'),'tui'],stdin=slave,stdout=slave,stderr=slave,env=dict(env,TERM='xterm-256color'))
+        os.close(slave)
+        transcript = bytearray()
+        def receive(expected):
+            until = time.monotonic()+5
+            start = len(transcript)
+            while time.monotonic()<until:
+                self.assertIsNone(proc.poll(), 'TUI exited before keyboard check')
+                if select.select([master],[],[],.05)[0]:
+                    transcript.extend(os.read(master,8192))
+                self.assertLess(len(transcript),256<<10)
+                if expected.encode() in transcript[start:]:
+                    return
+            self.fail('TUI keyboard observation missing: '+expected)
+        try:
+            receive('Overview')
+            os.write(master,b'\t'*6);receive('Protection')
+            os.write(master,b'/');receive('Search>')
+            os.write(master,b'policy preview');receive('Search> policy preview')
+            os.write(master,b'\r');receive('Filter: policy preview')
+            os.write(master,b'\x1b');time.sleep(.05)
+            os.write(master,b'/');receive('Search>')
+            os.write(master,b'no-such-command-xyz');receive('No actions match')
+            os.write(master,b'\x1b');time.sleep(.05);os.write(master,b'q')
+            proc.wait(timeout=5);self.assertEqual(proc.returncode,0)
+            print('Actual 80x24 TUI PTY: section search, select-only Enter, clear and no-results feedback passed; no action was submitted')
+        finally:
+            if proc.poll() is None:
+                proc.terminate();proc.wait(timeout=5)
+            os.close(master)
+            (root/'tui-search-transcript.log').write_bytes(transcript)
 
     def prepare_fixture_through_cli(self, root, env, command):
         # Generated content only: this tests the actual CLI, daemon, journal,

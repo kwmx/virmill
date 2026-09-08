@@ -28,6 +28,10 @@ privileged work belongs to `virmill-host-helper`. No publication destination has
 been selected. Local module names make no repository or domain ownership claim.
 
 CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-configuration.md).
+Graceful reboot with durable event verification: [reboot guide](docs/vm-reboot.md).
+Backup declarations and timezone-aware occurrence previews:
+[backup policy guide](docs/backup-policy-validation.md).
+Keyboard action search and compact navigation: [TUI guide](docs/tui-navigation.md).
 
 Managed-volume read access: [reviewed helper workflow](docs/managed-volume-access.md)
 and [native evidence](docs/evidence/managed-access-run.md).

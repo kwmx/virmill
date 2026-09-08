@@ -1,0 +1,113 @@
+ffd5f66b5313080280957fc7f4f3447356540615c74f1f2ab0c85bd750c10fa3  image-native.test
+07bdf96b5406874d99923ca24ce3095bfde5e65cca1568c7f005e0635c1c57a8  coldfiles-native.test
+=== RUN   TestRealConfinedEmptyDiskCreation
+    empty_linux_test.go:47: actual confined create/check/map and independent QEMU comparison prove 1048576 empty virtual bytes; no filesystem or guest executed
+    empty_linux_test.go:47: actual confined create/check/map and independent QEMU comparison prove 8388608 empty virtual bytes; no filesystem or guest executed
+    empty_linux_test.go:47: actual confined create/check/map and independent QEMU comparison prove 8389120 empty virtual bytes; no filesystem or guest executed
+--- PASS: TestRealConfinedEmptyDiskCreation (0.18s)
+=== RUN   TestRealSelectedFileSetReadsSplitExtentsAndContainedBacking
+    files_linux_test.go:68: real conversion from held read-only selected files; split VMDK and nested qcow2 backing; no original directory exposure or VM boot
+--- PASS: TestRealSelectedFileSetReadsSplitExtentsAndContainedBacking (0.16s)
+=== RUN   TestRealSelectedFilesRefuseQEMUWriterLocks
+=== RUN   TestRealSelectedFilesRefuseQEMUWriterLocks/raw
+    files_linux_test.go:75: direct unguarded qemu-img info accepts a writer-held raw file; the production guard must supply exclusion
+    files_linux_test.go:75: real QEMU writer-lock refusal across an FD bind; this is a generated-file lock fixture, not a live VM test
+=== RUN   TestRealSelectedFilesRefuseQEMUWriterLocks/qcow2
+    files_linux_test.go:75: real QEMU writer-lock refusal across an FD bind; this is a generated-file lock fixture, not a live VM test
+--- PASS: TestRealSelectedFilesRefuseQEMUWriterLocks (0.04s)
+    --- PASS: TestRealSelectedFilesRefuseQEMUWriterLocks/raw (0.03s)
+    --- PASS: TestRealSelectedFilesRefuseQEMUWriterLocks/qcow2 (0.01s)
+=== RUN   TestRealSourceGuardPreventsNewWriterUntilClosed
+=== RUN   TestRealSourceGuardPreventsNewWriterUntilClosed/raw
+    files_linux_test.go:169: actual QEMU writer refused while source guard held; allowed after close; original caller descriptor stays open
+=== RUN   TestRealSourceGuardPreventsNewWriterUntilClosed/qcow2
+    files_linux_test.go:169: actual QEMU writer refused while source guard held; allowed after close; original caller descriptor stays open
+--- PASS: TestRealSourceGuardPreventsNewWriterUntilClosed (0.03s)
+    --- PASS: TestRealSourceGuardPreventsNewWriterUntilClosed/raw (0.01s)
+    --- PASS: TestRealSourceGuardPreventsNewWriterUntilClosed/qcow2 (0.02s)
+=== RUN   TestRealSingleFileMetadataDoesNotFollowBackingAndPinsOpenFile
+    metadata_linux_test.go:43: real confined QEMU metadata on a held generated file; missing backing was reported without exposure; no VM boot
+--- PASS: TestRealSingleFileMetadataDoesNotFollowBackingAndPinsOpenFile (0.03s)
+=== RUN   TestRealConfinedFormatConversions
+    tool_linux_test.go:90: Actual converter: qemu-img version 10.2.2 (qemu-10.2.2-1.fc44); executable SHA-256 4362e911c13bb90e39b69479462cd4adb840749b582f4892ca114eb7e94dcf2e
+=== RUN   TestRealConfinedFormatConversions/raw
+    tool_linux_test.go:124: raw source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/qcow2
+    tool_linux_test.go:124: qcow2 source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vmdk
+    tool_linux_test.go:124: vmdk source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vdi
+    tool_linux_test.go:124: vdi source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vpc
+    tool_linux_test.go:124: vpc source converted, checked and compared at 8390656 virtual bytes; no VM defined or booted
+=== RUN   TestRealConfinedFormatConversions/vhdx
+    tool_linux_test.go:124: vhdx source converted, checked and compared at 8388608 virtual bytes; no VM defined or booted
+--- PASS: TestRealConfinedFormatConversions (0.42s)
+    --- PASS: TestRealConfinedFormatConversions/raw (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/qcow2 (0.07s)
+    --- PASS: TestRealConfinedFormatConversions/vmdk (0.07s)
+    --- PASS: TestRealConfinedFormatConversions/vdi (0.08s)
+    --- PASS: TestRealConfinedFormatConversions/vpc (0.06s)
+    --- PASS: TestRealConfinedFormatConversions/vhdx (0.07s)
+=== RUN   TestRealMissingAndEscapingVMDKExtents
+--- PASS: TestRealMissingAndEscapingVMDKExtents (0.04s)
+=== RUN   TestRealContainedBackingChainFlattensAndMissingBaseFails
+--- PASS: TestRealContainedBackingChainFlattensAndMissingBaseFails (0.08s)
+PASS
+=== RUN   TestRealQEMUSourceTransferRetainsReadGuard
+    source_qemu_linux_test.go:30: exact /usr/bin/qemu-img --version output:
+        qemu-img version 10.2.2 (qemu-10.2.2-1.fc44)
+        Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+    source_qemu_linux_test.go:30: exact /usr/bin/qemu-io --version output:
+        qemu-io version 10.2.2 (qemu-10.2.2-1.fc44)
+        Copyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers
+=== RUN   TestRealQEMUSourceTransferRetainsReadGuard/raw
+    source_qemu_linux_test.go:43: QEMU writer-open control succeeded before guard:
+        format name: raw
+        cluster size: 0 bytes
+        vm state offset: 0 bytes
+    source_qemu_linux_test.go:62: QEMU specifically refused its write lock source and transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2381057087/001/source.raw: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2381057087/001/source.raw]?
+    source_qemu_linux_test.go:72: QEMU specifically refused its write lock only transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2381057087/001/source.raw: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardraw2381057087/001/source.raw]?
+    source_qemu_linux_test.go:76: QEMU writer-open control succeeded after last transferred descriptor closed:
+        format name: raw
+        cluster size: 0 bytes
+        vm state offset: 0 bytes
+    source_qemu_linux_test.go:77: PASS native QEMU software/file qualification of Source.Open and DupForTransfer lock lifetime; no VM or hardware claim
+=== RUN   TestRealQEMUSourceTransferRetainsReadGuard/qcow2
+    source_qemu_linux_test.go:43: QEMU writer-open control succeeded before guard:
+        format name: qcow2
+        cluster size: 64 KiB
+        vm state offset: 512 MiB
+        Format specific information:
+            compat: 1.1
+            compression type: zlib
+            lazy refcounts: false
+            refcount bits: 16
+            corrupt: false
+            extended l2: false
+    source_qemu_linux_test.go:62: QEMU specifically refused its write lock source and transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow2377505055/001/source.qcow2: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow2377505055/001/source.qcow2]?
+    source_qemu_linux_test.go:72: QEMU specifically refused its write lock only transferred descriptor retained:
+        qemu-io: can't open device /tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow2377505055/001/source.qcow2: Failed to get "write" lock
+        Is another process using the image [/tmp/TestRealQEMUSourceTransferRetainsReadGuardqcow2377505055/001/source.qcow2]?
+    source_qemu_linux_test.go:76: QEMU writer-open control succeeded after last transferred descriptor closed:
+        format name: qcow2
+        cluster size: 64 KiB
+        vm state offset: 512 MiB
+        Format specific information:
+            compat: 1.1
+            compression type: zlib
+            lazy refcounts: false
+            refcount bits: 16
+            corrupt: false
+            extended l2: false
+    source_qemu_linux_test.go:77: PASS native QEMU software/file qualification of Source.Open and DupForTransfer lock lifetime; no VM or hardware claim
+--- PASS: TestRealQEMUSourceTransferRetainsReadGuard (0.06s)
+    --- PASS: TestRealQEMUSourceTransferRetainsReadGuard/raw (0.02s)
+    --- PASS: TestRealQEMUSourceTransferRetainsReadGuard/qcow2 (0.02s)
+PASS

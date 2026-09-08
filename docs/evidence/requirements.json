@@ -74,7 +74,9 @@
         "internal/domain/reboot.go",
         "internal/app/reboot.go",
         "internal/backend/libvirt/reboot_linux.go",
-        "docs/vm-reboot.md"
+        "docs/vm-reboot.md",
+        "tests/fixtures/lifecycle/reboot_native.py",
+        "docs/evidence/lifecycle-policy-search-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -111,12 +113,15 @@
         "cold-probe-first-boot-001",
         "cold-probe-second-boot-001",
         "cold-probe-4m-boot-001",
-        "cold-probe-4m-second-boot-001"
+        "cold-probe-4m-second-boot-001",
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "graceful-reboot-native-001"
       ],
       "outstanding": [
-        "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, reboot, autostart and safe removal remain incomplete.",
+        "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
-        "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt; no running-state inference or uncertain replay. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native copied-guest reboot and the full lifecycle matrix remain required."
+        "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native 1c54175 start/reboot passed for a new independent Kali disk copy with original disk and nine prior definitions preserved; cleanup required force-stop of the copy after graceful timeout. Full lifecycle/state/OS coverage, removal and guest readiness remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -720,7 +725,8 @@
         "installation-confinement-001",
         "nocloud-confinement-001",
         "native-first-core-001",
-        "native-first-artifacts-001"
+        "native-first-artifacts-001",
+        "generated-disk-remote-001"
       ],
       "outstanding": [
         "Archive bounds plus selected-file Openat2/FD confinement, complete backing/extent validation and cooperative QEMU OFD guards implemented. Broader malicious format corpus, encrypted fixtures and full security/hardware qualification remain."
@@ -1722,7 +1728,8 @@
         "auxiliary-inspection-tui-fixture-001",
         "auxiliary-inspection-tui-denial-001",
         "auxiliary-tui-policy-window-fixture-001",
-        "auxiliary-inspection-tui-positive-001"
+        "auxiliary-inspection-tui-positive-001",
+        "generated-disk-remote-001"
       ],
       "outstanding": [
         "Read-only firmware/TPM layout inspection, hardened declared-member integrity checks and an unconnected sealed-FD transport are implemented. Complete stopped capture, typed helper authorization/publication, source-branch-safe revert and required identity/disk/configuration proof remain incomplete.",
@@ -1918,7 +1925,8 @@
         "cold-native-integration-core-001",
         "cold-probe-4m-inspection-tui-001",
         "cold-observer-tests-004",
-        "cold-point-adversarial-001"
+        "cold-point-adversarial-001",
+        "generated-disk-remote-001"
       ],
       "outstanding": [
         "Declared-member integrity checking and cold-state prerequisites are implemented. Complete capture, secret policy, encrypted restic repository operations and independent restore without original files/database remain incomplete.",
@@ -2029,7 +2037,11 @@
         "internal/ui/cli/policy_test.go",
         "internal/ui/tui/policy_test.go"
       ],
-      "evidence": [],
+      "evidence": [
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "lifecycle-policy-search-artifacts-001"
+      ],
       "outstanding": [
         "Scheduled capture obeys timezone, missed-run and credential-unavailable policy; no silent consistency downgrade.",
         "Offline BackupPolicy semantic validation and bounded timezone-aware occurrence previews are available through shared CLI/TUI. Cron, DST, impossible schedules, duplicate selectors and cancellation are covered. Persistent scheduler installation, missed-run/credential/overlap handling and actual complete captures remain unimplemented and required."
@@ -2387,7 +2399,10 @@
         "helper-access-native-grant-001",
         "helper-access-native-tui-grant-cli-revoke-001",
         "helper-access-native-auth-preserve-001",
-        "discovery-native-upgrade-001"
+        "discovery-native-upgrade-001",
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "graceful-reboot-native-001"
       ],
       "outstanding": [
         "A real PTY import approval detached while the coordinator completed two-disk conversion; CLI reconnection returned coherent persisted result/events. Additional client disconnects, all handlers and multi-client transport faults remain required.",
@@ -3682,7 +3697,10 @@
         "auxiliary-inspection-tui-denial-001",
         "auxiliary-tui-policy-window-fixture-001",
         "auxiliary-inspection-tui-positive-001",
-        "schema-format-integrated-core-001"
+        "schema-format-integrated-core-001",
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "lifecycle-policy-search-artifacts-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -3745,7 +3763,10 @@
         "core-tests-001",
         "creation-core-001",
         "native-first-tui-001",
-        "auxiliary-inventory-core-001"
+        "auxiliary-inventory-core-001",
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "lifecycle-policy-search-artifacts-001"
       ],
       "outstanding": [
         "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains.",
@@ -3913,7 +3934,10 @@
         "auxiliary-inspection-tui-denial-001",
         "auxiliary-tui-policy-window-fixture-001",
         "auxiliary-inspection-tui-positive-001",
-        "schema-format-integrated-core-001"
+        "schema-format-integrated-core-001",
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "lifecycle-policy-search-artifacts-001"
       ],
       "outstanding": [
         "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
@@ -4074,7 +4098,9 @@
         "installed-document-package-inputs-001",
         "installed-document-observer-before-001",
         "installed-document-observer-after-001",
-        "source-freeze-approval-blocked-001"
+        "source-freeze-approval-blocked-001",
+        "lifecycle-policy-search-artifacts-001",
+        "lifecycle-policy-search-repro-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -4147,7 +4173,8 @@
         "auxiliary-inventory-repro-001",
         "auxiliary-inventory-cross-001",
         "auxiliary-repository-hygiene-001",
-        "auxiliary-helper-deactivation-native-001"
+        "auxiliary-helper-deactivation-native-001",
+        "lifecycle-policy-search-cross-001"
       ],
       "outstanding": [
         "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support.",
@@ -4532,7 +4559,12 @@
         "installed-documents-before-001",
         "installed-document-observer-before-001",
         "installed-document-observer-after-001",
-        "source-freeze-approval-blocked-001"
+        "source-freeze-approval-blocked-001",
+        "lifecycle-policy-search-core-001",
+        "lifecycle-policy-search-core-002",
+        "lifecycle-policy-search-artifacts-001",
+        "lifecycle-policy-search-repro-001",
+        "lifecycle-policy-search-documents-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",

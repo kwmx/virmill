@@ -66,3 +66,9 @@ from real VM, guest sizing and concurrent external-writer qualification. The pri
 
 Latest managed access: [signed-helper CLI/TUI native cycles](managed-access-run.md).
 Parallel discovery and plugin work: [integration record](discovery-plugin-run.md).
+
+Latest functional additions: [reboot, policy previews and TUI search](lifecycle-policy-search-run.md).
+The copied-guest native reboot passed with a durable event receipt and preserved
+source disk/prior definitions. The new copy required forced-stop cleanup; no
+guest readiness claim follows. Package/private CLI/actual PTY checks and local
+QEMU fixture allocation failures are recorded separately.

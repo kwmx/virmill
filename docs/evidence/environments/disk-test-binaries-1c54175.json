@@ -1,0 +1,8 @@
+{
+  "revision": "1c541750870768b43496dec33f5c04441374ae0b",
+  "build": "./scripts/go test -c -race -mod=vendor -tags libvirt_dlopen",
+  "sha256": {
+    "image-native.test": "ffd5f66b5313080280957fc7f4f3447356540615c74f1f2ab0c85bd750c10fa3",
+    "coldfiles-native.test": "07bdf96b5406874d99923ca24ce3095bfde5e65cca1568c7f005e0635c1c57a8"
+  }
+}
