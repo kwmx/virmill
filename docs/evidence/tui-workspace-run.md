@@ -1,5 +1,8 @@
 # Installed TUI workspace update — 8 September 2026
 
+Superseded for current installed hashes and controls by the
+[task-menu update](tui-task-menus-run.md). Evidence below is historical.
+
 The owner requested an application-style TUI with action buttons, the complete
 implemented action set, and bare `virmill` as the terminal default. The installed
 core package now uses source `b73e2834f88310bd8f64b3db5d811d50b9e8d3c8`.

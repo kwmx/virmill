@@ -4205,7 +4205,11 @@
         "internal/ui/tui/action_forms.go",
         "internal/ui/tui/presentation.go",
         "docs/tui-navigation.md",
-        "docs/evidence/tui-workspace-run.md"
+        "docs/evidence/tui-workspace-run.md",
+        "internal/ui/tui/action_menu.go",
+        "internal/ui/tui/action_labels.go",
+        "docs/adr/0032-task-oriented-tui-menus.md",
+        "docs/evidence/tui-task-menus-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4293,7 +4297,9 @@
         "internal/ui/tui/guided_forms_test.go",
         "internal/ui/tui/action_forms_test.go",
         "internal/ui/tui/presentation_test.go",
-        "tests/fixtures/release/tui_workspace_probe.py"
+        "tests/fixtures/release/tui_workspace_probe.py",
+        "internal/ui/tui/action_menu_test.go",
+        "internal/ui/tui/action_labels_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4369,7 +4375,11 @@
         "tui-workspace-artifacts-001",
         "tui-workspace-artifacts-002",
         "tui-workspace-upgrade-native-001",
-        "tui-workspace-installed-native-001"
+        "tui-workspace-installed-native-001",
+        "tui-task-menus-race-001",
+        "tui-task-menus-artifacts-001",
+        "tui-task-menus-upgrade-001",
+        "tui-task-menus-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4418,7 +4428,11 @@
         "internal/ui/tui/guided_forms.go",
         "internal/ui/tui/action_forms.go",
         "internal/ui/tui/presentation.go",
-        "docs/evidence/tui-workspace-run.md"
+        "docs/evidence/tui-workspace-run.md",
+        "internal/ui/tui/action_menu.go",
+        "internal/ui/tui/action_labels.go",
+        "docs/adr/0032-task-oriented-tui-menus.md",
+        "docs/evidence/tui-task-menus-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4440,7 +4454,9 @@
         "internal/ui/tui/guided_forms_test.go",
         "internal/ui/tui/action_forms_test.go",
         "internal/ui/tui/presentation_test.go",
-        "tests/fixtures/release/tui_workspace_probe.py"
+        "tests/fixtures/release/tui_workspace_probe.py",
+        "internal/ui/tui/action_menu_test.go",
+        "internal/ui/tui/action_labels_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4459,7 +4475,11 @@
         "tui-workspace-frozen-race-001",
         "tui-workspace-artifacts-001",
         "tui-workspace-artifacts-002",
-        "tui-workspace-installed-native-001"
+        "tui-workspace-installed-native-001",
+        "tui-task-menus-race-001",
+        "tui-task-menus-artifacts-001",
+        "tui-task-menus-upgrade-001",
+        "tui-task-menus-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
