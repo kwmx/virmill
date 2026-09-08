@@ -4,23 +4,28 @@ package helper
 
 import (
 	"context"
-	"time"
+	"net"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/wire"
 )
 
 func (c Client) NetworkFilter(ctx context.Context, r Request) (NetworkResponse, error) {
 	var out NetworkResponse
-	if r.Operation != "network.ipv6-filter" || r.Network == nil || r.Access != nil || r.Auxiliary != nil {
+	if r.Network == nil || networkOperation(r.Network.Version) == "" || r.Operation != networkOperation(r.Network.Version) || r.Network.Definition.PolicyVersion() != r.Network.Version || r.Access != nil || r.Auxiliary != nil {
 		return out, domain.Fail("INVALID_INPUT", "dedicated network filter request required")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, networkTimeout(r.Network.Version))
 	defer cancel()
 	conn, r, err := c.connectRequest(ctx, r)
 	if err != nil {
 		return out, err
 	}
 	defer conn.Close()
+	return receiveNetworkFilter(ctx, conn, r)
+}
+
+func receiveNetworkFilter(ctx context.Context, conn *net.UnixConn, r Request) (NetworkResponse, error) {
+	var out NetworkResponse
 	frame, f, err := receiveSnapshotFrame(ctx, conn, true)
 	if f != nil {
 		f.Close()
@@ -49,11 +54,14 @@ func (c Client) NetworkFilter(ctx context.Context, r Request) (NetworkResponse, 
 		return out, domain.Fail("RECOVERY_REQUIRED", "incomplete network helper observation")
 	}
 	out = *response.Network
-	if out.Version != 1 || out.ResourceID != r.ResourceID || out.Bridge != r.Network.Definition.Bridge || out.PlanDigest != r.PlanDigest || out.JobID != r.JobID || out.PacketVerified {
+	if out.Version != r.Network.Version || out.ResourceID != r.ResourceID || out.Bridge != r.Network.Definition.Bridge || out.PlanDigest != r.PlanDigest || out.JobID != r.JobID || out.PacketVerified {
 		return NetworkResponse{}, domain.Fail("RECOVERY_REQUIRED", "network filter observation binding differs")
 	}
 	if r.Mode != "check" && (!out.RuntimePresent || !out.PermanentPresent) {
 		return NetworkResponse{}, domain.Fail("RECOVERY_REQUIRED", "network filter runtime or permanent rules absent")
 	}
-	return out, ctx.Err()
+	if err := ctx.Err(); err != nil {
+		return NetworkResponse{}, err
+	}
+	return out, nil
 }

@@ -1,0 +1,13 @@
+# No host address or logical subnet reservation. Configure guest addresses
+# explicitly and check their intended subnet before attaching guests.
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: guest-only-no-cidr
+  displayName: Guest-only segment without a subnet reservation
+  tags: [example]
+spec:
+  type: guest-only
+  ipv6: {mode: disabled}
+  hostAccess: deny
+  egress: none

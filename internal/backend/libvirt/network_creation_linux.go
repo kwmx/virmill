@@ -208,6 +208,9 @@ func matchNetworkDefinition(out domain.VirtualNetwork, uri string, def domain.Ne
 }
 
 func checkNetworkCollisions(ctx context.Context, c networkCreationConnection, uri string, def domain.NetworkDefinition, allowSelected bool) error {
+	// Bridge/native identities remain mandatory even when a guest-only logical
+	// subnet reservation is empty. CIDR overlap planning belongs to the shared
+	// service; this adapter never turns that reservation into a host address.
 	if err := ctx.Err(); err != nil {
 		return err
 	}

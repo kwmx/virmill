@@ -158,15 +158,16 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 			var auxiliary *AuxiliaryResponse
 			var networkResponse *NetworkResponse
 			if err == nil {
-				if r.Operation == "network.ipv6-filter" {
+				if r.Operation == "network.ipv6-filter" || r.Operation == "network.policy-filter" {
 					provider, ok := backend.(domain.NetworkCreationProvider)
 					if !ok {
 						err = domain.Fail("UNSUPPORTED_CAPABILITY", "helper native network inspection unavailable")
 					} else {
 						// A bounded separate deadline covers the fixed runtime/permanent
 						// firewalld requests after authentication has completed.
-						networkCtx, networkCancel := context.WithTimeout(context.Background(), 90*time.Second)
-						_ = conn.SetDeadline(time.Now().Add(90 * time.Second))
+						duration := networkTimeout(r.Network.Version)
+						networkCtx, networkCancel := context.WithTimeout(context.Background(), duration)
+						_ = conn.SetDeadline(time.Now().Add(duration))
 						var observed NetworkResponse
 						observed, err = (NetworkExecutor{Backend: provider}).Execute(networkCtx, r, p)
 						networkCancel()

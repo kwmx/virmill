@@ -300,7 +300,7 @@ func TestNetworkApplyRechecksNewVPNConflictAndAcknowledgements(t *testing.T) {
 	}
 }
 func TestNetworkRestrictedIntentIsNotWeakened(t *testing.T) {
-	for _, host := range []string{"services-only", "deny"} {
+	for _, host := range []string{"deny"} {
 		t.Run(host, func(t *testing.T) {
 			s, n, _ := networkService(t)
 			_, err := s.planNetworkCreation(context.Background(), 1000, Request{Connection: "qemu:///system", Action: "create", Path: networkDocument(t, "lab", host)})

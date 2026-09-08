@@ -140,7 +140,7 @@ func (f *networkExecutorFixture) command(_ context.Context, args []string) (netw
 		}
 	}
 	index := -1
-	for i, known := range networkRules(f.r.Network.Definition.Bridge) {
+	for i, known := range networkPolicyRules(f.r.Network.Definition) {
 		if reflect.DeepEqual(copy, known) {
 			index = i
 		}
@@ -208,7 +208,7 @@ func networkCode(t *testing.T, out NetworkResponse, err error, want string) {
 }
 func networkSuccess(t *testing.T, out NetworkResponse, r Request) {
 	t.Helper()
-	want := NetworkResponse{Version: 1, ResourceID: r.ResourceID, Bridge: r.Network.Definition.Bridge, PlanDigest: r.PlanDigest, JobID: r.JobID, RuntimePresent: true, PermanentPresent: true}
+	want := NetworkResponse{Version: r.Network.Version, ResourceID: r.ResourceID, Bridge: r.Network.Definition.Bridge, PlanDigest: r.PlanDigest, JobID: r.JobID, RuntimePresent: true, PermanentPresent: true}
 	if out != want {
 		t.Fatalf("got %+v; want %+v with packet proof false", out, want)
 	}

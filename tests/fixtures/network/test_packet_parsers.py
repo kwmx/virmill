@@ -653,5 +653,283 @@ class DHCPFailureDiagnosticsTests(unittest.TestCase):
         self.assertEqual(sample["bootpClientMAC"], MAC.hex())
 
 
+def protected_args(**changes):
+    values = dict(kind="lab", host_access="services-only", dhcp="on", static_cidr4=None,
+                  static_a4=None, static_b4=None, host4_target=None, forward4_target="198.51.100.8",
+                  forward4_port=443, dns_name="example.test")
+    values.update(changes)
+    return types.SimpleNamespace(**values)
+
+
+def protected_xml(kind="lab", dhcp=True):
+    raw = network_xml(kind, dhcp).replace(b"version='1'", b"version='2'")
+    if kind == "guest-only":
+        raw = raw[:raw.index(b"<ip ")] + b"</network>"
+    return raw.replace(b"</network>", (b"<dns enable='yes'/>" if dhcp else b"<dns enable='no'/>") + b"</network>")
+
+
+class ProtectedProfileTests(unittest.TestCase):
+    def test_supported_protected_profiles_require_explicit_controls(self):
+        for kind in ("nat", "lab"):
+            for enabled in (True, False):
+                args = protected_args(kind=kind, dhcp="on" if enabled else "off",
+                                      static_a4=None if enabled else "192.168.80.20",
+                                      static_b4=None if enabled else "192.168.80.21",
+                                      dns_name="example.test" if enabled else None)
+                fixture.validate_profile(args)
+                network, gateway, ranges = fixture.native_network(protected_xml(kind, enabled), UUID,
+                    "vm123456781234", kind, args.dhcp, args.host_access)
+                self.assertEqual((str(network), gateway, bool(ranges)), ("192.168.80.0/24", "192.168.80.1", enabled))
+        args = protected_args(kind="guest-only", host_access="deny", dhcp="off", dns_name=None,
+                              static_cidr4="192.168.80.0/24", static_a4="192.168.80.20",
+                              static_b4="192.168.80.21", host4_target="192.168.90.1")
+        fixture.validate_profile(args)
+        network, gateway, ranges = fixture.native_network(protected_xml("guest-only", False), UUID,
+            "vm123456781234", "guest-only", "off", "deny", args.static_cidr4)
+        self.assertEqual((str(network), gateway, ranges), ("192.168.80.0/24", None, []))
+
+    def test_policy_confusion_or_missing_positive_controls_refused(self):
+        for change in ({"host_access": "deny"}, {"kind": "guest-only"}, {"forward4_target": None},
+                       {"forward4_target": None, "forward4_port": None}, {"forward4_port": 0},
+                       {"dns_name": None}, {"static_cidr4": "192.168.80.0/24"},
+                       {"host4_target": "192.168.90.1"}, {"static_a4": "192.168.80.20"}):
+            with self.subTest(change=change), self.assertRaises(fixture.Refusal):
+                fixture.validate_profile(protected_args(**change))
+        guest = vars(protected_args(kind="guest-only", host_access="deny", dhcp="off", dns_name=None,
+                                   static_cidr4="192.168.80.0/24", static_a4="192.168.80.20",
+                                   static_b4="192.168.80.21", host4_target="192.168.90.1"))
+        for change in ({"host_access": "allow"}, {"dhcp": "on"}, {"host4_target": None},
+                       {"host4_target": "192.168.80.1"}, {"host4_target": "198.51.100.8"},
+                       {"static_cidr4": None}, {"static_b4": None}, {"static_a4": "192.168.80.0"},
+                       {"static_b4": "192.168.80.255"}, {"static_b4": "192.168.90.8"}, {"dns_name": "example.test"}):
+            with self.subTest(change=change), self.assertRaises(fixture.Refusal):
+                fixture.validate_profile(types.SimpleNamespace(**{**guest, **change}))
+
+    def test_guest_static_cidr_requires_canonical_ordinary_private_subnet(self):
+        for value in ("192.168.80.1/24", "192.168.80.0/024", "192.168.80.0/30", "127.0.0.0/8",
+                      "198.51.100.0/24", "169.254.0.0/16", "0.0.0.0/0", "fd00::/64"):
+            with self.subTest(cidr=value), self.assertRaises((fixture.Refusal, ValueError)):
+                fixture.private_subnet(value)
+
+    def test_protected_dns_requires_exact_explicit_pair_and_marker(self):
+        for enabled in (True, False):
+            raw = protected_xml("lab", enabled)
+            dns = b"<dns enable='yes'/>" if enabled else b"<dns enable='no'/>"
+            for replacement in (b"", b"<dns/>", b"<dns enable='true'/>", dns + dns,
+                                b"<dns enable='yes'><forwarder addr='192.0.2.1'/></dns>"):
+                with self.subTest(enabled=enabled, replacement=replacement), self.assertRaises(fixture.Refusal):
+                    fixture.native_network(raw.replace(dns, replacement), UUID, "vm123456781234",
+                                           "lab", "on" if enabled else "off", "services-only")
+            with self.assertRaisesRegex(fixture.Refusal, "marker"):
+                fixture.native_network(raw.replace(b"version='2'", b"version='1'"), UUID, "vm123456781234",
+                                       "lab", "on" if enabled else "off", "services-only")
+
+    def test_guest_native_l3_dhcp_dns_route_or_forward_drift_refused(self):
+        raw = protected_xml("guest-only", False)
+        for extra in (b"<ip address='192.168.80.1' prefix='24'/>", b"<ip family='ipv6' address='fe80::1' prefix='64'/>",
+                      b"<dhcp/>", b"<route address='0.0.0.0' prefix='0' gateway='192.168.80.1'/>",
+                      b"<forward mode='nat'/>"):
+            with self.subTest(extra=extra), self.assertRaises(fixture.Refusal):
+                fixture.native_network(raw.replace(b"</network>", extra + b"</network>"), UUID,
+                                       "vm123456781234", "guest-only", "off", "deny", "192.168.80.0/24")
+
+    def test_host_target_requires_one_ready_existing_address(self):
+        row = {"ifindex": 7, "ifname": "ens3", "address": "02:00:00:00:00:01", "flags": ["UP"],
+               "addr_info": [{"family": "inet", "local": "192.168.90.1", "prefixlen": 24, "scope": "global"}]}
+        found = fixture.assigned_host_target([row], "192.168.90.1", "vm123456781234")
+        self.assertEqual(found["ifindex"], 7)
+        for rows in ([], [row, row], [{**row, "flags": []}], [{**row, "ifname": "vm123456781234"}],
+                     [{**row, "addr_info": [{**row["addr_info"][0], "scope": "host"}]}]):
+            with self.subTest(rows=rows), self.assertRaises(fixture.Refusal):
+                fixture.assigned_host_target(rows, "192.168.90.1", "vm123456781234")
+
+    def test_tcp_negative_requires_a_network_outcome_not_arbitrary_worker_failure(self):
+        for value in ({"status": "failed"}, {"status": "not_connected"},
+                      {"status": "not_connected", "errno": 24, "boundedNetworkRefusal": False},
+                      {"status": "connected"}):
+            self.assertFalse(fixture.tcp_expectation(value, False))
+        self.assertTrue(fixture.tcp_expectation({"status": "not_connected", "boundedNetworkRefusal": True}, False))
+
+    def test_connected_handshake_with_failed_token_cannot_be_a_negative_pass(self):
+        sock = mock.MagicMock()
+        sock.__enter__.return_value = sock
+        sock.recv.side_effect = TimeoutError("application token timed out")
+        with mock.patch.object(fixture.socket, "socket", return_value=sock):
+            result = fixture.tcp_worker(types.SimpleNamespace(target="192.168.90.1", port=32123, token="expected"))
+        self.assertEqual(result["status"], "connected")
+        self.assertFalse(fixture.tcp_expectation(result, False))
+        self.assertFalse(fixture.tcp_expectation(result, True))
+
+    def test_explicit_neighbor_changes_only_held_namespace_and_requires_readback(self):
+        f = object.__new__(fixture.Fixture)
+        f.tools = {"ip": "/usr/bin/ip"}
+        f.before = {"address": "52:54:00:12:34:56"}
+        f.r = types.SimpleNamespace(event=mock.Mock())
+        f.observation_boundary = mock.Mock()
+        endpoint, calls = {"peer": "vea1234567812", "namespace": "fixture-owned"}, []
+        def ns(ep, argv):
+            self.assertIs(ep, endpoint)
+            calls.append(argv)
+            if argv[1:3] == ["-j", "-4"]:
+                return {"stdout": json.dumps([{"dst": "192.168.90.1", "dev": ep["peer"]}])}
+            if argv[1:3] == ["-j", "neigh"]:
+                return {"stdout": json.dumps([{"dst": "192.168.90.1", "lladdr": f.before["address"], "state": ["PERMANENT"]}])}
+            return {"stdout": ""}
+        f.ns = ns
+        f.direct_neighbor(endpoint, "192.168.90.1")
+        self.assertEqual(calls[0], ["/usr/bin/ip", "route", "add", "192.168.90.1/32", "dev", endpoint["peer"], "scope", "link"])
+        self.assertEqual(calls[1], ["/usr/bin/ip", "neigh", "replace", "192.168.90.1", "lladdr", f.before["address"],
+                                   "nud", "permanent", "dev", endpoint["peer"]])
+        self.assertFalse(any("address" in argv or "default" in argv for argv in calls))
+        f.observation_boundary = mock.Mock(side_effect=fixture.Refusal("replacement"))
+        calls.clear()
+        with self.assertRaisesRegex(fixture.Refusal, "replacement"):
+            f.direct_neighbor(endpoint, "192.168.90.1")
+        self.assertEqual(calls, [])
+
+    def test_protected_listener_requires_controls_before_and_after_guest_probe(self):
+        for outcomes, calls_expected in ((["connected", "connected"], 1), (["not_connected"], 0),
+                                         (["connected", "not_connected"], 1)):
+            with self.subTest(outcomes=outcomes):
+                f = object.__new__(fixture.Fixture)
+                f.a = types.SimpleNamespace(host_access="deny", kind="guest-only", host4_target="192.168.90.1",
+                                            bridge="vm123456781234", run_id=UUID)
+                f.r = types.SimpleNamespace(event=mock.Mock())
+                f.direct_neighbor = mock.Mock()
+                f.worker = mock.Mock(return_value={"status": "not_connected", "boundedNetworkRefusal": True})
+                listener = mock.MagicMock()
+                listener.__enter__.return_value = listener
+                listener.getsockname.return_value = (f.a.host4_target, 32123)
+                thread = mock.Mock()
+                thread.is_alive.return_value = False
+                with mock.patch.object(fixture.socket, "socket", return_value=listener), \
+                        mock.patch.object(fixture.threading, "Thread", return_value=thread), \
+                        mock.patch.object(fixture, "host_tcp_control", side_effect=[{"status": status} for status in outcomes]):
+                    if all(status == "connected" for status in outcomes):
+                        result = f.host_probe({})
+                        self.assertEqual(result["expected"], "not_connected")
+                        self.assertEqual(len(result["positiveControls"]), 2)
+                        self.assertTrue(result["listenerClosed"])
+                    else:
+                        with self.assertRaisesRegex(fixture.Refusal, "positive control"):
+                            f.host_probe({})
+                self.assertEqual(f.worker.call_count, calls_expected)
+                listener.bind.assert_called_once_with((f.a.host4_target, 0))
+                listener.setsockopt.assert_not_called()
+                listener.__exit__.assert_called_once()
+                thread.join.assert_called_once()
+
+    def test_bridge_l3_or_host_binding_drift_stops_observation(self):
+        f = object.__new__(fixture.Fixture)
+        f.a = types.SimpleNamespace(kind="guest-only")
+        f.before = {"ifindex": 12, "addresses": []}
+        f.host_target_before = {"ifindex": 3}
+        f.netxml = mock.Mock()
+        f.bridge_state = mock.Mock(return_value={"ifindex": 12, "addresses": [["inet6", "fe80::1", 64, "link"]]})
+        f.host_target_state = mock.Mock()
+        with self.assertRaisesRegex(fixture.Refusal, "bridge identity/L3"):
+            f.observation_boundary("test")
+        f.host_target_state.assert_not_called()
+        f.bridge_state.return_value = f.before
+        f.host_target_state.return_value = {"ifindex": 4}
+        with self.assertRaisesRegex(fixture.Refusal, "host target"):
+            f.observation_boundary("test")
+
+    def test_observer_reports_each_protected_matrix_outcome_without_promoting_acceptance(self):
+        for kind, dhcp in (("nat", "on"), ("lab", "on"), ("lab", "off"), ("guest-only", "off")):
+            for fault in (None, "host-exposed", "wrong-forward", "peer-blocked", "IPv6-leak", "service-failed"):
+                with self.subTest(kind=kind, dhcp=dhcp, fault=fault):
+                    f = object.__new__(fixture.Fixture)
+                    f.a = protected_args(kind=kind, dhcp=dhcp, host_access="deny" if kind == "guest-only" else "services-only",
+                                        dns_name="example.test" if dhcp == "on" else None)
+                    f.before = {"addresses": [] if kind == "guest-only" else [["inet", "192.168.80.1", 24, "global"]]}
+                    f.gateway = None if kind == "guest-only" else "192.168.80.1"
+                    f.tools = {"ip": "/usr/bin/ip", "ping": "/usr/bin/ping"}
+                    ack = {"routerOptionPresent": kind == "nat", "routers": [f.gateway] if kind == "nat" else [],
+                           "optionCodes": [3] if kind == "nat" else [], "dns": [f.gateway]}
+                    f.endpoints = [{"role": role, "address": "192.168.80." + last, "peer": "ve" + role,
+                                    "lease": {"ack": ack}} for role, last in (("a", "20"), ("b", "21"))]
+                    f.observation_boundary = mock.Mock()
+                    f.host_probe = mock.Mock(return_value={"status": "connected" if fault == "host-exposed" else "not_connected",
+                                                          "boundedNetworkRefusal": True})
+                    forward_connected = (kind == "nat") != (fault == "wrong-forward")
+                    f.forward_probe = mock.Mock(return_value={"status": "connected" if forward_connected else "not_connected",
+                                                             "boundedNetworkRefusal": True})
+                    def ns(endpoint, argv, **kwargs):
+                        if argv[0] == f.tools["ping"]:
+                            return {"returncode": int(fault == "peer-blocked"), "stdout": ""}
+                        if "address" in argv:
+                            return {"stdout": '[{"addr_info": []}]'}
+                        return {"stdout": '[]'}
+                    def worker(endpoint, mode, *args):
+                        if mode == "dns":
+                            return {"status": "not_resolved" if fault == "service-failed" else "resolved"}
+                        if mode == "dhcp-absence":
+                            return {"status": "response_or_inconclusive" if fault == "service-failed" else "none_seen_in_bounded_window"}
+                        self.assertEqual(mode, "ra")
+                        return {"advertisements": ["observed"] if fault == "IPv6-leak" else []}
+                    f.ns, f.worker = ns, worker
+                    with mock.patch.object(fixture.time, "sleep"):
+                        result = f.observe()
+                    self.assertEqual(result["ipv4ChecksMet"], fault in (None, "IPv6-leak"))
+                    self.assertEqual(result["ipv6DisabledContradictedByObservedTraffic"], fault == "IPv6-leak")
+                    self.assertFalse(result["fullNetworkAcceptance"])
+                    self.assertFalse(result["realGuestQualified"])
+                    self.assertFalse(result["servicesOnlyEnforcementQualified"])
+                    self.assertTrue(result["bridgeL3UnchangedAtCheckpoints"])
+
+    def test_guest_forward_probe_uses_direct_neighbor_and_failed_control_is_not_negative_success(self):
+        for control in ("connected", "not_connected"):
+            f = object.__new__(fixture.Fixture)
+            f.a = protected_args(kind="guest-only", host_access="deny")
+            f.network = ipaddress.IPv4Network("192.168.80.0/24")
+            f.r = types.SimpleNamespace(event=mock.Mock())
+            f.direct_neighbor = mock.Mock()
+            f.worker = mock.Mock(return_value={"status": "not_connected", "boundedNetworkRefusal": True})
+            with self.subTest(control=control), mock.patch.object(fixture, "host_tcp_control", return_value={"status": control}) as probe:
+                if control == "connected":
+                    result = f.forward_probe({})
+                    self.assertEqual(result["expected"], "not_connected")
+                    self.assertEqual(len(result["positiveControls"]), 2)
+                    f.direct_neighbor.assert_called_once_with({}, "198.51.100.8")
+                    self.assertEqual(probe.call_count, 2)
+                else:
+                    with self.assertRaisesRegex(fixture.Refusal, "positive control"):
+                        f.forward_probe({})
+                    f.direct_neighbor.assert_not_called()
+                    f.worker.assert_not_called()
+
+    def test_dhcp_absence_never_turns_response_malformed_or_packet_saturation_into_pass(self):
+        for case in ("silent", "offer", "malformed", "saturated"):
+            now, frames = [0.0], [0]
+            class FakeSocket:
+                def __enter__(self):
+                    return self
+                def __exit__(self, *args):
+                    pass
+                def setsockopt(self, *args):
+                    pass
+                def bind(self, *args):
+                    pass
+                def settimeout(self, *args):
+                    pass
+                def send(self, packet):
+                    pass
+                def recvmsg(self, *args):
+                    now[0] += 0.001 if case == "saturated" else 0.25
+                    frames[0] += 1
+                    if case == "silent" or (frames[0] > 1 and case != "saturated"):
+                        raise fixture.socket.timeout()
+                    packet = reply(message=2) if case == "offer" else reply()[:-1] if case == "malformed" else reply(xid=XID + 1)
+                    return packet, [], 0, ("vea1234567812", 2048, 0)
+            with self.subTest(case=case), mock.patch.object(fixture.socket, "socket", return_value=FakeSocket()), \
+                    mock.patch.object(fixture.os, "urandom", return_value=XID.to_bytes(4, "big")), \
+                    mock.patch.object(fixture.time, "monotonic", side_effect=lambda: now[0]):
+                result = fixture.dhcp_absence_worker(types.SimpleNamespace(interface="vea1234567812"), MAC)
+                self.assertEqual(result["status"], "none_seen_in_bounded_window" if case == "silent" else "response_or_inconclusive")
+                self.assertFalse(result["absenceProven"])
+                self.assertLessEqual(len(result["receivedSamples"]), 8)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

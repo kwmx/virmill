@@ -87,7 +87,7 @@ func TestValidateRefusesUnsupportedPolicy(t *testing.T) {
 		{"NAT no egress", func(d *domain.NetworkDefinition) { d.Egress = "none" }},
 		{"NAT DHCP without route", func(d *domain.NetworkDefinition) { d.AdvertiseDefaultRoute = false }},
 		{"route without DHCP", func(d *domain.NetworkDefinition) { d.DHCPEnabled = false }},
-		{"host restricted", func(d *domain.NetworkDefinition) { d.HostAccess = "services-only" }},
+		{"host denied NAT", func(d *domain.NetworkDefinition) { d.HostAccess = "deny" }},
 		{"guest only", func(d *domain.NetworkDefinition) { d.HostAccess = "guest-only" }},
 		{"implicit host policy", func(d *domain.NetworkDefinition) { d.HostAccess = "" }},
 		{"IPv6 NAT", func(d *domain.NetworkDefinition) { d.IPv6Mode = "nat" }},

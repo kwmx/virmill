@@ -93,7 +93,7 @@ func (s *Service) checkCIDRsExcept(ctx context.Context, r Request, excludeNetwor
 			return nil, err
 		}
 		for _, record := range reserved {
-			if record.Connection == r.Connection && record.Definition.UUID != excludeNetwork {
+			if record.Connection == r.Connection && record.Definition.UUID != excludeNetwork && record.Definition.IPv4CIDR != "" {
 				occupied = append(occupied, prefixConflict{CIDR: record.Definition.IPv4CIDR, Source: "application-reservation", ID: record.Definition.UUID})
 			}
 		}

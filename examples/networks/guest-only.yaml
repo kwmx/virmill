@@ -1,3 +1,5 @@
+# The CIDR reserves a logical guest subnet only: no host IP, DHCP, DNS or default
+# route is installed. Configure static addresses inside guests explicitly.
 apiVersion: virmill/v1
 kind: Network
 metadata:

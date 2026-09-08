@@ -1,5 +1,10 @@
 # Disposable network packet fixtures
 
+Protected services-only and guest-only fixture profiles are now documented in the
+[fixture extension](../tests/fixtures/network/README.md). That extension supersedes
+the original allow-only profile boundary below; all historical evidence retains
+its actual result. Parent-only execution and preservation requirements still apply.
+
 `tests/fixtures/network/network_packet_fixture.py` is an original, standard-library Python fixture for parent-operated observations on a **new, unused Virmill NAT or lab network** in the approved disposable VM. It creates two temporary network namespaces and two veth pairs, then removes only those objects after checking their identities. It never creates, changes, restarts or removes the selected libvirt network. It does not start a guest, change host firewall rules or sysctls, install software, or configure a production host.
 
 The implementation contributes packet-observer prerequisites for **NET-01, NET-02, NET-03 and NET-05** in the normative acceptance package, with narrow native address-shape validation relevant to **NET-06** prerequisites. It does not test host/VPN/planned subnet collision detection or automatic allocation. Namespace endpoints do not qualify real guest routing, persistent guest configuration, a guest with three NICs, physical networking, or a services-only firewall adapter. The current fixture accepts only explicit `hostAccess=allow`. Services-only execution is deliberately unavailable until the product has an applicable firewall implementation. Every report sets `fullNetworkAcceptance=false` and `guestOrHardwareQualification=false`.

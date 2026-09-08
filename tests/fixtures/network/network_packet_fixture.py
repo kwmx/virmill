@@ -5,6 +5,7 @@ Importing this module performs no native operations. See docs/network-packet-fix
 """
 
 import argparse
+import errno
 import hashlib
 import ipaddress
 import json
@@ -293,7 +294,55 @@ def parse_dns(packet, xid, name):
             "addresses": addresses, "responseSHA256": digest(packet), "responseHex": packet.hex()}
 
 
-def native_network(raw, network_id, bridge, kind, dhcp):
+def private_subnet(value):
+    network = ipaddress.IPv4Network(value, strict=True)
+    require(str(network) == value and 8 <= network.prefixlen <= 29 and
+            any(network.subnet_of(ipaddress.IPv4Network(cidr)) for cidr in
+                ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")),
+            "static subnet must be canonical RFC1918 /8 through /29")
+    return network
+
+
+def validate_profile(args):
+    require((args.kind in ("nat", "lab") and args.host_access in ("allow", "services-only")) or
+            (args.kind == "guest-only" and args.host_access == "deny" and args.dhcp == "off"),
+            "unsupported kind/host-access/DHCP combination")
+    protected = args.host_access != "allow"
+    require(bool(args.forward4_target) == bool(args.forward4_port), "forward target and port must be supplied together")
+    require(not protected or args.forward4_target, "protected profiles require an explicit forward target control")
+    if args.forward4_target:
+        target = canonical_ip(args.forward4_target, 4)
+        require(not target.is_link_local and 1 <= args.forward4_port <= 65535, "invalid forward target or TCP port")
+    if args.dns_name:
+        dns_name(args.dns_name)
+    if args.host_access == "services-only":
+        require(bool(args.dns_name) == (args.dhcp == "on"),
+                "services-only requires a DNS query exactly when paired DHCP/DNS is enabled")
+    if args.kind == "guest-only":
+        require(args.static_cidr4 and args.static_a4 and args.static_b4 and args.host4_target,
+                "guest-only requires static CIDR, two static endpoints and explicit assigned host target")
+        network = private_subnet(args.static_cidr4)
+        for value in (args.static_a4, args.static_b4):
+            address = canonical_ip(value, 4)
+            require(address in network and address not in (network.network_address, network.broadcast_address),
+                    "guest-only static endpoint is outside its usable logical subnet")
+        host = canonical_ip(args.host4_target, 4)
+        require(not host.is_link_local and host not in network, "guest-only host target must be outside its logical subnet")
+        require(not args.dns_name and args.forward4_target != args.host4_target,
+                "guest-only has no managed DNS query and distinct host/forward targets are required")
+    else:
+        require(not args.static_cidr4 and not args.host4_target,
+                "static CIDR and host target overrides are guest-only flags")
+    if args.dhcp == "off":
+        require(args.static_a4 and args.static_b4 and args.static_a4 != args.static_b4,
+                "DHCP-off requires two distinct explicit static addresses")
+        canonical_ip(args.static_a4, 4)
+        canonical_ip(args.static_b4, 4)
+    else:
+        require(not args.static_a4 and not args.static_b4, "DHCP profiles require own leases, not static overrides")
+
+
+def native_network(raw, network_id, bridge, kind, dhcp, host_access="allow", static_cidr4=None):
     require(len(raw) <= 65536 and not re.search(br"<!(?!--)", raw) and b"<?" not in raw,
             "oversized XML or XML declarations/entities refused")
     root = ET.fromstring(raw)
@@ -303,7 +352,8 @@ def native_network(raw, network_id, bridge, kind, dhcp):
             "network is not the new Virmill name")
     markers = root.findall("metadata/{urn:virmill:v1}networkCreation")
     require(len(markers) == 1 and markers[0].get("apiVersion") == "virmill/v1" and
-            markers[0].get("version") == "1" and re.fullmatch(r"[0-9a-f]{64}", markers[0].get("intent", "")),
+            markers[0].get("version") == ("1" if host_access == "allow" else "2") and
+            re.fullmatch(r"[0-9a-f]{64}", markers[0].get("intent", "")),
             "missing current Virmill creation marker; marker is not an ownership grant")
     require(bridge == "vm" + canonical_uuid(network_id).hex[:12] and re.fullmatch(r"vm[0-9a-f]{12}", bridge),
             "bridge is not the UUID-bound Virmill bridge")
@@ -311,11 +361,21 @@ def native_network(raw, network_id, bridge, kind, dhcp):
     require(len(bridges) == 1 and bridges[0].get("name") == bridge, "native bridge mismatch")
     forwards = root.findall("forward")
     require((kind == "nat" and len(forwards) == 1 and forwards[0].get("mode", "nat") == "nat") or
-            (kind == "lab" and not forwards), "native forwarding mode mismatch")
+            (kind in ("lab", "guest-only") and not forwards), "native forwarding mode mismatch")
     # These two omitted defaults are the same equivalences used by the parent's
     # networkxml.Match. They say nothing about actual bridge-frame filtering.
     require(root.get("ipv6") in (None, "no"), "this fixture profile requires declared IPv6 disabled")
+    if host_access != "allow":
+        dns = root.findall("dns")
+        require(len(dns) <= 1, "ambiguous native DNS configuration")
+        require(len(dns) == 1 and dns[0].attrib == {"enable": "yes" if dhcp == "on" else "no"} and
+                not list(dns[0]) and not (dns[0].text or "").strip(),
+                "protected native DNS must explicitly match paired DHCP/DNS")
     ips = root.findall("ip")
+    if kind == "guest-only":
+        require(host_access == "deny" and dhcp == "off" and not ips and not root.findall(".//dhcp") and
+                not root.findall("route"), "guest-only must have no native IP, route or DHCP")
+        return private_subnet(static_cidr4), None, []
     require(len(ips) == 1 and ips[0].get("family", "ipv4") == "ipv4", "ambiguous native IP configuration")
     ip = ips[0]
     gateway = str(canonical_ip(ip.get("address", ""), 4))
@@ -629,13 +689,64 @@ def ra_worker(args, mac):
             "extensionHeaderRAsInterpreted": False}
 
 
+def dhcp_absence_worker(args, mac):
+    xid = int.from_bytes(os.urandom(4), "big")
+    request = dhcp_request(mac, xid)
+    observed, malformed, samples = [], [], []
+    frames = 0
+    with socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0800)) as sock:
+        sock.setsockopt(263, 8, 1)
+        sock.bind((args.interface, 0))
+        sock.settimeout(0.25)
+        start, resend = time.monotonic(), 0
+        while time.monotonic() - start < 5 and frames < 512:
+            if time.monotonic() >= resend:
+                sock.send(request)
+                resend = time.monotonic() + 2
+            try:
+                frame, ancillary, flags, address = sock.recvmsg(MAX_FRAME + 1, socket.CMSG_SPACE(20))
+            except socket.timeout:
+                continue
+            frames += 1
+            sample = dhcp_frame_sample(frame, address, flags) if len(samples) < 8 else None
+            if sample is not None:
+                samples.append(sample)
+            try:
+                require(not flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC), "truncated packet/auxdata")
+                state = "wire"
+                for level, kind, data in ancillary:
+                    if (level, kind) == (263, 8):
+                        require(len(data) == 20, "invalid PACKET_AUXDATA shape")
+                        status = struct.unpack("=I", data[:4])[0]
+                        state = "kernel_partial" if status & 8 else "kernel_valid" if status & 128 else "wire"
+                value = parse_dhcp(frame, xid, mac, state)
+                if sample is not None:
+                    sample.update({"classification": "matched" if value else "unrelated", "checksumStatus": state})
+                if value and len(observed) < 16:
+                    observed.append(value)
+            except Refusal as exc:
+                if sample is not None:
+                    sample.update({"classification": "malformed", "reason": str(exc)[:256]})
+                if len(malformed) < 16:
+                    malformed.append(str(exc))
+    # No offer is selected, requested or configured. Packet saturation or a
+    # malformed response cannot manufacture a successful absence observation.
+    clean = not observed and not malformed and frames < 512 and time.monotonic() - start >= 5
+    return {"status": "none_seen_in_bounded_window" if clean else "response_or_inconclusive",
+            "seconds": 5, "responses": observed, "malformedFrames": malformed, "receivedSamples": samples,
+            "packetBoundReached": frames >= 512, "absenceProven": False, "xid": xid,
+            "transmittedDiscoverHex": request.hex(), "transmittedDiscoverSHA256": digest(request)}
+
+
 def tcp_worker(args):
     address = ipaddress.ip_address(args.target)
     family = socket.AF_INET if address.version == 4 else socket.AF_INET6
+    connected = False
     try:
         with socket.socket(family, socket.SOCK_STREAM) as sock:
             sock.settimeout(3)
             sock.connect((str(address), args.port))
+            connected = True
             if args.token:
                 received = bytearray()
                 while len(received) < len(args.token):
@@ -644,10 +755,45 @@ def tcp_worker(args):
                         break
                     received.extend(part)
                 require(received.decode("ascii") == args.token, "host listener token mismatch")
-        return {"status": "connected", "target": args.target, "port": args.port}
+        return {"status": "connected", "target": args.target, "port": args.port, "tokenVerified": True if args.token else None}
     except OSError as exc:
+        if connected:
+            # A completed handshake is exposure even if the application token
+            # subsequently stalls. Never count it as blocked host access.
+            return {"status": "connected", "target": args.target, "port": args.port,
+                    "tokenVerified": False, "applicationError": str(exc), "errno": exc.errno}
         return {"status": "not_connected", "errno": exc.errno, "reason": str(exc),
-                "target": args.target, "port": args.port, "filterEnforcementProven": False}
+                "target": args.target, "port": args.port, "filterEnforcementProven": False,
+                "boundedNetworkRefusal": isinstance(exc, TimeoutError) or exc.errno in
+                    (errno.ECONNREFUSED, errno.EHOSTUNREACH, errno.ENETUNREACH, errno.EACCES)}
+
+
+def host_tcp_control(target, port, token=None):
+    # No native command or device change. Only an explicitly selected IPv4 and
+    # port may be contacted. The parent must authorize the external endpoint.
+    return tcp_worker(argparse.Namespace(target=target, port=port, token=token))
+
+
+def tcp_expectation(result, connected):
+    if connected:
+        return result.get("status") == "connected" and result.get("tokenVerified") is not False
+    return result.get("status") == "not_connected" and result.get("boundedNetworkRefusal") is True
+
+
+def assigned_host_target(rows, target, excluded_bridge):
+    matches = []
+    require(isinstance(rows, list) and len(rows) <= 4096, "host address inventory is invalid or excessive")
+    for row in rows:
+        require(isinstance(row, dict) and isinstance(row.get("addr_info"), list), "malformed host address inventory")
+        for item in row["addr_info"]:
+            if item.get("family") == "inet" and item.get("local") == target:
+                require(row.get("ifname") != excluded_bridge and "UP" in row.get("flags", []) and
+                        item.get("scope") == "global" and not item.get("tentative") and not item.get("dadfailed"),
+                        "host target is not a ready assigned address outside the selected bridge")
+                matches.append({"ifindex": row["ifindex"], "ifname": row["ifname"],
+                                "address": row["address"], "target": target, "prefixlen": item["prefixlen"]})
+    require(len(matches) == 1, "host target must be exactly one already assigned IPv4 address")
+    return matches[0]
 
 
 def dns_worker(args):
@@ -703,10 +849,23 @@ class Fixture:
         require(self.a.network_id in persistent and self.a.network_id not in autostart,
                 "selected network must be persistent with autostart off")
         network, gateway, ranges = native_network(self.netxml(), self.a.network_id, self.a.bridge,
-                                                  self.a.kind, self.a.dhcp)
+                                                  self.a.kind, self.a.dhcp, self.a.host_access, self.a.static_cidr4)
         self.before = self.bridge_state()
-        require(("inet", gateway, network.prefixlen, "global") in self.before["addresses"],
-                "bridge gateway differs from pinned XML")
+        if self.a.kind == "guest-only":
+            require(not self.before["addresses"], "guest-only bridge must have no native L3 addresses")
+            self.host_target_before = self.host_target_state()
+            self.r.save("host-target-before.json", self.host_target_before)
+        else:
+            require(("inet", gateway, network.prefixlen, "global") in self.before["addresses"],
+                    "bridge gateway differs from pinned XML")
+        if self.a.host_access != "allow":
+            self.host_addresses_before = json.loads(self.ip("-j", "-4", "address", "show")["stdout"])
+            assigned = {item.get("local") for row in self.host_addresses_before for item in row.get("addr_info", [])}
+            require(self.a.forward4_target not in assigned and canonical_ip(self.a.forward4_target, 4) not in network,
+                    "forward target must not be any assigned host address or part of the logical subnet")
+            if self.a.kind == "guest-only":
+                require(not any(ipaddress.IPv4Address(value) in network for value in assigned),
+                        "guest-only logical subnet overlaps an assigned host address")
         members = json.loads(self.ip("-j", "link", "show", "master", self.a.bridge)["stdout"])
         require(not members, "selected NEW bridge already has ports; no guest/shared bridge testing")
         existing = {item["ifname"] for item in self.links()}
@@ -724,8 +883,8 @@ class Fixture:
             require(self.a.static_a4 and self.a.static_b4, "DHCP-off requires both explicit static addresses")
             for endpoint, address in zip(self.endpoints, (self.a.static_a4, self.a.static_b4)):
                 parsed = canonical_ip(address, 4)
-                require(parsed in network and parsed not in (network.network_address, network.broadcast_address,
-                                                             ipaddress.IPv4Address(gateway)), "unsafe static endpoint")
+                require(parsed in network and parsed not in (network.network_address, network.broadcast_address) and
+                        str(parsed) != gateway, "unsafe static endpoint")
                 endpoint["address"] = str(parsed)
             require(self.a.static_a4 != self.a.static_b4, "static endpoints must be distinct")
         else:
@@ -740,6 +899,38 @@ class Fixture:
                                        "sysctlsReadOnly": sysctls, "endpoints": self.endpoints,
                                        "existingBridgePorts": members})
         self.network, self.gateway, self.ranges = network, gateway, ranges
+
+    def host_target_state(self):
+        rows = json.loads(self.ip("-j", "-4", "address", "show")["stdout"])
+        return assigned_host_target(rows, self.a.host4_target, self.a.bridge)
+
+    def observation_boundary(self, label):
+        self.netxml()
+        observed = self.bridge_state()
+        require(observed == self.before, "selected bridge identity/L3 changed during " + label)
+        if self.a.kind == "guest-only":
+            require(not observed["addresses"] and self.host_target_state() == self.host_target_before,
+                    "guest-only host target binding or bridge L3 changed")
+        for endpoint in self.endpoints:
+            self.check_attached_endpoints(endpoint)
+        self.r.event({"phase": "observation-boundary", "label": label, "bridge": observed})
+
+    def direct_neighbor(self, endpoint, target):
+        self.observation_boundary("before explicit target neighbor")
+        # The host owns no address on a guest-only bridge. A deliberate /32
+        # on-link route and exact bridge MAC avoid treating failed ARP as policy.
+        self.ns(endpoint, [self.tools["ip"], "route", "add", target + "/32", "dev", endpoint["peer"], "scope", "link"])
+        self.ns(endpoint, [self.tools["ip"], "neigh", "replace", target, "lladdr", self.before["address"],
+                           "nud", "permanent", "dev", endpoint["peer"]])
+        routes = json.loads(self.ns(endpoint, [self.tools["ip"], "-j", "-4", "route", "show", "exact", target + "/32"])["stdout"])
+        neighbors = json.loads(self.ns(endpoint, [self.tools["ip"], "-j", "neigh", "show", "to", target, "dev", endpoint["peer"]])["stdout"])
+        require(len(routes) == 1 and routes[0].get("dst") in (target, target + "/32") and
+                routes[0].get("dev") == endpoint["peer"] and not routes[0].get("gateway") and
+                len(neighbors) == 1 and neighbors[0].get("dst") == target and
+                neighbors[0].get("lladdr") == self.before["address"] and
+                "PERMANENT" in neighbors[0].get("state", []), "explicit target route/neighbor readback mismatch")
+        self.r.event({"phase": "own-namespace-target-neighbor", "namespace": endpoint["namespace"],
+                      "route": routes, "neighbor": neighbors, "hostAddressAssigned": False})
 
     def ns(self, endpoint, argv, **kwargs):
         state = os.lstat("/run/netns/" + endpoint["namespace"])
@@ -905,19 +1096,27 @@ class Fixture:
 
     def host_probe(self, endpoint):
         token = "virmill-packet:" + self.a.run_id
+        protected = self.a.host_access != "allow"
+        target = self.a.host4_target if self.a.kind == "guest-only" else self.gateway
+        if protected:
+            self.direct_neighbor(endpoint, target)
         stop = threading.Event()
         accepted = []
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-            listener.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, self.a.bridge.encode() + b"\0")
-            listener.bind((self.gateway, 0))
-            listener.listen(2)
+            # Protected probes need a real host-local positive control, which
+            # cannot enter a listener constrained to ingress on the bridge.
+            # Bind only the selected, already assigned address and ephemeral port.
+            if not protected:
+                listener.setsockopt(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, self.a.bridge.encode() + b"\0")
+            listener.bind((target, 0))
+            listener.listen(4)
             listener.settimeout(0.2)
             port = listener.getsockname()[1]
-            self.r.event({"phase": "host-listener", "bind": self.gateway, "device": self.a.bridge,
+            self.r.event({"phase": "host-listener", "bind": target, "device": None if protected else self.a.bridge,
                           "port": port, "listening": bool(listener.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN))})
 
             def serve():
-                while not stop.is_set() and len(accepted) < 2:
+                while not stop.is_set() and len(accepted) < 4:
                     try:
                         conn, address = listener.accept()
                     except socket.timeout:
@@ -932,13 +1131,50 @@ class Fixture:
             thread = threading.Thread(target=serve, daemon=True)
             thread.start()
             try:
-                result = self.worker(endpoint, "tcp", "--target", self.gateway, "--port", str(port), "--token", token)
+                controls = []
+                if protected:
+                    controls.append(host_tcp_control(target, port, token))
+                    self.r.event({"phase": "host-listener-control-before", "result": controls[-1]})
+                    require(tcp_expectation(controls[-1], True), "host listener positive control failed before namespace probe")
+                result = self.worker(endpoint, "tcp", "--target", target, "--port", str(port), "--token", token)
+                if protected:
+                    controls.append(host_tcp_control(target, port, token))
+                    self.r.event({"phase": "host-listener-control-after", "result": controls[-1]})
+                    require(tcp_expectation(controls[-1], True), "host listener positive control failed after namespace probe")
             finally:
                 stop.set()
                 thread.join(timeout=2)
             require(not thread.is_alive(), "host listener failed to terminate")
-        result.update({"listenerBoundOnlyToSelectedBridge": True, "listenerAccepts": accepted,
-                       "listenerClosed": True, "hostAccessExpected": "allow"})
+        result.update({"listenerBoundOnlyToSelectedBridge": not protected, "listenerAccepts": accepted,
+                       "listenerClosed": True, "hostAccessExpected": self.a.host_access,
+                       "positiveControls": controls, "explicitL2Neighbor": protected,
+                       "expected": "not_connected" if protected else "connected",
+                       "negativeResultProvesFiltering": False})
+        return result
+
+    def forward_probe(self, endpoint):
+        target = str(canonical_ip(self.a.forward4_target, 4))
+        require(ipaddress.IPv4Address(target) not in self.network and
+                not ipaddress.IPv4Address(target).is_link_local, "forward target must be outside fixture subnet")
+        protected = self.a.host_access != "allow"
+        controls = []
+        if protected:
+            controls.append(host_tcp_control(target, self.a.forward4_port))
+            self.r.event({"phase": "forward-control-before", "result": controls[-1]})
+            require(tcp_expectation(controls[-1], True), "external forward target positive control failed before probe")
+        if self.a.kind == "guest-only":
+            self.direct_neighbor(endpoint, target)
+        else:
+            self.ns(endpoint, [self.tools["ip"], "route", "add", target + "/32", "via", self.gateway, "dev", endpoint["peer"]])
+        result = self.worker(endpoint, "tcp", "--target", target, "--port", str(self.a.forward4_port))
+        if protected:
+            controls.append(host_tcp_control(target, self.a.forward4_port))
+            self.r.event({"phase": "forward-control-after", "result": controls[-1]})
+            require(tcp_expectation(controls[-1], True), "external forward target positive control failed after probe")
+        result.update({"routeOrigin": "explicit_fixture_target_route_not_DHCP_default",
+                       "expected": "connected" if self.a.kind == "nat" else "not_connected",
+                       "positiveControls": controls, "explicitL2Neighbor": protected,
+                       "negativeResultProvesFiltering": False})
         return result
 
     def observe(self):
@@ -946,9 +1182,13 @@ class Fixture:
         result = {"scope": "namespace-packet-observations", "realGuestQualified": False,
                   "multiNICGuestRoutesVerified": False, "servicesOnlyEnforcementQualified": False,
                   "fullNetworkAcceptance": False, "kind": self.a.kind, "dhcp": self.a.dhcp,
+                  "hostAccess": self.a.host_access,
                   "forwardIPv4": {"status": "not_requested"},
                   "forwardIPv6": {"status": "not_requested", "reason": "current native profile declares IPv6 disabled"},
                   "configuredDNS": {"status": "not_tested"}}
+        self.observation_boundary("before packet observations")
+        if self.a.host_access != "allow" and self.a.dhcp == "off":
+            result["disabledDHCP"] = self.worker(a, "dhcp-absence")
         if self.a.dhcp == "on":
             result["dhcpRouterOptions"] = [{"role": item["role"],
                                             "present": item["lease"]["ack"]["routerOptionPresent"],
@@ -967,18 +1207,14 @@ class Fixture:
                               "source": a["address"], "target": b["address"],
                               "addressOrigin": "own_DHCP_ACKs" if self.a.dhcp == "on" else "explicit_static"}
         result["hostTCP"] = self.host_probe(a)
+        self.observation_boundary("after host probe")
         if self.a.dns_name:
             result["configuredDNS"] = self.worker(a, "dns", "--target", self.gateway, "--dns-name", self.a.dns_name)
             result["configuredDNS"]["advertisedByOwnACK"] = (
                 self.a.dhcp == "on" and self.gateway in a["lease"]["ack"]["dns"])
         if self.a.forward4_target:
-            target = canonical_ip(self.a.forward4_target, 4)
-            require(target not in self.network and not target.is_link_local, "forward target must be outside fixture subnet")
-            self.ns(a, [self.tools["ip"], "route", "add", str(target) + "/32", "via", self.gateway, "dev", a["peer"]])
-            result["forwardIPv4"] = self.worker(a, "tcp", "--target", str(target), "--port", str(self.a.forward4_port))
-            result["forwardIPv4"].update({"routeOrigin": "explicit_fixture_target_route_not_DHCP_default",
-                                           "expected": "connected" if self.a.kind == "nat" else "not_connected",
-                                           "negativeResultProvesFiltering": False})
+            result["forwardIPv4"] = self.forward_probe(a)
+        self.observation_boundary("after IPv4 probes")
         time.sleep(2)  # bounded DAD wait in the generated namespaces only
         for endpoint in self.endpoints:
             addrs = json.loads(self.ns(endpoint, [self.tools["ip"], "-j", "address", "show", "dev", endpoint["peer"]])["stdout"])
@@ -1000,12 +1236,20 @@ class Fixture:
             result["namespaceRoutes"][endpoint["role"]] = {
                 family: json.loads(self.ns(endpoint, [self.tools["ip"], "-j", family, "route", "show", "table", "all"])["stdout"])
                 for family in ("-4", "-6")}
-        result["ipv4ChecksMet"] = (result["peerIPv4"]["status"] == "connected" and result["hostTCP"]["status"] == "connected"
+        result["ipv4ChecksMet"] = (result["peerIPv4"]["status"] == "connected" and
+                                    tcp_expectation(result["hostTCP"], self.a.host_access == "allow")
                                     and result["dhcpRouterExpectationMet"] is not False)
         if self.a.forward4_target:
-            result["ipv4ChecksMet"] &= result["forwardIPv4"]["status"] == result["forwardIPv4"]["expected"]
+            result["ipv4ChecksMet"] &= tcp_expectation(result["forwardIPv4"], self.a.kind == "nat")
         if self.a.dns_name:
             result["ipv4ChecksMet"] &= result["configuredDNS"]["status"] == "resolved"
+            if self.a.host_access == "services-only":
+                result["ipv4ChecksMet"] &= result["configuredDNS"]["advertisedByOwnACK"]
+        if "disabledDHCP" in result:
+            result["ipv4ChecksMet"] &= result["disabledDHCP"]["status"] == "none_seen_in_bounded_window"
+        self.observation_boundary("after packet observations")
+        result["bridgeL3UnchangedAtCheckpoints"] = True
+        result["guestOnlyNoHostL3AtCheckpoints"] = not self.before["addresses"] if self.a.kind == "guest-only" else None
         return result
 
     def cleanup(self):
@@ -1081,17 +1325,19 @@ def main(argv=None):
     run.add_argument("--root", type=selected_root, required=True)
     run.add_argument("--network-xml-sha256", required=True)
     run.add_argument("--bridge", required=True)
-    run.add_argument("--kind", choices=("nat", "lab"), required=True)
-    run.add_argument("--host-access", choices=("allow",), required=True)
+    run.add_argument("--kind", choices=("nat", "lab", "guest-only"), required=True)
+    run.add_argument("--host-access", choices=("allow", "services-only", "deny"), required=True)
     run.add_argument("--dhcp", choices=("on", "off"), required=True)
     run.add_argument("--static-a4")
     run.add_argument("--static-b4")
+    run.add_argument("--static-cidr4", help="guest-only logical RFC1918 subnet; assigns no host address")
+    run.add_argument("--host4-target", help="guest-only explicit already assigned host IPv4 outside the logical subnet")
     run.add_argument("--forward4-target")
     run.add_argument("--forward4-port", type=int)
     run.add_argument("--dns-name", help="explicit A query through only this bridge gateway; may cause upstream DNS traffic")
     run.add_argument("--output", type=Path, required=True)
     worker = sub.add_parser("worker", help=argparse.SUPPRESS)
-    worker.add_argument("--worker", choices=("dhcp", "ra", "tcp", "dns"), required=True)
+    worker.add_argument("--worker", choices=("dhcp", "dhcp-absence", "ra", "tcp", "dns"), required=True)
     worker.add_argument("--interface", required=True)
     worker.add_argument("--host-netns-inode", type=int, required=True)
     worker.add_argument("--source")
@@ -1113,7 +1359,7 @@ def main(argv=None):
     require(digest(source.read_bytes()) == args.recipe_sha256, "source SHA256 mismatch")
     if args.command == "worker":
         mac = worker_guard(args)
-        result = {"dhcp": dhcp_worker, "ra": ra_worker}.get(args.worker)
+        result = {"dhcp": dhcp_worker, "dhcp-absence": dhcp_absence_worker, "ra": ra_worker}.get(args.worker)
         result = result(args, mac) if result else dns_worker(args) if args.worker == "dns" else tcp_worker(args)
         print(json.dumps(result, sort_keys=True))
         return 0
@@ -1123,12 +1369,7 @@ def main(argv=None):
             "single-use output must be the approved run root/network-packet-RUN_UUID")
     require(re.fullmatch(r"[0-9a-f]{64}", args.network_xml_sha256), "XML SHA256 syntax invalid")
     require(re.fullmatch(r"vm[0-9a-f]{12}", args.bridge), "bridge grammar refused")
-    require(bool(args.forward4_target) == bool(args.forward4_port), "forward target and port must be supplied together")
-    if args.forward4_target:
-        canonical_ip(args.forward4_target, 4)
-        require(1 <= args.forward4_port <= 65535, "invalid TCP target port")
-    if args.dns_name:
-        dns_name(args.dns_name)
+    validate_profile(args)
     recorder = Recorder(args.output, args.root)
     fixture, observation, error = None, None, None
     recorder.save("invocation.json", {**vars(args), "root": str(args.root), "output": str(args.output), "source": str(source),

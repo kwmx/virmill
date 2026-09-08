@@ -45,12 +45,13 @@ type Response struct {
 	Network    *NetworkResponse   `json:"network,omitempty"`
 }
 type Policy struct {
-	APIVersion string                `json:"apiVersion"`
-	Keys       map[string]string     `json:"keys"`
-	Roots      map[string]string     `json:"roots"`
-	Actors     []uint32              `json:"actors"`
-	Auxiliary  []AuxiliaryPermission `json:"auxiliary,omitempty"`
-	Networks   []NetworkPermission   `json:"networks,omitempty"`
+	APIVersion        string                `json:"apiVersion"`
+	Keys              map[string]string     `json:"keys"`
+	Roots             map[string]string     `json:"roots"`
+	Actors            []uint32              `json:"actors"`
+	Auxiliary         []AuxiliaryPermission `json:"auxiliary,omitempty"`
+	Networks          []NetworkPermission   `json:"networks,omitempty"`
+	ProtectedNetworks []NetworkPermission   `json:"protectedNetworks,omitempty"`
 }
 
 var uuid = regexp.MustCompile(`^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
@@ -73,7 +74,7 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 		return errors.New("peer not allowed by administrator policy")
 	}
 	switch r.Operation {
-	case "network.ipv6-filter":
+	case "network.ipv6-filter", "network.policy-filter":
 		if err := authorizeNetwork(r, p); err != nil {
 			return err
 		}
@@ -122,7 +123,7 @@ func Authorize(peer uint32, r Request, p Policy, now time.Time) error {
 	if !now.Before(r.ExpiresAt) || r.ExpiresAt.Sub(now) > 15*time.Minute {
 		return errors.New("grant expired or duration exceeds limit")
 	}
-	if r.Operation != "network.ipv6-filter" && p.Roots[r.RootID] == "" {
+	if r.Operation != "network.ipv6-filter" && r.Operation != "network.policy-filter" && p.Roots[r.RootID] == "" {
 		return errors.New("unapproved storage root")
 	}
 	pub, e := hex.DecodeString(p.Keys[r.KeyID])

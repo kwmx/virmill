@@ -1,0 +1,15 @@
+# Disabling DHCP also disables managed DNS. Configure guest addresses explicitly.
+apiVersion: virmill/v1
+kind: Network
+metadata:
+  name: protected-static-lab
+  displayName: Static lab without managed DHCP or DNS
+  tags: [example]
+spec:
+  type: lab
+  ipv4:
+    cidr: 10.197.242.0/24
+    dhcp: {enabled: false, advertiseDefaultRoute: false}
+  ipv6: {mode: disabled}
+  hostAccess: services-only
+  egress: none

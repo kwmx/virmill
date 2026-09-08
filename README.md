@@ -36,7 +36,7 @@ Keyboard action search and compact navigation: [TUI guide](docs/tui-navigation.m
 Managed-volume read access: [reviewed helper workflow](docs/managed-volume-access.md)
 and [native evidence](docs/evidence/managed-access-run.md).
 Read-only device and subnet facts: [PCI and CIDR discovery](docs/host-network-discovery.md).
-Managed NAT/lab creation and reviewed activation recovery:
+Managed NAT/lab creation, services-only and guest-only profiles, and reviewed activation recovery:
 [network guide](docs/network-creation.md), [helper setup](docs/network-helper.md),
 and [recorded qualification results](docs/evidence/owned-network-run.md).
 

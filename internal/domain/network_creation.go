@@ -18,6 +18,24 @@ type NetworkDefinition struct {
 	Egress                string `json:"egress"`
 }
 
+// PolicyVersion separates legacy allowed-host definitions and helper grants
+// from protected profiles. Zero means no supported policy family; callers must
+// still validate addresses, DHCP, forwarding and native state independently.
+func (d NetworkDefinition) PolicyVersion() int {
+	if d.Type == "nat" || d.Type == "lab" {
+		if d.HostAccess == "allow" {
+			return 1
+		}
+		if d.HostAccess == "services-only" {
+			return 2
+		}
+	}
+	if d.Type == "guest-only" && d.HostAccess == "deny" {
+		return 2
+	}
+	return 0
+}
+
 // NetworkCreationProvider cannot replace or remove an existing definition.
 // Methods must repeat collision/configuration checks immediately before a
 // native mutation. InspectCreatedNetwork is read-only and verifies the exact

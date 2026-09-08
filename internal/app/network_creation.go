@@ -42,7 +42,7 @@ func networkResources(uri string, d domain.NetworkDefinition) []string {
 }
 func parseNetworkRecipe(p domain.Plan, raw []byte) (networkRecipe, error) {
 	var r networkRecipe
-	if wire.Decode(raw, &r) != nil || r.Version != 1 || p.ConnectionID != "qemu:///system" || !slices.Equal(p.ResourceIDs, networkResources(p.ConnectionID, r.Definition)) || len(p.Before) != 0 || networkxml.Validate(r.Definition) != nil {
+	if wire.Decode(raw, &r) != nil || r.Version < 1 || r.Version != r.Definition.PolicyVersion() || p.ConnectionID != "qemu:///system" || !slices.Equal(p.ResourceIDs, networkResources(p.ConnectionID, r.Definition)) || len(p.Before) != 0 || networkxml.Validate(r.Definition) != nil {
 		return r, domain.Fail("INVALID_INPUT", "invalid managed network creation binding")
 	}
 	if (p.Operation != "network.create" || r.ParentJobID != "" || r.OriginJobID != "") && (p.Operation != "network.creation.resume" || r.ParentJobID == "" || r.OriginJobID == "") {
@@ -54,7 +54,7 @@ func parseNetworkRecipe(p domain.Plan, raw []byte) (networkRecipe, error) {
 	}
 	return r, nil
 }
-func networkSteps(resume bool) []domain.Step {
+func networkSteps(resume bool, d domain.NetworkDefinition) []domain.Step {
 	step := func(id, action, predicate string) domain.Step {
 		return domain.Step{ID: id, Action: action, Preconditions: []string{"exact new network identity", "no conflicting host or reserved prefix", "exclusive network writer"}, Idempotency: "non-repeatable", Compensation: "Retain this network and its subnet reservation for reviewed recovery; never remove unrelated resources", Reconciliation: "Observe the exact journal-bound network without replaying definition or activation", CompletionPredicate: predicate}
 	}
@@ -62,13 +62,24 @@ func networkSteps(resume bool) []domain.Step {
 	if !resume {
 		out = append(out, step("define", "network.define", "Exact persistent network exists and is inactive with autostart disabled"))
 	}
+	if d.PolicyVersion() == 2 {
+		out = append(out, step("firewall", "network.policy-filter", "Exact host-access and IPv6 rules are present in runtime and permanent configuration with verified host-input chain ordering"))
+		return append(out, step("activate", "network.activate", "Exact persistent network is active with autostart disabled and protected policy rules present; packet and guest behavior remain unverified"))
+	}
 	out = append(out, step("firewall", "network.ipv6-filter", "Exact bridge IPv6 deny rules are present in firewalld runtime and permanent configuration"))
 	return append(out, step("activate", "network.activate", "Exact persistent network is active with autostart disabled and IPv6 deny rules present; packet and guest behavior remain unverified"))
 }
 func networkAcknowledgements() []string {
 	return []string{"host-mutation", "network-host-access", "network-firewall", "exclusive-network-writer"}
 }
-func networkRisks() []string {
+func networkRisks(d domain.NetworkDefinition) []string {
+	if d.PolicyVersion() == 2 {
+		profile := "The bridge has no host IPv4 address, DHCP, DNS or forwarding; declared IPv4 CIDR reserves only the logical guest subnet, and guests need explicit static addressing"
+		if d.HostAccess == "services-only" {
+			profile = "Host access permits only managed DHCP and DNS when DHCP is enabled; disabling DHCP also disables managed DNS. Other host IPv4 services are denied"
+		}
+		return []string{profile, "Host-access and IPv6 filters require a separate protectedNetworks administrator grant and exact supported firewall chain ordering; drift causes refusal", "Libvirt creates only the reviewed new virtual bridge and native forwarding; no physical uplink or global host setting is changed", "Coordinate other network writers: libvirt has no atomic create-only definition API and host/route snapshots are not atomic", "Packet, IPv6 and guest routing qualification is separate; autostart remains disabled"}
+	}
 	return []string{"The new segment explicitly permits host access; it is unsuitable for untrusted guests requiring host isolation", "Libvirt creates only the reviewed new bridge, IPv4 address, optional DHCP/DNS and native NAT or isolated forwarding; no physical uplink is moved", "Coordinate other network writers: libvirt has no atomic create-only definition API and host/route snapshots are not atomic", "IPv6, DHCP, routing, DNS and packet isolation require native verification; autostart remains disabled"}
 }
 func (s *Service) planNetworkCreation(ctx context.Context, uid uint32, r Request) (domain.Plan, error) {
@@ -96,17 +107,20 @@ func (s *Service) planNetworkCreation(ctx context.Context, uid uint32, r Request
 	if err = network.Validate(spec); err != nil {
 		return empty, domain.Fail("INVALID_INPUT", err.Error())
 	}
-	if spec.IPv4 == nil || spec.IPv4.CIDR == "auto" || spec.BridgeRef != "" {
-		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "creation currently requires an explicit IPv4 CIDR and a new managed bridge; use network cidr check before choosing the subnet")
+	if (spec.IPv4 == nil && spec.Type != "guest-only") || (spec.IPv4 != nil && spec.IPv4.CIDR == "auto") || spec.BridgeRef != "" {
+		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "creation requires a new managed bridge and explicit IPv4 CIDR, optional only for guest-only; use network cidr check before choosing the subnet")
 	}
 	id := domain.ID()
-	d := domain.NetworkDefinition{UUID: id, Name: "virmill-" + id, Bridge: "vm" + strings.ReplaceAll(id, "-", "")[:12], Type: spec.Type, IPv4CIDR: spec.IPv4.CIDR, DHCPEnabled: spec.IPv4.DHCP.Enabled, AdvertiseDefaultRoute: spec.IPv4.DHCP.AdvertiseDefaultRoute, IPv6Mode: spec.IPv6.Mode, HostAccess: spec.HostAccess, Egress: spec.Egress}
+	d := domain.NetworkDefinition{UUID: id, Name: "virmill-" + id, Bridge: "vm" + strings.ReplaceAll(id, "-", "")[:12], Type: spec.Type, IPv6Mode: spec.IPv6.Mode, HostAccess: spec.HostAccess, Egress: spec.Egress}
+	if spec.IPv4 != nil {
+		d.IPv4CIDR, d.DHCPEnabled, d.AdvertiseDefaultRoute = spec.IPv4.CIDR, spec.IPv4.DHCP.Enabled, spec.IPv4.DHCP.AdvertiseDefaultRoute
+	}
 	if err = networkxml.Validate(d); err != nil {
 		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", err.Error())
 	}
 	metadata, _ := json.Marshal(value["metadata"])
-	recipe := networkRecipe{Version: 1, Definition: d, Metadata: metadata}
-	return s.Engine.Plan(ctx, uid, r.Connection, "network.create", networkResources(r.Connection, d), nil, recipe, networkSteps(false), networkAcknowledgements(), networkRisks())
+	recipe := networkRecipe{Version: d.PolicyVersion(), Definition: d, Metadata: metadata}
+	return s.Engine.Plan(ctx, uid, r.Connection, "network.create", networkResources(r.Connection, d), nil, recipe, networkSteps(false, d), networkAcknowledgements(), networkRisks(d))
 }
 func (s *Service) networkRecords() ([]networkRecord, error) {
 	entries, err := s.Engine.Store.MetadataRecords()
@@ -123,7 +137,7 @@ func (s *Service) networkRecords() ([]networkRecord, error) {
 			return nil, domain.Fail("INVALID_STATE", "network reservation limit")
 		}
 		var record networkRecord
-		if wire.Decode(entry.Body, &record) != nil || record.Version != 1 || record.Connection != "qemu:///system" || record.JobID == "" || record.PlanID == "" || len(record.PlanDigest) != 64 || networkxml.Validate(record.Definition) != nil || ids[record.Definition.UUID] || entry.ID != record.Definition.UUID {
+		if wire.Decode(entry.Body, &record) != nil || record.Version < 1 || record.Version != record.Definition.PolicyVersion() || record.Connection != "qemu:///system" || record.JobID == "" || record.PlanID == "" || len(record.PlanDigest) != 64 || networkxml.Validate(record.Definition) != nil || ids[record.Definition.UUID] || entry.ID != record.Definition.UUID {
 			return nil, domain.Fail("INVALID_STATE", "network reservation is corrupt; preserve allocations")
 		}
 		plan, raw, err := s.Engine.Store.Plan(record.PlanID)
@@ -144,6 +158,14 @@ func (s *Service) networkRecords() ([]networkRecord, error) {
 	return records, nil
 }
 func (s *Service) checkNetworkCIDR(ctx context.Context, uri string, d domain.NetworkDefinition, exclude string) error {
+	if d.IPv4CIDR == "" && d.Type == "guest-only" {
+		// No subnet is allocated. Still validate retained reservations so
+		// corrupt state cannot be hidden by an addressless profile.
+		if _, err := s.networkRecords(); err != nil {
+			return err
+		}
+		return ctx.Err()
+	}
 	result, err := s.checkCIDRsExcept(ctx, Request{Connection: uri, Input: map[string]any{"candidates": []string{d.IPv4CIDR}}}, exclude)
 	if err != nil {
 		return err
@@ -166,7 +188,7 @@ func (s *Service) recordForRecipe(p domain.Plan, r networkRecipe) (networkRecord
 	if len(raw) == 0 {
 		return out, nil
 	}
-	if wire.Decode(raw, &out) != nil || out.Version != 1 || out.Connection != p.ConnectionID || out.Definition != r.Definition || !reflect.DeepEqual(json.RawMessage(out.Metadata), r.Metadata) {
+	if wire.Decode(raw, &out) != nil || out.Version != r.Version || out.Connection != p.ConnectionID || out.Definition != r.Definition || !reflect.DeepEqual(json.RawMessage(out.Metadata), r.Metadata) {
 		return out, domain.Fail("SOURCE_CHANGED", "network reservation differs from immutable recipe")
 	}
 	original, body, err := s.Engine.Store.Plan(out.PlanID)
@@ -222,7 +244,7 @@ func (h *networkCreationHandler) Validate(ctx context.Context, p domain.Plan, ra
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "native network creation unavailable")
 	}
 	if h.s.NetworkFirewall == nil {
-		return domain.Fail("UNSUPPORTED_CAPABILITY", "authenticated network IPv6 filter helper unavailable")
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "authenticated network policy helper unavailable")
 	}
 	// Preview is possible before an administrator approves its fresh UUID. The
 	// sealed plan supplies that concrete identity; apply must pass helper policy.
@@ -284,7 +306,7 @@ func (h *networkCreationHandler) Execute(ctx context.Context, p domain.Plan, raw
 		if err = h.s.checkNetworkCIDR(ctx, p.ConnectionID, r.Definition, ""); err != nil {
 			return err
 		}
-		record := networkRecord{Version: 1, Connection: p.ConnectionID, JobID: id, PlanID: p.ID, PlanDigest: p.Digest, Definition: r.Definition, Metadata: r.Metadata}
+		record := networkRecord{Version: r.Version, Connection: p.ConnectionID, JobID: id, PlanID: p.ID, PlanDigest: p.Digest, Definition: r.Definition, Metadata: r.Metadata}
 		if err = h.s.Engine.Store.ComparePut(networkRecordKind, r.Definition.UUID, nil, record); err != nil {
 			return err
 		}
@@ -422,9 +444,12 @@ func (s *Service) planNetworkResume(ctx context.Context, uid uint32, r Request) 
 		old.OriginJobID = j.ID
 	}
 	old.ParentJobID = j.ID
-	return s.Engine.Plan(ctx, uid, r.Connection, "network.creation.resume", networkResources(r.Connection, old.Definition), nil, old, networkSteps(true), networkAcknowledgements(), networkRisks())
+	return s.Engine.Plan(ctx, uid, r.Connection, "network.creation.resume", networkResources(r.Connection, old.Definition), nil, old, networkSteps(true, old.Definition), networkAcknowledgements(), networkRisks(old.Definition))
 }
 func (s *Service) networkCreationResult(ctx context.Context, uid uint32, r Request) (any, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if r.ID == "" || r.Path != "" || r.Action != "" || r.Apply != nil || r.After != 0 || len(r.Input) != 0 {
 		return nil, domain.Fail("INVALID_INPUT", "creation result requires only an operation ID")
 	}
@@ -447,7 +472,7 @@ func (s *Service) networkCreationResult(ctx context.Context, uid uint32, r Reque
 	if err != nil {
 		return nil, err
 	}
-	result := map[string]any{"job": j, "definition": recipe.Definition, "metadata": recipe.Metadata, "subnetReserved": record.JobID != "", "packetVerification": "not-run", "guestRoutingVerified": false}
+	result := map[string]any{"job": j, "definition": recipe.Definition, "metadata": recipe.Metadata, "subnetReserved": record.JobID != "" && recipe.Definition.IPv4CIDR != "", "packetVerification": "not-run", "guestRoutingVerified": false}
 	if provider, ok := s.Provider.(domain.NetworkCreationProvider); ok && record.JobID != "" {
 		n, e := provider.InspectCreatedNetwork(ctx, r.Connection, recipe.Definition)
 		if e != nil {
@@ -456,5 +481,8 @@ func (s *Service) networkCreationResult(ctx context.Context, uid uint32, r Reque
 			result["network"] = n
 		}
 	}
-	return result, ctx.Err()
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

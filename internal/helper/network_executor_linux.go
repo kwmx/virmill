@@ -27,7 +27,7 @@ import (
 
 const networkOutputLimit = 64 << 10
 
-// NetworkExecutor adds only the fixed bridge IPv6 DROP rules after Authorize.
+// NetworkExecutor adds only the selected versioned bridge/host policy after Authorize.
 // No configuration/request can replace the executable, arguments or journal.
 type NetworkExecutor struct {
 	Backend         domain.NetworkCreationProvider
@@ -119,7 +119,7 @@ func networkRules(bridge string) [8][]string {
 
 func networkRuleLine(args []string) string {
 	for i, a := range args {
-		if a == "eb" {
+		if a == "eb" || a == "ipv4" || a == "ipv6" {
 			return strings.Join(args[i:], " ")
 		}
 	}
@@ -129,6 +129,10 @@ func networkRuleLine(args []string) string {
 type networkRuleInventory [2]map[string]bool
 
 func parseNetworkRules(raw string) (map[string]bool, error) {
+	return parseNetworkRuleInventory(raw, false)
+}
+
+func parseNetworkRuleInventory(raw string, protected bool) (map[string]bool, error) {
 	bad := func() (map[string]bool, error) {
 		return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "unknown, ambiguous or potentially bypassing firewalld direct rules")
 	}
@@ -156,6 +160,13 @@ func parseNetworkRules(raw string) (map[string]bool, error) {
 		switch fields[0] {
 		case "ipv4", "ipv6": // Retained exactly, never executed or edited.
 		case "eb":
+			if protected && protectedBridgeDrop(fields) {
+				if line != strings.Join(fields, " ") {
+					return bad()
+				}
+				out[line] = true
+				continue
+			}
 			if len(fields) != 10 || line != strings.Join(fields, " ") || fields[1] != "filter" || fields[3] != "-32768" || fields[6] != "-p" || fields[7] != "IPv6" || fields[8] != "-j" || fields[9] != "DROP" {
 				return bad()
 			}
@@ -231,7 +242,7 @@ func (e NetworkExecutor) inventory(ctx context.Context) (networkRuleInventory, e
 		if out.exit != 0 {
 			return result, domain.Fail("UNSUPPORTED_CAPABILITY", "firewalld direct bridge rule inventory unavailable")
 		}
-		result[i], err = parseNetworkRules(out.stdout)
+		result[i], err = parseNetworkRuleInventory(out.stdout, true)
 		if err != nil {
 			return result, err
 		}
@@ -279,14 +290,14 @@ func (e NetworkExecutor) query(ctx context.Context, args []string) (bool, error)
 	return false, domain.Fail("UNSUPPORTED_CAPABILITY", "firewalld exact rule query returned an unsupported response")
 }
 
-func (e NetworkExecutor) queryAll(ctx context.Context, rules [8][]string, inventory networkRuleInventory) ([8]bool, error) {
-	var present [8]bool
+func (e NetworkExecutor) queryAll(ctx context.Context, rules [][]string, inventory networkRuleInventory) ([]bool, error) {
+	present := make([]bool, len(rules))
 	for i, args := range rules {
 		v, err := e.query(ctx, args)
 		if err != nil {
 			return present, err
 		}
-		if v != inventory[i/4][networkRuleLine(args)] {
+		if v != inventory[i/(len(rules)/2)][networkRuleLine(args)] {
 			return present, domain.Fail("SOURCE_CHANGED", "firewalld direct inventory changed during exact rule observation")
 		}
 		present[i] = v
@@ -343,7 +354,7 @@ type networkRecord struct {
 type networkHistory struct {
 	plan     string
 	exists   bool
-	rules    [8]bool
+	rules    []bool
 	complete bool
 }
 type networkJournal struct {
@@ -476,12 +487,12 @@ func newNetworkRecord(r Request, binding, kind string, index int, args []string)
 	if args == nil {
 		args = []string{}
 	}
-	return networkRecord{1, binding, r.JobID, r.PlanDigest, kind, index, args}
+	return networkRecord{r.Network.Version, binding, r.JobID, r.PlanDigest, kind, index, args}
 }
 
-func (j *networkJournal) history(ctx context.Context, r Request, binding string, rules [8][]string) (map[string]networkHistory, [8]bool, error) {
+func (j *networkJournal) history(ctx context.Context, r Request, binding string, rules [][]string) (map[string]networkHistory, []bool, error) {
 	jobs := map[string]networkHistory{}
-	var owned [8]bool
+	owned := make([]bool, len(rules))
 	// A fresh descriptor gives a fresh directory cursor while retaining the held
 	// no-symlink root. Unrelated helper records are not read or altered.
 	fd, err := unix.Openat(int(j.file.Fd()), ".", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC, 0)
@@ -504,7 +515,7 @@ func (j *networkJournal) history(ctx context.Context, r Request, binding string,
 			names = append(names, entry.Name())
 		}
 	}
-	if len(names) > 640 {
+	if len(names) > 64*(len(rules)+2) {
 		return nil, owned, errors.New("network recovery history exceeds bound")
 	}
 	sort.Strings(names)
@@ -530,6 +541,9 @@ func (j *networkJournal) history(ctx context.Context, r Request, binding string,
 		}
 		var expected networkRecord
 		h := jobs[job]
+		if h.rules == nil {
+			h.rules = make([]bool, len(rules))
+		}
 		if h.plan != "" && h.plan != rec.PlanDigest {
 			return nil, owned, errors.New("inconsistent network job plan binding")
 		}
@@ -542,10 +556,10 @@ func (j *networkJournal) history(ctx context.Context, r Request, binding string,
 			expected = newNetworkRecord(copyReq, binding, "complete", -1, nil)
 			h.complete = true
 		default:
-			if len(suffix) != 10 || !strings.HasPrefix(suffix, "rule") || !strings.HasSuffix(suffix, ".json") || suffix[4] < '0' || suffix[4] > '7' {
+			i, parseErr := strconv.Atoi(strings.TrimSuffix(strings.TrimPrefix(suffix, "rule"), ".json"))
+			if parseErr != nil || i < 0 || i >= len(rules) || suffix != "rule"+strconv.Itoa(i)+".json" {
 				return nil, owned, errors.New("unknown network journal record")
 			}
-			i := int(suffix[4] - '0')
 			expected = newNetworkRecord(copyReq, binding, "rule", i, rules[i])
 			h.rules[i] = true
 		}
@@ -583,7 +597,7 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 	if err := ctx.Err(); err != nil {
 		return empty, err
 	}
-	if r.APIVersion != domain.APIVersion || p.APIVersion != domain.APIVersion || r.Operation != "network.ipv6-filter" || !uuid.MatchString(r.JobID) || !networkDigest(r.PlanDigest) || r.ActorUID == 0 || len(r.KeyID) == 0 || len(r.KeyID) > 128 || !time.Now().Before(r.ExpiresAt) {
+	if r.APIVersion != domain.APIVersion || p.APIVersion != domain.APIVersion || r.Network == nil || r.Operation != networkOperation(r.Network.Version) || !uuid.MatchString(r.JobID) || !networkDigest(r.PlanDigest) || r.ActorUID == 0 || len(r.KeyID) == 0 || len(r.KeyID) > 128 || !time.Now().Before(r.ExpiresAt) {
 		return empty, domain.Fail("INVALID_INPUT", "authenticated exact network filter request required")
 	}
 	if err := authorizeNetwork(r, p); err != nil {
@@ -592,7 +606,7 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 	if e.Backend == nil {
 		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "independent native network observer unavailable")
 	}
-	ctx, cancel := context.WithTimeout(ctx, 90*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, networkTimeout(r.Network.Version))
 	defer cancel()
 	ctx, expire := context.WithDeadline(ctx, r.ExpiresAt)
 	defer expire()
@@ -601,7 +615,7 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 		return empty, err
 	}
 	defer j.file.Close()
-	owner := networkOwner{1, r.ActorUID, r.KeyID, r.ResourceID, r.Network.Definition}
+	owner := networkOwner{r.Network.Version, r.ActorUID, r.KeyID, r.ResourceID, r.Network.Definition}
 	binding, err := operations.Digest(owner)
 	if err != nil {
 		return empty, err
@@ -616,7 +630,7 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 	if ownerExists && prior != owner {
 		return empty, domain.Fail("SOURCE_CHANGED", "network resource belongs to a different immutable helper binding")
 	}
-	rules := networkRules(r.Network.Definition.Bridge)
+	rules := networkPolicyRules(r.Network.Definition)
 	history, owned, err := j.history(ctx, r, binding, rules)
 	if err != nil {
 		return empty, domain.Fail("RECOVERY_REQUIRED", "network job journal is incomplete or inconsistent")
@@ -643,6 +657,12 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 	if err != nil {
 		return empty, err
 	}
+	if err = selectedNetworkPolicy(r, rules, inventory); err != nil {
+		return empty, err
+	}
+	if err = e.protectedKernel(ctx, r, inventory); err != nil {
+		return empty, err
+	}
 	present, err := e.queryAll(ctx, rules, inventory)
 	if err != nil {
 		return empty, err
@@ -653,10 +673,10 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 		}
 	}
 	response := func() NetworkResponse {
-		out := NetworkResponse{Version: 1, ResourceID: r.ResourceID, Bridge: r.Network.Definition.Bridge, PlanDigest: r.PlanDigest, JobID: r.JobID, RuntimePresent: true, PermanentPresent: true}
+		out := NetworkResponse{Version: r.Network.Version, ResourceID: r.ResourceID, Bridge: r.Network.Definition.Bridge, PlanDigest: r.PlanDigest, JobID: r.JobID, RuntimePresent: true, PermanentPresent: true}
 		for i, v := range present {
 			if !v {
-				if i < 4 {
+				if i < len(rules)/2 {
 					out.RuntimePresent = false
 				} else {
 					out.PermanentPresent = false
@@ -666,6 +686,9 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 		return out
 	}
 	if r.Mode == "check" {
+		if err = e.finalProtectedPolicy(ctx, r, inventory); err != nil {
+			return empty, err
+		}
 		if err = ctx.Err(); err != nil {
 			return empty, err
 		}
@@ -678,10 +701,13 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 		}
 		for i, v := range present {
 			if !v || !h.rules[i] {
-				return empty, domain.Fail("RECOVERY_REQUIRED", "network job lacks all eight durable intents and current rules")
+				return empty, domain.Fail("RECOVERY_REQUIRED", "network job lacks every durable policy intent and current rule")
 			}
 		}
 		if err = e.native(ctx, r); err != nil {
+			return empty, err
+		}
+		if err = e.finalProtectedPolicy(ctx, r, inventory); err != nil {
 			return empty, err
 		}
 		if err = j.check(); err != nil {
@@ -714,6 +740,9 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 		if !reflect.DeepEqual(current, inventory) {
 			return empty, domain.Fail("SOURCE_CHANGED", "firewalld direct rules changed outside this reviewed job")
 		}
+		if err = e.protectedKernel(ctx, r, current); err != nil {
+			return empty, err
+		}
 		if err = j.write(networkRecordName(r, "rule"+strconv.Itoa(i)), newNetworkRecord(r, binding, "rule", i, args)); err != nil {
 			return empty, domain.Fail("RECOVERY_REQUIRED", "per-rule durable intent publication failed; no rule replay is allowed")
 		}
@@ -728,7 +757,7 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 			if out.exit != 0 || out.stdout != "success\n" {
 				return empty, domain.Fail("RECOVERY_REQUIRED", "IPv6 rule addition did not return exact success; preserve intent and observe")
 			}
-			inventory[i/4][networkRuleLine(args)] = true
+			inventory[i/(len(rules)/2)][networkRuleLine(args)] = true
 		}
 		present[i], err = e.query(ctx, args)
 		if err != nil || !present[i] {
@@ -755,6 +784,9 @@ func (e NetworkExecutor) Execute(ctx context.Context, r Request, p Policy) (Netw
 		return empty, err
 	}
 	if err = ctx.Err(); err != nil {
+		return empty, err
+	}
+	if err = e.finalProtectedPolicy(ctx, r, inventory); err != nil {
 		return empty, err
 	}
 	if err = j.write(networkRecordName(r, "complete"), newNetworkRecord(r, binding, "complete", -1, nil)); err != nil {

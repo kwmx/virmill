@@ -472,7 +472,7 @@ Global Flags:
 
 ## `virmill network create`
 
-Plan a new NAT or lab network with explicitly allowed host access and an exact subnet
+Plan a new NAT/lab network with explicit host access or a guest-only segment without host L3
 
 ```text
 Usage:

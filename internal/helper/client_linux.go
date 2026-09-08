@@ -179,7 +179,7 @@ func (c Client) connectRequest(ctx context.Context, r Request) (*net.UnixConn, R
 
 func (c Client) Call(ctx context.Context, r Request) (AccessResult, error) {
 	var result AccessResult
-	if r.Operation == "state.auxiliary" || r.Auxiliary != nil || r.Network != nil || r.Operation == "network.ipv6-filter" {
+	if r.Operation == "state.auxiliary" || r.Auxiliary != nil || r.Network != nil || r.Operation == "network.ipv6-filter" || r.Operation == "network.policy-filter" {
 		return result, domain.Fail("INVALID_INPUT", "auxiliary requests require the dedicated typed client")
 	}
 	conn, r, err := c.connectRequest(ctx, r)
