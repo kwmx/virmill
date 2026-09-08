@@ -1,0 +1,11 @@
+{
+  "manifestVersion": "1",
+  "id": "example.virmill.provider-fixture",
+  "name": "Simulated Provider Conformance Fixture",
+  "version": "0.2.0",
+  "protocol": {"minVersion": "1.0", "maxVersion": "1.0", "transport": "stdio-jsonrpc"},
+  "entrypoints": {"linux/amd64": {"path": "provider-fixture"}},
+  "extensionTypes": ["provider"],
+  "permissions": [],
+  "network": "none"
+}

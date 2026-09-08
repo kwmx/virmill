@@ -290,6 +290,11 @@ type ConformanceReport struct {
 }
 
 func Conformance(ctx context.Context, exe, workspace string, m Manifest) (ConformanceReport, error) {
+	for _, extension := range m.ExtensionTypes {
+		if extension == "provider" {
+			return providerConformance(ctx, exe, workspace, m)
+		}
+	}
 	report := ConformanceReport{PluginID: m.ID, Checks: []string{}, EvidenceClass: "simulated-contract", Confined: true}
 	s, e := Start(ctx, exe, workspace)
 	if e != nil {

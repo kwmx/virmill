@@ -1,5 +1,25 @@
 # Simulated provider contract fixture
 
+From the source repository, run `scripts/build-provider-fixture.sh`. It uses the
+pinned offline toolchain and writes a development manifest containing the actual
+executable digest into `build/provider-conformance`.
+
+With the development coordinator running, use:
+
+```sh
+virmill plugin validate build/provider-conformance
+virmill plugin test build/provider-conformance --output json --timeout 90s
+```
+
+In the TUI, open **Plugins**, select **plugin test**, and enter the absolute
+`build/provider-conformance` path. Both interfaces invoke the same confined
+conformance service. The service creates a private disposable workspace, exercises
+fake JSON resources, and removes that workspace after reporting its observations.
+Failures return an error with completed checks; a partial provider receipt remains
+explicitly partial after reconciliation. This command does not install a provider,
+manage a remote host, or qualify a real VM. Other provider implementations are
+outside this exact reference-fixture test profile.
+
 This SDK executable changes only generated JSON records in its private workspace.
 It has no libvirt, guest, network, USB, image, remote-service or credential access.
 Its provider ID is `fixture`; its single connection is `fixture:///default`.
@@ -9,8 +29,9 @@ capability model. A successful fixture effect is **simulated-contract** evidence
 The normative contract is [protocol 1.0](../../../../virmill-v1-spec/docs/12-plugin-protocol.md#provider-extension-contract).
 This fixture covers the method families required by EXT-02 and contributes
 SDK dispatch/error cases to EXT-01/EXT-03. It does not certify a real remote
-provider, confinement, the CLI/TUI provider integration, host performance or the
-remaining plugin acceptance scenarios.
+provider, host performance or the remaining plugin acceptance scenarios. The
+separate shared conformance service checks actual confinement and CLI/TUI access
+for this exact reference fixture; it does not add a real remote backend.
 
 ## Supported methods and local payload shape
 
