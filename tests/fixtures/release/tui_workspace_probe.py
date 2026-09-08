@@ -158,8 +158,7 @@ def media_folder(entries):
                   stat.S_ISDIR(info['mode']) and 0 < len(name) <= 40 and
                   name[0] != '.' and name.isascii() and
                   all(c.isalnum() or c in ' ._-' for c in name)]
-    require(candidates, 'an existing printable media folder is required for browser traversal')
-    return sorted(candidates, key=lambda name: (name.casefold(), name))[0]
+    return sorted(candidates, key=lambda name: (name.casefold(), name))[0] if candidates else None
 
 
 def media_file(listings):
@@ -522,27 +521,34 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         terminal.wait('Import starts with exactly three understandable source choices', lambda text:
                       source_menu(text) and 'of 3' in text and 'Inspect' not in text,
                       terminal.send(b'i'))
-        picker = lambda text: 'Choose a file' in text and 'Esc' in text
+        picker = lambda text: re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is not None and 'Esc' in text
         terminal.wait('OVA source opens browser at existing images directory', lambda text:
-                      picker(text) and str(media_root) in text and folder in text,
+                      picker(text) and str(media_root) in text and (folder is None or folder in text),
                       terminal.send(b'\r'))
+        traversal_parent = media_root if folder else media_root.parent
+        traversal_name = folder or media_root.name
+        traversal_path = traversal_parent / traversal_name
+        if folder is None:
+            terminal.wait('Backspace opens observed home containing images folder', lambda text:
+                          picker(text) and str(media_root.parent) in text and str(media_root) not in text and
+                          'images/' in text, terminal.send(b'\x7f'))
         terminal.wait('Browser search receives focus', lambda text:
                       picker(text) and 'Find:' in text and 'Enter done' in text,
                       terminal.send(b'/'))
         terminal.wait('Browser filters an actual existing media folder', lambda text:
-                      picker(text) and ('Find: ' + folder) in text and folder in text,
-                      terminal.send(folder.encode('ascii')))
+                      picker(text) and ('Find: ' + traversal_name) in text and traversal_name in text,
+                      terminal.send(traversal_name.encode('ascii')))
         terminal.wait('Enter finishes browser filter before directory navigation', lambda text:
-                      picker(text) and ('Find: ' + folder) in text and 'Enter open/select' in text and
+                      picker(text) and ('Find: ' + traversal_name) in text and 'Enter open/select' in text and
                       'Enter done' not in text, terminal.send(b'\r'))
         terminal.wait('Enter traverses actual media folder without choosing an image', lambda text:
-                      picker(text) and str(media_root / folder) in text,
+                      picker(text) and str(traversal_path) in text,
                       terminal.send(b'\r'))
-        terminal.wait('Backspace returns to existing images directory', lambda text:
-                      picker(text) and str(media_root) in text and str(media_root / folder) not in text,
+        terminal.wait('Backspace returns to observed parent directory', lambda text:
+                      picker(text) and str(traversal_parent) in text and str(traversal_path) not in text,
                       terminal.send(b'\x7f'))
         terminal.wait('Esc cancels browser and returns to import form', lambda text:
-                      'Choose a file' not in text and 'OVA appliance' in text and
+                      re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is None and 'OVA appliance' in text and
                       ('Browse' in text or 'browse' in text), terminal.send(b'\x1b'))
         terminal.wait('Ctrl+O reopens browser from OVA file field', lambda text:
                       picker(text) and str(media_root) in text,
@@ -566,7 +572,7 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                           terminal.send(b'\r'))
         choose_browser_entry(selected_file.name, 'Choose existing source file')
         terminal.wait('Selected file fills OVA field without submitting import', lambda text:
-                      'Choose a file' not in text and 'OVA appliance' in text and 'OVA file' in text and
+                      re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is None and 'OVA appliance' in text and 'OVA file' in text and
                       selected_file.name[-24:] in text,
                       terminal.send(b'\r'))
         terminal.wait('Esc cancels populated import form back to source choices', source_menu,
@@ -591,7 +597,7 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         require(terminal.process.wait(timeout=2) == 0, 'TUI did not exit cleanly')
         runner.checks.append({'case': label, 'status': 'passed', 'selectedVM': selected,
                               'arrowSelectedVM': observed[0], 'exitCode': 0, 'resizedTo': list(new_size),
-                              'mediaFolderTraversed': folder, 'sourceSelected': True,
+                              'mediaFolderTraversed': str(traversal_path), 'sourceSelected': True,
                               'selectedSourceFile': str(selected_file), 'importSubmitted': False,
                               'advancedToolsSeparated': True})
     finally:
@@ -668,8 +674,10 @@ def main():
                 selected = candidates[0]
             media_root = Path.home() / 'images'
             root_entries = media_listing(media_root)
+            media_before = {media_root: root_entries}
             folder = media_folder(root_entries)
-            media_before = {media_root: root_entries, media_root / folder: media_listing(media_root / folder)}
+            if folder:
+                media_before[media_root / folder] = media_listing(media_root / folder)
             selected_file = media_file(media_before)
             report['mediaListingsBefore'] = {str(path): {'entries': len(entries),
                 'metadataSHA256': sha(json.dumps(entries, sort_keys=True).encode())}
@@ -686,12 +694,12 @@ def main():
                 report['nativeInventoryPreserved'] = baseline is not None and after == baseline
                 report['noOperationCreated'] = prior_jobs is not None and set(after_jobs) == set(prior_jobs)
                 report['jobStatesPreserved'] = prior_jobs is not None and after_jobs == prior_jobs
-                report['mediaMetadataPreserved'] = bool(media_before) and all(
-                    media_listing(path) == entries for path, entries in media_before.items())
+                report['mediaMetadataPreserved'] = all(
+                    media_listing(path) == entries for path, entries in media_before.items()) if media_before else None
                 report['binaryPreserved'] = generation(before) == generation(os.fstat(fd)) == generation(binary.lstat())
                 runner.save('after.json', {'vms': after, 'jobs': after_jobs})
-                require(all(report[k] for k in ('nativeInventoryPreserved', 'noOperationCreated', 'jobStatesPreserved', 'binaryPreserved', 'mediaMetadataPreserved')),
-                        'native inventory/job IDs/job states/binary changed; no preservation success')
+                failed_preservation = [k for k in ('nativeInventoryPreserved', 'noOperationCreated', 'jobStatesPreserved', 'binaryPreserved', 'mediaMetadataPreserved') if report[k] is False]
+                require(not failed_preservation, 'preservation check failed: ' + ', '.join(failed_preservation))
             except BaseException as error:
                 report['preservationError'] = type(error).__name__ + ': ' + str(error)
                 report['status'] = 'failed'
@@ -704,6 +712,12 @@ def main():
 
 
 class ProbeTests(unittest.TestCase):
+    def test_picker_title_is_distinct_from_help_in_both_layouts(self):
+        pattern = r'(?:^|[│|])Choose a file[ \t]*$'
+        for screen in ('Choose a file\n/home/test/images', ' 1 Overview        │Choose a file\n 2 VMs             │/home/test/images', '                   |Choose a file   '):
+            self.assertIsNotNone(re.search(pattern, screen, re.MULTILINE))
+        self.assertIsNone(re.search(pattern, 'Ctrl+O Browse | Choose a file or type its path', re.MULTILINE))
+
     def test_current_screen_erases_historical_success(self):
         screen = Screen(80, 24)
         screen.feed(b'Overview Virtual machines\r\n11111111-2222-4333-8444-555555555555')
@@ -760,8 +774,7 @@ class ProbeTests(unittest.TestCase):
                 media_listing(root / 'link')
         with self.assertRaises(RuntimeError):
             media_file({Path('/tmp'): {'source': {'mode': stat.S_IFREG}, 'source-copy': {'mode': stat.S_IFLNK}}})
-        with self.assertRaises(RuntimeError):
-            media_folder({'link': {'mode': stat.S_IFLNK}, '.hidden': {'mode': stat.S_IFDIR}})
+        self.assertIsNone(media_folder({'link': {'mode': stat.S_IFLNK}, '.hidden': {'mode': stat.S_IFDIR}}))
 
     def test_no_execution_without_guard(self):
         args = parser().parse_args(['--binary', '/usr/bin/virmill', '--output', '/tmp/output'])

@@ -5,8 +5,8 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**UI update:** the installed CLI now uses `421c03e`; see the
-[task-menu update evidence](evidence/tui-task-menus-run.md) for current hashes and
+**UI update:** the installed CLI now uses `d8766f4`; see the
+[file-explorer update evidence](evidence/tui-explorer-run.md) for current hashes and
 controls. The original beta build evidence below remains historical.
 
 ## Start testing now

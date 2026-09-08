@@ -1,5 +1,8 @@
 # Task-oriented TUI menu update — 8 September 2026
 
+Superseded for installed hashes and controls by the
+[file-explorer update](tui-explorer-run.md). Evidence below is historical.
+
 The owner found the action catalog confusing. Source
 `421c03e6f5d951667500414b278088ae2e0d4498` replaces CLI-style labels with explicit
 task names and descriptions, groups tasks by purpose, and shows the selected VM.
