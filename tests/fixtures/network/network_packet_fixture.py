@@ -158,11 +158,21 @@ def parse_dhcp(frame, xid, mac, checksum_status="wire"):
             "frameHex": frame.hex()}
 
 
-def dhcp_request(mac, xid, offered=None, server=None):
+def lease_hostname(run_id, role):
+    require(role in ("a", "b"), "unknown DHCP fixture role")
+    return "vp" + canonical_uuid(run_id).hex + "-" + role
+
+
+def dhcp_request(mac, xid, offered=None, server=None, hostname=None):
     bootp = struct.pack("!BBBBIHH4s4s4s4s16s64s128s", 1, 1, 6, 0, xid, 0, 0x8000,
                         bytes(4), bytes(4), bytes(4), bytes(4), mac + bytes(10), bytes(64), bytes(128))
     options = b"\x35\x01" + bytes([3 if offered else 1]) + b"\x3d\x07\x01" + mac
     options += b"\x37\x06\x01\x03\x06\x33\x36\x79"
+    if hostname is not None:
+        require(isinstance(hostname, str) and re.fullmatch(r"[a-z][a-z0-9-]{0,61}[a-z0-9]", hostname),
+                "DHCP hostname must be one bounded lowercase ASCII label")
+        encoded = hostname.encode("ascii")
+        options += bytes([12, len(encoded)]) + encoded
     if offered:
         options += b"\x32\x04" + ipaddress.IPv4Address(offered).packed
         options += b"\x36\x04" + ipaddress.IPv4Address(server).packed
@@ -277,21 +287,23 @@ def parse_dns(packet, xid, name):
     question, pos = read_name(12)
     require(question == dns_name(name) and packet[pos:pos + 4] == b"\0\x01\0\x01", "DNS question mismatch")
     pos += 4
-    addresses = []
+    addresses, answers = [], []
     for index in range(an + ns + ar):
-        _, pos = read_name(pos)
+        owner, pos = read_name(pos)
         require(pos + 10 <= len(packet), "truncated DNS record")
         kind, family, _ttl, size = struct.unpack("!HHIH", packet[pos:pos + 10])
         pos += 10
         require(pos + size <= len(packet), "truncated DNS record data")
         if index < an and kind == 1 and family == 1:
             require(size == 4, "invalid DNS A record")
-            addresses.append(str(ipaddress.IPv4Address(packet[pos:pos + size])))
+            address = str(ipaddress.IPv4Address(packet[pos:pos + size]))
+            addresses.append(address)
+            answers.append({"name": owner, "address": address})
         pos += size
     require(pos == len(packet), "trailing DNS response bytes")
     rcode = flags & 15
     return {"status": "resolved" if rcode == 0 and addresses else "no_A_answer", "rcode": rcode,
-            "addresses": addresses, "responseSHA256": digest(packet), "responseHex": packet.hex()}
+            "addresses": addresses, "answers": answers, "responseSHA256": digest(packet), "responseHex": packet.hex()}
 
 
 def private_subnet(value):
@@ -315,8 +327,11 @@ def validate_profile(args):
         require(not target.is_link_local and 1 <= args.forward4_port <= 65535, "invalid forward target or TCP port")
     if args.dns_name:
         dns_name(args.dns_name)
+    dns_modes = int(bool(args.dns_name)) + int(bool(args.dns_own_lease))
+    require(dns_modes <= 1 and (args.dhcp == "on" or dns_modes == 0),
+            "select at most one DNS mode and only with DHCP enabled")
     if args.host_access == "services-only":
-        require(bool(args.dns_name) == (args.dhcp == "on"),
+        require(dns_modes == int(args.dhcp == "on"),
                 "services-only requires a DNS query exactly when paired DHCP/DNS is enabled")
     if args.kind == "guest-only":
         require(args.static_cidr4 and args.static_a4 and args.static_b4 and args.host4_target,
@@ -594,11 +609,12 @@ def dhcp_exchange(args, mac, received_samples):
     malformed = []
     offers = []
     transmitted = []
+    hostname = getattr(args, "dhcp_hostname", None)
     with socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0800)) as sock:
         sock.setsockopt(263, 8, 1)  # SOL_PACKET / PACKET_AUXDATA, Linux uapi.
         sock.bind((args.interface, 0))
         sock.settimeout(0.25)
-        request = dhcp_request(mac, xid)
+        request = dhcp_request(mac, xid, hostname=hostname)
         for phase in (2, 5):
             deadline, resend, frames = time.monotonic() + 18, 0, 0
             while time.monotonic() < deadline and frames < 512:
@@ -648,12 +664,12 @@ def dhcp_exchange(args, mac, received_samples):
                                    [(ipaddress.IPv4Address(low), ipaddress.IPv4Address(high))
                                     for low, high in (value.split(",") for value in args.range)])
                     offers.append(reply)
-                    request = dhcp_request(mac, xid, reply["address"], reply["server"])
+                    request = dhcp_request(mac, xid, reply["address"], reply["server"], hostname=hostname)
                     break
                 require(reply["server"] == offers[0]["server"] and reply["address"] == offers[0]["address"],
                         "DHCP ACK differs from selected offer")
                 return {"status": "acknowledged", "xid": xid, "offer": offers[0], "ack": reply,
-                        "malformedFrames": malformed, "transmitted": transmitted}
+                        "malformedFrames": malformed, "transmitted": transmitted, "requestedHostname": hostname}
             else:
                 raise Refusal("DHCP phase " + str(phase) + " timed out or reached packet bound; " +
                               json.dumps({"frames": frames, "malformed": malformed, "transmitted": transmitted}, sort_keys=True))
@@ -809,6 +825,18 @@ def dns_worker(args):
         return {"status": "not_resolved", "errno": exc.errno, "reason": str(exc), "server": args.target}
 
 
+def own_lease_dns_expectation(result, endpoint, gateway):
+    hostname = endpoint["dhcpHostname"]
+    expected = endpoint["lease"]["ack"]["address"]
+    require(endpoint["role"] == "b" and endpoint["lease"].get("requestedHostname") == hostname and
+            endpoint["address"] == expected, "local DNS target differs from role B's requested hostname/ACK")
+    exact = (result.get("status") == "resolved" and result.get("rcode") == 0 and
+             result.get("server") == gateway and result.get("name") == hostname and
+             result.get("addresses") == [expected] and result.get("answers") == [{"name": hostname, "address": expected}])
+    return {"expectedOwnLeaseHostname": hostname, "expectedOwnLeaseAddress": expected,
+            "ownLeaseExpectationMet": exact, "upstreamResolutionQualified": False}
+
+
 class Fixture:
     def __init__(self, args, recorder, tools):
         self.a, self.r, self.tools = args, recorder, tools
@@ -875,6 +903,8 @@ class Fixture:
                         "host": "vp" + role + run[:10], "peer": "ve" + role + run[:10],
                         "alias": "virmill-packet:" + self.a.run_id + ":host-" + role,
                         "mac": "02:" + ":".join(run[i:i + 2] for i in (0, 2, 4, 6)) + (":0a" if role == "a" else ":0b")}
+            if self.a.dns_own_lease:
+                endpoint["dhcpHostname"] = lease_hostname(self.a.run_id, role)
             require(endpoint["host"] not in existing and endpoint["peer"] not in existing,
                     "generated veth name already exists")
             require(not os.path.lexists("/run/netns/" + endpoint["namespace"]), "generated namespace already exists")
@@ -1084,8 +1114,11 @@ class Fixture:
             self.wait_forwarding(endpoint)
             if self.a.dhcp == "on":
                 lease = self.worker(endpoint, "dhcp", "--network", str(self.network), "--gateway", self.gateway,
-                                    *[part for low, high in self.ranges for part in ("--range", str(low) + "," + str(high))])
+                                    *[part for low, high in self.ranges for part in ("--range", str(low) + "," + str(high))],
+                                    *(["--dhcp-hostname", endpoint["dhcpHostname"]] if self.a.dns_own_lease else []))
                 self.r.save("dhcp-" + endpoint["role"] + ".json", lease)
+                if self.a.dns_own_lease:
+                    require(lease.get("requestedHostname") == endpoint["dhcpHostname"], "DHCP worker hostname receipt mismatch")
                 endpoint["address"] = validate_lease(lease["ack"], self.network, self.gateway, self.ranges)
                 endpoint["lease"] = lease
                 require(not any(item is not endpoint and item.get("address") == endpoint["address"]
@@ -1208,8 +1241,12 @@ class Fixture:
                               "addressOrigin": "own_DHCP_ACKs" if self.a.dhcp == "on" else "explicit_static"}
         result["hostTCP"] = self.host_probe(a)
         self.observation_boundary("after host probe")
-        if self.a.dns_name:
-            result["configuredDNS"] = self.worker(a, "dns", "--target", self.gateway, "--dns-name", self.a.dns_name)
+        if self.a.dns_name or self.a.dns_own_lease:
+            name = b["dhcpHostname"] if self.a.dns_own_lease else self.a.dns_name
+            result["configuredDNS"] = self.worker(a, "dns", "--target", self.gateway, "--dns-name", name)
+            result["configuredDNS"]["mode"] = "own-lease" if self.a.dns_own_lease else "explicit-name"
+            if self.a.dns_own_lease:
+                result["configuredDNS"].update(own_lease_dns_expectation(result["configuredDNS"], b, self.gateway))
             result["configuredDNS"]["advertisedByOwnACK"] = (
                 self.a.dhcp == "on" and self.gateway in a["lease"]["ack"]["dns"])
         if self.a.forward4_target:
@@ -1241,8 +1278,10 @@ class Fixture:
                                     and result["dhcpRouterExpectationMet"] is not False)
         if self.a.forward4_target:
             result["ipv4ChecksMet"] &= tcp_expectation(result["forwardIPv4"], self.a.kind == "nat")
-        if self.a.dns_name:
+        if self.a.dns_name or self.a.dns_own_lease:
             result["ipv4ChecksMet"] &= result["configuredDNS"]["status"] == "resolved"
+            if self.a.dns_own_lease:
+                result["ipv4ChecksMet"] &= result["configuredDNS"]["ownLeaseExpectationMet"]
             if self.a.host_access == "services-only":
                 result["ipv4ChecksMet"] &= result["configuredDNS"]["advertisedByOwnACK"]
         if "disabledDHCP" in result:
@@ -1334,7 +1373,9 @@ def main(argv=None):
     run.add_argument("--host4-target", help="guest-only explicit already assigned host IPv4 outside the logical subnet")
     run.add_argument("--forward4-target")
     run.add_argument("--forward4-port", type=int)
-    run.add_argument("--dns-name", help="explicit A query through only this bridge gateway; may cause upstream DNS traffic")
+    dns_modes = run.add_mutually_exclusive_group()
+    dns_modes.add_argument("--dns-name", help="explicit A query through only this bridge gateway; may cause upstream DNS traffic")
+    dns_modes.add_argument("--dns-own-lease", action="store_true", help="request generated DHCP hostnames and resolve role B's exact own lease locally")
     run.add_argument("--output", type=Path, required=True)
     worker = sub.add_parser("worker", help=argparse.SUPPRESS)
     worker.add_argument("--worker", choices=("dhcp", "dhcp-absence", "ra", "tcp", "dns"), required=True)
@@ -1348,6 +1389,7 @@ def main(argv=None):
     worker.add_argument("--gateway")
     worker.add_argument("--range", action="append", default=[])
     worker.add_argument("--dns-name")
+    worker.add_argument("--dhcp-hostname")
     for command in (run, worker):
         command.add_argument("--run-id", required=True)
         command.add_argument("--recipe-sha256", required=True)
@@ -1359,6 +1401,9 @@ def main(argv=None):
     require(digest(source.read_bytes()) == args.recipe_sha256, "source SHA256 mismatch")
     if args.command == "worker":
         mac = worker_guard(args)
+        if args.dhcp_hostname is not None:
+            require(args.worker == "dhcp" and args.dhcp_hostname == lease_hostname(args.run_id, args.interface[2]),
+                    "worker DHCP hostname must match this run and endpoint role")
         result = {"dhcp": dhcp_worker, "dhcp-absence": dhcp_absence_worker, "ra": ra_worker}.get(args.worker)
         result = result(args, mac) if result else dns_worker(args) if args.worker == "dns" else tcp_worker(args)
         print(json.dumps(result, sort_keys=True))

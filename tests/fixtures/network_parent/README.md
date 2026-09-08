@@ -40,7 +40,9 @@ with verified endpoint cleanup is retained while the next selected profile is
 tested; an unverified cleanup or failed creation stops further mutations.
 
 The recipe explicitly uses `1.1.1.1:443` for bounded external TCP reachability
-and `example.com` for the managed DNS query. These are packet-test targets, not
+and `example.com` for the NAT managed DNS query. Protected isolated labs use
+`--dns-own-lease`: role A resolves role B's unique DHCP hostname and must receive
+exactly role B's leased IPv4 address. They do not require upstream DNS forwarding. These are packet-test targets, not
 publication destinations. Before running, the parent must review and authorize
 those network probes. A failed control prevents a passing isolation result.
 

@@ -66,10 +66,37 @@ The new arguments are:
   from the guest-only host target, and not any assigned host address. Loopback,
   unspecified, multicast and link-local targets are refused. The parent must
   select and authorize an actual reachable endpoint; this README supplies none.
-- Existing `--dns-name NAME` is mandatory for services-only with DHCP on and
-  refused with DHCP off. The A query goes only to the selected bridge gateway;
-  it may cause explicitly selected upstream DNS traffic. Successful resolution
-  and advertisement of that gateway by the own DHCP ACK are required.
+- Select exactly one of `--dns-name NAME` or `--dns-own-lease` for services-only
+  with DHCP on. Both modes are refused with DHCP off, including guest-only.
+  `--dns-name` sends the explicit A query only to the selected bridge gateway
+  and may cause upstream DNS traffic. `--dns-own-lease` qualifies local managed
+  lease DNS without relying on upstream resolution. Successful resolution and
+  advertisement of that gateway by the own DHCP ACK are required.
+
+For `--dns-own-lease`, both generated endpoints send DHCP option 12 in DISCOVER
+and REQUEST. Names are the single lowercase ASCII labels
+`vp<32-hex-run-UUID>-a` and `vp<32-hex-run-UUID>-b` (36 bytes), distinct for each
+run and role and below the 63-byte label limit. The worker refuses a hostname
+flag that differs from its exact run/role or belongs to another worker mode.
+The endpoint intent, DHCP `requestedHostname` receipt and transmitted frame
+bytes retain the requested name. The mode does not change the host hostname or
+write DNS configuration; generated leases/names can remain in this new network
+after endpoint cleanup, as existing fixture leases do.
+
+Role A queries role B's requested name through the native gateway. A pass
+requires rcode zero, the correct question/server and exactly one A answer whose
+owner is that name and whose address equals role B's own ACK and configured
+address. An unrelated answer owner, role A address, extra or duplicate A answer,
+REFUSED/NXDOMAIN response or missing answer cannot pass. Observations record
+`mode`, `expectedOwnLeaseHostname`, `expectedOwnLeaseAddress` and
+`ownLeaseExpectationMet`; `upstreamResolutionQualified` remains false.
+
+The parent selected this mode after the first protected native lab run received
+DNS REFUSED (rcode 5) for an external-name query; its retained isolated-network
+dnsmasq configuration intentionally used `no-resolv`. That failure is retained.
+This fixture correction distinguishes local managed DNS from an upstream DNS
+requirement. The product runtime is unchanged; the parent may retain the same
+frozen runtime binaries while recording the new fixture source hash separately.
 
 DHCP-on obtains two independent own-MAC leases and configures only those returned
 addresses. DHCP-off requires explicit static endpoints. Protected DHCP-off also
@@ -146,13 +173,17 @@ Executed locally with Python 3.14.6:
 
 ```text
 python3 -B -m unittest discover -s tests/fixtures/network -p test_packet_parsers.py
-Ran 55 tests in 0.068s — OK
+Ran 61 tests in 0.109s — OK
 ```
 
 The 41 existing tests remain and 14 new tests cover protected profile/marker/DNS
 confusion, static addresses, assigned host identity, exact namespace route and
 neighbor commands, before/after listener controls, external target controls,
 connected-but-stalled token handling, L3 drift, protected result aggregation and
-DHCP quiet/reply/malformed/saturated windows. All sockets, commands, threads and
+DHCP quiet/reply/malformed/saturated windows. Six additional own-lease DNS tests
+cover hostname/packet/checksum/length identity in both DHCP phases, receipts,
+exclusive DNS flags, worker role binding and strict role-B DNS answers. The
+protected observer matrix also exercises the local own-lease query and rejects
+an otherwise resolved wrong address. All sockets, commands, threads and
 time used by new execution-path tests are mocked. No SSH, native packet,
 namespace, VM, IPC or host mutation was performed for this implementation.

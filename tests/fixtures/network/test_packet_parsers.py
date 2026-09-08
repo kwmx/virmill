@@ -2,6 +2,7 @@
 """Pure generated-byte and mocked-command tests: no sockets, namespaces or host changes."""
 
 import importlib.util
+import io
 import ipaddress
 import json
 import os
@@ -656,7 +657,7 @@ class DHCPFailureDiagnosticsTests(unittest.TestCase):
 def protected_args(**changes):
     values = dict(kind="lab", host_access="services-only", dhcp="on", static_cidr4=None,
                   static_a4=None, static_b4=None, host4_target=None, forward4_target="198.51.100.8",
-                  forward4_port=443, dns_name="example.test")
+                  forward4_port=443, dns_name="example.test", dns_own_lease=False)
     values.update(changes)
     return types.SimpleNamespace(**values)
 
@@ -841,14 +842,18 @@ class ProtectedProfileTests(unittest.TestCase):
                 with self.subTest(kind=kind, dhcp=dhcp, fault=fault):
                     f = object.__new__(fixture.Fixture)
                     f.a = protected_args(kind=kind, dhcp=dhcp, host_access="deny" if kind == "guest-only" else "services-only",
-                                        dns_name="example.test" if dhcp == "on" else None)
+                                        dns_name="example.test" if dhcp == "on" and kind != "lab" else None,
+                                        dns_own_lease=dhcp == "on" and kind == "lab", run_id=UUID)
                     f.before = {"addresses": [] if kind == "guest-only" else [["inet", "192.168.80.1", 24, "global"]]}
                     f.gateway = None if kind == "guest-only" else "192.168.80.1"
                     f.tools = {"ip": "/usr/bin/ip", "ping": "/usr/bin/ping"}
                     ack = {"routerOptionPresent": kind == "nat", "routers": [f.gateway] if kind == "nat" else [],
                            "optionCodes": [3] if kind == "nat" else [], "dns": [f.gateway]}
                     f.endpoints = [{"role": role, "address": "192.168.80." + last, "peer": "ve" + role,
-                                    "lease": {"ack": ack}} for role, last in (("a", "20"), ("b", "21"))]
+                                    "dhcpHostname": fixture.lease_hostname(UUID, role),
+                                    "lease": {"ack": {**ack, "address": "192.168.80." + last},
+                                              "requestedHostname": fixture.lease_hostname(UUID, role)}}
+                                   for role, last in (("a", "20"), ("b", "21"))]
                     f.observation_boundary = mock.Mock()
                     f.host_probe = mock.Mock(return_value={"status": "connected" if fault == "host-exposed" else "not_connected",
                                                           "boundedNetworkRefusal": True})
@@ -863,6 +868,13 @@ class ProtectedProfileTests(unittest.TestCase):
                         return {"stdout": '[]'}
                     def worker(endpoint, mode, *args):
                         if mode == "dns":
+                            if f.a.dns_own_lease:
+                                target = f.endpoints[1]
+                                self.assertIs(endpoint, f.endpoints[0])
+                                self.assertEqual(args, ("--target", f.gateway, "--dns-name", target["dhcpHostname"]))
+                                return {"status": "resolved", "rcode": 0, "server": f.gateway, "name": target["dhcpHostname"],
+                                        "addresses": ["192.168.80.22" if fault == "service-failed" else target["address"]],
+                                        "answers": [{"name": target["dhcpHostname"], "address": target["address"]}]}
                             return {"status": "not_resolved" if fault == "service-failed" else "resolved"}
                         if mode == "dhcp-absence":
                             return {"status": "response_or_inconclusive" if fault == "service-failed" else "none_seen_in_bounded_window"}
@@ -929,6 +941,126 @@ class ProtectedProfileTests(unittest.TestCase):
                 self.assertEqual(result["status"], "none_seen_in_bounded_window" if case == "silent" else "response_or_inconclusive")
                 self.assertFalse(result["absenceProven"])
                 self.assertLessEqual(len(result["receivedSamples"]), 8)
+
+
+class OwnLeaseDNSTests(unittest.TestCase):
+    def test_unique_role_hostnames_are_bounded_and_sent_in_both_dhcp_phases(self):
+        names = [fixture.lease_hostname(run, role) for run in (UUID, "87654321-1234-4234-8234-123456789abc") for role in ("a", "b")]
+        self.assertEqual(len(set(names)), 4)
+        for name in names:
+            self.assertLessEqual(len(name), 63)
+            for offered, server in ((None, None), ("192.168.80.21", "192.168.80.1")):
+                frame = fixture.dhcp_request(MAC, XID, offered, server, hostname=name)
+                self.assertEqual(fixture.checksum(frame[14:34]), 0)
+                self.assertEqual(int.from_bytes(frame[16:18], "big"), len(frame) - 14)
+                self.assertEqual(int.from_bytes(frame[38:40], "big"), len(frame) - 34)
+                self.assertEqual(frame[40:42], bytes(2))  # preserved IPv4 UDP no-checksum encoding
+                self.assertEqual(frame[52:54], b"\x80\x00")
+                self.assertEqual(frame[46:50], XID.to_bytes(4, "big"))
+                self.assertEqual(frame[70:76], MAC)
+                options = fixture.parse_options(frame[282:])
+                self.assertEqual(options[12], name.encode("ascii"))
+                self.assertEqual(options[53], bytes([3 if offered else 1]))
+                self.assertEqual(options[61], b"\x01" + MAC)
+                self.assertEqual(options[55], bytes([1, 3, 6, 51, 54, 121]))
+                self.assertEqual(50 in options, offered is not None)
+        self.assertNotIn(12, fixture.parse_options(fixture.dhcp_request(MAC, XID)[282:]))
+
+    def test_hostname_cannot_inject_options_or_extra_dns_labels(self):
+        for name in ("", "a" * 64, "-bad", "bad-", "name.local", "UPPER", "name\x00x", "name\n", "é", "*"):
+            with self.subTest(name=name), self.assertRaises(fixture.Refusal):
+                fixture.dhcp_request(MAC, XID, hostname=name)
+        with self.assertRaises(fixture.Refusal):
+            fixture.lease_hostname(UUID, "c")
+
+    def test_dhcp_exchange_retains_actual_requested_hostname_and_frames(self):
+        hostname = fixture.lease_hostname(UUID, "b")
+        packets, sent = [reply(message=2), reply(message=5)], []
+        class FakeSocket:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def setsockopt(self, *args):
+                pass
+            def bind(self, *args):
+                pass
+            def settimeout(self, *args):
+                pass
+            def send(self, data):
+                sent.append(data)
+            def recvmsg(self, *args):
+                return packets.pop(0), [], 0, ("veb1234567812", 2048, 0)
+        args = types.SimpleNamespace(interface="veb1234567812", network="192.168.80.0/24", gateway="192.168.80.1",
+                                     range=["192.168.80.2,192.168.80.254"], dhcp_hostname=hostname)
+        with mock.patch.object(fixture.socket, "socket", return_value=FakeSocket()), \
+                mock.patch.object(fixture.os, "urandom", return_value=XID.to_bytes(4, "big")):
+            result = fixture.dhcp_worker(args, MAC)
+        self.assertEqual(result["requestedHostname"], hostname)
+        self.assertEqual(result["status"], "acknowledged")
+        self.assertEqual(result["ack"]["address"], "192.168.80.21")
+        self.assertEqual([fixture.parse_options(frame[282:])[12] for frame in sent], [hostname.encode()] * 2)
+        self.assertEqual([entry["frameHex"] for entry in result["transmitted"]], [frame.hex() for frame in sent])
+
+    def test_dns_modes_are_explicit_mutually_exclusive_and_dhcp_only(self):
+        for host in ("allow", "services-only"):
+            for kind in ("nat", "lab"):
+                fixture.validate_profile(protected_args(kind=kind, host_access=host, dns_name=None, dns_own_lease=True))
+        for change in ({"dns_name": "example.test"}, {"dhcp": "off", "static_a4": "192.168.80.20", "static_b4": "192.168.80.21"},
+                       {"kind": "guest-only", "host_access": "deny", "dhcp": "off", "static_cidr4": "192.168.80.0/24",
+                        "static_a4": "192.168.80.20", "static_b4": "192.168.80.21", "host4_target": "192.168.90.1"}):
+            values = {**vars(protected_args(dns_name=None, dns_own_lease=True)), **change}
+            with self.subTest(change=change), self.assertRaises(fixture.Refusal):
+                fixture.validate_profile(types.SimpleNamespace(**values))
+        root = "/home/virmill-test/virmill-tests/generated-test"
+        args = ["run", "--execute-reviewed", "--confirm-new-unused-network", "--root", root, "--output", root + "/network-packet-" + UUID,
+                "--run-id", UUID, "--network-id", UUID, "--bridge", "vm123456781234", "--recipe-sha256", "a" * 64,
+                "--network-xml-sha256", "b" * 64, "--kind", "lab", "--host-access", "services-only", "--dhcp", "on",
+                "--dns-own-lease", "--dns-name", "example.test"]
+        with mock.patch.object(fixture.sys, "stderr", io.StringIO()), self.assertRaises(SystemExit) as failure:
+            fixture.main(args)
+        self.assertEqual(failure.exception.code, 2)  # argparse refused before source/host/filesystem operations
+
+    def test_dns_answer_must_bind_exact_role_b_ack_owner_and_address(self):
+        name = fixture.lease_hostname(UUID, "b")
+        target = {"role": "b", "dhcpHostname": name, "address": "192.168.80.21",
+                  "lease": {"requestedHostname": name, "ack": {"address": "192.168.80.21"}}}
+        query = fixture.dns_query(name, 7)
+        header = struct.pack("!HHHHHH", 7, 0x8180, 1, 1, 0, 0)
+        record = bytes.fromhex("c00c000100010000003c0004c0a85015")
+        parsed = fixture.parse_dns(header + query[12:] + record, 7, name)
+        result = {**parsed, "name": name, "server": "192.168.80.1"}
+        self.assertTrue(fixture.own_lease_dns_expectation(result, target, "192.168.80.1")["ownLeaseExpectationMet"])
+        for change in ({"rcode": 5}, {"status": "no_A_answer"}, {"server": "192.168.80.2"}, {"name": "other"},
+                       {"addresses": ["192.168.80.20"]}, {"addresses": ["192.168.80.21", "192.168.80.22"]},
+                       {"addresses": ["192.168.80.21"] * 2}, {"answers": [{"name": "unrelated", "address": "192.168.80.21"}]}):
+            with self.subTest(change=change):
+                self.assertFalse(fixture.own_lease_dns_expectation({**result, **change}, target, "192.168.80.1")["ownLeaseExpectationMet"])
+        # Matching question/address with an unrelated A owner is not this lease.
+        wrong_owner = b"\x05other\0" + record[2:]
+        wrong = fixture.parse_dns(header + query[12:] + wrong_owner, 7, name)
+        self.assertFalse(fixture.own_lease_dns_expectation({**wrong, "name": name, "server": "192.168.80.1"}, target,
+                                                        "192.168.80.1")["ownLeaseExpectationMet"])
+        for change in ({"role": "a"}, {"address": "192.168.80.20"}, {"dhcpHostname": "other"}):
+            with self.subTest(change=change), self.assertRaises(fixture.Refusal):
+                fixture.own_lease_dns_expectation(result, {**target, **change}, "192.168.80.1")
+
+    def test_worker_hostname_flag_cannot_target_another_run_role_or_worker(self):
+        hostname = fixture.lease_hostname(UUID, "b")
+        for mode, value in (("dhcp", hostname), ("dhcp", fixture.lease_hostname(UUID, "a")),
+                            ("dhcp", "other-name"), ("dhcp-absence", hostname)):
+            args = ["worker", "--worker", mode, "--interface", "veb1234567812", "--host-netns-inode", "1",
+                    "--run-id", UUID, "--recipe-sha256", fixture.digest(Path(fixture.__file__).read_bytes()), "--dhcp-hostname", value]
+            with self.subTest(mode=mode, hostname=value), mock.patch.object(fixture, "worker_guard", return_value=MAC), \
+                    mock.patch.object(fixture, "dhcp_worker", return_value={"status": "generated-only"}) as worker, \
+                    mock.patch.object(fixture.sys, "stdout", io.StringIO()):
+                if mode == "dhcp" and value == hostname:
+                    self.assertEqual(fixture.main(args), 0)
+                    self.assertEqual(worker.call_args.args[0].dhcp_hostname, hostname)
+                else:
+                    with self.assertRaisesRegex(fixture.Refusal, "run and endpoint role"):
+                        fixture.main(args)
+                    worker.assert_not_called()
 
 
 if __name__ == "__main__":
