@@ -144,6 +144,15 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			return nil, err
 		}
 		return inspection, nil
+	case "vm.readiness.show":
+		if r.ID == "" || r.Path != "" || r.Action != "" || len(r.Input) != 0 || r.After != 0 || r.Apply != nil {
+			return nil, domain.Fail("INVALID_INPUT", "guest readiness accepts one stable VM UUID and local connection")
+		}
+		observer, ok := s.Provider.(domain.GuestReadinessProvider)
+		if !ok {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "native guest-agent readiness observation unavailable")
+		}
+		return observer.InspectGuestReadiness(ctx, r.Connection, r.ID)
 	case "vm.boot.get":
 		if r.ID == "" {
 			return nil, domain.Fail("INVALID_INPUT", "stable VM UUID required for boot inspection")

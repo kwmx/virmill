@@ -541,6 +541,13 @@ func coldSourceOpaque(n *xmlNode) error {
 // schema. A new attribute, child, backend or namespace remains a dependency.
 // This is not native validation or permission to capture device runtime state.
 func coldSourceConfigDevice(n *xmlNode) bool {
+	// These stopped-device forms have no caller-selected persistent files.
+	// Capture records the fixed system emulator's hash and native versions;
+	// fresh runtime PTYs and automatically assigned VNC sockets are recreated
+	// by libvirt. Any explicit socket/file, backend or extension remains external.
+	if coldSourceEphemeralDevice(n) {
+		return true
+	}
 	var attrs []string
 	children := ""
 	switch n.name.Local {
@@ -644,6 +651,39 @@ func coldSourceConfigDevice(n *xmlNode) bool {
 		}
 	}
 	return true
+}
+
+func coldSourceEphemeralDevice(n *xmlNode) bool {
+	if n.name.Space != "" {
+		return false
+	}
+	switch n.name.Local {
+	case "emulator":
+		return len(n.attrs) == 0 && len(n.children) == 0 && strings.TrimSpace(n.text) == "/usr/bin/qemu-system-x86_64"
+	case "graphics":
+		if coldAttrs(n, []string{"type"}, nil) != nil || attr(n, "type") != "vnc" || strings.TrimSpace(n.text) != "" || len(n.children) != 1 {
+			return false
+		}
+		listen := n.children[0]
+		return listen.name.Space == "" && listen.name.Local == "listen" && coldSourceConfigLeaf(listen, "type") && len(listen.attrs) == 1 && attr(listen, "type") == "socket"
+	case "serial", "console":
+		if coldAttrs(n, []string{"type"}, nil) != nil || attr(n, "type") != "pty" || strings.TrimSpace(n.text) != "" || len(n.children) != 1 {
+			return false
+		}
+		target := n.children[0]
+		if target.name.Space != "" || target.name.Local != "target" || coldAttrs(target, []string{"type", "port"}, nil) != nil || strings.TrimSpace(target.text) != "" || attr(target, "port") != "0" {
+			return false
+		}
+		if n.name.Local == "console" {
+			return attr(target, "type") == "serial" && len(target.children) == 0
+		}
+		if attr(target, "type") != "isa-serial" || len(target.children) != 1 {
+			return false
+		}
+		model := target.children[0]
+		return model.name.Space == "" && model.name.Local == "model" && coldSourceConfigLeaf(model, "name") && len(model.attrs) == 1 && attr(model, "name") == "isa-serial"
+	}
+	return false
 }
 
 func coldSourceConfigLeaf(n *xmlNode, attrs string) bool {

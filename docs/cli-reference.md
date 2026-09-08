@@ -24,6 +24,7 @@ Available Commands:
   operation   Manage operation
   plan        Manage plan
   plugin      Manage plugin
+  snapshot    Manage snapshot
   storage     Manage storage
   tui         Open the keyboard interface
   version     Show application and build contracts
@@ -1165,6 +1166,100 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill snapshot create`
+
+Plan a complete stopped capture with independent disks, original configuration and required firmware/TPM state
+
+```text
+Usage:
+  virmill snapshot create ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill snapshot list`
+
+List retained local recovery set identities
+
+```text
+Usage:
+  virmill snapshot list [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill snapshot restore`
+
+Plan independent new volumes and a new disconnected VM from a complete cold recovery set
+
+```text
+Usage:
+  virmill snapshot restore ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill snapshot show`
+
+Verify and inspect every member of a retained local recovery set
+
+```text
+Usage:
+  virmill snapshot show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill storage access grant`
 
 Plan actor-only read access to one stopped VM's managed volume through the approved helper
@@ -1521,6 +1616,29 @@ Flags:
       --after int      Event cursor
       --input string   JSON parameters; secrets must be references (default "{}")
       --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout; jobs continue after detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm readiness show`
+
+Observe a running VM's guest-agent channel and one bounded guest ping; no application readiness claim
+
+```text
+Usage:
+  virmill vm readiness show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

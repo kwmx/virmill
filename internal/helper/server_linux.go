@@ -176,7 +176,27 @@ func Serve(listener net.Listener, backend domain.ManagedFileAccessBackend) error
 						}
 					}
 				} else if r.Operation == "state.auxiliary" {
-					auxiliary, err = inspectAuxiliaryRequest(ctx, backend, r, p)
+					if r.Mode == "capture" || r.Mode == "observe" {
+						provider, ok := backend.(domain.ColdStateInspector)
+						if !ok {
+							err = domain.Fail("UNSUPPORTED_CAPABILITY", "helper cold-state adapter unavailable")
+						} else {
+							captureDeadline := time.Now().Add(120 * time.Second)
+							if r.ExpiresAt.Before(captureDeadline) {
+								captureDeadline = r.ExpiresAt
+							}
+							captureCtx, captureCancel := context.WithDeadline(context.Background(), captureDeadline)
+							_ = conn.SetDeadline(captureDeadline)
+							executor := &AuxiliaryExecutor{Backend: provider}
+							err = serveAuxiliaryCapture(captureCtx, c, executor, r, p)
+							captureCancel()
+							if err == nil {
+								return
+							}
+						}
+					} else {
+						auxiliary, err = inspectAuxiliaryRequest(ctx, backend, r, p)
+					}
 				} else if r.Operation == "storage.prepare-directory" {
 					err = Execute(r, p)
 				} else {
