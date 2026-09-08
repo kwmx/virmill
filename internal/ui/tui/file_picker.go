@@ -48,8 +48,8 @@ type FilePicker struct {
 	token                                               uint64
 }
 
-// NewFilePicker starts an asynchronous observation. Blank starts in ~/images
-// when available, otherwise home. kind is either "file" or "directory".
+// NewFilePicker starts an asynchronous observation at an explicit field path,
+// or the user's home directory when blank. kind is "file" or "directory".
 func NewFilePicker(start, kind string) (FilePicker, tea.Cmd) {
 	home, _ := os.UserHomeDir()
 	p := FilePicker{kind: kind, home: home}
@@ -58,9 +58,6 @@ func NewFilePicker(start, kind string) (FilePicker, tea.Cmd) {
 	}
 	if start == "" {
 		start = home
-		if info, err := pickerInfo(filepath.Join(home, "images")); home != "" && err == nil && info.IsDir() {
-			start = filepath.Join(home, "images")
-		}
 	}
 	if start == "" {
 		start = "/"

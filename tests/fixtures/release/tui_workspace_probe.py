@@ -522,9 +522,23 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       source_menu(text) and 'of 3' in text and 'Inspect' not in text,
                       terminal.send(b'i'))
         picker = lambda text: re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is not None and 'Esc' in text
-        terminal.wait('OVA source opens browser at existing images directory', lambda text:
-                      picker(text) and str(media_root) in text and (folder is None or folder in text),
+        def choose_browser_entry(name, description):
+            terminal.wait(description + ' filter focus', lambda text:
+                          picker(text) and 'Find:' in text and 'Enter done' in text,
+                          terminal.send(b'/'))
+            terminal.wait(description + ' observed name filter', lambda text:
+                          picker(text) and ('Find: ' + name) in text,
+                          terminal.send(name.encode('ascii')))
+            terminal.wait(description + ' filter finished', lambda text:
+                          picker(text) and 'Enter open/select' in text and 'Enter done' not in text,
+                          terminal.send(b'\r'))
+
+        terminal.wait('Empty source field opens browser at home, not fixture media', lambda text:
+                      picker(text) and str(media_root.parent) in text and str(media_root) not in text,
                       terminal.send(b'\r'))
+        choose_browser_entry(media_root.name, 'Choose test media folder explicitly')
+        terminal.wait('Explicitly enter existing test media folder', lambda text:
+                      picker(text) and str(media_root) in text, terminal.send(b'\r'))
         traversal_parent = media_root if folder else media_root.parent
         traversal_name = folder or media_root.name
         traversal_path = traversal_parent / traversal_name
@@ -551,19 +565,12 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is None and 'OVA appliance' in text and
                       ('Browse' in text or 'browse' in text), terminal.send(b'\x1b'))
         terminal.wait('Ctrl+O reopens browser from OVA file field', lambda text:
-                      picker(text) and str(media_root) in text,
+                      picker(text) and str(media_root.parent) in text and str(media_root) not in text,
                       terminal.send(b'\x0f'))
+        choose_browser_entry(media_root.name, 'Choose test media folder again')
+        terminal.wait('Explicitly reopen test media folder', lambda text:
+                      picker(text) and str(media_root) in text, terminal.send(b'\r'))
 
-        def choose_browser_entry(name, description):
-            terminal.wait(description + ' filter focus', lambda text:
-                          picker(text) and 'Find:' in text and 'Enter done' in text,
-                          terminal.send(b'/'))
-            terminal.wait(description + ' observed name filter', lambda text:
-                          picker(text) and ('Find: ' + name) in text,
-                          terminal.send(name.encode('ascii')))
-            terminal.wait(description + ' filter finished', lambda text:
-                          picker(text) and 'Enter open/select' in text and 'Enter done' not in text,
-                          terminal.send(b'\r'))
 
         if selected_file.parent != media_root:
             choose_browser_entry(folder, 'Reopen source folder')

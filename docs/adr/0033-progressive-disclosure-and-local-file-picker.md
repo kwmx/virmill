@@ -22,3 +22,8 @@ and confirmation, and requests remain bound to the selected identity. Specialist
 mappings still use settings files; this change is not the complete import wizard
 or a reduction of any mandatory v1 workflow. New output folders can be typed after
 browsing their parent; the picker only selects existing entries.
+
+Owner correction: a blank browser starts in the user's home, never a test-media
+folder. An explicit existing field path retains its location. No new ~/.virmill
+storage convention is introduced; product-managed files retain the specification's
+XDG path contract. The disposable test's ~/images remains fixture input only.

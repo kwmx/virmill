@@ -207,8 +207,8 @@ func TestFilePickerTypedPathAndDefaultHome(t *testing.T) {
 	t.Setenv("HOME", root)
 	p, cmd := NewFilePicker("", "file")
 	p, _ = pickerRun(t, p, cmd)
-	if p.directory != images {
-		t.Fatal("did not prefer home images")
+	if p.directory != root {
+		t.Fatal("blank field must open home even when an images folder exists")
 	}
 	p, cmd, _ = pickerKey(p, tea.KeyCtrlH)
 	p, _ = pickerRun(t, p, cmd)

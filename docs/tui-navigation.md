@@ -42,8 +42,8 @@ select a row again before acting. Neither list selection nor navigation starts a
 
 ## Choose files without typing full paths
 
-Import opens a local explorer in **~/images** when that folder exists, otherwise
-in your home folder. Use arrows and Enter to open a folder or select a file.
+For an empty field, the explorer starts in your **home folder**. Reopening a
+populated field starts at its existing folder or the selected file's parent. Use arrows and Enter to open a folder or select a file.
 **Backspace** goes to the parent; **Ctrl+H** goes home. **/** filters names,
 **Ctrl+L** enters a path (including ~/), and **.** shows hidden entries.
 For folder fields, **Ctrl+S** chooses the current folder. **Ctrl+O** reopens the
