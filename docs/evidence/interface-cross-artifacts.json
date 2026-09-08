@@ -1,0 +1,171 @@
+{
+  "revision": "715aa9f1545f567a8d10f0b05fc7b386b1069e7c",
+  "sourceDigest": "c3f8857c6676420d05149f87c956aaa4feb83d5b6ed6b45f8bbe3910178d2a99",
+  "evidenceID": "interface-cross-001",
+  "toolchain": "go version go1.27.1 linux/amd64",
+  "buildSettings": [
+    "GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off CGO_ENABLED=0 GOENV=off GOWORK=off GO111MODULE=on",
+    "GOFLAGS= GOEXPERIMENT= GOAMD64=v1 GOARM64=v8.0",
+    "flags: -trimpath -buildvcs=false -ldflags=-buildid=",
+    "root module: -mod=vendor; SDK and samples: -mod=readonly"
+  ],
+  "scope": "Actual cross compiler output, SHA256 and target-format inspection; no target executable was run and no host support is implied",
+  "artifacts": [
+    {
+      "path": "darwin/arm64/core/internal-domain.a",
+      "sha256": "48e8d9b4bc62e01b76c36c389daa48159523ba5274c83040ff72c7f9046142f9",
+      "bytes": 353366,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/core/internal-app-provision.a",
+      "sha256": "3cac3c9d6b72491841761314f1dd8f75b7a9cfaac03b453820784264ac5d61ab",
+      "bytes": 262846,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/core/internal-wire.a",
+      "sha256": "d54ffa129fd67dc5e01f524800150ab930e19df71080841448ad3592330c6936",
+      "bytes": 56808,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/core/internal-validation.a",
+      "sha256": "2846edb8e49c13d6f995a19d7efd2c755516c85dac5dad209b30780fe83c70db",
+      "bytes": 345894,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/core/internal-operations.a",
+      "sha256": "69bccd76162145018dc35a53d36d94cc56d7449a61a2d8aebad1941442275d4c",
+      "bytes": 536172,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/core/internal-ui-cli.a",
+      "sha256": "1d696eaff648093ab01ad62b41b893496e425b5bb4eb7b5999e0af5383005f10",
+      "bytes": 438624,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/core/internal-ui-tui.a",
+      "sha256": "2714311e7faaff1a70189392e3da4ff0b53b7e4a0eb9d15299bab18dfe0d55ee",
+      "bytes": 301120,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/sdk.a",
+      "sha256": "76f35fb34244499de5c97005674079a916c74d7e9b731a6ae1679b176e43f333",
+      "bytes": 216272,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/protocol.a",
+      "sha256": "284d1ffc7692a939b07b9fa11f8269edca200c6fb6808dc1ab3b86a9f147e1a1",
+      "bytes": 56570,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/sdk-summary.a",
+      "sha256": "f270f179bfa3463a563a7282fc59545ccfd8a2fcc37dd8eadd36cf635ad25db6",
+      "bytes": 87028,
+      "format": "Go archive"
+    },
+    {
+      "path": "darwin/arm64/sdk.test",
+      "sha256": "465dd3215a27d6c807c86ac63e95b7725f8a3a91b5291a7aa7deaa93cba9f59b",
+      "bytes": 5492082,
+      "format": "Mach-O arm64"
+    },
+    {
+      "path": "darwin/arm64/vm-summary",
+      "sha256": "9782a3aa9430d4c4125af1bc7e1960fa8d7e0da6bc8eed0fe5c6efab5d65e51c",
+      "bytes": 4142898,
+      "format": "Mach-O arm64"
+    },
+    {
+      "path": "darwin/arm64/provider-fixture",
+      "sha256": "6e042a89504fd108e346564c99fe57b7c25b104d8265444375c90ab4c66c7515",
+      "bytes": 4707234,
+      "format": "Mach-O arm64"
+    },
+    {
+      "path": "windows/amd64/core/internal-domain.a",
+      "sha256": "d2317070c9ecc1ba91ee68af6ab6a3eb234fa1868d0d6720796891cc962c6c31",
+      "bytes": 347246,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/core/internal-app-provision.a",
+      "sha256": "02814234e093184518caa42ff1a70480978583518abb1f68f3cbde9b9080faa1",
+      "bytes": 231598,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/core/internal-wire.a",
+      "sha256": "64ea07167695b21fc0dc1ef4097324d34d0c5c5dc973876c52e48acc37bef00d",
+      "bytes": 46634,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/core/internal-validation.a",
+      "sha256": "90b27d5d7134843f020970e8af23471871bf7e651825bafb7af402aaa3becc06",
+      "bytes": 310002,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/core/internal-operations.a",
+      "sha256": "f8cb6e93fff83b20807a4845530b7be85b8e5274daca94e06065f1c4964ae232",
+      "bytes": 509340,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/core/internal-ui-cli.a",
+      "sha256": "23c4fc10914da0dd940d45a6f3a9e1ee8ca5817c11d713a8f6300319e19eb0a5",
+      "bytes": 399238,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/core/internal-ui-tui.a",
+      "sha256": "5f082c839d634f17e90bfda968a8a3d0527eaf839973fc150d5bf4e8b5c6f881",
+      "bytes": 258582,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/sdk.a",
+      "sha256": "96f7cbdbc3b72d92a8e14d1d096205d59ee14fbf46a2b92bc2d23bce99aafdfb",
+      "bytes": 189794,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/protocol.a",
+      "sha256": "0d2f2a30c90ef9015a83b19ffdb1d0aefd0da2c95270d7f1e2b194b5c4968874",
+      "bytes": 46396,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/sdk-summary.a",
+      "sha256": "d5f3381c62da945eec6622a88d3c1a56fbd823ab7bcfa30a8e1ad82be1fe7139",
+      "bytes": 84196,
+      "format": "Go archive"
+    },
+    {
+      "path": "windows/amd64/sdk.test.exe",
+      "sha256": "d54048329b354e34e7dc017477b2e815ae7bb640ca9fba2f0b0f160ffb8efe66",
+      "bytes": 5901312,
+      "format": "PE x86-64"
+    },
+    {
+      "path": "windows/amd64/vm-summary.exe",
+      "sha256": "19bbb892b9f52674c8cd69112093bf283ee9bd1a5daf147248206a521015e872",
+      "bytes": 4374016,
+      "format": "PE x86-64"
+    },
+    {
+      "path": "windows/amd64/provider-fixture.exe",
+      "sha256": "62d1068138b2e09f654490943850fdf8f25aab36e174023006fd62c4c621993a",
+      "bytes": 5037568,
+      "format": "PE x86-64"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+CLI actual confined checks: {"checks": ["simulated provider initialize identity/version/protocol and bounded describe schemas", "explicit simulated capabilities and fixture connection namespace", "reviewed create/get with stable fake IDs, exact deduplication and stale idempotency refusal", "stable ordered paginated inventory with repeated opaque cursors", "partial effect reported: operation=conformance-partial; resource=fixture-conformance-partial; status=partial", "restart/status/reconcile without apply replay: fixture-conformance-partial remains status=partial, reconciled=true, revision=1; inventory generation unchanged", "reviewed start/stop/delete preserve resource identity and retain a deleted receipt", "backup and lifecycle cancellation explicitly unsupported; no fake supported result", "shutdown; simulated-contract only, no real remote-provider or hardware qualification"], "confined": true, "evidenceClass": "simulated-contract", "pluginID": "example.virmill.provider-fixture"}
+Actual 80x24 PTY selected Plugins > plugin test and displayed the confined result.
+test_cli_and_real_pty_use_private_confined_provider_workspace (__main__.ProviderConformanceUI.test_cli_and_real_pty_use_private_confined_provider_workspace) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.378s
+
+OK

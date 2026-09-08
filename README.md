@@ -48,3 +48,6 @@ These observations do not establish complete capture or independent recovery.
 
 Reference provider development: [fixture guide](tests/fixtures/plugins/provider/README.md)
 and [accepted simulated-contract evidence](docs/evidence/provider-conformance-run.md).
+
+Durable [CLI event streams](docs/cli-streaming.md), [terminal forms and review](docs/tui-terminal-contract.md),
+and [cross-build instructions](docs/cross-builds.md) have [frozen integration evidence](docs/evidence/interface-integration-run.md).

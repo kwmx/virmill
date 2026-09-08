@@ -3288,7 +3288,8 @@
         "docs/auxiliary-state-inspection.md",
         "docs/evidence/auxiliary-inventory-run.md",
         "docs/reviews/swtpm-file-writer-exclusion.md",
-        "docs/reviews/auxiliary-native-fixture-review.md"
+        "docs/reviews/auxiliary-native-fixture-review.md",
+        "internal/plugins/tooling.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-03",
@@ -3330,7 +3331,8 @@
         "tests/fixtures/protection/swtpm-file-lock-probe-v2.md",
         "tests/fixtures/protection/swtpm-file-lock-probe-v2.py",
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.md",
-        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py",
+        "internal/plugins/tooling_bounds_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3365,7 +3367,8 @@
         "auxiliary-inspection-native-003",
         "swtpm-file-lock-self-tests-002",
         "swtpm-file-lock-native-003",
-        "auxiliary-helper-deactivation-native-001"
+        "auxiliary-helper-deactivation-native-001",
+        "interface-race-001"
       ],
       "outstanding": [
         "Parser/terminal attacks and seed tests pass; full fuzz corpus, symlink-swap and converter argument matrix remain.",
@@ -3611,7 +3614,9 @@
         "nvram-binding-packages-001",
         "provider-lifecycle-contract-001",
         "provider-lifecycle-confined-001",
-        "provider-shared-race-002"
+        "provider-shared-race-002",
+        "interface-race-001",
+        "interface-provider-ui-001"
       ],
       "outstanding": [],
       "hardwareVerified": false,
@@ -3632,7 +3637,8 @@
         "internal/plugins/actions.go",
         "docs/plugin-protocol-fault-fixtures.md",
         "docs/adr/0019-discovery-and-plugin-session-failure.md",
-        "docs/evidence/discovery-plugin-run.md"
+        "docs/evidence/discovery-plugin-run.md",
+        "internal/plugins/tooling.go"
       ],
       "plannedImplementation": "internal/plugins",
       "plannedTest": "tests/integration/plugins/EXT-03",
@@ -3642,7 +3648,8 @@
         "internal/plugins/actions_test.go",
         "internal/plugins/runner_faults_test.go",
         "internal/plugins/runner_close_test.go",
-        "tests/fixtures/plugins/protocol-faults/main.py"
+        "tests/fixtures/plugins/protocol-faults/main.py",
+        "internal/plugins/tooling_bounds_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3664,7 +3671,8 @@
         "discovery-clean-static-001",
         "discovery-clean-core-001",
         "discovery-confined-001",
-        "nvram-binding-frozen-core-001"
+        "nvram-binding-frozen-core-001",
+        "interface-race-001"
       ],
       "outstanding": [
         "Deadlines, bounded transport and concurrent SDK cancellation exist; full heartbeat, cancellation grace, quarantine and adversarial matrix remains.",
@@ -4021,7 +4029,8 @@
         "docs/adr/0022-authenticated-auxiliary-inventory.md",
         "docs/auxiliary-state-inspection.md",
         "docs/evidence/auxiliary-inventory-run.md",
-        "docs/tui-navigation.md"
+        "docs/tui-navigation.md",
+        "docs/tui-terminal-contract.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4036,7 +4045,9 @@
         "internal/helper/auxiliary_server_linux_test.go",
         "internal/ui/cli/auxiliary_test.go",
         "internal/ui/tui/auxiliary_test.go",
-        "internal/ui/tui/search_test.go"
+        "internal/ui/tui/search_test.go",
+        "internal/ui/tui/terminal_contract_test.go",
+        "tests/integration/provider_conformance_ui_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4045,10 +4056,13 @@
         "auxiliary-inventory-core-001",
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
-        "lifecycle-policy-search-artifacts-001"
+        "lifecycle-policy-search-artifacts-001",
+        "interface-race-001",
+        "interface-provider-ui-001",
+        "interface-artifacts-001"
       ],
       "outstanding": [
-        "Basic keyboard/canceled approval/80x24 tests only; full resize/focus/search/accessibility testing remains.",
+        "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required."
       ],
@@ -4112,7 +4126,10 @@
         "docs/evidence/auxiliary-inventory-run.md",
         "docs/reviews/auxiliary-native-fixture-review.md",
         "docs/evidence/environments/specification-source-20260908.json",
-        "internal/validation/validate.go"
+        "internal/validation/validate.go",
+        "internal/ui/cli/events_stream.go",
+        "docs/cli-streaming.md",
+        "internal/domain/domain.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-03",
@@ -4166,7 +4183,10 @@
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-inspection-tui-001.py",
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.md",
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-tui-policy-window-001.py",
-        "internal/validation/specification_parity_test.go"
+        "internal/validation/specification_parity_test.go",
+        "internal/ui/cli/events_stream_test.go",
+        "internal/domain/exit_code_test.go",
+        "tests/integration/cli_streaming_test.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4216,10 +4236,13 @@
         "schema-format-integrated-core-001",
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
-        "lifecycle-policy-search-artifacts-001"
+        "lifecycle-policy-search-artifacts-001",
+        "interface-race-001",
+        "interface-cli-stream-001",
+        "interface-artifacts-001"
       ],
       "outstanding": [
-        "Clean JSON, shared plugin paths, client-relative path resolution and noninteractive contracts pass; streaming NDJSON, complete exit/wait matrix remain.",
+        "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
         "New version-1 UEFI creation recipes durably bind the first recorded NVRAM declaration before confirming definition; legacy recipes stay visibly unbound. Real service/journal and shared CLI/TUI tests cover drift, lost acknowledgement, cancellation, malformed proof and version downgrade refusal. Frozen dc2ab1a native checks observed first binding, idempotent A, B refusal and successful restored-A reconciliation; the recipe retained a failed final pool-counter assertion and separate installed CLI/TUI confirmation passed 20 plan and 10 result pages with unchanged journal/seven stopped XML definitions; declaration proves neither file initialization/freshness nor complete capture/restore.",
@@ -4396,7 +4419,7 @@
       "v1Required": true,
       "owner": "core-integration",
       "gate": 9,
-      "status": "in-progress",
+      "status": "accepted",
       "implementationPaths": [
         "scripts/cross-build.sh",
         "sdk/go/server.go",
@@ -4406,7 +4429,10 @@
         "docs/evidence/creation-acceptance-run.md",
         "scripts/package.py",
         "scripts/reproducibility.py",
-        "docs/reviews/repository-hygiene-20260908.md"
+        "docs/reviews/repository-hygiene-20260908.md",
+        "docs/cross-builds.md",
+        "docs/evidence/interface-cross-artifacts.json",
+        "docs/evidence/interface-integration-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-02",
@@ -4414,7 +4440,8 @@
         "internal/backend/xmlpatch/boot_captured_test.go",
         "tests/integration/package_inputs_test.py",
         "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.md",
-        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/auxiliary-helper-deactivation-001.py",
+        "tests/integration/cross_build_contract_test.py"
       ],
       "evidence": [
         "cross-build-001",
@@ -4453,12 +4480,12 @@
         "auxiliary-inventory-cross-001",
         "auxiliary-repository-hygiene-001",
         "auxiliary-helper-deactivation-native-001",
-        "lifecycle-policy-search-cross-001"
+        "lifecycle-policy-search-cross-001",
+        "interface-cross-001",
+        "interface-cross-orchestration-001",
+        "interface-repro-001"
       ],
-      "outstanding": [
-        "Common packages/SDK/reference plugin cross-builds only; never implies macOS/Windows host support.",
-        "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence."
-      ],
+      "outstanding": [],
       "hardwareVerified": false,
       "released": false
     },
@@ -4587,7 +4614,11 @@
         "scripts/package_docs.py",
         "docs/adr/0024-installed-documentation-links.md",
         "docs/reviews/installed-document-links-490b88c.md",
-        "scripts/record-evidence.py"
+        "scripts/record-evidence.py",
+        "docs/cli-streaming.md",
+        "docs/tui-terminal-contract.md",
+        "docs/cross-builds.md",
+        "docs/evidence/interface-integration-run.md"
       ],
       "plannedImplementation": "packaging",
       "plannedTest": "tests/integration/release/REL-03",
@@ -4846,7 +4877,9 @@
         "lifecycle-policy-search-artifacts-001",
         "lifecycle-policy-search-repro-001",
         "lifecycle-policy-search-documents-001",
-        "evidence-attribution-validation-001"
+        "evidence-attribution-validation-001",
+        "interface-documents-001",
+        "interface-artifacts-001"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",

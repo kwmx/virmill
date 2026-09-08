@@ -1,0 +1,7 @@
+{"source": "actual private coordinator and generated scaffold job", "operationID": "40a0f0cd-8474-4aa0-9c09-cb22a2bc01de", "events": 4, "cursor": 4, "terminalState": "succeeded", "resumeEvents": 0, "hiddenPrompts": false, "hostOrGuestEffects": false}
+test_wait_follow_and_cursor_resume_on_durable_scaffold_job (__main__.CLIStreaming.test_wait_follow_and_cursor_resume_on_durable_scaffold_job) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.086s
+
+OK

@@ -83,3 +83,6 @@ definition/filter/activation results, packet-fixture failures, exact cleanup,
 reproducible artifacts and remaining network qualification are recorded separately.
 
 EXT-02 simulated provider acceptance: [shared CLI/TUI conformance](provider-conformance-run.md).
+
+Latest frozen integration: [CLI streaming, terminal forms and cross builds](interface-integration-run.md).
+EXT-02 and REL-02 are accepted at their specified simulated/compile evidence levels.

@@ -1,0 +1,4 @@
+Cross-building GOOS=darwin GOARCH=arm64 CGO_ENABLED=0
+Cross-building GOOS=windows GOARCH=amd64 CGO_ENABLED=0
+Cross-build passed: 2 targets, 26 compile-only artifacts; no target binaries executed
+Outputs: /home/faisal/project/virmill/build/interface-release/build/cross/run.ErZzYu

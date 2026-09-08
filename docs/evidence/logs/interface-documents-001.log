@@ -1,0 +1,6 @@
+{"essentialProtocolInstalled": true, "explicitSourceReferences": 1555, "externalOrFragmentLinks": 139, "manifestSHA256": {"virmill": "22071bb2c71c8a2c5380f05970459bfa32fcf9132e100e548537f9847a0457f7", "virmill-host-helper": "f3c85aaeb4228ab17a848127073823abd46f67cc1af369a99ff83e185e73fdf7"}, "markdownFiles": 128, "missingLocalTargets": 0, "payloadFiles": 227, "resolvedLocalLinks": 193, "scope": "staged hashes/modes/inventory and local file targets; no fragment, URL availability, tutorial, renderer or host installation qualification", "status": "passed"}
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.167s
+
+OK
