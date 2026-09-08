@@ -32,3 +32,7 @@ libvirt. GUEST-02/GUEST-03 still need actual nested-guest recipe qualification,
 and GUEST-01 still needs its first-boot/user/key support matrix. Missing guest,
 OS, reboot and application support is not converted into acceptance by this
 transport evidence. See [operator instructions](../guest-recipes.md).
+
+The final frozen `1eccfc4` adapter passed `beta-owner-ssh-native-001`, including
+pre-launch rejection of an incorrect executable digest. Its integrated race
+suite and installed package evidence are linked from the [owner handoff](../owner-beta-handoff.md).
