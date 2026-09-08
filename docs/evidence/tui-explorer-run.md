@@ -1,5 +1,8 @@
 # Short menus and file explorer — 8 September 2026
 
+Current installed hashes and corrected home-folder default are recorded in the
+[browser-location correction](picker-home-run.md). Evidence below is historical.
+
 Installed production source: `d8766f4f87a377844c5a40275797e186102f4d0d`.
 The owner requested fewer upfront options, less path typing and concise useful
 explanations. Common tasks now appear in a short menu. A visible Advanced tools

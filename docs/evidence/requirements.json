@@ -4213,7 +4213,8 @@
         "internal/ui/tui/file_picker.go",
         "internal/ui/tui/workspace_picker.go",
         "docs/adr/0033-progressive-disclosure-and-local-file-picker.md",
-        "docs/evidence/tui-explorer-run.md"
+        "docs/evidence/tui-explorer-run.md",
+        "docs/evidence/picker-home-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4392,7 +4393,11 @@
         "tui-explorer-native-001",
         "tui-explorer-native-002",
         "tui-explorer-native-003",
-        "tui-explorer-native-004"
+        "tui-explorer-native-004",
+        "picker-home-tests-001",
+        "picker-home-artifacts-001",
+        "picker-home-upgrade-001",
+        "picker-home-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4449,7 +4454,8 @@
         "internal/ui/tui/file_picker.go",
         "internal/ui/tui/workspace_picker.go",
         "docs/adr/0033-progressive-disclosure-and-local-file-picker.md",
-        "docs/evidence/tui-explorer-run.md"
+        "docs/evidence/tui-explorer-run.md",
+        "docs/evidence/picker-home-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4505,7 +4511,11 @@
         "tui-explorer-native-001",
         "tui-explorer-native-002",
         "tui-explorer-native-003",
-        "tui-explorer-native-004"
+        "tui-explorer-native-004",
+        "picker-home-tests-001",
+        "picker-home-artifacts-001",
+        "picker-home-upgrade-001",
+        "picker-home-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
