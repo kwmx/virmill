@@ -79,7 +79,11 @@ func (m Workspace) updatePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 	if m.ImportPickerTarget != "" {
+		source := m.ImportPickerTarget == "source"
 		m.importPicked(result.Path)
+		if source && m.Import != nil && m.Import.Draft.Kind == "ova" && m.Import.Error == "" {
+			return m, m.describeImport()
+		}
 		return m, nil
 	}
 	var f *GuidedForm

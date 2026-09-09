@@ -80,6 +80,7 @@ var Actions = []Action{
 	{"vm restore-saved", "vm.plan", "VMs", "Plan restoration of saved state", "id", "restore-saved"},
 	{"vm autostart", "vm.plan", "VMs", "Plan autostart policy", "id", "autostart"},
 	{"vm set", "vm.plan", "VMs", "Plan next-boot CPU/RAM, boot order or retained-media ejection on a powered-off VM", "id", "set"},
+	{"import describe", "import.describe", "VMs", "Read appliance settings quickly; payload checksums are verified during preparation", "path", ""},
 	{"import inspect", "import.inspect", "VMs", "Inspect bounded OVA packaging; no extraction or guest execution", "path", ""},
 	{"import prepare", "import.prepare", "VMs", "Plan independent conversion of every selected OVA disk; no VM is defined", "path", "prepare"},
 	{"import prepare-disks", "import.prepare-disks", "VMs", "Plan independent copies of an explicitly selected existing disk set and its backing files", "path", "prepare-disks"},

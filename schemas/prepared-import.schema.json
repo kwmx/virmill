@@ -136,6 +136,14 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 8796093022207
+              },
+              "resourceSubType": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "description": {
+                "type": "string",
+                "maxLength": 2048
               }
             }
           }
@@ -148,6 +156,49 @@
           "items": {
             "type": "string",
             "maxLength": 2048
+          }
+        },
+        "os": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "ovfOS": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "osSource": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "firmware": {
+          "type": "string",
+          "enum": [
+            "bios",
+            "uefi"
+          ]
+        },
+        "devices": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "model": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "enabled": {
+                "type": "boolean"
+              }
+            }
           }
         }
       }

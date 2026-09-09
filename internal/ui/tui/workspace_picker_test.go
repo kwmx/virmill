@@ -11,7 +11,7 @@ import (
 	"virmill.local/core/internal/ui"
 )
 
-func TestImportOpensBrowserAndSelectionOnlyFillsSource(t *testing.T) {
+func TestImportOpensBrowserAndAutomaticallyDescribesSelection(t *testing.T) {
 	root := t.TempDir()
 	source := filepath.Join(root, "appliance with spaces.ova")
 	if err := os.WriteFile(source, []byte("picker metadata fixture, not OVA validation"), 0600); err != nil {
@@ -34,14 +34,15 @@ func TestImportOpensBrowserAndSelectionOnlyFillsSource(t *testing.T) {
 	if cmd == nil {
 		t.Fatal("select must observe source")
 	}
-	next, _ = m.Update(cmd())
+	next, cmd = m.Update(cmd())
 	m = next.(Workspace)
-	if m.Picker != nil || m.Import.Draft.Source != source || m.Busy || m.Plan != nil {
-		t.Fatal("selection must only edit field", m.View())
+	if m.Picker != nil || m.Import.Draft.Source != source || !m.Busy || m.Plan != nil || cmd == nil {
+		t.Fatal("selection must start a read-only description", m.View())
 	}
 	if len(m.Client.(*workspaceClient).calls) != 0 {
 		t.Fatal("selecting file called service")
 	}
+	m, _ = wk(m, "esc") // cancel metadata read
 	m, cmd = wk(m, "esc")
 	if cmd != nil || m.Import != nil || !m.Advanced {
 		t.Fatal("back must return to import choices")

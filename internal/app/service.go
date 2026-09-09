@@ -240,6 +240,8 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return s.Engine.Cancel(r.ID)
 	case "operation.reconcile":
 		return s.Engine.Reconcile(ctx, r.ID)
+	case "import.describe":
+		return importer.Describe(ctx, r.Path, importer.DefaultLimits())
 	case "import.inspect":
 		return importer.Inspect(ctx, r.Path, importer.DefaultLimits())
 	case "backup.policy.validate", "backup.policy.preview":

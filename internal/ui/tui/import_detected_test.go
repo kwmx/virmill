@@ -73,7 +73,7 @@ func TestImportDetectedResourcesRejectAmbiguousOrRawMemoryGuess(t *testing.T) {
 func TestImportDiskPageExplainsPreparationAndPlacesFormatBehindAdvanced(t *testing.T) {
 	f := ImportForm{Draft: detectedImportDraft(t, 120<<30), Page: 2}
 	view := f.View(80, 24)
-	for _, text := range []string{"First prepare the images. CPU, RAM, firmware and networks come next.", "Detected: 2 CPUs", "8192 MiB RAM", "Preview image preparation", "122880"} {
+	for _, text := range []string{"Review disk conversion, then confirm the VM before creation.", "Selected VM: 2 CPUs", "8192 MiB RAM", "Preview image preparation", "122880"} {
 		if !strings.Contains(view, text) {
 			t.Fatalf("missing clear preparation detail %q: %s", text, view)
 		}

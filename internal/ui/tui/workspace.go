@@ -25,6 +25,7 @@ import (
 type Workspace struct {
 	Creation           *CreationForm
 	SavedCreation      *CreationForm
+	PreparedBasics     map[string]ImportDraft
 	SavedImport        *ImportForm
 	CreationPicking    bool
 	CreationChoices    []creationChoice
@@ -412,7 +413,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		return nil
 	}
 	m.ActionForm = &f
-	if a.Method == "import.prepare" || a.Method == "import.prepare-install" || a.Method == "import.prepare-disks" || a.Method == "import.inspect" {
+	if a.Method == "import.prepare" || a.Method == "import.prepare-install" || a.Method == "import.prepare-disks" || a.Method == "import.inspect" || a.Method == "import.describe" {
 		return m.browseField()
 	}
 	return nil
@@ -555,6 +556,16 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				f.BeforePreparation = bundle.OperationID == ""
 				m.Creation = &f
 			}
+
+			if bundle.OperationID == "" && m.Import != nil {
+				applyImportBasics(m.Creation, m.Import.Draft)
+				if m.Import.Page == 3 {
+					m.Creation.Page, m.Creation.Focus = 3, 0
+				}
+			} else if d, ok := m.PreparedBasics[bundle.OperationID]; ok {
+				applyImportBasics(m.Creation, d)
+				delete(m.PreparedBasics, bundle.OperationID)
+			}
 			m.CreationPicking = false
 			m.Notice = ""
 			m.Error = ""
@@ -606,9 +617,15 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Advanced = false
 		case "apply":
 			prepared := m.Import != nil
+			if prepared {
+				m.PreparedBasics = maps.Clone(m.PreparedBasics)
+				if m.PreparedBasics == nil {
+					m.PreparedBasics = map[string]ImportDraft{}
+				}
+				m.PreparedBasics[resourceID(data)] = m.Import.Draft
+			}
 			if prepared && m.Import.VM != nil {
-				_, r, err := m.Import.Draft.Request(m.Connection)
-				if err == nil && m.Import.VMBinding == creationImportBinding(r) {
+				if m.Import.VMBinding == creationDraftBinding(m.Import.Draft) {
 					f := *m.Import.VM
 					f.OperationID = resourceID(data)
 					f.BeforePreparation = false

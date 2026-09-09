@@ -66,6 +66,7 @@ var actionText = map[string]struct{ label, description string }{
 	"vm restore-saved":              {"Resume saved VM", "Restore the VM's previously saved runtime state."},
 	"vm autostart":                  {"Change VM automatic startup", "Choose whether this VM starts automatically with the host."},
 	"vm set":                        {"Edit VM hardware", "Review next-boot CPU and memory, boot order or media changes."},
+	"import describe":               {"Read appliance settings", "Show declared hardware before verifying and preparing disk files."},
 	"import inspect":                {"Inspect OVA appliance", "Read appliance packaging without extracting or running the guest."},
 	"import prepare":                {"OVA appliance", "Choose an appliance, review its disks and prepare independent copies."},
 	"import prepare-disks":          {"Existing disk images", "Browse for disks and choose where to prepare independent copies."},

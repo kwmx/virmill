@@ -34,8 +34,8 @@ func (m Workspace) importBusyView(width, height int) []string {
 	seconds := int(m.ImportElapsed.Seconds())
 	return pageLines([]string{
 		"Checking appliance", "", filepath.Base(m.Import.Draft.Source), "",
-		"Reading the appliance and verifying its files.",
-		"Large files can take several minutes.", "",
+		"Reading the declared hardware and disk list.",
+		"Disk checksums are verified during preparation.", "",
 		fmt.Sprintf("Elapsed %d:%02d", seconds/60, seconds%60), "",
 		"> [ Cancel inspection ]",
 	}, width, height, 0)
@@ -144,6 +144,9 @@ func (m *Workspace) importPicked(path string) {
 		if d.Source != path {
 			d.Source = path
 			d.Report = nil
+			d.VMName, d.VCPUs, d.MemoryMiB = "", "", ""
+			m.Import.VM = nil
+			m.Import.VMBinding = ""
 			d.SystemID = ""
 			d.Offline = false
 			d.SHA256 = ""
@@ -225,18 +228,7 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "browse":
 		return m, m.browseImport(intent.Target, intent.Index)
 	case "inspect":
-		if !guidedPath(f.Draft.Source) {
-			m.Import.Error = "Choose an OVA file first."
-			return m, nil
-		}
-		m.Busy = true
-		m.Error = ""
-		m.Import.Error = ""
-		m.Notice = ""
-		m.ImportStarted = time.Now()
-		m.ImportElapsed = 0
-		cmd := m.request("import-inspect", "import.inspect", app.Request{Path: f.Draft.Source})
-		return m, tea.Batch(cmd, importPulseCommand(m.Pending["import-inspect"]))
+		return m, m.describeImport()
 	case "hardware":
 		return m, m.configureImportHardware()
 	case "preview", "export":
@@ -327,7 +319,7 @@ func (m *Workspace) importInspection(data any) {
 	}
 	m.Import.Error = ""
 	if m.Import.Draft.SystemID != "" {
-		m.Import.Page = 1
+		m.Import.Page = 3
 		m.Import.Focus = 0
 	} else {
 		m.Notice = "Choose which appliance to import."
@@ -348,4 +340,16 @@ func (m Workspace) settingsExportRequest() (app.Request, error) {
 	}
 	_, r, err := m.Import.Draft.Request(m.Connection)
 	return r, err
+}
+
+func (m *Workspace) describeImport() tea.Cmd {
+	if m.Import == nil || !guidedPath(m.Import.Draft.Source) {
+		return nil
+	}
+	m.Busy = true
+	m.Error, m.Import.Error, m.Notice = "", "", ""
+	m.ImportStarted = time.Now()
+	m.ImportElapsed = 0
+	cmd := m.request("import-inspect", "import.describe", app.Request{Path: m.Import.Draft.Source})
+	return tea.Batch(cmd, importPulseCommand(m.Pending["import-inspect"]))
 }

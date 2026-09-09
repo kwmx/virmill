@@ -69,7 +69,7 @@ func TestImportInspectionContinuesSingleAppliance(t *testing.T) {
 	f.Draft.Source = "/media/appliance.ova"
 	m.Import = &f
 	m.importInspection(importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "guest", DiskIDs: []string{"root"}}}, Disks: []importer.Disk{{ID: "root", Path: "root.raw", Format: "raw"}}})
-	if m.Import.Page != 1 || len(m.Import.Draft.Disks) != 1 || m.Import.Error != "" {
+	if m.Import.Page != 3 || len(m.Import.Draft.Disks) != 1 || m.Import.Error != "" {
 		t.Fatal("Continue must inspect then advance without another manual step")
 	}
 }

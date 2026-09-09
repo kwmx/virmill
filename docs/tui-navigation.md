@@ -190,3 +190,21 @@ before trying again; the coordinator may already have accepted it. Reopening the
 same creation source recovers retained in-session settings. Accepted jobs and
 prepared images survive TUI closure, but incomplete wizard edits currently require
 an explicit export to survive a TUI restart.
+
+### Review an appliance before importing
+
+Choose an OVA in the explorer. Virmill reads its declared settings automatically
+and opens **Review appliance**. Edit VM name, CPU cores and memory directly.
+**Advanced settings** opens hardware choices before choosing a destination;
+**Done** or Esc returns to the summary. Tab moves among editable fields and
+actions; arrow keys read the full device list. Continue selects the destination
+and disk preparation options. Existing source media stays untouched.
+
+The quick summary does not verify disk contents. Preparation performs full
+checksum and safety checks and presents a separate plan for review. A listed
+firmware-state file is not a supported restoration promise. Device or OS
+discrepancies are shown for review. CPU/RAM edits survive the in-session handoff
+to VM creation; unfinished drafts do not yet survive closing the TUI.
+
+For the same read-only metadata in the CLI, use `virmill import describe FILE.ova`.
+Use `virmill import inspect FILE.ova` when full archive verification is needed.

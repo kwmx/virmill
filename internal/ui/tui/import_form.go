@@ -55,22 +55,34 @@ func (f ImportForm) View(width, height int) string {
 	if title == "" {
 		title = "Import options"
 	}
-	page := max(0, min(f.Page, 2))
-	steps := []string{"Choose the source", "Choose where to save", "Prepare disk images"}
-	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared images in a new folder. VM setup follows.", "First prepare the images. CPU, RAM, firmware and networks come next."}
+	page := max(0, min(f.Page, 3))
+	steps := []string{"Choose the source", "Choose where to save", "Prepare disk images", "Review the appliance"}
+	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared images in a new folder. VM setup follows.", "First prepare the images. CPU, RAM, firmware and networks come next.", "Read from appliance metadata. Files are verified during preparation."}
+	if f.Draft.Kind == "ova" {
+		purpose[1] = "Choose a destination. Your VM settings stay with this import."
+		purpose[2] = "Review disk conversion, then confirm the VM before creation."
+	}
+	if page == 3 {
+		title = "Review appliance"
+	}
 	lines := []string{clean(title), ""}
 	lines = append(lines, wrap(purpose[page], width)...)
-	lines = append(lines, clean(fmt.Sprintf("Step %d of 3 · %s", page+1, steps[page])), "")
+	if page == 3 {
+		lines = append(lines, "")
+	} else {
+		lines = append(lines, clean(fmt.Sprintf("Step %d of 3 · %s", page+1, steps[page])), "")
+	}
 	if page == 2 && f.Draft.Kind == "ova" {
-		cpus, memory := f.Draft.DetectedResources()
-		cpuLabel, memoryLabel := "CPU: choose next", "RAM: choose next"
-		if cpus > 0 {
+		cpus, cpuOK := guidedNumber(f.Draft.VCPUs, 512)
+		memory, memoryOK := guidedNumber(f.Draft.MemoryMiB, 1<<20)
+		cpuLabel, memoryLabel := "CPU: review summary", "RAM: review summary"
+		if cpuOK {
 			cpuLabel = fmt.Sprintf("%d CPUs", cpus)
 		}
-		if memory > 0 {
+		if memoryOK && memory >= 128 {
 			memoryLabel = fmt.Sprintf("%d MiB RAM", memory)
 		}
-		lines = append(lines, clean("Detected: "+cpuLabel+" · "+memoryLabel))
+		lines = append(lines, clean("Selected VM: "+cpuLabel+" · "+memoryLabel))
 	}
 	controls := f.controls()
 	if len(controls) == 0 {
@@ -79,10 +91,13 @@ func (f ImportForm) View(width, height int) string {
 	focus := max(0, min(f.Focus, len(controls)-1))
 	primary := -1
 	back := -1
+	advancedButton := -1
 	body := []int{}
 	for i, c := range controls {
 		if c.id == "next" || c.id == "preview" {
 			primary = i
+		} else if page == 3 && c.id == "hardware" {
+			advancedButton = i
 		} else if f.Error != "" && page == 2 && c.id == "back" {
 			back = i
 		} else {
@@ -99,6 +114,9 @@ func (f ImportForm) View(width, height int) string {
 		}
 		errorLines := wrap(message, width)
 		reserved := 2 // primary action and help
+		if advancedButton >= 0 {
+			reserved++
+		}
 		if back >= 0 {
 			reserved++
 		}
@@ -115,6 +133,13 @@ func (f ImportForm) View(width, height int) string {
 			prefix = "> "
 		}
 		footer = append(footer, clean(prefix+"[ "+controls[back].label+" ]"))
+	}
+	if advancedButton >= 0 {
+		prefix := "  "
+		if focus == advancedButton {
+			prefix = "> "
+		}
+		footer = append(footer, clean(prefix+"[ "+controls[advancedButton].label+" ]"))
 	}
 	if primary >= 0 {
 		prefix := "  "
@@ -136,6 +161,17 @@ func (f ImportForm) View(width, height int) string {
 	}
 	if first > 0 {
 		lines[len(lines)-1] = clean(fmt.Sprintf("%d earlier options", first))
+	}
+	if page == 3 {
+		below := max(0, len(body)-first-room)
+		if below > 0 {
+			lines[len(lines)-1] = clean(fmt.Sprintf("%d rows below · PgDn reads more", below))
+			if first > 0 {
+				lines[len(lines)-1] = clean(fmt.Sprintf("%d above · %d below · PgUp/PgDn reads more", first, below))
+			}
+		} else if first > 0 {
+			lines[len(lines)-1] = clean(fmt.Sprintf("%d rows above · PgUp reads more", first))
+		}
 	}
 	for row := first; row < min(len(body), first+room); row++ {
 		i := body[row]
@@ -163,6 +199,8 @@ func (f ImportForm) View(width, height int) string {
 			}
 			value = importTail(value, max(1, width-ansi.StringWidth(c.label)-8))
 			row = c.label + ": [ " + value + " ]"
+		case "summary":
+			row = value
 		case "info":
 			row = c.label + ": " + importTail(value, max(1, width-ansi.StringWidth(c.label)-4))
 		default:
@@ -233,10 +271,10 @@ func (f *ImportForm) edit(c importControl, key tea.KeyMsg) {
 			return
 		}
 		limit := 4096
-		if c.id == "size" {
+		if c.id == "size" || c.id == "vcpus" || c.id == "memoryMiB" {
 			limit = 12
 		}
-		if c.id == "diskID" || c.id == "mediaID" || c.id == "folder" {
+		if c.id == "diskID" || c.id == "mediaID" || c.id == "folder" || c.id == "vmName" {
 			limit = 255
 		}
 		if len(value)+len(text) > limit {
@@ -322,11 +360,17 @@ func (f ImportForm) controls() []importControl {
 			nextHelp = "Check the appliance, then choose where to save its copy."
 		}
 		controls = append(controls, importButton("next", "Continue", nextHelp))
+	case 3:
+		return f.applianceControls()
 	case 1:
+		backLabel := "Back: Source"
+		if f.Draft.Kind == "ova" && f.Draft.Report != nil && f.Draft.SystemID != "" {
+			backLabel = "Back: Appliance"
+		}
 		controls = append(controls,
 			importPath("destination", "Save in", "Choose an existing parent folder with enough free space.", d.DestinationParent),
 			importText("folder", "New folder name", "A new folder for this import. Existing files are never overwritten.", d.DestinationName),
-			importButton("back", "Back: Source", "Change the source without leaving this form."),
+			importButton("back", backLabel, "Return to the appliance or source without losing these choices."),
 			importButton("next", "Continue", "Set disk sizes and review which files will be copied."))
 	case 2:
 		if len(d.Disks) > 0 {
@@ -409,7 +453,7 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 	}
 	if key.Type == tea.KeyEsc {
 		if f.Page > 0 {
-			f.Page--
+			f.Page = f.previousPage()
 			f.Focus = 0
 			f.Error = ""
 			return f, none
@@ -422,6 +466,29 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 		return f, none
 	}
 	f.Focus = max(0, min(f.Focus, len(controls)-1))
+	if f.Page == 3 {
+		if key.Type == tea.KeyTab || key.Type == tea.KeyShiftTab {
+			direction := 1
+			if key.Type == tea.KeyShiftTab {
+				direction = -1
+			}
+			for range controls {
+				f.Focus = (f.Focus + direction + len(controls)) % len(controls)
+				if controls[f.Focus].kind != "summary" {
+					break
+				}
+			}
+			return f, none
+		}
+		if key.Type == tea.KeyPgDown || key.Type == tea.KeyPgUp {
+			direction := 8
+			if key.Type == tea.KeyPgUp {
+				direction = -8
+			}
+			f.Focus = max(0, min(len(controls)-1, f.Focus+direction))
+			return f, none
+		}
+	}
 	switch key.Type {
 	case tea.KeyTab, tea.KeyDown:
 		f.Focus = (f.Focus + 1) % len(controls)
@@ -472,10 +539,26 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 	if c.kind == "button" && activate {
 		switch c.id {
 		case "back":
-			f.Page = max(0, f.Page-1)
+			f.Page = f.previousPage()
 			f.Focus = 0
 			f.Error = ""
 		case "next":
+			if f.Page == 3 {
+				field, err := f.Draft.SummaryValidation()
+				if err != nil {
+					f.Error = err.Error()
+					for i, c := range controls {
+						if c.id == field {
+							f.Focus = i
+						}
+					}
+					return f, none
+				}
+				f.Page = 1
+				f.Focus = 0
+				f.Error = ""
+				return f, none
+			}
 			if f.Page == 0 {
 				if !guidedPath(f.Draft.Source) {
 					f.Error = map[string]string{"ova": "Choose an OVA file to continue.", "iso": "Choose an ISO file to continue.", "disks": "Choose the folder containing your disk images."}[f.Draft.Kind]
@@ -503,6 +586,10 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 						}
 						return f, none
 					}
+					f.Page = 3
+					f.Focus = 0
+					f.Error = ""
+					return f, none
 				}
 			}
 			if f.Page == 1 {
@@ -591,6 +678,8 @@ func (f *ImportForm) setText(id, value string) {
 	switch id {
 	case "source":
 		f.Draft.Source = value
+		f.Draft.VMName, f.Draft.VCPUs, f.Draft.MemoryMiB = "", "", ""
+		f.Draft.selectionSource, f.Draft.selectionSystem = "", ""
 		f.Draft.Report = nil
 		f.Draft.SystemID = ""
 		if f.Draft.Kind != "iso" {
@@ -601,6 +690,12 @@ func (f *ImportForm) setText(id, value string) {
 		}
 		f.Draft.SHA256 = ""
 		f.Draft.Offline = false
+	case "vmName":
+		f.Draft.VMName = value
+	case "vcpus":
+		f.Draft.VCPUs = value
+	case "memoryMiB":
+		f.Draft.MemoryMiB = value
 	case "destination":
 		f.Draft.DestinationParent = value
 	case "folder":
@@ -628,4 +723,14 @@ func (f *ImportForm) setText(id, value string) {
 			f.Draft.Offline = false
 		}
 	}
+}
+
+func (f ImportForm) previousPage() int {
+	if f.Page == 3 {
+		return 0
+	}
+	if f.Page == 1 && f.Draft.Kind == "ova" && f.Draft.Report != nil && f.Draft.Report.Source == f.Draft.Source && f.Draft.SystemID != "" {
+		return 3
+	}
+	return max(0, f.Page-1)
 }

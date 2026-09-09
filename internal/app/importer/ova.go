@@ -52,6 +52,8 @@ type Disk struct {
 }
 type Item struct {
 	ResourceType    string   `json:"resourceType"`
+	ResourceSubType string   `json:"resourceSubType,omitempty"`
+	Description     string   `json:"description,omitempty"`
 	InstanceID      string   `json:"instanceID"`
 	Parent          string   `json:"parent"`
 	AddressOnParent string   `json:"addressOnParent"`
@@ -62,21 +64,33 @@ type Item struct {
 	Connections     []string `json:"connections"`
 }
 type System struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Items   []Item   `json:"hardware"`
-	DiskIDs []string `json:"diskIDs"`
+	ID       string       `json:"id"`
+	Name     string       `json:"name"`
+	OS       string       `json:"os,omitempty"`
+	Firmware string       `json:"firmware,omitempty"`
+	OSSource string       `json:"osSource,omitempty"`
+	OVFOS    string       `json:"ovfOS,omitempty"`
+	Devices  []DeviceHint `json:"devices,omitempty"`
+	Items    []Item       `json:"hardware"`
+	DiskIDs  []string     `json:"diskIDs"`
+}
+
+type DeviceHint struct {
+	Kind    string `json:"kind"`
+	Model   string `json:"model,omitempty"`
+	Enabled *bool  `json:"enabled,omitempty"`
 }
 type Report struct {
-	Source     string   `json:"source"`
-	SHA256     string   `json:"sha256"`
-	Members    []Member `json:"members"`
-	Disks      []Disk   `json:"disks"`
-	Systems    []System `json:"systems"`
-	Warnings   []string `json:"warnings"`
-	Integrity  string   `json:"integrity"`
-	Readiness  string   `json:"readiness"`
-	Descriptor string   `json:"descriptor"`
+	Source         string            `json:"source"`
+	SHA256         string            `json:"sha256"`
+	Members        []Member          `json:"members"`
+	Disks          []Disk            `json:"disks"`
+	Systems        []System          `json:"systems"`
+	Warnings       []string          `json:"warnings"`
+	Integrity      string            `json:"integrity"`
+	Readiness      string            `json:"readiness"`
+	Descriptor     string            `json:"descriptor"`
+	FileReferences map[string]string `json:"fileReferences,omitempty"`
 }
 
 func SafePath(s string) error {
@@ -369,6 +383,15 @@ func parseOVF(data []byte, filename string, out *Report) error {
 			if count > 100000 || len(stack) > 64 {
 				return errors.New("XML complexity limit")
 			}
+			// encoding/xml accepts repeated attributes. Reject them by expanded
+			// name so conflicting metadata cannot silently select the first value.
+			attributes := make(map[xml.Name]bool, len(n.Attr))
+			for _, attr := range n.Attr {
+				if attributes[attr.Name] {
+					return errors.New("duplicate XML attribute in descriptor")
+				}
+				attributes[attr.Name] = true
+			}
 			v := &node{name: n.Name, attrs: n.Attr}
 			if len(stack) == 0 {
 				if root != nil {
@@ -407,8 +430,12 @@ func parseOVF(data []byte, filename string, out *Report) error {
 				return e
 			}
 			files[id] = path.Join(path.Dir(filename), href)
+			if len(files) > MaxMembers {
+				return errors.New("file reference limit exceeded")
+			}
 		}
 	}
+	out.FileReferences = files
 	for _, section := range root.childrenNamed("DiskSection") {
 		for _, d := range section.childrenNamed("Disk") {
 			id, ref := d.attr("diskId"), d.attr("fileRef")
@@ -443,7 +470,23 @@ func parseOVF(data []byte, filename string, out *Report) error {
 				return errors.New("missing/duplicate virtual system ID")
 			}
 			systemIDs[id] = true
-			s := System{ID: id, Name: n.childText("Name"), Items: []Item{}, DiskIDs: []string{}}
+			name, guestOS, firmware := systemProfile(n)
+			s := System{ID: id, Name: name, OS: guestOS, Firmware: firmware, Items: []Item{}, DiskIDs: []string{}}
+			s.OVFOS = guestOS
+			var osConflict, deviceLimit bool
+			s.OS, s.OSSource, osConflict = systemOS(n, guestOS)
+			for _, value := range []string{s.ID, s.Name, s.OS, s.OVFOS} {
+				if utf8.RuneCountInString(value) > 2048 {
+					return errors.New("appliance profile metadata exceeds 2048-character limit")
+				}
+			}
+			if osConflict {
+				out.Warnings = append(out.Warnings, "GUEST_OS_METADATA_CONFLICT")
+			}
+			s.Devices, deviceLimit = virtualBoxDevices(n)
+			if deviceLimit {
+				out.Warnings = append(out.Warnings, "DEVICE_METADATA_LIMIT")
+			}
 			for _, hw := range n.childrenNamed("VirtualHardwareSection") {
 				virtualBox := false
 				for _, system := range hw.childrenNamed("System") {
@@ -451,6 +494,11 @@ func parseOVF(data []byte, filename string, out *Report) error {
 				}
 				for _, item := range hw.childrenNamed("Item") {
 					v := Item{ResourceType: item.childText("ResourceType"), InstanceID: item.childText("InstanceID"), Parent: item.childText("Parent"), AddressOnParent: item.childText("AddressOnParent"), Quantity: item.childText("VirtualQuantity"), AllocationUnits: item.childText("AllocationUnits"), HostResources: []string{}, Connections: []string{}}
+					v.ResourceSubType, _ = uniqueProfileText(item, "ResourceSubType", rasdNamespace)
+					v.Description, _ = uniqueProfileText(item, "Description", rasdNamespace)
+					if utf8.RuneCountInString(v.ResourceSubType) > 2048 || utf8.RuneCountInString(v.Description) > 2048 {
+						return errors.New("appliance device metadata exceeds 2048-character limit")
+					}
 					if v.ResourceType == "4" {
 						units := v.AllocationUnits
 						// VirtualBox's exporter emits MegaBytes from stored bytes / _1M;
@@ -508,6 +556,179 @@ func parseOVF(data []byte, filename string, out *Report) error {
 		return errors.New("no virtual systems")
 	}
 	return nil
+}
+
+const (
+	rasdNamespace               = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"
+	vssdNamespace               = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData"
+	virtualBoxMachineNamespace  = "http://www.virtualbox.org/ovf/machine"
+	virtualBoxSettingsNamespace = "http://www.virtualbox.org/"
+	vmwareOVFNamespace          = "http://www.vmware.com/schema/ovf"
+)
+
+func profileChildren(n *node, name, namespace string) []*node {
+	var result []*node
+	for _, child := range n.children {
+		if child.name.Local == name && child.name.Space == namespace {
+			result = append(result, child)
+		}
+	}
+	return result
+}
+
+// The count distinguishes absent metadata (eligible for a lower-priority name
+// source) from duplicated or explicitly empty metadata (not safe to guess).
+func uniqueProfileText(n *node, name, namespace string) (string, int) {
+	children := profileChildren(n, name, namespace)
+	if len(children) != 1 {
+		return "", len(children)
+	}
+	return strings.TrimSpace(children[0].text), 1
+}
+
+func profileAttribute(n *node, name, namespace string) string {
+	for _, attr := range n.attrs {
+		if attr.Name.Local == name && attr.Name.Space == namespace {
+			return attr.Value
+		}
+	}
+	return ""
+}
+
+func systemProfile(n *node) (name, guestOS, firmware string) {
+	name, nameCount := uniqueProfileText(n, "Name", OVF)
+	var identifiers []string
+	var firmwareCandidates []string
+	for _, hw := range profileChildren(n, "VirtualHardwareSection", OVF) {
+		for _, system := range profileChildren(hw, "System", OVF) {
+			for _, identifier := range profileChildren(system, "VirtualSystemIdentifier", vssdNamespace) {
+				identifiers = append(identifiers, strings.TrimSpace(identifier.text))
+			}
+		}
+		for _, config := range profileChildren(hw, "Config", vmwareOVFNamespace) {
+			if profileAttribute(config, "key", vmwareOVFNamespace) != "firmware" {
+				continue
+			}
+			value := ""
+			switch profileAttribute(config, "value", vmwareOVFNamespace) {
+			case "bios":
+				value = "bios"
+			case "efi":
+				value = "uefi"
+			}
+			firmwareCandidates = append(firmwareCandidates, value)
+		}
+	}
+	if nameCount == 0 && len(identifiers) == 1 {
+		name = identifiers[0]
+	}
+	machines := profileChildren(n, "Machine", virtualBoxMachineNamespace)
+	if nameCount == 0 && len(identifiers) == 0 && len(machines) == 1 {
+		name = strings.TrimSpace(profileAttribute(machines[0], "name", ""))
+	}
+	for _, machine := range machines {
+		for _, hardware := range virtualBoxChildren(machine, "Hardware") {
+			for _, declaration := range virtualBoxChildren(hardware, "Firmware") {
+				value := ""
+				switch profileAttribute(declaration, "type", "") {
+				case "BIOS":
+					value = "bios"
+				case "EFI":
+					value = "uefi"
+				}
+				firmwareCandidates = append(firmwareCandidates, value)
+			}
+		}
+	}
+	if len(firmwareCandidates) == 1 {
+		firmware = firmwareCandidates[0]
+	}
+	sections := profileChildren(n, "OperatingSystemSection", OVF)
+	if len(sections) == 1 {
+		guestOS, _ = uniqueProfileText(sections[0], "Description", OVF)
+	}
+	return name, guestOS, firmware
+}
+
+// Exported VirtualBox settings may retain the surrounding OVF default namespace
+// or explicitly use the VBox settings namespace. Only accept either spelling
+// below the exact vbox:Machine ancestor; unrelated lookalike subtrees are ignored.
+func virtualBoxChildren(n *node, name string) []*node {
+	var result []*node
+	for _, child := range n.children {
+		if child.name.Local == name && (child.name.Space == OVF || child.name.Space == virtualBoxSettingsNamespace) {
+			result = append(result, child)
+		}
+	}
+	return result
+}
+
+func systemOS(n *node, standard string) (guestOS, source string, conflict bool) {
+	vendor := map[string]bool{}
+	for _, section := range profileChildren(n, "OperatingSystemSection", OVF) {
+		for _, value := range profileChildren(section, "OSType", virtualBoxMachineNamespace) {
+			vendor[strings.TrimSpace(value.text)] = true
+		}
+	}
+	for _, value := range profileChildren(n, "OSType", virtualBoxMachineNamespace) {
+		vendor[strings.TrimSpace(value.text)] = true
+	}
+	for _, machine := range profileChildren(n, "Machine", virtualBoxMachineNamespace) {
+		for _, attr := range machine.attrs {
+			if attr.Name.Local == "OSType" && attr.Name.Space == "" {
+				vendor[strings.TrimSpace(attr.Value)] = true
+			}
+		}
+	}
+	if len(vendor) == 0 {
+		if standard != "" {
+			return standard, "ovf", false
+		}
+		return "", "", false
+	}
+	if len(vendor) != 1 || vendor[""] {
+		return "", "", true
+	}
+	for value := range vendor {
+		return value, "virtualbox", standard != "" && standard != value
+	}
+	return "", "", false
+}
+
+func virtualBoxDevices(n *node) ([]DeviceHint, bool) {
+	var result []DeviceHint
+	limited := false
+	add := func(kind, model, enabled string) {
+		if len(result) == 64 {
+			limited = true
+			return
+		}
+		if len(model) > 2048 {
+			model = ""
+			limited = true
+		}
+		hint := DeviceHint{Kind: kind, Model: model}
+		if enabled == "true" || enabled == "false" || enabled == "1" || enabled == "0" {
+			value := enabled == "true" || enabled == "1"
+			hint.Enabled = &value
+		}
+		result = append(result, hint)
+	}
+	for _, machine := range profileChildren(n, "Machine", virtualBoxMachineNamespace) {
+		for _, hardware := range virtualBoxChildren(machine, "Hardware") {
+			for _, audio := range virtualBoxChildren(hardware, "AudioAdapter") {
+				add("audio", profileAttribute(audio, "controller", ""), profileAttribute(audio, "enabled", ""))
+			}
+			for _, usb := range virtualBoxChildren(hardware, "USB") {
+				for _, controllers := range virtualBoxChildren(usb, "Controllers") {
+					for _, controller := range virtualBoxChildren(controllers, "Controller") {
+						add("usb", profileAttribute(controller, "type", ""), profileAttribute(controller, "enabled", ""))
+					}
+				}
+			}
+		}
+	}
+	return result, limited
 }
 
 var byteAllocationUnits = regexp.MustCompile(`(?i)^bytes?(?:\s*\*\s*(2|10)\s*\^\s*([0-9]+))?$`)

@@ -9,6 +9,7 @@ import (
 
 	"virmill.local/core/internal/app"
 	"virmill.local/core/internal/app/importer"
+	"virmill.local/core/internal/validation"
 )
 
 // ImportDraft holds editable UI values. Request emits the existing language-neutral
@@ -16,10 +17,12 @@ import (
 type ImportDraft struct {
 	Kind, Source, DestinationParent, DestinationName string
 	SystemID, MediaID, SHA256                        string
+	VMName, VCPUs, MemoryMiB                         string
 	Offline                                          bool
 	Disks                                            []ImportDisk
 	Files                                            []ImportFile
 	Report                                           *importer.Report
+	selectionSource, selectionSystem                 string
 }
 type ImportDisk struct{ ID, Path, Format, SizeMiB string }
 type ImportFile struct{ Path, SHA256 string }
@@ -40,8 +43,16 @@ func (d *ImportDraft) ApplyInspection(r importer.Report) error {
 		d.SystemID = r.Systems[0].ID
 		return d.SelectSystem(d.SystemID)
 	}
+	if d.selectionSource == d.Source && d.selectionSystem == d.SystemID {
+		for _, system := range r.Systems {
+			if system.ID == d.SystemID {
+				return d.SelectSystem(system.ID)
+			}
+		}
+	}
 	d.SystemID = ""
 	d.Disks = nil
+	d.VMName, d.VCPUs, d.MemoryMiB = "", "", ""
 	return nil
 }
 func (d *ImportDraft) SelectSystem(id string) error {
@@ -88,9 +99,44 @@ func (d *ImportDraft) SelectSystem(id string) error {
 		}
 		d.SystemID = id
 		d.Disks = rows
+		preserve := d.selectionSource == d.Source && d.selectionSystem == id
+		if _, err := validation.DisplayName(d.VMName); !preserve || err != nil {
+			d.VMName = sys.Name
+			if d.VMName == "" {
+				d.VMName = sys.ID
+			}
+			if d.VMName == "" {
+				d.VMName = "new-vm"
+			}
+		}
+		if _, ok := guidedNumber(d.VCPUs, 512); !preserve || !ok {
+			d.VCPUs, _ = creationSourceValue(sys.Items, "3", "2")
+		}
+		if memory, ok := guidedNumber(d.MemoryMiB, 1<<20); !preserve || !ok || memory < 128 {
+			d.MemoryMiB, _ = creationSourceValue(sys.Items, "4", "2048")
+		}
+		d.selectionSource, d.selectionSystem = d.Source, id
 		return nil
 	}
 	return fmt.Errorf("Choose an appliance from the inspected list.")
+}
+
+// SummaryValidation names the editable appliance field that needs attention.
+// These choices become VM hardware; they are not image-conversion parameters.
+func (d ImportDraft) SummaryValidation() (string, error) {
+	if _, ok := d.selectedAppliance(); !ok {
+		return "", fmt.Errorf("Choose an appliance to review first.")
+	}
+	if _, err := validation.DisplayName(d.VMName); err != nil {
+		return "vmName", fmt.Errorf("VM name: enter a nonempty name without control characters.")
+	}
+	if _, ok := guidedNumber(d.VCPUs, 512); !ok {
+		return "vcpus", fmt.Errorf("CPU cores: enter a whole number from 1 to 512.")
+	}
+	if memory, ok := guidedNumber(d.MemoryMiB, 1<<20); !ok || memory < 128 {
+		return "memoryMiB", fmt.Errorf("Memory: enter 128–1048576 MiB.")
+	}
+	return "", nil
 }
 
 // DetectedResources returns only unambiguous hints from the selected system.

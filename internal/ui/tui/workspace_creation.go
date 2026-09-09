@@ -140,8 +140,13 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	}
+	previousPage := m.Creation.Page
 	f, intent := m.Creation.Update(key)
 	m.Creation = &f
+	if f.BeforePreparation && m.Import != nil && m.Import.Page == 3 && previousPage == 3 && f.Page != 3 {
+		m.saveImportHardware(f)
+		return m, nil
+	}
 	switch intent.Kind {
 	case "cancel":
 		m.Creation = nil
@@ -168,7 +173,7 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.Import.VM = &f
-			m.Import.VMBinding = creationImportBinding(prep)
+			m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
 			m.Creation = nil
 			m.CreationPicking = false
 			m.Busy = true
@@ -233,19 +238,46 @@ func importCreationSource(d ImportDraft) CreationSource {
 	}
 	return source
 }
-func creationImportBinding(r app.Request) string { raw, _ := json.Marshal(r); return string(raw) }
+
+// Bind choices to the selected appliance and disk mappings, not its destination.
+func creationDraftBinding(d ImportDraft) string {
+	d.DestinationParent, d.DestinationName = "", ""
+	d.VMName, d.VCPUs, d.MemoryMiB = "", "", ""
+	d.Offline = false
+	raw, _ := json.Marshal(d)
+	return string(raw)
+}
 func (m *Workspace) configureImportHardware() tea.Cmd {
 	if m.Import == nil {
 		return nil
 	}
-	_, r, err := m.Import.Draft.Request(m.Connection)
-	if err != nil {
-		m.Import.Error = err.Error()
+	d := m.Import.Draft
+	if d.Source == "" || (d.Kind == "ova" && (d.Report == nil || d.SystemID == "")) {
+		m.Import.Error = "Choose an appliance first."
 		return nil
 	}
-	if m.Import.VM != nil && m.Import.VMBinding == creationImportBinding(r) {
+	m.Creation = nil
+	if m.Import.VM != nil && m.Import.VMBinding == creationDraftBinding(d) {
 		f := *m.Import.VM
 		m.Creation = &f
 	}
 	return m.loadCreation("", "")
+}
+func applyImportBasics(f *CreationForm, d ImportDraft) {
+	if d.VMName != "" {
+		f.Spec.Name = d.VMName
+	}
+	if d.VCPUs != "" {
+		f.CPUText = d.VCPUs
+	}
+	if d.MemoryMiB != "" {
+		f.MemoryText = d.MemoryMiB
+	}
+}
+func (m *Workspace) saveImportHardware(f CreationForm) {
+	m.Import.VM = &f
+	m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
+	m.Import.Draft.VMName, m.Import.Draft.VCPUs, m.Import.Draft.MemoryMiB = f.Spec.Name, f.CPUText, f.MemoryText
+	m.Creation = nil
+	m.CreationPicking = false
 }

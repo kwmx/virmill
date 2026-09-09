@@ -463,7 +463,11 @@
         "internal/backend/libvirt/creation_options_linux.go",
         "internal/importing/sources_linux.go",
         "internal/ui/tui/file_picker_mkdir_linux.go",
-        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md",
+        "internal/app/importer/describe.go",
+        "internal/ui/tui/appliance_summary.go",
+        "docs/adr/0038-metadata-first-appliance-review.md",
+        "docs/evidence/appliance-summary-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -505,7 +509,13 @@
         "internal/importing/sources_linux_test.go",
         "internal/app/importer/resources_test.go",
         "internal/ui/tui/import_detected_test.go",
-        "tests/fixtures/release/hardware_ux_probe.py"
+        "tests/fixtures/release/hardware_ux_probe.py",
+        "internal/app/importer/describe_test.go",
+        "internal/app/importer/profile_test.go",
+        "internal/ui/tui/appliance_summary_test.go",
+        "tests/fixtures/release/appliance_summary_probe.py",
+        "internal/ui/tui/workspace_summary_test.go",
+        "internal/validation/appliance_metadata_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -552,7 +562,9 @@
         "hardware-ux-native-001",
         "hardware-ux-native-002",
         "hardware-ux-native-003",
-        "hardware-ux-bios-001"
+        "hardware-ux-bios-001",
+        "appliance-summary-software-001",
+        "appliance-summary-software-002"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -659,7 +671,11 @@
         "internal/backend/libvirt/creation_options_linux.go",
         "internal/importing/sources_linux.go",
         "internal/ui/tui/file_picker_mkdir_linux.go",
-        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md",
+        "internal/app/importer/describe.go",
+        "internal/ui/tui/appliance_summary.go",
+        "docs/adr/0038-metadata-first-appliance-review.md",
+        "docs/evidence/appliance-summary-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
@@ -686,7 +702,13 @@
         "internal/importing/sources_linux_test.go",
         "internal/app/importer/resources_test.go",
         "internal/ui/tui/import_detected_test.go",
-        "tests/fixtures/release/hardware_ux_probe.py"
+        "tests/fixtures/release/hardware_ux_probe.py",
+        "internal/app/importer/describe_test.go",
+        "internal/app/importer/profile_test.go",
+        "internal/ui/tui/appliance_summary_test.go",
+        "tests/fixtures/release/appliance_summary_probe.py",
+        "internal/ui/tui/workspace_summary_test.go",
+        "internal/validation/appliance_metadata_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -713,7 +735,9 @@
         "hardware-ux-native-001",
         "hardware-ux-native-002",
         "hardware-ux-native-003",
-        "hardware-ux-bios-001"
+        "hardware-ux-bios-001",
+        "appliance-summary-software-001",
+        "appliance-summary-software-002"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified.",
@@ -4326,7 +4350,11 @@
         "internal/backend/libvirt/creation_options_linux.go",
         "internal/importing/sources_linux.go",
         "internal/ui/tui/file_picker_mkdir_linux.go",
-        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md",
+        "internal/app/importer/describe.go",
+        "internal/ui/tui/appliance_summary.go",
+        "docs/adr/0038-metadata-first-appliance-review.md",
+        "docs/evidence/appliance-summary-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4434,7 +4462,13 @@
         "internal/importing/sources_linux_test.go",
         "internal/app/importer/resources_test.go",
         "internal/ui/tui/import_detected_test.go",
-        "tests/fixtures/release/hardware_ux_probe.py"
+        "tests/fixtures/release/hardware_ux_probe.py",
+        "internal/app/importer/describe_test.go",
+        "internal/app/importer/profile_test.go",
+        "internal/ui/tui/appliance_summary_test.go",
+        "tests/fixtures/release/appliance_summary_probe.py",
+        "internal/ui/tui/workspace_summary_test.go",
+        "internal/validation/appliance_metadata_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4541,7 +4575,9 @@
         "hardware-ux-native-001",
         "hardware-ux-native-002",
         "hardware-ux-native-003",
-        "hardware-ux-bios-001"
+        "hardware-ux-bios-001",
+        "appliance-summary-software-001",
+        "appliance-summary-software-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4618,7 +4654,11 @@
         "internal/backend/libvirt/creation_options_linux.go",
         "internal/importing/sources_linux.go",
         "internal/ui/tui/file_picker_mkdir_linux.go",
-        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md",
+        "internal/app/importer/describe.go",
+        "internal/ui/tui/appliance_summary.go",
+        "docs/adr/0038-metadata-first-appliance-review.md",
+        "docs/evidence/appliance-summary-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4660,7 +4700,13 @@
         "internal/importing/sources_linux_test.go",
         "internal/app/importer/resources_test.go",
         "internal/ui/tui/import_detected_test.go",
-        "tests/fixtures/release/hardware_ux_probe.py"
+        "tests/fixtures/release/hardware_ux_probe.py",
+        "internal/app/importer/describe_test.go",
+        "internal/app/importer/profile_test.go",
+        "internal/ui/tui/appliance_summary_test.go",
+        "tests/fixtures/release/appliance_summary_probe.py",
+        "internal/ui/tui/workspace_summary_test.go",
+        "internal/validation/appliance_metadata_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4708,7 +4754,9 @@
         "hardware-ux-native-001",
         "hardware-ux-native-002",
         "hardware-ux-native-003",
-        "hardware-ux-bios-001"
+        "hardware-ux-bios-001",
+        "appliance-summary-software-001",
+        "appliance-summary-software-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

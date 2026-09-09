@@ -280,7 +280,7 @@ func TestImportFormContinueInspectsOVAWithoutExtraStep(t *testing.T) {
 	}
 	f = importFocus(t, f, "next")
 	f, intent = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	if intent.Kind != "" || f.Error != "" || f.Page != 1 {
+	if intent.Kind != "" || f.Error != "" || f.Page != 3 {
 		t.Fatalf("inspected source should continue: %+v %+v", f, intent)
 	}
 }
@@ -300,7 +300,7 @@ func TestImportFormContinueNeedsAnExplicitCollectionMember(t *testing.T) {
 	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
 	f = importFocus(t, f, "next")
 	f, intent = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
-	if f.Page != 1 || f.Error != "" || intent.Kind != "" || f.Draft.SystemID != "a" || f.Draft.Disks[0].ID != "disk-a" {
+	if f.Page != 3 || f.Error != "" || intent.Kind != "" || f.Draft.SystemID != "a" || f.Draft.Disks[0].ID != "disk-a" {
 		t.Fatal("selected member did not advance intact")
 	}
 	f.Page = 0
