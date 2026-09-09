@@ -5,11 +5,13 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** the installed CLI and running coordinator use `58c6146`.
-OVA selection now opens a detected appliance summary with editable name, CPU and
-RAM, plus Advanced settings. See the [appliance summary evidence](evidence/appliance-summary-run.md)
-for exact installed hashes, test results and limitations. The original beta build
-evidence below is historical. Exit any already-open TUI and run `virmill` again.
+**Current UI update:** the installed CLI and coordinator use `1b22c55`.
+Import opens one browser for OVA, ISO and supported QEMU/VirtualBox/VMware/Hyper-V
+disk formats, followed by detected details, editable CPU/RAM and Advanced settings.
+Guest tools now has supported Linux profiles and a desktop-tools toggle, with
+explicit Windows guidance. See [source and guest-tools evidence](evidence/general-sources-run.md)
+for verified behavior and remaining limits. Exit any already-open TUI and run
+`virmill` again.
 
 ## Start testing now
 
