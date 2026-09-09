@@ -63,6 +63,9 @@ func (f ImportForm) View(width, height int) string {
 		purpose[2] = "Review disk conversion, then confirm the VM before creation."
 	}
 	if page == 3 {
+		if f.Draft.Kind != "ova" {
+			purpose[3] = "Disk details are detected. CPU and memory are editable suggestions."
+		}
 		title = "Review source"
 		if f.Draft.Kind == "ova" {
 			title = "Review appliance"

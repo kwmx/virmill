@@ -483,3 +483,38 @@ func TestFilePickerCreateFolderPermissionErrorStaysEditable(t *testing.T) {
 		t.Fatal("cannot leave failed folder prompt")
 	}
 }
+
+func TestMixedSourcePathOpensDirectoryAndExplicitlySelectsFolder(t *testing.T) {
+	root := t.TempDir()
+	folder := filepath.Join(root, "disks")
+	if err := os.Mkdir(folder, 0700); err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(folder, "disk.qcow2")
+	pickerFile(t, file)
+	p, cmd := NewFilePicker(root, "source")
+	p, _ = pickerRun(t, p, cmd)
+	p, _, _ = pickerKey(p, tea.KeyCtrlL)
+	p, _, _ = pickerKey(p, tea.KeyCtrlU)
+	p, _, _ = pickerText(p, folder)
+	p, cmd, _ = pickerKey(p, tea.KeyEnter)
+	p, result := pickerRun(t, p, cmd)
+	if result.Path != "" || p.directory != folder || p.closed {
+		t.Fatal("typed folder must open, not select", p, result)
+	}
+	p, cmd, _ = pickerKey(p, tea.KeyCtrlS)
+	_, result = pickerRun(t, p, cmd)
+	if result.Path != folder {
+		t.Fatal("explicit folder selection failed", result)
+	}
+	p, cmd = NewFilePicker(root, "source")
+	p, _ = pickerRun(t, p, cmd)
+	p, _, _ = pickerKey(p, tea.KeyCtrlL)
+	p, _, _ = pickerKey(p, tea.KeyCtrlU)
+	p, _, _ = pickerText(p, file)
+	p, cmd, _ = pickerKey(p, tea.KeyEnter)
+	_, result = pickerRun(t, p, cmd)
+	if result.Path != file {
+		t.Fatal("typed file must select", result)
+	}
+}

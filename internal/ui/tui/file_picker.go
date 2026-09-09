@@ -54,7 +54,7 @@ type FilePicker struct {
 }
 
 // NewFilePicker starts an asynchronous observation at an explicit field path,
-// or the user's home directory when blank. kind is "file" or "directory".
+// or the user's home directory when blank. kind is "file", "directory", or a mixed import "source".
 func NewFilePicker(start, kind string) (FilePicker, tea.Cmd) {
 	home, _ := os.UserHomeDir()
 	p := FilePicker{kind: kind, home: home}
@@ -70,7 +70,7 @@ func NewFilePicker(start, kind string) (FilePicker, tea.Cmd) {
 	return p.load(start, false)
 }
 
-func (p FilePicker) load(path string, choose bool) (FilePicker, tea.Cmd) {
+func (p FilePicker) load(path string, choose bool, chooseFolder ...bool) (FilePicker, tea.Cmd) {
 	p.token = pickerSequence.Add(1)
 	token, kind := p.token, p.kind
 	p.loading, p.message = true, ""
@@ -99,7 +99,7 @@ func (p FilePicker) load(path string, choose bool) (FilePicker, tea.Cmd) {
 			r.err = err
 			return r
 		}
-		if choose && (kind == "directory" || kind == "source") {
+		if choose && (kind == "directory" || kind == "source" && len(chooseFolder) == 1 && chooseFolder[0]) {
 			r.selected = true
 			return r
 		}
@@ -418,7 +418,7 @@ func (p FilePicker) Update(msg tea.Msg) (FilePicker, tea.Cmd, PickerResult) {
 	case "ctrl+s":
 		if (p.kind == "directory" || p.kind == "source") && p.directory != "" && !p.loading {
 			var cmd tea.Cmd
-			p, cmd = p.load(p.directory, true)
+			p, cmd = p.load(p.directory, true, true)
 			return p, cmd, result
 		}
 	case "enter":
