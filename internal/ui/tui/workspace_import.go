@@ -44,6 +44,8 @@ func (m Workspace) importBusyView(width, height int) []string {
 func importError(err error) string {
 	if e, ok := err.(*domain.Error); ok {
 		switch e.Code {
+		case "INSUFFICIENT_SPACE":
+			return "INSUFFICIENT_SPACE: " + validation.SafeText(e.Message)
 		case "WAIT_TIMEOUT":
 			return "The appliance check took too long. Retry when the disk is less busy, or choose another file."
 		case "BUSY", "RESOURCE_BUSY":
@@ -56,6 +58,14 @@ func importError(err error) string {
 }
 
 func (m *Workspace) openImport(kind string) tea.Cmd {
+	if m.SavedImport != nil && m.SavedImport.Draft.Kind == kind {
+		m.Import = m.SavedImport
+		m.SavedImport = nil
+		m.ActionForm = nil
+		m.Form = nil
+		m.Notice = "Recovered import options. Check Jobs before reviewing another attempt."
+		return nil
+	}
 	f := NewImportForm(kind)
 	m.Import = &f
 	m.ActionForm = nil
@@ -63,11 +73,14 @@ func (m *Workspace) openImport(kind string) tea.Cmd {
 	return m.browseImport("source", 0)
 }
 func (m *Workspace) browseImport(target string, index int) tea.Cmd {
-	if m.Busy || m.Import == nil {
+	if m.Busy || (m.Import == nil && !(m.Creation != nil && target == "export-parent")) {
 		return nil
 	}
 	kind, start := "file", ""
-	d := m.Import.Draft
+	d := ImportDraft{}
+	if m.Import != nil {
+		d = m.Import.Draft
+	}
 	switch target {
 	case "source":
 		start = d.Source
@@ -101,6 +114,19 @@ func (m *Workspace) importPicked(path string) {
 	target, index := m.ImportPickerTarget, m.PickerField
 	m.ImportPickerTarget = ""
 	m.Picker = nil
+	if target == "export-parent" && m.ExportForm != nil {
+		if !guidedPath(path) {
+			m.ExportForm.Error = "Choose a path without leading or trailing spaces."
+			return
+		}
+		c := *m.ExportForm
+		c.Fields = slices.Clone(c.Fields)
+		c.Fields[0].Value = path
+		c.Fields[0].Cursor = utf8.RuneCountInString(path)
+		c.Error = ""
+		m.ExportForm = &c
+		return
+	}
 	if m.Import == nil {
 		return
 	}
@@ -211,6 +237,8 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.ImportElapsed = 0
 		cmd := m.request("import-inspect", "import.inspect", app.Request{Path: f.Draft.Source})
 		return m, tea.Batch(cmd, importPulseCommand(m.Pending["import-inspect"]))
+	case "hardware":
+		return m, m.configureImportHardware()
 	case "preview", "export":
 		method, r, err := f.Draft.Request(m.Connection)
 		if err != nil {
@@ -224,9 +252,7 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.Notice = "Preparing reviewed import..."
 			return m, m.request("plan", method, r)
 		}
-		parent, _ := os.UserHomeDir()
-		e := GuidedForm{Kind: "import-export", Fields: []GuidedField{{Name: "exportParent", Label: "Folder", Value: parent, Cursor: utf8.RuneCountInString(parent), Limit: 4096}, {Name: "exportName", Label: "File name", Value: "virmill-import-settings.json", Cursor: len("virmill-import-settings.json"), Limit: 255}}}
-		m.ExportForm = &e
+		m.openSettingsExport("virmill-import-settings.json")
 	}
 	return m, nil
 }
@@ -251,7 +277,7 @@ func (m Workspace) updateImportExport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.ExportForm.Error = "Choose a folder and a new file name."
 		return m, nil
 	}
-	_, r, err := m.Import.Draft.Request(m.Connection)
+	r, err := m.settingsExportRequest()
 	if err != nil {
 		m.ExportForm.Error = err.Error()
 		return m, nil
@@ -306,4 +332,20 @@ func (m *Workspace) importInspection(data any) {
 	} else {
 		m.Notice = "Choose which appliance to import."
 	}
+}
+
+func (m *Workspace) openSettingsExport(name string) {
+	parent, _ := os.UserHomeDir()
+	e := GuidedForm{Kind: "import-export", Fields: []GuidedField{{Name: "exportParent", Label: "Folder", Value: parent, Cursor: utf8.RuneCountInString(parent), Limit: 4096}, {Name: "exportName", Label: "File name", Value: name, Cursor: utf8.RuneCountInString(name), Limit: 255}}}
+	m.ExportForm = &e
+}
+func (m Workspace) settingsExportRequest() (app.Request, error) {
+	if m.Creation != nil {
+		return m.Creation.Request(m.Connection)
+	}
+	if m.Import == nil {
+		return app.Request{}, fmt.Errorf("Open import or VM settings first.")
+	}
+	_, r, err := m.Import.Draft.Request(m.Connection)
+	return r, err
 }

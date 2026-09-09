@@ -106,6 +106,7 @@ type Artifact struct {
 }
 
 func Register(appService *app.Service) {
+	registerSources(appService)
 	s := &Service{Engine: appService.Engine, Store: appService.Engine.Store, Tool: image.Tool{}}
 	disks := &DiskSetService{Service: s, FilesTool: image.Tool{}}
 	install := &InstallationService{Service: s, EmptyTool: image.Tool{}}
@@ -222,11 +223,38 @@ func available(f *os.File, required int64) error {
 	if err := unix.Fstatfs(int(f.Fd()), &st); err != nil {
 		return err
 	}
+	if st.Bsize <= 0 || st.Bavail != 0 && uint64(st.Bsize) > ^uint64(0)/st.Bavail {
+		return domain.Fail("INSUFFICIENT_SPACE", "Cannot determine destination free space safely. Choose another destination.")
+	}
 	free := uint64(st.Bavail) * uint64(st.Bsize)
-	if required < 0 || uint64(required) > free {
-		return domain.Fail("INSUFFICIENT_SPACE", fmt.Sprintf("preparation needs up to %d free bytes; %d available", required, free))
+	return checkAvailableBytes(required, free)
+}
+
+func checkAvailableBytes(required int64, free uint64) error {
+	if required < 0 {
+		return domain.Fail("INSUFFICIENT_SPACE", "Import size could not be calculated safely. Review the disk sizes before choosing a destination.")
+	}
+	if uint64(required) > free {
+		shortfall := uint64(required) - free
+		e := domain.Fail("INSUFFICIENT_SPACE", fmt.Sprintf("Needs %s GiB; %s GiB available (%s GiB short). Choose another destination or free at least %s GiB.", spaceGiB(uint64(required), true), spaceGiB(free, false), spaceGiB(shortfall, true), spaceGiB(shortfall, true)))
+		e.Details = map[string]any{"requiredBytes": required, "availableBytes": free, "shortfallBytes": shortfall}
+		return e
 	}
 	return nil
+}
+
+// Display conservative hundredths without floating-point precision loss: never
+// understate required space or overstate what the destination has available.
+func spaceGiB(value uint64, roundUp bool) string {
+	const unit = uint64(1 << 30)
+	whole, remainder := value/unit, value%unit
+	fraction := remainder * 100 / unit
+	if roundUp && remainder*100%unit != 0 {
+		fraction++
+	}
+	whole += fraction / 100
+	fraction %= 100
+	return fmt.Sprintf("%d.%02d", whole, fraction)
 }
 func stageName(p domain.Plan) string { return ".virmill-import-" + p.ID }
 func stagePath(p domain.Plan, in stageInput) string {

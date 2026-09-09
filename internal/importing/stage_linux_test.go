@@ -340,6 +340,20 @@ func TestReceiptSchemaCompatibilityAndIdentityPrecision(t *testing.T) {
 	}
 	var receipt map[string]any
 	json.Unmarshal(b, &receipt)
+	// Optional resource metadata must retain compatibility with older receipts.
+	system := receipt["system"].(map[string]any)
+	item := map[string]any{"resourceType": "4", "instanceID": "memory", "parent": "", "addressOnParent": "", "quantity": "2048", "hostResources": []string{}, "connections": []string{}, "allocationUnits": "byte * 2^20", "memoryMiB": 2048}
+	system["hardware"] = []any{item}
+	for _, enriched := range []bool{true, false} {
+		if !enriched {
+			delete(item, "allocationUnits")
+			delete(item, "memoryMiB")
+		}
+		raw, _ := json.Marshal(receipt)
+		if err := validation.Schema("prepared-import", raw); err != nil {
+			t.Fatal("resource receipt compatibility", enriched, err)
+		}
+	}
 	for _, field := range []string{"apiVersion", "guestBootVerified", "unrecognizedField"} {
 		changed := make(map[string]any)
 		for k, v := range receipt {

@@ -1,0 +1,14 @@
+ok  	virmill.local/core/internal/ui	1.029s
+ok  	virmill.local/core/internal/ui/cli	3.387s
+--- FAIL: TestTaskMenuGroupsAndSearchByPlainLanguage (0.00s)
+    action_menu_test.go:24: ordinary CPU search did not find editor [{vm set vm.plan VMs Plan next-boot CPU/RAM, boot order or retained-media ejection on a powered-off VM id set} {vm creation options vm.creation.options VMs Show supported local CPU, memory, machine and firmware choices  }]
+FAIL
+FAIL	virmill.local/core/internal/ui/tui	4.415s
+ok  	virmill.local/core/internal/app	4.847s
+ok  	virmill.local/core/internal/app/importer	1.064s
+ok  	virmill.local/core/internal/importing	2.038s
+ok  	virmill.local/core/internal/creating	14.641s
+ok  	virmill.local/core/internal/backend/libvirt	9.170s
+ok  	virmill.local/core/internal/validation	1.263s
+ok  	virmill.local/core/internal/transport/local	1.614s
+FAIL

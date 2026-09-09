@@ -209,6 +209,8 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			}
 			return inventory.GetNetwork(ctx, r.Connection, r.ID)
 		}
+	case "vm.creation.options":
+		return s.creationOptions(ctx, r)
 	case "vm.plan":
 		return s.planVM(ctx, uid, r)
 	case "operation.apply":

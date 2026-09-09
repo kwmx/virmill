@@ -160,3 +160,33 @@ attachment/reconnection and the complete lab/protection workflows still need
 implementation or qualification. Import preparation has native controls; advanced
 VM creation mappings still use parameter files. All 71 complete-v1
 acceptance scenarios remain required. See the [evidence matrix](requirements-to-evidence.md).
+
+## Import and VM hardware
+
+Image preparation now explains storage errors in GiB, including how much space is
+missing. Use **Back: Destination** to choose another location. The source disk's
+maximum size is a safety limit, not a resize control; reducing it cannot make an
+existing disk smaller. Known appliance capacities fill this field automatically.
+CPU/RAM detected from an appliance are shown before preparation. Choose
+**CPU, RAM and VM settings** to edit hardware before copying; those choices carry
+through to VM creation. Changing the preparation input invalidates that saved
+configuration and requires reviewing it again.
+
+After preparation succeeds, VM setup opens when you are still viewing that job.
+Otherwise choose **Create VM** from VMs or Jobs and select your prepared images.
+Set the name, CPU cores, memory and storage pool, then choose firmware under
+**Hardware options**. Continue through disk mappings and network adapters to preview
+creation. Detected CPU/RAM values and suggested fallbacks are labeled. Invalid fields
+open on the relevant page. Each original network adapter needs an explicit network
+selection; a down cable keeps it disconnected. Creation leaves the VM powered off.
+
+**Export settings** saves reusable JSON from the current controls. In any explorer,
+**Ctrl+N** opens **New folder**; enter a name and press Enter to create it. Escape
+cancels the prompt. The new folder is highlighted; Enter opens it, and Ctrl+S selects
+it when choosing a destination. Existing files and folders are never overwritten.
+
+Settings remain while returning from preview. If submission fails, inspect Jobs
+before trying again; the coordinator may already have accepted it. Reopening the
+same creation source recovers retained in-session settings. Accepted jobs and
+prepared images survive TUI closure, but incomplete wizard edits currently require
+an explicit export to survive a TUI restart.

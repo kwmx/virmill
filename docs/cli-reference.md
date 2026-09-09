@@ -593,6 +593,29 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill import sources`
+
+List your completed image preparations for VM creation
+
+```text
+Usage:
+  virmill import sources [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill import verify`
 
 Verify declared prepared-import artifact hashes; no guest boot claim
@@ -1713,6 +1736,29 @@ Flags:
       --after int      Event cursor
       --input string   JSON parameters; secrets must be references (default "{}")
       --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm creation options`
+
+Show supported local CPU, memory, machine and firmware choices
+
+```text
+Usage:
+  virmill vm creation options [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

@@ -23,6 +23,13 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	Creation           *CreationForm
+	SavedCreation      *CreationForm
+	SavedImport        *ImportForm
+	CreationPicking    bool
+	CreationChoices    []creationChoice
+	CreationIndex      int
+	PendingPreparation string
 	Import             *ImportForm
 	ExportForm         *GuidedForm
 	ImportPickerTarget string
@@ -336,6 +343,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	m.ActionTitle = actionLabel(a)
 	vm := m.selectedVM()
 	switch a.Command {
+	case "vm create", "vm create-devices":
+		return m.openCreationSources()
 	case "import prepare":
 		return m.openImport("ova")
 	case "import prepare-install":
@@ -412,7 +421,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.Picker != nil {
 		switch msg.(type) {
-		case workspaceReply, workspaceTick:
+		case workspaceReply, workspaceTick, creationPulse, importPulse, importExportReply:
 		default:
 			return m.updatePicker(msg)
 		}
@@ -451,6 +460,11 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		next, cmd := m.legacy.Update(v)
 		m.legacy = next.(Model)
 		return m, cmd
+	case creationPulse:
+		if v.OperationID != m.PendingPreparation {
+			return m, nil
+		}
+		return m, m.request("preparation-job", "operation.get", app.Request{ID: v.OperationID})
 	case workspaceTick:
 		return m, m.refresh()
 	case workspaceReply:
@@ -484,7 +498,28 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Error = ""
 				delete(m.Errors, v.Kind)
 			}
+			if strings.HasPrefix(v.Kind, "creation-") {
+				m.Busy = false
+				m.Error = importError(err)
+				if m.Creation != nil {
+					m.Creation.Error = m.Error
+					m.Error = ""
+				}
+			}
+			if v.Kind == "preparation-job" {
+				m.PendingPreparation = ""
+				m.Notice = "Could not refresh the import. Open Jobs to check its status."
+			}
+			if v.Kind == "plan" && m.Creation != nil {
+				m.Creation.FocusError(fmt.Errorf("%s", importError(err)))
+				m.Error = ""
+				delete(m.Errors, v.Kind)
+			}
 			if v.Kind == "apply" {
+				m.SavedCreation = m.Creation
+				m.SavedImport = m.Import
+				m.Creation = nil
+				m.CreationPicking = false
 				m.Import = nil
 				m.Plan = nil
 				m.Reviewing = false
@@ -495,6 +530,55 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		delete(m.Errors, v.Kind)
 		data := generic(v.Response.Data)
 		switch v.Kind {
+		case "creation-sources":
+			m.Busy = false
+			b, _ := json.Marshal(v.Response.Data)
+			if err := json.Unmarshal(b, &m.CreationChoices); err != nil {
+				m.Error = "Could not read the prepared-image list. Try Create VM again."
+			}
+		case "creation-load":
+			m.Busy = false
+			b, _ := json.Marshal(v.Response.Data)
+			var bundle creationBundle
+			if err := json.Unmarshal(b, &bundle); err != nil {
+				m.Error = "Could not read hardware choices. Try Create VM again."
+				return m, nil
+			}
+			if m.Creation == nil && m.SavedCreation != nil && m.SavedCreation.OperationID == bundle.OperationID {
+				m.Creation = m.SavedCreation
+				m.SavedCreation = nil
+			}
+			if m.Creation != nil && m.Creation.OperationID == bundle.OperationID {
+				m.Creation.SetOptions(bundle.Options)
+			} else {
+				f := NewCreationForm(bundle.OperationID, bundle.Source, bundle.Options, bundle.Pools, bundle.Networks)
+				f.BeforePreparation = bundle.OperationID == ""
+				m.Creation = &f
+			}
+			m.CreationPicking = false
+			m.Notice = ""
+			m.Error = ""
+		case "preparation-job":
+			var job domain.Job
+			b, _ := json.Marshal(v.Response.Data)
+			if json.Unmarshal(b, &job) != nil || job.ID != m.PendingPreparation {
+				return m, nil
+			}
+			if !domain.Terminal(job.State) {
+				return m, creationTick(job.ID)
+			}
+			m.PendingPreparation = ""
+			if m.Section == 8 && resourceID(m.Detail) == job.ID {
+				m.Detail = data
+			}
+			if job.State == "succeeded" {
+				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
+					return m, m.loadCreation(job.ID, "")
+				}
+				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
+			} else {
+				m.Notice = "Import needs attention. Open its job for the error and recovery options."
+			}
 		case "import-inspect":
 			m.importInspection(v.Response.Data)
 		case "plan":
@@ -521,6 +605,18 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ActionForm = nil
 			m.Advanced = false
 		case "apply":
+			prepared := m.Import != nil
+			if prepared && m.Import.VM != nil {
+				_, r, err := m.Import.Draft.Request(m.Connection)
+				if err == nil && m.Import.VMBinding == creationImportBinding(r) {
+					f := *m.Import.VM
+					f.OperationID = resourceID(data)
+					f.BeforePreparation = false
+					m.SavedCreation = &f
+				}
+			}
+			m.Creation = nil
+			m.CreationPicking = false
 			m.Import = nil
 			m.Busy = false
 			m.Plan = nil
@@ -532,6 +628,11 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.DetailTitle = "Job details"
 			m.Offset = 0
 			m.Notice = "Operation accepted. Jobs continue when you leave this page."
+			if prepared {
+				m.PendingPreparation = resourceID(data)
+				m.Notice = "Preparing images. CPU, RAM and network setup opens when ready."
+				return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), creationTick(m.PendingPreparation))
+			}
 			return m, m.request("jobs", "operation.list", app.Request{})
 		case "detail":
 			m.Detail = data
@@ -588,12 +689,16 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.ActionForm = nil
 				m.Import = nil
 				m.ExportForm = nil
+				m.Creation = nil
+				m.CreationPicking = false
 				m.Plan = nil
 				m.Advanced = false
 				m.Help = false
 				m.Pending = maps.Clone(m.Pending)
 				delete(m.Pending, "plan")
 				delete(m.Pending, "import-inspect")
+				delete(m.Pending, "creation-load")
+				delete(m.Pending, "creation-sources")
 				m.Busy = m.Pending["apply"] != 0 || m.Pending["import-export"] != 0
 			}
 			return m, nil
@@ -606,6 +711,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.ExportForm != nil {
 			return m.updateImportExport(v)
+		}
+		if (m.Creation != nil || m.CreationPicking) && m.Plan == nil {
+			return m.updateCreation(v)
 		}
 		if m.Import != nil && m.Plan == nil {
 			return m.updateImport(v)
@@ -1057,7 +1165,13 @@ func (m Workspace) status() string {
 }
 func (m Workspace) hints() string {
 	if m.Picker != nil {
-		return "Enter Open / choose    Backspace Up    Esc Back"
+		if m.Picker.mode == "mkdir" {
+			return "Enter Create folder   Esc Cancel"
+		}
+		return "Enter Open / choose   Ctrl+N New folder   Backspace Up   Esc Back"
+	}
+	if (m.Creation != nil || m.CreationPicking) && m.Plan == nil && m.ExportForm == nil {
+		return "Tab Next option   Enter Select   Esc Back"
 	}
 	if m.ExportForm != nil {
 		return "Ctrl+O Choose folder   Enter Export   Esc Back"
@@ -1129,11 +1243,17 @@ func (m Workspace) content(width, height int) []string {
 	if m.ExportForm != nil {
 		return m.importExportView(width, height)
 	}
+	if (m.Creation != nil || m.CreationPicking) && m.Plan == nil {
+		return m.creationView(width, height)
+	}
 	if m.Import != nil && m.Plan == nil {
 		if m.Busy && m.Pending["import-inspect"] != 0 {
 			return m.importBusyView(width, height)
 		}
 		return strings.Split(m.Import.View(width, height), "\n")
+	}
+	if (m.Creation != nil || m.CreationPicking) && m.Plan == nil {
+		return m.creationView(width, height)
 	}
 	if m.ActionForm != nil {
 		return strings.Split(m.ActionForm.View(width, height), "\n")
@@ -1295,10 +1415,13 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := m.Import != nil && m.Plan == nil
+	importModal := (m.Import != nil || m.Creation != nil || m.CreationPicking) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
+		if m.Creation != nil || m.CreationPicking {
+			title = "Create VM"
+		}
 	}
 	header := m.color(" Virmill ", "1;35") + m.color(" / "+title, "1") + "   " + validation.SafeText(m.Connection) + "   beta"
 	lines := []string{ansi.Truncate(header, width, ""), m.color(strings.Repeat(rule, width), "2")}
@@ -1403,14 +1526,14 @@ func (m Workspace) buttons() []workspaceButton {
 		5:  {{"Validate lab", "action:lab validate"}},
 		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"New repository", "n"}},
 		7:  {{"USB devices", "action:device usb list"}, {"PCI devices", "action:host pci list"}},
-		8:  {{"Details", "enter"}, {"Events", "action:operation watch"}, {"Refresh", "r"}},
+		8:  {{"Details", "enter"}, {"Create VM", "action:vm create"}, {"Events", "action:operation watch"}, {"Refresh", "r"}},
 		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
 		10: {{"Host capabilities", "action:host capabilities"}, {"All tools", ":"}},
 	}
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
-	if m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

@@ -31,21 +31,26 @@ type pickerEntry struct {
 	directory bool
 }
 type pickerRead struct {
-	token    uint64
-	path     string
-	entries  []pickerEntry
-	selected bool
-	limited  bool
-	err      error
+	token         uint64
+	path          string
+	entries       []pickerEntry
+	selected      bool
+	limited       bool
+	err           error
+	directoryInfo os.FileInfo
+	createdName   string
 }
 
 // FilePicker observes names and file types only. It never opens file contents.
+// Creating a child folder requires a separate named, explicit confirmation.
 type FilePicker struct {
 	kind, directory, home, filter, input, mode, message string
 	entries                                             []pickerEntry
 	selected                                            int
 	hidden, loading, limited, closed                    bool
 	token                                               uint64
+	directoryInfo                                       os.FileInfo
+	creating                                            bool
 }
 
 // NewFilePicker starts an asynchronous observation at an explicit field path,
@@ -157,6 +162,7 @@ func (p FilePicker) load(path string, choose bool) (FilePicker, tea.Cmd) {
 			}
 			return strings.ToLower(a.name) < strings.ToLower(b.name)
 		})
+		r.directoryInfo = info
 		return r
 	}
 }
@@ -200,6 +206,50 @@ func pickerName(name string) bool {
 	}
 	return true
 }
+
+func pickerFolderName(name string) bool {
+	return pickerName(name) && len(name) <= 255 && strings.TrimSpace(name) == name && name != "." && name != ".." && !strings.ContainsAny(name, "/\\")
+}
+
+func (p FilePicker) createFolder() (FilePicker, tea.Cmd) {
+	name, directory, expected := p.input, p.directory, p.directoryInfo
+	p, refresh := p.load(directory, false)
+	p.creating = true
+	token := p.token
+	return p, func() tea.Msg {
+		created, err := pickerMakeFolder(directory, name, expected)
+		if err != nil {
+			r := pickerRead{token: token, path: directory, err: err}
+			if created {
+				r.createdName = name
+			}
+			return r
+		}
+		r := refresh().(pickerRead)
+		r.createdName = name
+		if r.err != nil {
+			r.err = fmt.Errorf("Folder created, but the view could not refresh: %w", r.err)
+		}
+		// The bounded listing may omit a newly added entry in a large folder.
+		// Include the explicitly created child only after observing its type again.
+		if r.err == nil && r.limited {
+			found := false
+			for _, entry := range r.entries {
+				found = found || entry.name == name
+			}
+			if !found {
+				info, err := pickerInfo(filepath.Join(directory, name))
+				if err == nil && info.IsDir() {
+					if len(r.entries) == pickerEntryLimit {
+						r.entries = r.entries[:pickerEntryLimit-1]
+					}
+					r.entries = append(r.entries, pickerEntry{name: name, directory: true})
+				}
+			}
+		}
+		return r
+	}
+}
 func (p FilePicker) visible() []pickerEntry {
 	entries := make([]pickerEntry, 0, len(p.entries))
 	for _, e := range p.entries {
@@ -236,6 +286,10 @@ func (p FilePicker) Update(msg tea.Msg) (FilePicker, tea.Cmd, PickerResult) {
 			return p, nil, result
 		}
 		p.loading = false
+		p.creating = false
+		if read.createdName != "" {
+			p.mode, p.input = "", ""
+		}
 		if read.err != nil {
 			p.message = read.err.Error()
 			return p, nil, result
@@ -245,15 +299,31 @@ func (p FilePicker) Update(msg tea.Msg) (FilePicker, tea.Cmd, PickerResult) {
 			return p, nil, PickerResult{Path: read.path}
 		}
 		p.directory, p.entries, p.limited, p.selected, p.filter = read.path, read.entries, read.limited, 0, ""
+		p.directoryInfo = read.directoryInfo
+		if read.createdName != "" {
+			if strings.HasPrefix(read.createdName, ".") {
+				p.hidden = true
+			}
+			for i, entry := range p.visible() {
+				if entry.name == read.createdName {
+					p.selected = i
+					break
+				}
+			}
+			p.message = "Folder created. Enter opens it."
+		}
 		return p, nil, result
 	}
 	key, ok := msg.(tea.KeyMsg)
 	if !ok {
 		return p, nil, result
 	}
+	if p.creating {
+		return p, nil, result
+	}
 	if key.Type == tea.KeyEsc {
 		if p.mode != "" {
-			p.mode, p.input = "", ""
+			p.mode, p.input, p.message = "", "", ""
 			return p, nil, result
 		}
 		if p.filter != "" {
@@ -268,6 +338,15 @@ func (p FilePicker) Update(msg tea.Msg) (FilePicker, tea.Cmd, PickerResult) {
 	if p.mode != "" {
 		switch key.Type {
 		case tea.KeyEnter:
+			if p.mode == "mkdir" {
+				if !pickerFolderName(p.input) {
+					p.message = "Enter one folder name, without slashes, dots alone or outside spaces."
+					return p, nil, result
+				}
+				var cmd tea.Cmd
+				p, cmd = p.createFolder()
+				return p, cmd, result
+			}
 			if p.mode == "filter" {
 				p.filter = p.input
 				p.mode = ""
@@ -311,6 +390,10 @@ func (p FilePicker) Update(msg tea.Msg) (FilePicker, tea.Cmd, PickerResult) {
 		p.mode, p.input, p.message = "filter", p.filter, ""
 	case "ctrl+l":
 		p.mode, p.input, p.message = "path", p.directory, ""
+	case "ctrl+n":
+		if !p.loading && p.directory != "" && p.directoryInfo != nil {
+			p.mode, p.input, p.message = "mkdir", "", ""
+		}
 	case "ctrl+h":
 		target = p.home
 	case "backspace":
@@ -372,6 +455,17 @@ func (p FilePicker) View(width, height int) string {
 		title = "Choose a folder"
 	}
 	lines := []string{title, clean(p.directory)}
+	if p.mode == "mkdir" {
+		lines = []string{clean("New folder"), clean("Create in: " + p.directory), "", clean("Name: [" + importTail(validation.SafeText(p.input), max(1, width-10)) + "|]")}
+		if p.message != "" {
+			lines = append(lines, clean(p.message))
+		}
+		lines = append(lines, "", clean("[ Enter Create folder ]  Esc Cancel"))
+		if p.creating {
+			lines[len(lines)-1] = clean("Creating folder...")
+		}
+		return strings.Join(lines[:min(height, len(lines))], "\n")
+	}
 	if p.mode == "path" {
 		lines = append(lines, clean("Path: "+p.input))
 	} else if p.filter != "" || p.mode == "filter" {
@@ -384,7 +478,7 @@ func (p FilePicker) View(width, height int) string {
 	if p.kind == "directory" {
 		footer = "Enter open | Ctrl+S choose folder | Esc back"
 	}
-	tips := "Backspace parent | Ctrl+H home | Ctrl+L path | . hidden"
+	tips := "Ctrl+N New folder | Backspace parent | Ctrl+H home | Ctrl+L path | . hidden"
 	rows := height - len(lines) - 2
 	if rows < 0 {
 		rows = 0
@@ -422,7 +516,7 @@ func (p FilePicker) View(width, height int) string {
 		rows--
 	}
 	if p.limited {
-		tips = "First 4096 entries shown; Ctrl+L opens an exact path"
+		tips = "4096 entries shown | Ctrl+L exact path | Ctrl+N New folder"
 	}
 	if p.mode == "path" {
 		footer = "Enter open | Ctrl+U clear | Esc back"

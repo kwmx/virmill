@@ -1695,6 +1695,46 @@ _virmill_import_result()
     noun_aliases=()
 }
 
+_virmill_import_sources()
+{
+    last_command="virmill_import_sources"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_import_verify()
 {
     last_command="virmill_import_verify"
@@ -1747,6 +1787,7 @@ _virmill_import()
     commands+=("prepare-disks")
     commands+=("prepare-install")
     commands+=("result")
+    commands+=("sources")
     commands+=("verify")
 
     flags=()
@@ -4195,6 +4236,46 @@ _virmill_vm_creation_cleanup()
     noun_aliases=()
 }
 
+_virmill_vm_creation_options()
+{
+    last_command="virmill_vm_creation_options"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_vm_creation_result()
 {
     last_command="virmill_vm_creation_result"
@@ -4286,6 +4367,7 @@ _virmill_vm_creation()
     commands=()
     commands+=("accept")
     commands+=("cleanup")
+    commands+=("options")
     commands+=("result")
     commands+=("resume")
 

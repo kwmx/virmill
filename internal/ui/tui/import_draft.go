@@ -67,9 +67,17 @@ func (d *ImportDraft) SelectSystem(id string) error {
 							break
 						}
 					}
-					// Capacity units are not normalized by the importer report. Require an
-					// explicit bound instead of guessing bytes from a descriptor's raw number.
-					rows = append(rows, ImportDisk{ID: disk.ID, Path: disk.Path, Format: format})
+					row := ImportDisk{ID: disk.ID, Path: disk.Path, Format: format}
+					if disk.CapacityBytes > 0 && disk.CapacityBytes <= 512<<30 {
+						// Round the verified unit conversion up; never lower a capacity
+						// limit to make a destination appear to have sufficient space.
+						mib := disk.CapacityBytes / (1 << 20)
+						if disk.CapacityBytes%(1<<20) != 0 {
+							mib++
+						}
+						row.SizeMiB = strconv.FormatInt(mib, 10)
+					}
+					rows = append(rows, row)
 					found = true
 					break
 				}
@@ -83,6 +91,43 @@ func (d *ImportDraft) SelectSystem(id string) error {
 		return nil
 	}
 	return fmt.Errorf("Choose an appliance from the inspected list.")
+}
+
+// DetectedResources returns only unambiguous hints from the selected system.
+// Zero means the next step needs an explicit choice, not a guessed allocation.
+func (d ImportDraft) DetectedResources() (cpus, memoryMiB int64) {
+	if d.Kind != "ova" || d.Report == nil || d.Report.Source != d.Source {
+		return 0, 0
+	}
+	for _, system := range d.Report.Systems {
+		if system.ID != d.SystemID {
+			continue
+		}
+		cpuItems, memoryItems := 0, 0
+		for _, item := range system.Items {
+			switch item.ResourceType {
+			case "3":
+				cpuItems++
+				value, err := strconv.ParseInt(item.Quantity, 10, 64)
+				if err == nil && value > 0 && value <= 512 && strconv.FormatInt(value, 10) == item.Quantity {
+					cpus = value
+				}
+			case "4":
+				memoryItems++
+				if item.MemoryMiB > 0 && item.MemoryMiB <= 1048576 {
+					memoryMiB = item.MemoryMiB
+				}
+			}
+		}
+		if cpuItems != 1 {
+			cpus = 0
+		}
+		if memoryItems != 1 {
+			memoryMiB = 0
+		}
+		return cpus, memoryMiB
+	}
+	return 0, 0
 }
 func (d ImportDraft) Request(connection string) (string, app.Request, error) {
 	fail := func(message string) (string, app.Request, error) { return "", app.Request{}, fmt.Errorf("%s", message) }
@@ -110,6 +155,13 @@ func (d ImportDraft) Request(connection string) (string, app.Request, error) {
 		size, err := strconv.ParseInt(disk.SizeMiB, 10, 64)
 		if err != nil || size < 1 || size > 524288 || strconv.FormatInt(size, 10) != disk.SizeMiB {
 			return fail("Enter a disk size between 1 and 524288 MiB.")
+		}
+		if d.Kind == "ova" && d.Report != nil && d.Report.Source == d.Source {
+			for _, detected := range d.Report.Disks {
+				if detected.ID == disk.ID && detected.CapacityBytes > size<<20 {
+					return fail("The disk limit cannot be smaller than its detected capacity. Choose more storage; this option does not resize the source disk.")
+				}
+			}
 		}
 		row := map[string]any{"id": disk.ID}
 		if d.Kind == "iso" {

@@ -326,7 +326,7 @@ func TestImportFormPrimaryActionVisibleWithoutDuplicateKeyGuide(t *testing.T) {
 					view := f.View(size[0], size[1])
 					primary := "[ Continue ]"
 					if page == 2 {
-						primary = "[ Preview import ]"
+						primary = "[ Preview image preparation ]"
 					}
 					if !strings.Contains(view, primary) || strings.Count(view, primary) != 1 {
 						t.Fatalf("primary action should remain visible once: %s", view)

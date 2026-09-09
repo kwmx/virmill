@@ -127,6 +127,15 @@
                   "type": "string",
                   "maxLength": 2048
                 }
+              },
+              "allocationUnits": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "memoryMiB": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8796093022207
               }
             }
           }
@@ -244,4 +253,3 @@
     }
   }
 }
-

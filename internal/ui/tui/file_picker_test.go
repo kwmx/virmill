@@ -245,6 +245,13 @@ func TestFilePickerBoundedListing(t *testing.T) {
 	if !p.limited || len(p.entries) != pickerEntryLimit || !strings.Contains(p.View(80, 24), "4096") {
 		t.Fatal("directory bound or notice missing")
 	}
+	p, _, _ = pickerKey(p, tea.KeyCtrlN)
+	p, _, _ = pickerText(p, "new-folder")
+	p, cmd, _ = pickerKey(p, tea.KeyEnter)
+	p, _ = pickerRun(t, p, cmd)
+	if len(p.entries) > pickerEntryLimit || p.visible()[p.selected].name != "new-folder" {
+		t.Fatal("new folder omitted from bounded listing")
+	}
 }
 
 func TestFilePickerPermissionErrorStaysOpen(t *testing.T) {
@@ -270,5 +277,209 @@ func TestFilePickerPermissionErrorStaysOpen(t *testing.T) {
 	p, _, result = pickerKey(p, tea.KeyEsc)
 	if !result.Cancel {
 		t.Fatal("cannot cancel after permission failure")
+	}
+}
+
+func TestFilePickerCreateFolderConfirmRefreshAndSelect(t *testing.T) {
+	for _, kind := range []string{"file", "directory"} {
+		t.Run(kind, func(t *testing.T) {
+			root := t.TempDir()
+			pickerFile(t, filepath.Join(root, "source.iso"))
+			p, cmd := NewFilePicker(root, kind)
+			p, _ = pickerRun(t, p, cmd)
+			p, cmd, result := pickerKey(p, tea.KeyCtrlN)
+			if cmd != nil || p.mode != "mkdir" || result.Path != "" {
+				t.Fatal("new-folder prompt must not write or select")
+			}
+			p, _, _ = pickerText(p, "New images")
+			if _, err := os.Stat(filepath.Join(root, "New images")); !os.IsNotExist(err) {
+				t.Fatal("typing created a folder")
+			}
+			p, cmd, result = pickerKey(p, tea.KeyEnter)
+			if !p.creating || !p.loading || cmd == nil || result.Path != "" {
+				t.Fatal("missing explicit creation command")
+			}
+			p, duplicate, _ := pickerKey(p, tea.KeyEnter)
+			if duplicate != nil {
+				t.Fatal("duplicate creation submitted")
+			}
+			p, _, result = pickerKey(p, tea.KeyEsc)
+			if result.Cancel {
+				t.Fatal("cannot promise cancellation after creation was submitted")
+			}
+			p, result = pickerRun(t, p, cmd)
+			if result.Path != "" || p.directory != root || p.mode != "" || p.creating || p.loading || p.visible()[p.selected].name != "New images" {
+				t.Fatal("new folder not highlighted in refreshed parent")
+			}
+			info, err := os.Stat(filepath.Join(root, "New images"))
+			if err != nil || !info.IsDir() || info.Mode().Perm() != 0700 {
+				t.Fatal("new folder must be private0700", info, err)
+			}
+			data, err := os.ReadFile(filepath.Join(root, "source.iso"))
+			if err != nil || string(data) != "source remains unchanged" {
+				t.Fatal("source file changed")
+			}
+			p, cmd, _ = pickerKey(p, tea.KeyEnter)
+			p, _ = pickerRun(t, p, cmd)
+			if p.directory != filepath.Join(root, "New images") {
+				t.Fatal("highlighted folder did not open")
+			}
+		})
+	}
+}
+
+func TestFilePickerCreateFolderCancelAndPromptDimensions(t *testing.T) {
+	root := t.TempDir()
+	p, cmd := NewFilePicker(root, "file")
+	p, _ = pickerRun(t, p, cmd)
+	if !strings.Contains(p.View(80, 24), "Ctrl+N New folder") {
+		t.Fatal("create shortcut is not discoverable")
+	}
+	p, _, _ = pickerKey(p, tea.KeyCtrlN)
+	p, _, _ = pickerText(p, "資料")
+	for _, size := range [][2]int{{80, 24}, {60, 18}, {120, 36}, {20, 4}, {1, 1}, {0, 0}} {
+		view := p.View(size[0], size[1])
+		if size[0] == 0 || size[1] == 0 {
+			if view != "" {
+				t.Fatal("zero-size prompt")
+			}
+			continue
+		}
+		if len(strings.Split(view, "\n")) > size[1] {
+			t.Fatal("prompt too tall")
+		}
+		for _, line := range strings.Split(view, "\n") {
+			if ansi.StringWidth(line) > size[0] || strings.ContainsRune(line, '\x1b') {
+				t.Fatal("unsafe/wide prompt", line)
+			}
+		}
+	}
+	p, cmd, result := pickerKey(p, tea.KeyEsc)
+	if cmd != nil || result.Cancel || p.mode != "" || p.closed {
+		t.Fatal("Esc should cancel just the new-folder prompt")
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil || len(entries) != 0 {
+		t.Fatal("canceled prompt wrote files")
+	}
+}
+
+func TestFilePickerCreateFolderInvalidNamesAndExistingEntries(t *testing.T) {
+	root := t.TempDir()
+	p, cmd := NewFilePicker(root, "directory")
+	p, _ = pickerRun(t, p, cmd)
+	for _, name := range []string{"", ".", "..", "../outside", "a/b", "a\\b", "\x00", "bad\x1bname", "bad\u200bname", " leading", "trailing ", strings.Repeat("a", 256)} {
+		q := p
+		q.mode = "mkdir"
+		q.input = name
+		q, cmd, _ = pickerKey(q, tea.KeyEnter)
+		if cmd != nil || q.mode != "mkdir" || q.message == "" {
+			t.Fatalf("unsafe name accepted: %q", name)
+		}
+		if created, err := pickerMakeFolder(root, name, p.directoryInfo); err == nil || created {
+			t.Fatalf("helper accepted unsafe name: %q", name)
+		}
+	}
+	pickerFile(t, filepath.Join(root, "file"))
+	if err := os.Mkdir(filepath.Join(root, "folder"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("folder", filepath.Join(root, "link")); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"file", "folder", "link"} {
+		q := p
+		q.mode = "mkdir"
+		q.input = name
+		q, cmd, _ = pickerKey(q, tea.KeyEnter)
+		q, _ = pickerRun(t, q, cmd)
+		if q.message == "" || q.mode != "mkdir" || q.closed || q.directory != root {
+			t.Fatal("duplicate must stay editable", name)
+		}
+	}
+	target, err := os.Readlink(filepath.Join(root, "link"))
+	if err != nil || target != "folder" {
+		t.Fatal("existing symlink overwritten")
+	}
+	data, err := os.ReadFile(filepath.Join(root, "file"))
+	if err != nil || string(data) != "source remains unchanged" {
+		t.Fatal("existing file overwritten")
+	}
+}
+
+func TestFilePickerCreateFolderRefusesReplacedParentAndSymlinkAncestors(t *testing.T) {
+	root := t.TempDir()
+	parent := filepath.Join(root, "parent")
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	p, cmd := NewFilePicker(parent, "directory")
+	p, _ = pickerRun(t, p, cmd)
+	old := filepath.Join(root, "old-parent")
+	if err := os.Rename(parent, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if created, err := pickerMakeFolder(parent, "wrong", p.directoryInfo); err == nil || created {
+		t.Fatal("replacement parent was used")
+	}
+	if err := os.Symlink(old, filepath.Join(root, "linked")); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if created, err := pickerMakeFolder(filepath.Join(root, "linked"), "wrong", info); err == nil || created {
+		t.Fatal("symlink parent was followed")
+	}
+	for _, path := range []string{old, parent} {
+		entries, err := os.ReadDir(path)
+		if err != nil || len(entries) != 0 {
+			t.Fatal("unsafe parent mutation")
+		}
+	}
+}
+
+func TestFilePickerCreateHiddenFolderClearsFilter(t *testing.T) {
+	root := t.TempDir()
+	p, cmd := NewFilePicker(root, "file")
+	p, _ = pickerRun(t, p, cmd)
+	p.filter = "not-the-new-name"
+	p, _, _ = pickerKey(p, tea.KeyCtrlN)
+	p, _, _ = pickerText(p, ".private")
+	p, cmd, _ = pickerKey(p, tea.KeyEnter)
+	p, _ = pickerRun(t, p, cmd)
+	if !p.hidden || p.filter != "" || len(p.visible()) != 1 || p.visible()[p.selected].name != ".private" {
+		t.Fatal("created hidden folder must become visible and selected")
+	}
+}
+
+func TestFilePickerCreateFolderPermissionErrorStaysEditable(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("permissions require an unprivileged test process")
+	}
+	root := t.TempDir()
+	p, cmd := NewFilePicker(root, "directory")
+	p, _ = pickerRun(t, p, cmd)
+	if err := os.Chmod(root, 0500); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chmod(root, 0700)
+	p, _, _ = pickerKey(p, tea.KeyCtrlN)
+	p, _, _ = pickerText(p, "new-folder")
+	p, cmd, _ = pickerKey(p, tea.KeyEnter)
+	p, _ = pickerRun(t, p, cmd)
+	if p.creating || p.closed || p.mode != "mkdir" || p.message == "" {
+		t.Fatal("permission failure must stay editable")
+	}
+	if _, err := os.Stat(filepath.Join(root, "new-folder")); !os.IsNotExist(err) {
+		t.Fatal("permission failure unexpectedly created directory")
+	}
+	p, cmd, result := pickerKey(p, tea.KeyEsc)
+	if cmd != nil || result.Cancel || p.mode != "" {
+		t.Fatal("cannot leave failed folder prompt")
 	}
 }

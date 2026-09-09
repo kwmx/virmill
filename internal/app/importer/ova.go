@@ -42,11 +42,13 @@ type Member struct {
 	digests map[string]string
 }
 type Disk struct {
-	ID       string `json:"id"`
-	FileRef  string `json:"fileRef"`
-	Path     string `json:"path"`
-	Capacity string `json:"capacity"`
-	Format   string `json:"format"`
+	ID                      string `json:"id"`
+	FileRef                 string `json:"fileRef"`
+	Path                    string `json:"path"`
+	Capacity                string `json:"capacity"`
+	Format                  string `json:"format"`
+	CapacityAllocationUnits string `json:"capacityAllocationUnits,omitempty"`
+	CapacityBytes           int64  `json:"capacityBytes,omitempty"`
 }
 type Item struct {
 	ResourceType    string   `json:"resourceType"`
@@ -54,6 +56,8 @@ type Item struct {
 	Parent          string   `json:"parent"`
 	AddressOnParent string   `json:"addressOnParent"`
 	Quantity        string   `json:"quantity"`
+	AllocationUnits string   `json:"allocationUnits,omitempty"`
+	MemoryMiB       int64    `json:"memoryMiB,omitempty"`
 	HostResources   []string `json:"hostResources"`
 	Connections     []string `json:"connections"`
 }
@@ -412,7 +416,23 @@ func parseOVF(data []byte, filename string, out *Report) error {
 				return errors.New("duplicate disk or unresolved file reference")
 			}
 			disks[id] = true
-			out.Disks = append(out.Disks, Disk{id, ref, files[ref], d.attr("capacity"), d.attr("format")})
+			disk := Disk{ID: id, FileRef: ref, Path: files[ref], Capacity: d.attr("capacity"), Format: d.attr("format"), CapacityAllocationUnits: d.attr("capacityAllocationUnits")}
+			units := disk.CapacityAllocationUnits
+			if units == "" {
+				// DSP0243 2.1.0 §9.1 defines bytes when this attribute is absent.
+				// Preserve an explicitly empty/invalid unit as unknown instead.
+				present := false
+				for _, attr := range d.attrs {
+					present = present || attr.Name.Local == "capacityAllocationUnits"
+				}
+				if !present {
+					units = "byte"
+				}
+			}
+			if capacity, known := allocationBytes(disk.Capacity, units); known {
+				disk.CapacityBytes = capacity
+			}
+			out.Disks = append(out.Disks, disk)
 		}
 	}
 	var visit func(*node) error
@@ -425,8 +445,25 @@ func parseOVF(data []byte, filename string, out *Report) error {
 			systemIDs[id] = true
 			s := System{ID: id, Name: n.childText("Name"), Items: []Item{}, DiskIDs: []string{}}
 			for _, hw := range n.childrenNamed("VirtualHardwareSection") {
+				virtualBox := false
+				for _, system := range hw.childrenNamed("System") {
+					virtualBox = virtualBox || strings.HasPrefix(system.childText("VirtualSystemType"), "virtualbox-")
+				}
 				for _, item := range hw.childrenNamed("Item") {
-					v := Item{ResourceType: item.childText("ResourceType"), InstanceID: item.childText("InstanceID"), Parent: item.childText("Parent"), AddressOnParent: item.childText("AddressOnParent"), Quantity: item.childText("VirtualQuantity"), HostResources: []string{}, Connections: []string{}}
+					v := Item{ResourceType: item.childText("ResourceType"), InstanceID: item.childText("InstanceID"), Parent: item.childText("Parent"), AddressOnParent: item.childText("AddressOnParent"), Quantity: item.childText("VirtualQuantity"), AllocationUnits: item.childText("AllocationUnits"), HostResources: []string{}, Connections: []string{}}
+					if v.ResourceType == "4" {
+						units := v.AllocationUnits
+						// VirtualBox's exporter emits MegaBytes from stored bytes / _1M;
+						// its reader treats that spelling exactly like byte * 2^20.
+						// Only apply the legacy convention to declared VirtualBox guests.
+						// https://github.com/VirtualBox/virtualbox/blob/main/src/VBox/Main/src-server/ApplianceImplExport.cpp
+						if virtualBox && units == "MegaBytes" {
+							units = "byte * 2^20"
+						}
+						if size, known := allocationBytes(v.Quantity, units); known && size%(1<<20) == 0 {
+							v.MemoryMiB = size / (1 << 20)
+						}
+					}
 					for _, r := range item.childrenNamed("HostResource") {
 						v.HostResources = append(v.HostResources, strings.TrimSpace(r.text))
 						if v.ResourceType == "17" {
@@ -471,4 +508,48 @@ func parseOVF(data []byte, filename string, out *Report) error {
 		return errors.New("no virtual systems")
 	}
 	return nil
+}
+
+var byteAllocationUnits = regexp.MustCompile(`(?i)^bytes?(?:\s*\*\s*(2|10)\s*\^\s*([0-9]+))?$`)
+
+// allocationBytes supplies a conservative display/default hint, never a device
+// mapping. Unknown units, fractional quantities and overflow preserve the raw
+// descriptor fields without inventing a normalized value.
+func allocationBytes(quantity, units string) (int64, bool) {
+	quantity, units = strings.TrimSpace(quantity), strings.TrimSpace(units)
+	if quantity == "" || len(quantity) > 19 || len(units) > 64 {
+		return 0, false
+	}
+	for _, digit := range quantity {
+		if digit < '0' || digit > '9' {
+			return 0, false
+		}
+	}
+	amount, err := strconv.ParseInt(quantity, 10, 64)
+	if err != nil || amount <= 0 {
+		return 0, false
+	}
+	match := byteAllocationUnits.FindStringSubmatch(units)
+	if match == nil {
+		return 0, false
+	}
+	const maximum = int64(1<<63 - 1)
+	factor := int64(1)
+	if match[1] != "" {
+		base, _ := strconv.ParseInt(match[1], 10, 64)
+		exponent, err := strconv.ParseUint(match[2], 10, 8)
+		if err != nil || exponent > 62 {
+			return 0, false
+		}
+		for range exponent {
+			if factor > maximum/base {
+				return 0, false
+			}
+			factor *= base
+		}
+	}
+	if amount > maximum/factor {
+		return 0, false
+	}
+	return amount * factor, true
 }

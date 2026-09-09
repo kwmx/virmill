@@ -14,12 +14,16 @@ import (
 // ImportForm collects options only. Browsing, inspection, export and preview are
 // intents handled by the workspace through its existing service boundary.
 type ImportForm struct {
+	VM                      *CreationForm
+	VMBinding               string
 	Draft                   ImportDraft
 	Error                   string
 	Page, Focus, Disk, File int
 	cursor                  int
 	cursorField             string
 	advanced                bool
+	errorText               string
+	errorOffset             int
 }
 
 type importControl struct {
@@ -52,19 +56,35 @@ func (f ImportForm) View(width, height int) string {
 		title = "Import options"
 	}
 	page := max(0, min(f.Page, 2))
-	steps := []string{"Choose the source", "Choose where to save", "Set up the disks"}
-	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared copy in a new folder.", "Choose disk options, then review before making changes."}
-	lines := []string{clean(title), "", clean(purpose[page]), clean(fmt.Sprintf("Step %d of 3 · %s", page+1, steps[page])), ""}
+	steps := []string{"Choose the source", "Choose where to save", "Prepare disk images"}
+	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared images in a new folder. VM setup follows.", "First prepare the images. CPU, RAM, firmware and networks come next."}
+	lines := []string{clean(title), ""}
+	lines = append(lines, wrap(purpose[page], width)...)
+	lines = append(lines, clean(fmt.Sprintf("Step %d of 3 · %s", page+1, steps[page])), "")
+	if page == 2 && f.Draft.Kind == "ova" {
+		cpus, memory := f.Draft.DetectedResources()
+		cpuLabel, memoryLabel := "CPU: choose next", "RAM: choose next"
+		if cpus > 0 {
+			cpuLabel = fmt.Sprintf("%d CPUs", cpus)
+		}
+		if memory > 0 {
+			memoryLabel = fmt.Sprintf("%d MiB RAM", memory)
+		}
+		lines = append(lines, clean("Detected: "+cpuLabel+" · "+memoryLabel))
+	}
 	controls := f.controls()
 	if len(controls) == 0 {
 		return strings.Join(append(lines, clean("Choose OVA, ISO or existing disks to continue.")), "\n")
 	}
 	focus := max(0, min(f.Focus, len(controls)-1))
 	primary := -1
+	back := -1
 	body := []int{}
 	for i, c := range controls {
 		if c.id == "next" || c.id == "preview" {
 			primary = i
+		} else if f.Error != "" && page == 2 && c.id == "back" {
+			back = i
 		} else {
 			body = append(body, i)
 		}
@@ -73,8 +93,28 @@ func (f ImportForm) View(width, height int) string {
 	// guidance belongs to the workspace; this form shows only contextual help.
 	footer := []string{}
 	if f.Error != "" {
-		errorLines := wrap(validation.SafeText(f.Error), width)
-		footer = append(footer, errorLines[:min(3, len(errorLines))]...)
+		message := validation.SafeText(f.Error)
+		if strings.HasPrefix(message, "INSUFFICIENT_SPACE:") {
+			message = "Not enough storage\n" + strings.TrimSpace(strings.TrimPrefix(message, "INSUFFICIENT_SPACE:"))
+		}
+		errorLines := wrap(message, width)
+		reserved := 2 // primary action and help
+		if back >= 0 {
+			reserved++
+		}
+		room := max(1, height-len(lines)-reserved-1)
+		offset := 0
+		if f.errorText == f.Error {
+			offset = min(f.errorOffset, max(0, len(errorLines)-room))
+		}
+		footer = append(footer, errorLines[offset:min(len(errorLines), offset+room)]...)
+	}
+	if back >= 0 {
+		prefix := "  "
+		if focus == back {
+			prefix = "> "
+		}
+		footer = append(footer, clean(prefix+"[ "+controls[back].label+" ]"))
 	}
 	if primary >= 0 {
 		prefix := "  "
@@ -83,7 +123,11 @@ func (f ImportForm) View(width, height int) string {
 		}
 		footer = append(footer, clean(prefix+"[ "+controls[primary].label+" ]"))
 	}
-	footer = append(footer, clean(controls[focus].help))
+	help := controls[focus].help
+	if f.Error != "" {
+		help = "PgUp/PgDn: read message · Esc: back"
+	}
+	footer = append(footer, clean(help))
 	room := max(1, height-len(lines)-len(footer))
 	bodyFocus := slices.Index(body, focus)
 	first := max(0, bodyFocus-room+1)
@@ -301,14 +345,17 @@ func (f ImportForm) controls() []importControl {
 			if d.Kind == "disks" {
 				controls = append(controls, importPath("diskPath", "Disk file", "Choose the top-level disk file within the source folder.", disk.Path))
 			}
-			if d.Kind != "iso" {
-				controls = append(controls, importControl{id: "format", label: "Source format", kind: "choice", value: disk.Format, choices: []string{"qcow2", "raw", "vmdk", "vdi", "vpc", "vhdx"}, help: "Left/Right chooses the existing format. VPC means VHD; this is not auto-detection."})
-			}
 			label, help := "Size (MiB)", "Blank disk capacity: 32768 MiB = 32 GiB. It is not allocated in full now."
 			if d.Kind != "iso" {
 				label, help = "Maximum size (MiB)", "Safety limit for the source disk's virtual capacity. This does not resize it."
 			}
 			controls = append(controls, importText("size", label, help, disk.SizeMiB))
+			if d.Kind == "ova" && disk.Format != "" {
+				controls = append(controls, importButton("advanced", "Advanced disk options", "Review or correct the source format declared by this appliance."))
+			}
+			if d.Kind != "iso" && (d.Kind != "ova" || disk.Format == "" || f.advanced) {
+				controls = append(controls, importControl{id: "format", label: "Source format", kind: "choice", value: disk.Format, choices: []string{"qcow2", "raw", "vmdk", "vdi", "vpc", "vhdx"}, help: "Left/Right chooses the existing format. VPC means VHD; this is not auto-detection."})
+			}
 		}
 		if d.Kind != "ova" {
 			label := "Add blank disk"
@@ -338,7 +385,7 @@ func (f ImportForm) controls() []importControl {
 		if d.Kind != "ova" {
 			controls = append(controls, importControl{id: "offline", label: "Source images are not in use", kind: "toggle", value: fmt.Sprint(d.Offline), help: "Space toggles. Stop any VM or program using these source images first."})
 		}
-		controls = append(controls, importButton("back", "Back: Destination", "Change where the copied images will be saved."), importButton("export", "Export settings", "Save these options for reuse. Export does not start the import."), importButton("preview", "Preview import", "Review storage needs and safety checks before applying anything."))
+		controls = append(controls, importButton("hardware", "CPU, RAM and VM settings", "Set up the VM before copying images. Preparation and creation each have a review."), importButton("back", "Back: Destination", "Choose another folder with enough space for the prepared images."), importButton("export", "Export settings", "Save these image-preparation options for reuse; no import starts."), importButton("preview", "Preview image preparation", "Review image copies and storage needs. Create and configure the VM afterward."))
 	}
 	return controls
 }
@@ -347,6 +394,19 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 	f.Draft.Disks = slices.Clone(f.Draft.Disks)
 	f.Draft.Files = slices.Clone(f.Draft.Files)
 	none := ImportIntent{}
+	if f.errorText != f.Error {
+		f.errorText, f.errorOffset = f.Error, 0
+	}
+	if f.Error != "" {
+		if key.Type == tea.KeyPgDown {
+			f.errorOffset++
+			return f, none
+		}
+		if key.Type == tea.KeyPgUp {
+			f.errorOffset = max(0, f.errorOffset-1)
+			return f, none
+		}
+	}
 	if key.Type == tea.KeyEsc {
 		if f.Page > 0 {
 			f.Page--
@@ -462,7 +522,7 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 			f.Error = ""
 		case "inspect":
 			return f, ImportIntent{Kind: "inspect"}
-		case "preview", "export":
+		case "preview", "export", "hardware":
 			return f, ImportIntent{Kind: c.id}
 		case "advanced", "fileOptions":
 			f.advanced = !f.advanced

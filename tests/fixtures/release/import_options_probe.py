@@ -175,7 +175,7 @@ def walkthrough(runner, iso, columns, rows):
         # Export may either return immediately or offer a Back button.
         if 'Preview' not in terminal.screen.text():
             wait('Back to disk options after export', lambda text: 'Preview' in text, b'\x1b')
-        activate('Preview import', lambda text: 'Plan ID' in text and 'Plan digest' in text,
+        activate('Preview image preparation', lambda text: 'Plan ID' in text and 'Plan digest' in text,
                  'Real service plan opens without Apply')
         plan_text = terminal.screen.text()
         require('install' in plan_text.casefold() or 'iso' in plan_text.casefold(), 'installation plan identity absent')

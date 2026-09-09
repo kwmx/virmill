@@ -5,6 +5,8 @@ import "virmill.local/core/internal/ui"
 // Keep task language independent of CLI spelling. This map is deliberately
 // exhaustive: new registered actions need an intentional place in the UI.
 var actionText = map[string]struct{ label, description string }{
+	"import sources":                {"Browse prepared images", "Continue VM setup from a completed image preparation."},
+	"vm creation options":           {"View supported hardware", "Inspect this host's CPU, memory and firmware choices."},
 	"plugin call":                   {"Run plugin action", "Choose a plugin action and the VMs it may read."},
 	"plugin result":                 {"View plugin action result", "Read the saved result of a plugin job."},
 	"plugin new":                    {"Create plugin project", "Generate Go plugin source in a new folder."},

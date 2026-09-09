@@ -455,7 +455,15 @@
         "docs/tui-navigation.md",
         "docs/evidence/import-options-run.md",
         "packaging/systemd/virmilld.service",
-        "docs/adr/0035-coordinator-host-identities.md"
+        "docs/adr/0035-coordinator-host-identities.md",
+        "internal/ui/tui/creation_form.go",
+        "internal/ui/tui/workspace_creation.go",
+        "internal/domain/creation_options.go",
+        "internal/app/creation_options.go",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/importing/sources_linux.go",
+        "internal/ui/tui/file_picker_mkdir_linux.go",
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -489,7 +497,15 @@
         "internal/ui/tui/import_form_test.go",
         "internal/ui/tui/import_draft_test.go",
         "internal/ui/tui/workspace_import_test.go",
-        "internal/ui/tui/settings_export_test.go"
+        "internal/ui/tui/settings_export_test.go",
+        "internal/ui/tui/creation_form_test.go",
+        "internal/ui/tui/workspace_creation_test.go",
+        "internal/app/creation_options_test.go",
+        "internal/backend/libvirt/creation_options_linux_test.go",
+        "internal/importing/sources_linux_test.go",
+        "internal/app/importer/resources_test.go",
+        "internal/ui/tui/import_detected_test.go",
+        "tests/fixtures/release/hardware_ux_probe.py"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -527,14 +543,17 @@
         "import-options-race-002",
         "import-options-native-003",
         "import-options-artifacts-003",
-        "import-options-coordinator-003"
+        "import-options-coordinator-003",
+        "hardware-ux-race-001",
+        "hardware-ux-race-002"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
         "Versioned policy passed one real Q35/BIOS creation, login-screen boot and graceful shutdown. Separate reviewed acceptance of the legacy definition also passed; other profiles and the full recovery matrix remain outstanding, and legacy recipe semantics are unchanged.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
-        "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification."
+        "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
+        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios."
       ],
       "hardwareVerified": false,
       "released": false
@@ -625,7 +644,15 @@
         "internal/ui/import_wait.go",
         "internal/transport/local/socket_linux.go",
         "docs/adr/0036-import-inspection-wait-and-cancel.md",
-        "docs/evidence/import-flow-run.md"
+        "docs/evidence/import-flow-run.md",
+        "internal/ui/tui/creation_form.go",
+        "internal/ui/tui/workspace_creation.go",
+        "internal/domain/creation_options.go",
+        "internal/app/creation_options.go",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/importing/sources_linux.go",
+        "internal/ui/tui/file_picker_mkdir_linux.go",
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
@@ -644,7 +671,15 @@
         "internal/ui/cli/import_wait_test.go",
         "internal/transport/local/cancellation_linux_test.go",
         "internal/app/importer/cancellation_test.go",
-        "tests/fixtures/release/import_options_probe.py"
+        "tests/fixtures/release/import_options_probe.py",
+        "internal/ui/tui/creation_form_test.go",
+        "internal/ui/tui/workspace_creation_test.go",
+        "internal/app/creation_options_test.go",
+        "internal/backend/libvirt/creation_options_linux_test.go",
+        "internal/importing/sources_linux_test.go",
+        "internal/app/importer/resources_test.go",
+        "internal/ui/tui/import_detected_test.go",
+        "tests/fixtures/release/hardware_ux_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -662,10 +697,13 @@
         "import-options-race-002",
         "import-flow-race-001",
         "import-flow-native-001",
-        "import-flow-owner-ova-001"
+        "import-flow-owner-ova-001",
+        "hardware-ux-race-001",
+        "hardware-ux-race-002"
       ],
       "outstanding": [
-        "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified."
+        "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified.",
+        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4266,7 +4304,15 @@
         "internal/ui/import_wait.go",
         "internal/transport/local/socket_linux.go",
         "docs/adr/0036-import-inspection-wait-and-cancel.md",
-        "docs/evidence/import-flow-run.md"
+        "docs/evidence/import-flow-run.md",
+        "internal/ui/tui/creation_form.go",
+        "internal/ui/tui/workspace_creation.go",
+        "internal/domain/creation_options.go",
+        "internal/app/creation_options.go",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/importing/sources_linux.go",
+        "internal/ui/tui/file_picker_mkdir_linux.go",
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4366,7 +4412,15 @@
         "internal/ui/cli/import_wait_test.go",
         "internal/transport/local/cancellation_linux_test.go",
         "internal/app/importer/cancellation_test.go",
-        "tests/fixtures/release/import_options_probe.py"
+        "tests/fixtures/release/import_options_probe.py",
+        "internal/ui/tui/creation_form_test.go",
+        "internal/ui/tui/workspace_creation_test.go",
+        "internal/app/creation_options_test.go",
+        "internal/backend/libvirt/creation_options_linux_test.go",
+        "internal/importing/sources_linux_test.go",
+        "internal/app/importer/resources_test.go",
+        "internal/ui/tui/import_detected_test.go",
+        "tests/fixtures/release/hardware_ux_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4464,7 +4518,9 @@
         "import-options-coordinator-003",
         "import-flow-race-001",
         "import-flow-native-001",
-        "import-flow-owner-ova-001"
+        "import-flow-owner-ova-001",
+        "hardware-ux-race-001",
+        "hardware-ux-race-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4481,7 +4537,8 @@
         "Bounded address/all-table route observation and CIDR comparison include live/persistent network IP/static routes and explicit planned allocations. Shared CLI/TUI inspection reserves nothing and dumps are non-atomic. Integrated native observation and real VPN/policy-table/conflicting-network scenarios, durable allocation and packet/isolation matrix remain required.",
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
-        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required."
+        "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
+        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4532,7 +4589,15 @@
         "internal/ui/import_wait.go",
         "internal/transport/local/socket_linux.go",
         "docs/adr/0036-import-inspection-wait-and-cancel.md",
-        "docs/evidence/import-flow-run.md"
+        "docs/evidence/import-flow-run.md",
+        "internal/ui/tui/creation_form.go",
+        "internal/ui/tui/workspace_creation.go",
+        "internal/domain/creation_options.go",
+        "internal/app/creation_options.go",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/importing/sources_linux.go",
+        "internal/ui/tui/file_picker_mkdir_linux.go",
+        "docs/adr/0037-guided-creation-and-readable-import-failures.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4566,7 +4631,15 @@
         "internal/ui/cli/import_wait_test.go",
         "internal/transport/local/cancellation_linux_test.go",
         "internal/app/importer/cancellation_test.go",
-        "tests/fixtures/release/import_options_probe.py"
+        "tests/fixtures/release/import_options_probe.py",
+        "internal/ui/tui/creation_form_test.go",
+        "internal/ui/tui/workspace_creation_test.go",
+        "internal/app/creation_options_test.go",
+        "internal/backend/libvirt/creation_options_linux_test.go",
+        "internal/importing/sources_linux_test.go",
+        "internal/app/importer/resources_test.go",
+        "internal/ui/tui/import_detected_test.go",
+        "tests/fixtures/release/hardware_ux_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4605,12 +4678,15 @@
         "import-options-native-003",
         "import-options-artifacts-003",
         "import-flow-race-001",
-        "import-flow-native-001"
+        "import-flow-native-001",
+        "hardware-ux-race-001",
+        "hardware-ux-race-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
-        "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required."
+        "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required.",
+        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios."
       ],
       "hardwareVerified": false,
       "released": false
