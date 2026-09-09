@@ -1,0 +1,9 @@
+ok  	virmill.local/core/internal/ui	1.044s
+ok  	virmill.local/core/internal/ui/cli	4.151s
+ok  	virmill.local/core/internal/ui/tui	7.252s
+ok  	virmill.local/core/internal/app	5.845s
+ok  	virmill.local/core/internal/app/importer	1.105s
+ok  	virmill.local/core/internal/importing	2.258s
+ok  	virmill.local/core/internal/creating	19.344s
+ok  	virmill.local/core/internal/validation	1.369s
+ok  	virmill.local/core/internal/transport/local	1.620s

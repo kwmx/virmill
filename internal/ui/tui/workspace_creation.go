@@ -275,6 +275,7 @@ func applyImportBasics(f *CreationForm, d ImportDraft) {
 	}
 }
 func (m *Workspace) saveImportHardware(f CreationForm) {
+	m.Import.Focus = 0
 	m.Import.VM = &f
 	m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
 	m.Import.Draft.VMName, m.Import.Draft.VCPUs, m.Import.Draft.MemoryMiB = f.Spec.Name, f.CPUText, f.MemoryText

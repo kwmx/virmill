@@ -564,7 +564,8 @@
         "hardware-ux-native-003",
         "hardware-ux-bios-001",
         "appliance-summary-software-001",
-        "appliance-summary-software-002"
+        "appliance-summary-software-002",
+        "appliance-summary-native-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -737,7 +738,8 @@
         "hardware-ux-native-003",
         "hardware-ux-bios-001",
         "appliance-summary-software-001",
-        "appliance-summary-software-002"
+        "appliance-summary-software-002",
+        "appliance-summary-native-001"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified.",
@@ -4577,7 +4579,11 @@
         "hardware-ux-native-003",
         "hardware-ux-bios-001",
         "appliance-summary-software-001",
-        "appliance-summary-software-002"
+        "appliance-summary-software-002",
+        "appliance-summary-packages-001",
+        "appliance-summary-upgrade-001",
+        "appliance-summary-restart-001",
+        "appliance-summary-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4756,7 +4762,11 @@
         "hardware-ux-native-003",
         "hardware-ux-bios-001",
         "appliance-summary-software-001",
-        "appliance-summary-software-002"
+        "appliance-summary-software-002",
+        "appliance-summary-packages-001",
+        "appliance-summary-upgrade-001",
+        "appliance-summary-restart-001",
+        "appliance-summary-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

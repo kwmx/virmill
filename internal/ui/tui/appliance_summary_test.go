@@ -154,3 +154,32 @@ func TestApplianceSummaryProgressUsesSelectedResourcesAndShowsHiddenRows(t *test
 		t.Fatal("progress showed original rather than selected hardware", view)
 	}
 }
+
+func TestApplianceSummaryWrapsWordsAndPreservesLongFilenames(t *testing.T) {
+	text := "Firmware declared; confirm compatibility in Advanced settings"
+	lines := applianceWrap(text, 30)
+	if strings.Join(lines, " ") != text {
+		t.Fatal("ordinary words were split", lines)
+	}
+	filename := strings.Repeat("disk", 24) + ".vmdk"
+	lines = applianceWrap(filename, 30)
+	if strings.Join(lines, "") != filename {
+		t.Fatal("long filename bytes lost", lines)
+	}
+	for _, line := range lines {
+		if ansi.StringWidth(line) > 30 {
+			t.Fatal("long filename escaped width", line)
+		}
+	}
+	f := applianceSummaryFixture(t)
+	text = ""
+	for _, c := range f.controls() {
+		text += c.value + "\n"
+	}
+	if strings.Contains(text, "review in Advanced") || strings.Contains(text, "confirm compatibility in Advanced") {
+		t.Fatal("repeated settings instructions remain", text)
+	}
+	if !strings.Contains(text, "Firmware: UEFI (declared)") || !strings.Contains(text, "Not imported automatically") {
+		t.Fatal("concise metadata lost support boundaries", text)
+	}
+}

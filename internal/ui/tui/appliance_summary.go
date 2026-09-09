@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/x/ansi"
+
 	"virmill.local/core/internal/app/importer"
 	"virmill.local/core/internal/validation"
 )
@@ -33,8 +35,8 @@ func (f ImportForm) applianceControls() []importControl {
 		// Metadata lines remain fully available even at the narrow layout. Each
 		// wrapped row participates in normal keyboard scrolling instead of hiding
 		// filename suffixes or device descriptions in a truncated table cell.
-		for _, line := range wrap(text, 56) {
-			rows = append(rows, importControl{id: fmt.Sprintf("summary-%d", len(rows)), kind: "summary", value: line, help: "Source declaration only. Advanced settings controls the new VM."})
+		for _, line := range applianceWrap(text, 56) {
+			rows = append(rows, importControl{id: fmt.Sprintf("summary-%d", len(rows)), kind: "summary", value: line, help: "Declared by the source; not yet imported."})
 		}
 	}
 	osName := system.OS
@@ -72,9 +74,11 @@ func (f ImportForm) applianceControls() []importControl {
 		}
 	}
 	if system.Firmware != "" {
-		info("Firmware", strings.ToUpper(system.Firmware)+" declared; confirm compatibility in Advanced settings")
+		info("Firmware", strings.ToUpper(system.Firmware)+" (declared)")
 	}
 	nic := 0
+	ovfAudio := []string{}
+	vboxAudio := []string{}
 	for _, item := range system.Items {
 		subtype := item.ResourceSubType
 		switch item.ResourceType {
@@ -98,11 +102,12 @@ func (f ImportForm) applianceControls() []importControl {
 			if model == "" {
 				model = "model not specified"
 			}
-			info(fmt.Sprintf("Network adapter %d", nic), model+" · network must be chosen")
+			info(fmt.Sprintf("Network adapter %d", nic), model+" · choose network")
 		case "23":
-			info("USB controller", applianceModel("Declared", subtype)+"; review host compatibility")
+			info("USB controller", applianceDeclaredModel(subtype))
 		case "32":
-			info("Audio", applianceModel("Declared", subtype)+"; not carried over automatically")
+			ovfAudio = append(ovfAudio, subtype)
+			info("Audio (OVF)", applianceDeclaredModel(subtype))
 		case "32768":
 			if !applianceNVRAM(f.Draft.Report, item, info) {
 				info("Needs review", applianceUnknown(item))
@@ -126,15 +131,19 @@ func (f ImportForm) applianceControls() []importControl {
 		}
 		switch device.Kind {
 		case "usb":
-			info("USB controller", model+" · "+state+"; review in Advanced settings")
+			info("USB controller", model+" ("+state+")")
 		case "audio":
-			info("Audio", model+" · "+state+"; not carried over automatically")
+			vboxAudio = append(vboxAudio, device.Model)
+			info("Audio (VirtualBox)", model+" ("+state+")")
 		default:
 			info("Needs review", device.Kind+" · "+model+" · "+state)
 		}
 	}
+	if len(ovfAudio)+len(vboxAudio) > 0 {
+		info("Audio import", "Not imported automatically")
+	}
 	if nic == 0 {
-		info("Networking", "No original network adapters declared")
+		info("Networking", "No original adapters")
 	}
 	rows = append(rows, importButton("hardware", "Advanced settings", "Review firmware, controllers, networks and other VM options."), importButton("back", "Back", "Return to the source selection."), importButton("next", "Continue", "Choose where to save the imported images."))
 	return rows
@@ -201,4 +210,15 @@ func applianceOSLabel(value string) string {
 		return "Debian (64-bit)"
 	}
 	return value
+}
+
+// Prefer word boundaries for prose; split only overlong words such as filenames.
+func applianceWrap(text string, width int) []string {
+	return strings.Split(ansi.Wrap(validation.SafeText(text), max(1, width), ""), "\n")
+}
+func applianceDeclaredModel(model string) string {
+	if model == "" {
+		model = "Unspecified model"
+	}
+	return model + " (declared)"
 }

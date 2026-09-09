@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -224,4 +225,23 @@ func TestWorkspaceSummaryPickingApplianceAutomaticallyDescribesWithoutApply(t *t
 		t.Fatal("metadata read skipped source review", m.View())
 	}
 	summaryNoApply(t, c)
+}
+
+func TestSummaryAdvancedBackShowsCommonSettings(t *testing.T) {
+	m := fixtureWorkspace()
+	f := NewImportForm("ova")
+	f.Draft = detectedImportDraft(t, 120<<30)
+	f.Page = 3
+	f = importFocus(t, f, "hardware")
+	m.Import = &f
+	vm := creationFormFixture()
+	vm.BeforePreparation = true
+	vm.Spec.Name, vm.CPUText, vm.MemoryText = "edited-vm", "3", "4096"
+	m.saveImportHardware(vm)
+	view := m.Import.View(80, 18)
+	for _, text := range []string{"VM name", "edited-vm", "CPU cores", "Memory (MiB)", "4096"} {
+		if !strings.Contains(view, text) {
+			t.Fatalf("Advanced back hid %s: %s", text, view)
+		}
+	}
 }
