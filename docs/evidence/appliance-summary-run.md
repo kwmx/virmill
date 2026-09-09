@@ -40,3 +40,34 @@ without hashing payloads. The walkthrough failed because Advanced Back left
 the summary scrolled below the edited basics; values remained present. This
 failed checkpoint is retained. The correction resets focus to the VM-name row
 and improves metadata word wrapping. A focused regression reproduces it.
+
+## Final installed result
+
+`appliance-summary-native-002` passed against the same original DFIR OVA at
+80×24 and 120×36. The installed CLI and running coordinator identify source
+`58c614606337f8fb87e3bbcbaa9d0d6bbaa9ce69`; implementation-tree digest is
+`c55d4ea8b49c8bd34114b58671b8ed55b1fd6daa2ba683a2fccb5e0dfca994d5`.
+Metadata took 0.113 seconds; automatic summary appeared in 0.266 and 0.265
+seconds. Actual screen captures show Windows 11, CPU 2, 8192 MiB RAM, the
+120 GiB disk, SATA AHCI and declared UEFI. The workflow edited name/CPU/RAM,
+opened Advanced before any destination existed, and retained visible edits
+on return and after destination navigation. No preparation, Apply or guest
+boot was performed in this read-only walkthrough. Existing guest inventory,
+job list and source media generation were unchanged.
+
+The previous slice's native two-disk preparation and powered-off definition
+remains documented in hardware-ux-run.md; it is not reclassified as a boot test.
+The final software/navigation and three package/IPC checks passed under
+`appliance-summary-navigation-001` and `appliance-summary-packages-002`.
+Guarded package/restart records are `appliance-summary-upgrade-002` and
+`appliance-summary-restart-002`; active ordinary-user daemon PID was 67928.
+
+| Installed artifact | SHA-256 |
+| --- | --- |
+| Core RPM | `12cf98769799dc07f9e9ff5a94d0a9eb1bd6cd75417d3e65ba8eb9ba884498b8` |
+| `/usr/bin/virmill` | `f7659ed6a2d497ed118ec278b2cf70cc721c63e9f20c9d6db77b6779bbef300c` |
+| `/usr/bin/virmilld` | `b86e73b1a25a8329779b7c68bae7a9c71385d87cf6b33ebb2fb5425826895a97` |
+
+Remote packages and current-screen captures remain in the private test run
+`~/virmill-tests/appliance-summary-58c6146`, including `native-002`. The helper
+package and its policy were not changed. No release publication took place.

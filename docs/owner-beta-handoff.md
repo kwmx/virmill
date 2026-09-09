@@ -1,14 +1,15 @@
-# Owner beta handoff — 8 September 2026
+# Owner beta handoff — updated 9 September 2026
 
 **Virmill 1.0.0-beta.1 is installed and running on the authorized Fedora 44 test
 VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**UI update:** the installed CLI and running coordinator now use `4945d75`; see the
-[import inspection correction evidence](evidence/import-flow-run.md) for current hashes and
-controls. The original beta build evidence below remains historical.
-Exit any already-open TUI and run `virmill` again to load the new interface.
+**Current UI update:** the installed CLI and running coordinator use `58c6146`.
+OVA selection now opens a detected appliance summary with editable name, CPU and
+RAM, plus Advanced settings. See the [appliance summary evidence](evidence/appliance-summary-run.md)
+for exact installed hashes, test results and limitations. The original beta build
+evidence below is historical. Exit any already-open TUI and run `virmill` again.
 
 ## Start testing now
 
@@ -17,7 +18,7 @@ From your computer:
 ```sh
 ssh virmill-test@virmill-test.home
 virmill version --output json
-virmill tui
+virmill
 ```
 
 The ordinary user's `virmilld.service` is running. It has not been enabled for
@@ -33,7 +34,7 @@ SDK under `/usr/share/virmill`. Original user media remains under `~/images`.
 Start with new disposable guests; preserve the retained qualification guests,
 source images and recovery artifacts.
 
-## Exact build
+## Original beta build (historical)
 
 Source revision: `1eccfc4fdb051ac6262db8cd6d01094b7133239a`.
 Implementation-tree digest: `ca79f6b609cd61a68af905a7a367bdfd15836ade6b8614df378d635916b5c8e4`.

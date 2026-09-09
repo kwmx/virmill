@@ -1,0 +1,32 @@
+{
+  "revision": "58c614606337f8fb87e3bbcbaa9d0d6bbaa9ce69",
+  "sourceDigest": "c55d4ea8b49c8bd34114b58671b8ed55b1fd6daa2ba683a2fccb5e0dfca994d5",
+  "releaseQualified": false,
+  "published": false,
+  "installedCorePackage": {
+    "virmill-1.0.0-0.beta.1.x86_64.rpm": "12cf98769799dc07f9e9ff5a94d0a9eb1bd6cd75417d3e65ba8eb9ba884498b8"
+  },
+  "installedCoreBinaries": {
+    "virmill": "f7659ed6a2d497ed118ec278b2cf70cc721c63e9f20c9d6db77b6779bbef300c",
+    "virmilld": "b86e73b1a25a8329779b7c68bae7a9c71385d87cf6b33ebb2fb5425826895a97"
+  },
+  "builtPackages": [
+    {
+      "path": "virmill-1.0.0-0.beta.1.x86_64.rpm",
+      "sha256": "12cf98769799dc07f9e9ff5a94d0a9eb1bd6cd75417d3e65ba8eb9ba884498b8"
+    },
+    {
+      "path": "virmill-host-helper-1.0.0-0.beta.1.x86_64.rpm",
+      "sha256": "c4938cc52098f95eca4ce2c8052f3454fe05e187d3443591c8bb34e0f2fba85f"
+    },
+    {
+      "path": "virmill-host-helper_1.0.0~beta.1_amd64.deb",
+      "sha256": "d6f267bfeb6c054cc55afec914343eaf1c9c3f54a222e16deb1cb2eddf501e84"
+    },
+    {
+      "path": "virmill_1.0.0~beta.1_amd64.deb",
+      "sha256": "667a340da369397dd4c2d309340077ccefb308d19d2c8ac617f43ca55988c67e"
+    }
+  ],
+  "nativeEvidence": "appliance-summary-native-002"
+}
