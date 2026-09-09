@@ -545,7 +545,14 @@
         "import-options-artifacts-003",
         "import-options-coordinator-003",
         "hardware-ux-race-001",
-        "hardware-ux-race-002"
+        "hardware-ux-race-002",
+        "hardware-ux-artifacts-001",
+        "hardware-ux-upgrade-001",
+        "hardware-ux-restart-001",
+        "hardware-ux-native-001",
+        "hardware-ux-native-002",
+        "hardware-ux-native-003",
+        "hardware-ux-bios-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -699,7 +706,14 @@
         "import-flow-native-001",
         "import-flow-owner-ova-001",
         "hardware-ux-race-001",
-        "hardware-ux-race-002"
+        "hardware-ux-race-002",
+        "hardware-ux-artifacts-001",
+        "hardware-ux-upgrade-001",
+        "hardware-ux-restart-001",
+        "hardware-ux-native-001",
+        "hardware-ux-native-002",
+        "hardware-ux-native-003",
+        "hardware-ux-bios-001"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified.",
@@ -4520,7 +4534,14 @@
         "import-flow-native-001",
         "import-flow-owner-ova-001",
         "hardware-ux-race-001",
-        "hardware-ux-race-002"
+        "hardware-ux-race-002",
+        "hardware-ux-artifacts-001",
+        "hardware-ux-upgrade-001",
+        "hardware-ux-restart-001",
+        "hardware-ux-native-001",
+        "hardware-ux-native-002",
+        "hardware-ux-native-003",
+        "hardware-ux-bios-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4680,7 +4701,14 @@
         "import-flow-race-001",
         "import-flow-native-001",
         "hardware-ux-race-001",
-        "hardware-ux-race-002"
+        "hardware-ux-race-002",
+        "hardware-ux-artifacts-001",
+        "hardware-ux-upgrade-001",
+        "hardware-ux-restart-001",
+        "hardware-ux-native-001",
+        "hardware-ux-native-002",
+        "hardware-ux-native-003",
+        "hardware-ux-bios-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

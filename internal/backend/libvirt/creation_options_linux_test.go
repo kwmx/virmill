@@ -162,3 +162,32 @@ func TestCreationOptionsCanceledBeforeConnection(t *testing.T) {
 		t.Fatalf("canceled request reached native connection: %v", err)
 	}
 }
+
+func TestCreationOptionsDefaultBIOSIsIndependentOfAutoselection(t *testing.T) {
+	caps, descriptor := optionsFixture(t)
+	caps.OS.Enums = []capEnum{{Name: "firmware", Values: []string{"efi"}}}
+	caps.OS.Loader.Enums = append(caps.OS.Loader.Enums, capEnum{Name: "type", Values: []string{"rom"}})
+	options, err := creationOptionsFromCaps(caps, []string{caps.Machine}, 8192, []firmwareDescriptor{descriptor})
+	if err != nil || len(options.Firmware) != 3 {
+		t.Fatalf("EFI-only autoselection hid supported default BIOS: %+v %v", options.Firmware, err)
+	}
+	if options.Firmware[0].Firmware != (domain.CreationFirmware{Mode: "bios"}) {
+		t.Fatalf("default ROM choice invented a BIOS path or auxiliary state: %+v", options.Firmware[0])
+	}
+	for name, change := range map[string]func(*domainCaps){
+		"OS unavailable":       func(c *domainCaps) { c.OS.Supported = "no" },
+		"loader unavailable":   func(c *domainCaps) { c.OS.Loader.Supported = "no" },
+		"ROM not advertised":   func(c *domainCaps) { c.OS.Loader.Enums = nil },
+		"another architecture": func(c *domainCaps) { c.Arch = "aarch64" },
+		"another hypervisor":   func(c *domainCaps) { c.Domain = "qemu" },
+		"another machine":      func(c *domainCaps) { c.Machine = "microvm" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			changed := caps
+			change(&changed)
+			if creationDefaultBIOSSupported(changed) {
+				t.Fatal("unsupported or unobserved default BIOS offered")
+			}
+		})
+	}
+}

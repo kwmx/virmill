@@ -101,6 +101,9 @@ func TestCreationWorkspaceSourceChooserAndRealRequestBinding(t *testing.T) {
 	if m.Creation == nil || m.Creation.CPUText != "4" || m.Creation.MemoryText != "4096" || m.Creation.OperationID != creationFormOperation {
 		t.Fatal("prepared source defaults lost", m.View())
 	}
+	if !strings.Contains(m.hints(), "Type to edit") {
+		t.Fatal("missing field editing guidance")
+	}
 	f := creationComplete(*m.Creation)
 	f.CPUText = "6"
 	f.MemoryText = "8192"

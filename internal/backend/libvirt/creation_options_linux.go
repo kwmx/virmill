@@ -242,7 +242,7 @@ func creationOptionsFromCaps(caps domainCaps, machines []string, hostMemoryMiB u
 	if caps.Devices.Graphics.Supported == "yes" && enumHas(caps.Devices.Graphics.Enums, "type", "vnc") {
 		out.Graphics = append(out.Graphics, "vnc-unix")
 	}
-	if caps.OS.Supported == "yes" && enumHas(caps.OS.Enums, "firmware", "bios") {
+	if creationDefaultBIOSSupported(caps) {
 		out.Firmware = append(out.Firmware, domain.CreationFirmwareOption{Label: "BIOS", Firmware: domain.CreationFirmware{Mode: "bios"}})
 	}
 	seen := map[domain.CreationFirmware]bool{}
@@ -286,6 +286,24 @@ func creationOptionsFromCaps(caps domainCaps, machines []string, hostMemoryMiB u
 		return out, domain.Fail("UNSUPPORTED_CAPABILITY", "No compatible BIOS or UEFI firmware is available; install a matching host firmware package or choose another machine.")
 	}
 	return out, nil
+}
+
+// The firmware enum describes firmware AUTOSELECTION, not every boot path:
+// https://libvirt.org/formatdomaincaps.html#guest-firmware
+// QEMU PC machines also have a default BIOS ROM without an explicit loader:
+// https://libvirt.org/formatdomain.html#guest-firmware
+// https://www.qemu.org/docs/master/system/i386/pc.html
+// Q35 shares this BIOS default (pc_q35_machine_options, QEMU v10.2.0):
+// https://github.com/qemu/qemu/blob/v10.2.0/hw/i386/pc_q35.c
+// Require the observed PC/KVM machine and positive OS/ROM support before
+// offering that existing creation mode. This does not verify a guest boot or
+// invent a firmware path; QEMU resolves its own default ROM at startup.
+func creationDefaultBIOSSupported(caps domainCaps) bool {
+	if caps.Domain != "kvm" || caps.Arch != "x86_64" || !creationMachineName(caps.Machine) || caps.OS.Supported != "yes" {
+		return false
+	}
+	return enumHas(caps.OS.Enums, "firmware", "bios") ||
+		(caps.OS.Loader.Supported == "yes" && enumHas(caps.OS.Loader.Enums, "type", "rom"))
 }
 
 func creationFirmwareDescriptors(ctx context.Context) ([]firmwareDescriptor, error) {

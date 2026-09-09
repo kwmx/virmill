@@ -1171,6 +1171,20 @@ func (m Workspace) hints() string {
 		return "Enter Open / choose   Ctrl+N New folder   Backspace Up   Esc Back"
 	}
 	if (m.Creation != nil || m.CreationPicking) && m.Plan == nil && m.ExportForm == nil {
+		if m.Busy {
+			return "Esc Back"
+		}
+		if m.Creation != nil {
+			controls := m.Creation.controls()
+			if len(controls) > 0 {
+				switch controls[max(0, min(m.Creation.Focus, len(controls)-1))].kind {
+				case "text":
+					return "Type to edit   Ctrl+U Clear   Tab Next option   Esc Back"
+				case "choice":
+					return "Left/Right Choose   Tab Next option   Esc Back"
+				}
+			}
+		}
 		return "Tab Next option   Enter Select   Esc Back"
 	}
 	if m.ExportForm != nil {

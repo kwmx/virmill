@@ -53,7 +53,10 @@ try:
     require(next(i for i in inspected['systems'][0]['hardware'] if i['resourceType']=='4')['memoryMiB']==2048,'RAM units lost')
     choices=r.cli('vm','creation','options');r.save('hardware-options.json',choices)
     require(choices['maxVCPUs']>=3 and choices['hostMemoryMiB']>=1024,'insufficient fixture hardware')
-    require(any(f['firmware']['mode']=='bios' for f in choices['firmware']),'BIOS not advertised for fixture')
+    firmware=next((f for f in choices['firmware'] if f['firmware']['mode']=='bios'),None)
+    if firmware is None:firmware=next((f for f in choices['firmware'] if f['firmware']['mode']=='uefi' and not f['firmware']['secureBoot'] and not f['firmware']['tpm'] and f['firmware']['format']=='raw'),None)
+    require(firmware is not None,'no suitable firmware advertised for blank fixture')
+    report['selectedFirmware']=firmware
     inp={'destination':str(root/'prepared'),'systemID':'hardware-fixture','disks':[{'id':d,'format':'raw','maximumVirtualBytes':1<<20} for d in ('boot','data')]}
     plan=r.cli('import','prepare',str(source),'--input',json.dumps(inp));r.save('preparation-plan.json',plan)
     def apply(plan,label):
@@ -101,7 +104,11 @@ try:
         old=t.screen.text();wait('Choose test storage '+str(i),lambda s:s!=old,b'\x1b[C')
     require(re.search(r'Storage pool:.*< virmill-test >',t.screen.text()),'test pool not selected')
     activate('Hardware options',lambda s:'Advanced hardware' in s)
-    focus('Firmware');wait('Choose BIOS explicitly',lambda s:re.search(r'Firmware:.*< BIOS >',s),b'\x1b[C')
+    focus('Firmware')
+    for i in range(len(choices['firmware'])+1):
+        if ('< '+firmware['label']+' >') in t.screen.text():break
+        old=t.screen.text();wait('Choose fixture firmware '+str(i),lambda s:s!=old,b'\x1b[C')
+    require(('< '+firmware['label']+' >') in t.screen.text(),'explicit firmware choice failed')
     activate('Done',lambda s:'VM options' in s)
     activate('Continue',lambda s:'Disks and boot' in s)
     require(re.search(r'Controller bus:.*< sata >',t.screen.text()),'detected SATA bus missing')
@@ -111,7 +118,8 @@ try:
     wait('Folder location',lambda s:'Path:' in s,b'\x0c');t.send(b'\x15')
     while t.read(.05) and not t.screen.complete():pass
     wait('Fixture output location',lambda s:str(root) in s,str(root).encode())
-    wait('Open fixture folder',lambda s:'Path:' not in s and 'Choose a folder' in s,b'\r')
+    wait('Select fixture folder',lambda s:'Path:' not in s and ('Choose a folder' in s or 'File name' in s),b'\r')
+    if 'Choose a folder' not in t.screen.text():wait('Reopen selected parent',lambda s:'Choose a folder' in s,b'\x0f')
     wait('New folder prompt',lambda s:'New folder' in s and 'Name:' in s,b'\x0e')
     wait('New folder name',lambda s:'exported' in s,b'exported')
     wait('Create folder',lambda s:'Folder created.' in s,b'\r')

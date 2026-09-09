@@ -45,3 +45,9 @@ below a known declared disk size to evade the check. The explorer creates a name
 child folder only after explicit Enter, with 0700 permissions, no overwrite and held
 nofollow directory descriptors. It begins at the user's home when no location is
 selected; test-image directories are never product defaults.
+
+Native correction: the libvirt firmware enum describes autoselection. The BIOS
+choice also recognizes QEMU's default ROM on positively observed x86_64 KVM PC
+machines with OS/ROM support; it never invents a firmware pathname. See the
+[libvirt firmware capability documentation](https://libvirt.org/formatdomaincaps.html#guest-firmware).
+Guest boot remains separately verified.

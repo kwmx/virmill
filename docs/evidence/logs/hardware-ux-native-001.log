@@ -1,0 +1,1 @@
+{"error": "RuntimeError('BIOS not advertised for fixture')", "existingGuestsPreserved": true, "existingJobsPreserved": true, "ownerMediaPreserved": true, "scope": "two tiny OVA disks; TUI hardware/export/mkdir; native powered-off definition; no boot claim", "status": "failed"}
