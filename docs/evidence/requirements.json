@@ -467,7 +467,12 @@
         "internal/app/importer/describe.go",
         "internal/ui/tui/appliance_summary.go",
         "docs/adr/0038-metadata-first-appliance-review.md",
-        "docs/evidence/appliance-summary-run.md"
+        "docs/evidence/appliance-summary-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/importing/describe_any_linux.go",
+        "internal/importing/source_description_linux.go",
+        "internal/ui/tui/source_summary.go",
+        "docs/import-source-review.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -515,7 +520,11 @@
         "internal/ui/tui/appliance_summary_test.go",
         "tests/fixtures/release/appliance_summary_probe.py",
         "internal/ui/tui/workspace_summary_test.go",
-        "internal/validation/appliance_metadata_test.go"
+        "internal/validation/appliance_metadata_test.go",
+        "internal/backend/image/describe_linux_test.go",
+        "internal/importing/source_description_linux_test.go",
+        "internal/ui/tui/source_summary_test.go",
+        "tests/fixtures/release/general_sources_probe.py"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -566,7 +575,9 @@
         "appliance-summary-software-001",
         "appliance-summary-software-002",
         "appliance-summary-native-001",
-        "appliance-summary-native-002"
+        "appliance-summary-native-002",
+        "general-sources-core-001",
+        "general-sources-qemu-native-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -677,7 +688,12 @@
         "internal/app/importer/describe.go",
         "internal/ui/tui/appliance_summary.go",
         "docs/adr/0038-metadata-first-appliance-review.md",
-        "docs/evidence/appliance-summary-run.md"
+        "docs/evidence/appliance-summary-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/importing/describe_any_linux.go",
+        "internal/importing/source_description_linux.go",
+        "internal/ui/tui/source_summary.go",
+        "docs/import-source-review.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
@@ -710,7 +726,11 @@
         "internal/ui/tui/appliance_summary_test.go",
         "tests/fixtures/release/appliance_summary_probe.py",
         "internal/ui/tui/workspace_summary_test.go",
-        "internal/validation/appliance_metadata_test.go"
+        "internal/validation/appliance_metadata_test.go",
+        "internal/backend/image/describe_linux_test.go",
+        "internal/importing/source_description_linux_test.go",
+        "internal/ui/tui/source_summary_test.go",
+        "tests/fixtures/release/general_sources_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -741,7 +761,8 @@
         "appliance-summary-software-001",
         "appliance-summary-software-002",
         "appliance-summary-native-001",
-        "appliance-summary-native-002"
+        "appliance-summary-native-002",
+        "general-sources-core-001"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified.",
@@ -778,7 +799,12 @@
         "internal/creating/devices_linux.go",
         "internal/backend/libvirt/creation_pci.go",
         "docs/adr/0013-reviewed-creation-device-policy.md",
-        "docs/evidence/device-policy-run.md"
+        "docs/evidence/device-policy-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/importing/describe_any_linux.go",
+        "internal/importing/source_description_linux.go",
+        "internal/ui/tui/source_summary.go",
+        "docs/import-source-review.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -797,7 +823,11 @@
         "internal/creating/provision_linux_test.go",
         "internal/creating/devices_linux_test.go",
         "internal/backend/libvirt/creation_devices_linux_test.go",
-        "internal/backend/libvirt/creation_observed_linux_test.go"
+        "internal/backend/libvirt/creation_observed_linux_test.go",
+        "internal/backend/image/describe_linux_test.go",
+        "internal/importing/source_description_linux_test.go",
+        "internal/ui/tui/source_summary_test.go",
+        "tests/fixtures/release/general_sources_probe.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -813,7 +843,9 @@
         "device-policy-core-001",
         "device-policy-native-preview-001",
         "device-policy-native-definition-001",
-        "device-policy-captured-001"
+        "device-policy-captured-001",
+        "general-sources-core-001",
+        "general-sources-qemu-native-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
@@ -860,7 +892,8 @@
         "nocloud-confinement-001",
         "native-first-core-001",
         "native-first-artifacts-001",
-        "generated-disk-remote-001"
+        "generated-disk-remote-001",
+        "general-sources-qemu-native-001"
       ],
       "outstanding": [
         "Archive bounds plus selected-file Openat2/FD confinement, complete backing/extent validation and cooperative QEMU OFD guards implemented. Broader malicious format corpus, encrypted fixtures and full security/hardware qualification remain."
@@ -2680,7 +2713,11 @@
         "internal/guestsetup",
         "internal/backend/guestssh",
         "docs/guest-recipes.md",
-        "docs/evidence/guest-recipe-run.md"
+        "docs/evidence/guest-recipe-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/guestsetup/tools.go",
+        "internal/backend/libvirt/creation_guest_agent.go",
+        "docs/guest-tools.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-01",
@@ -2691,14 +2728,17 @@
         "internal/guestsetup/service_test.go",
         "internal/backend/guestssh/native_linux_test.go",
         "internal/ui/cli/guest_recipe_test.go",
-        "internal/ui/tui/guest_recipe_test.go"
+        "internal/ui/tui/guest_recipe_test.go",
+        "internal/guestsetup/tools_test.go",
+        "internal/backend/libvirt/creation_guest_agent_test.go"
       ],
       "evidence": [
         "nocloud-core-001",
         "nocloud-confinement-001",
         "nocloud-key-fuzz-001",
         "nocloud-artifacts-001",
-        "beta-owner-race-001"
+        "beta-owner-race-001",
+        "general-sources-core-001"
       ],
       "outstanding": [
         "Typed NoCloud public-key/non-root-user configuration binds new clone identity, explicit NIC intent and exact deterministic media to reviewed creation. Seed generation is not guest execution; supported cloud-init/Netplan guest validation, guest transports and readiness remain unqualified or missing.",
@@ -2719,7 +2759,11 @@
         "internal/guestsetup",
         "internal/backend/guestssh",
         "docs/guest-recipes.md",
-        "docs/evidence/guest-recipe-run.md"
+        "docs/evidence/guest-recipe-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/guestsetup/tools.go",
+        "internal/backend/libvirt/creation_guest_agent.go",
+        "docs/guest-tools.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-02",
@@ -2727,10 +2771,15 @@
         "internal/guestsetup/service_test.go",
         "internal/backend/guestssh/native_linux_test.go",
         "internal/ui/cli/guest_recipe_test.go",
-        "internal/ui/tui/guest_recipe_test.go"
+        "internal/ui/tui/guest_recipe_test.go",
+        "internal/guestsetup/tools_test.go",
+        "internal/backend/libvirt/creation_guest_agent_test.go",
+        "internal/ui/tui/guest_tools_form_test.go",
+        "internal/creating/guest_agent_test.go"
       ],
       "evidence": [
-        "beta-owner-race-001"
+        "beta-owner-race-001",
+        "general-sources-core-001"
       ],
       "outstanding": [
         "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded.",
@@ -2757,7 +2806,11 @@
         "internal/guestsetup",
         "internal/backend/guestssh",
         "docs/guest-recipes.md",
-        "docs/evidence/guest-recipe-run.md"
+        "docs/evidence/guest-recipe-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/guestsetup/tools.go",
+        "internal/backend/libvirt/creation_guest_agent.go",
+        "docs/guest-tools.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
@@ -2766,7 +2819,11 @@
         "internal/ui/cli/guest_readiness_test.go",
         "internal/ui/tui/guest_readiness_test.go",
         "internal/guestsetup/service_test.go",
-        "internal/backend/guestssh/native_linux_test.go"
+        "internal/backend/guestssh/native_linux_test.go",
+        "internal/guestsetup/tools_test.go",
+        "internal/backend/libvirt/creation_guest_agent_test.go",
+        "internal/backend/libvirt/creation_guest_agent_caps_test.go",
+        "tests/fixtures/release/guest_agent_channel_probe.py"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
@@ -2776,7 +2833,8 @@
         "guest-ssh-native-002",
         "guest-ssh-native-003",
         "beta-owner-race-001",
-        "beta-owner-ssh-native-001"
+        "beta-owner-ssh-native-001",
+        "general-sources-core-001"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -4358,7 +4416,15 @@
         "internal/app/importer/describe.go",
         "internal/ui/tui/appliance_summary.go",
         "docs/adr/0038-metadata-first-appliance-review.md",
-        "docs/evidence/appliance-summary-run.md"
+        "docs/evidence/appliance-summary-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/importing/describe_any_linux.go",
+        "internal/importing/source_description_linux.go",
+        "internal/ui/tui/source_summary.go",
+        "docs/import-source-review.md",
+        "internal/guestsetup/tools.go",
+        "internal/backend/libvirt/creation_guest_agent.go",
+        "docs/guest-tools.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4472,7 +4538,13 @@
         "internal/ui/tui/appliance_summary_test.go",
         "tests/fixtures/release/appliance_summary_probe.py",
         "internal/ui/tui/workspace_summary_test.go",
-        "internal/validation/appliance_metadata_test.go"
+        "internal/validation/appliance_metadata_test.go",
+        "internal/backend/image/describe_linux_test.go",
+        "internal/importing/source_description_linux_test.go",
+        "internal/ui/tui/source_summary_test.go",
+        "tests/fixtures/release/general_sources_probe.py",
+        "internal/guestsetup/tools_test.go",
+        "internal/backend/libvirt/creation_guest_agent_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4590,7 +4662,8 @@
         "appliance-summary-navigation-001",
         "appliance-summary-packages-002",
         "appliance-summary-upgrade-002",
-        "appliance-summary-restart-002"
+        "appliance-summary-restart-002",
+        "general-sources-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4671,7 +4744,15 @@
         "internal/app/importer/describe.go",
         "internal/ui/tui/appliance_summary.go",
         "docs/adr/0038-metadata-first-appliance-review.md",
-        "docs/evidence/appliance-summary-run.md"
+        "docs/evidence/appliance-summary-run.md",
+        "docs/adr/0039-unified-source-review-and-guest-tools.md",
+        "internal/importing/describe_any_linux.go",
+        "internal/importing/source_description_linux.go",
+        "internal/ui/tui/source_summary.go",
+        "docs/import-source-review.md",
+        "internal/guestsetup/tools.go",
+        "internal/backend/libvirt/creation_guest_agent.go",
+        "docs/guest-tools.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4719,7 +4800,13 @@
         "internal/ui/tui/appliance_summary_test.go",
         "tests/fixtures/release/appliance_summary_probe.py",
         "internal/ui/tui/workspace_summary_test.go",
-        "internal/validation/appliance_metadata_test.go"
+        "internal/validation/appliance_metadata_test.go",
+        "internal/backend/image/describe_linux_test.go",
+        "internal/importing/source_description_linux_test.go",
+        "internal/ui/tui/source_summary_test.go",
+        "tests/fixtures/release/general_sources_probe.py",
+        "internal/guestsetup/tools_test.go",
+        "internal/backend/libvirt/creation_guest_agent_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4778,7 +4865,8 @@
         "appliance-summary-navigation-001",
         "appliance-summary-packages-002",
         "appliance-summary-upgrade-002",
-        "appliance-summary-restart-002"
+        "appliance-summary-restart-002",
+        "general-sources-core-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

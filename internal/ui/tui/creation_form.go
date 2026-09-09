@@ -266,6 +266,7 @@ func (f CreationForm) controls() []importControl {
 		}
 		choice("firmware", "Firmware", "Match the guest's original BIOS/UEFI needs. No firmware is chosen automatically.", value, labels)
 		choice("clock", "Hardware clock", "UTC is suggested; some guests expect local time.", f.Spec.Clock, []string{"utc", "localtime"})
+		choice("guestAgent", "Guest agent channel", "Opt in to host/guest integration. Install guest tools after the guest boots.", strconv.FormatBool(f.Spec.GuestAgent), []string{"false", "true"})
 		choice("graphics", "Display", "A local VNC socket provides a console without exposing a TCP port.", f.Spec.Graphics, f.Options.Graphics)
 		if p := f.Spec.DevicePolicy; p != nil {
 			choice("usb", "USB controller", "Adding a controller does not attach host USB devices.", p.USBController, []string{"none", "qemu-xhci"})
@@ -361,6 +362,8 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.Spec.Firmware = f.Options.Firmware[i].Firmware
 		case "clock":
 			f.Spec.Clock = next(f.Spec.Clock)
+		case "guestAgent":
+			f.Spec.GuestAgent = !f.Spec.GuestAgent
 		case "graphics":
 			f.Spec.Graphics = next(f.Spec.Graphics)
 		case "usb":

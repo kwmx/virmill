@@ -31,7 +31,7 @@ func TestImportInspectionWaitCancelAndFocusedErrors(t *testing.T) {
 	m.Import = &f
 	m.Width = 120
 	m, cmd := wk(m, "enter")
-	if !strings.Contains(m.View(), "Checking appliance") || strings.Contains(m.View(), "Plugins") || strings.Contains(m.View(), "All tools") {
+	if !strings.Contains(m.View(), "Reading image settings") || strings.Contains(m.View(), "Plugins") || strings.Contains(m.View(), "All tools") {
 		t.Fatal("busy import should show only the current task", m.View())
 	}
 	call := cmd().(tea.BatchMsg)[0]
@@ -68,7 +68,7 @@ func TestImportInspectionContinuesSingleAppliance(t *testing.T) {
 	f := NewImportForm("ova")
 	f.Draft.Source = "/media/appliance.ova"
 	m.Import = &f
-	m.importInspection(importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "guest", DiskIDs: []string{"root"}}}, Disks: []importer.Disk{{ID: "root", Path: "root.raw", Format: "raw"}}})
+	m.importInspection(importer.SourceDescription{Source: f.Draft.Source, Kind: "ova", Appliance: &importer.Report{Source: f.Draft.Source, Systems: []importer.System{{ID: "guest", DiskIDs: []string{"root"}}}, Disks: []importer.Disk{{ID: "root", Path: "root.raw", Format: "raw"}}}})
 	if m.Import.Page != 3 || len(m.Import.Draft.Disks) != 1 || m.Import.Error != "" {
 		t.Fatal("Continue must inspect then advance without another manual step")
 	}

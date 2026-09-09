@@ -67,6 +67,8 @@ func (s *Service) Register(a *app.Service) {
 	}
 	a.Extensions[operation] = s.Plan
 	a.Extensions["guest.recipe.result"] = s.Result
+	a.Extensions["guest.tools.catalog"] = s.ToolsCatalog
+	a.Extensions["guest.tools.install"] = s.PlanTools
 	if s.Engine != nil {
 		if s.Engine.Handlers == nil {
 			s.Engine.Handlers = map[string]operations.Handler{}
@@ -119,6 +121,9 @@ func resources(k domain.ResourceKey) []string {
 }
 func acknowledgements(r Recipe) []string {
 	a := []string{"guest-execution", "guest-host-key-binding", "non-root-guest-setup"}
+	if r.Spec.Privilege == "sudo" {
+		a[2] = "guest-admin-package-install"
+	}
 	if !r.Spec.Idempotent {
 		a = append(a, "non-idempotent-recipe")
 	}
@@ -198,6 +203,19 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (any, err
 	if err != nil {
 		return nil, err
 	}
+	return s.planRecipe(ctx, uid, r, recipe, args)
+}
+
+// planRecipe freezes an already validated recipe directly; built-ins never
+// need a temporary file or a caller-supplied script path.
+func (s *Service) planRecipe(ctx context.Context, uid uint32, r app.Request, recipe Recipe, args parameters) (any, error) {
+	if err := recipe.Validate(); err != nil {
+		return nil, err
+	}
+	target := guestssh.Target{Address: args.Address, Port: args.Port, User: args.User, IdentityFile: args.IdentityFile, KnownHostsFile: args.KnownHostsFile}
+	if !validTarget(target, false) || !validArguments(args.Arguments) {
+		return nil, invalid("provide the guest's literal IP address, SSH port, non-root user, absolute private-key path and verified known-hosts path")
+	}
 	key := domain.ResourceKey{ProviderID: "libvirt", ConnectionID: r.Connection, Kind: "vm", UUID: r.ID}
 	vm, err := s.Provider.Get(ctx, r.Connection, r.ID)
 	if err != nil {
@@ -212,7 +230,7 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (any, err
 	}
 	identity, err := s.Transport.InspectTarget(ctx, target)
 	if err != nil {
-		return nil, safeFailure(err, "SSH credential or known-hosts inspection failed; details withheld")
+		return nil, safeFailure(err, "SSH key or known-hosts file is missing or unsafe; select readable private files and verify this guest's host key first")
 	}
 	target.IdentitySHA256, target.KnownHostsSHA256 = identity.IdentitySHA256, identity.KnownHostsSHA256
 	digest, err := operations.Digest(recipe)
@@ -220,7 +238,11 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (any, err
 		return nil, invalid("recipe digest unavailable")
 	}
 	in := frozenInput{Version: 1, Resource: key, Fingerprint: vm.Fingerprint, Recipe: recipe, RecipeSHA256: digest, ScriptSHA256: scriptDigests(recipe), Target: target, Arguments: append([]string{}, args.Arguments...), Tool: tool}
-	p, err := s.Engine.Plan(ctx, uid, r.Connection, operation, resources(key), map[string]string{key.String(): vm.Fingerprint}, in, steps(), acknowledgements(recipe), []string{"The reviewer binds the supplied address and known-hosts key to this VM; native IP identity is unavailable.", "Reviewed recipe scripts and arguments persist in private journal input. Do not embed credentials.", "A remote script may change guest state before an interrupted SSH response; reconciliation never reruns it."})
+	warnings := []string{"The reviewer binds the supplied address and known-hosts key to this VM; native IP identity is unavailable.", "Reviewed recipe scripts and arguments persist in private journal input. Do not embed credentials.", "A remote script may change guest state before an interrupted SSH response; reconciliation never reruns it."}
+	if recipe.Spec.Privilege == "sudo" {
+		warnings = append(warnings, "This built-in uses passwordless sudo inside the guest to install packages from its configured repositories and start qemu-guest-agent. Dependencies may change; there is no automatic rollback or reboot.", "The guest needs the org.qemu.guest_agent.0 virtio channel. Desktop package installation does not prove clipboard or display integration works.")
+	}
+	p, err := s.Engine.Plan(ctx, uid, r.Connection, operation, resources(key), map[string]string{key.String(): vm.Fingerprint}, in, steps(), acknowledgements(recipe), warnings)
 	if err != nil {
 		return nil, safeFailure(err, "guest recipe plan could not be accepted")
 	}

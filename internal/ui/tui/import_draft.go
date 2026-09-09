@@ -22,6 +22,8 @@ type ImportDraft struct {
 	Disks                                            []ImportDisk
 	Files                                            []ImportFile
 	Report                                           *importer.Report
+	Description                                      *importer.SourceDescription
+	SelectedSource                                   string
 	selectionSource, selectionSystem                 string
 }
 type ImportDisk struct{ ID, Path, Format, SizeMiB string }
@@ -124,8 +126,8 @@ func (d *ImportDraft) SelectSystem(id string) error {
 // SummaryValidation names the editable appliance field that needs attention.
 // These choices become VM hardware; they are not image-conversion parameters.
 func (d ImportDraft) SummaryValidation() (string, error) {
-	if _, ok := d.selectedAppliance(); !ok {
-		return "", fmt.Errorf("Choose an appliance to review first.")
+	if _, ok := d.selectedAppliance(); !ok && !d.HasSourceDescription() {
+		return "", fmt.Errorf("Choose and inspect a source to review first.")
 	}
 	if _, err := validation.DisplayName(d.VMName); err != nil {
 		return "vmName", fmt.Errorf("VM name: enter a nonempty name without control characters.")

@@ -22,14 +22,14 @@ type summaryWorkspaceClient struct {
 
 func (c *summaryWorkspaceClient) Call(ctx context.Context, method string, r app.Request) (app.Response, error) {
 	switch method {
-	case "import.prepare", "import.describe", "import.result":
+	case "import.prepare", "import.source.describe", "import.result":
 		c.Calls = append(c.Calls, method)
 		c.Requests = append(c.Requests, r)
 		switch method {
 		case "import.prepare":
 			return app.Response{Data: c.Plan}, nil
-		case "import.describe":
-			return app.Response{Data: c.report}, nil
+		case "import.source.describe":
+			return app.Response{Data: importer.SourceDescription{Source: c.report.Source, Kind: "ova", Appliance: &c.report}}, nil
 		default:
 			return app.Response{Data: map[string]any{"artifact": c.source, "directory": "/prepared/appliance"}}, nil
 		}
@@ -42,6 +42,7 @@ func summaryWorkspace(t *testing.T) (Workspace, *summaryWorkspaceClient) {
 	m := fixtureWorkspace()
 	f := NewImportForm("ova")
 	f.Draft = importTestDraft(t, "ova")
+	f.Draft.Report.Disks = []importer.Disk{{ID: "boot", Path: "boot.qcow2", Format: "qcow2", CapacityBytes: 16 << 20}, {ID: "data", Path: "data.vmdk", Format: "vmdk", CapacityBytes: 32 << 20}}
 	f.Draft.Report.Systems[0].Name = "Original appliance"
 	f.Draft.Report.Systems[0].Items = []importer.Item{{ResourceType: "3", Quantity: "4"}, {ResourceType: "4", MemoryMiB: 4096}, {ResourceType: "10"}, {ResourceType: "10"}}
 	f.Page = 3
@@ -192,7 +193,10 @@ func TestWorkspaceSummaryDestinationRetainsAdvancedButChangedSourceClearsIt(t *t
 	}
 	report := c.report
 	report.Source = m.Import.Draft.Source
-	m.importInspection(report)
+	m.importInspection(importer.SourceDescription{Source: report.Source, Kind: "ova", Appliance: &report})
+	if m.Import.Error != "" {
+		t.Fatal(m.Import.Error)
+	}
 	m = summaryOpenAdvanced(t, m)
 	if m.Creation.Spec.CPU.Model == "test-model" {
 		t.Fatal("new source reused previous advanced settings")
@@ -218,8 +222,11 @@ func TestWorkspaceSummaryPickingApplianceAutomaticallyDescribesWithoutApply(t *t
 		t.Fatal("metadata request and elapsed display missing")
 	}
 	m = summaryRun(t, m, batch[0])
-	if len(c.Calls) != 1 || c.Calls[0] != "import.describe" || c.Requests[0].Path != source || c.Requests[0].Action != "" {
+	if len(c.Calls) != 1 || c.Calls[0] != "import.source.describe" || c.Requests[0].Path != source || c.Requests[0].Action != "" {
 		t.Fatal("selection did not use read-only metadata service", c.Calls, c.Requests)
+	}
+	if m.Import.Draft.Report == nil {
+		t.Fatal("no report", m.Import.Error, m.View())
 	}
 	if m.Import.Page != 3 || m.Import.Draft.Report.Readiness != "metadata-only" || m.Plan != nil || m.Creation != nil || m.Busy {
 		t.Fatal("metadata read skipped source review", m.View())

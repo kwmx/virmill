@@ -9,7 +9,7 @@ const ImportWait = 20 * time.Minute
 
 func ImportRead(method string) bool {
 	switch method {
-	case "import.describe", "import.inspect", "import.prepare", "import.prepare-install", "import.prepare-disks":
+	case "import.source.describe", "import.describe", "import.inspect", "import.prepare", "import.prepare-install", "import.prepare-disks":
 		return true
 	}
 	return false

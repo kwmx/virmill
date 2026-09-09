@@ -20,7 +20,7 @@ func actionGroup(a ui.Action) (int, string) {
 		return 10, "Power"
 	case strings.HasPrefix(c, "import ") || c == "vm create":
 		return 30, "Create and import"
-	case c == "vm set" || c == "vm autostart" || strings.HasPrefix(c, "guest recipe "):
+	case c == "vm set" || c == "vm autostart" || strings.HasPrefix(c, "guest recipe ") || strings.HasPrefix(c, "guest tools "):
 		return 20, "Configure and guest setup"
 	case strings.HasPrefix(c, "snapshot "):
 		return 10, "Capture and restore"
@@ -60,6 +60,8 @@ func (m Workspace) commonAction(a ui.Action) bool {
 	switch a.Command {
 	case "vm start":
 		return m.selectedVM().State != "running" && m.selectedVM().State != "paused"
+	case "guest tools install":
+		return true
 	case "vm stop", "vm reboot", "guest recipe run":
 		return m.selectedVM().State == "running" || m.selectedVM().Key.UUID == ""
 	case "vm resume":

@@ -1,0 +1,8 @@
+ok  	virmill.local/core/internal/importing	2.257s
+ok  	virmill.local/core/internal/backend/image	1.014s
+ok  	virmill.local/core/internal/backend/libvirt	12.506s
+ok  	virmill.local/core/internal/creating	18.765s
+ok  	virmill.local/core/internal/guestsetup	5.020s
+ok  	virmill.local/core/internal/ui/tui	7.202s
+ok  	virmill.local/core/internal/ui/cli	4.143s
+ok  	virmill.local/core/internal/transport/local	1.617s

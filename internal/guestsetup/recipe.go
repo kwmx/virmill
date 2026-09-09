@@ -1,4 +1,5 @@
-// Package guestsetup executes only reviewed, frozen non-root guest recipes.
+// Package guestsetup executes reviewed, frozen guest recipes. Guest sudo is
+// restricted to the exact built-in tools recipes and explicitly acknowledged.
 package guestsetup
 
 import (
@@ -98,8 +99,18 @@ func (r Recipe) Validate() error {
 	if !recipeName.MatchString(r.Metadata.Name) || len(r.Metadata.Version) > 64 || !recipeVersion.MatchString(r.Metadata.Version) {
 		return invalid("bounded lowercase recipe name and MAJOR.MINOR.PATCH version required")
 	}
-	if r.Spec.Profile != "linux-posix" || r.Spec.Privilege != "non-root" || r.Spec.Transport != "ssh" || r.Spec.Reboot != "never" {
-		return domain.Fail("UNSUPPORTED_CAPABILITY", "guest recipe requires linux-posix, non-root, SSH and no reboot")
+	if r.Spec.Profile != "linux-posix" || r.Spec.Transport != "ssh" || r.Spec.Reboot != "never" {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "guest recipe requires linux-posix, SSH and no reboot")
+	}
+	if r.Spec.Privilege != "non-root" && (r.Spec.Privilege != "sudo" || !isBuiltinToolsRecipe(r)) {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "guest sudo is allowed only for exact built-in guest tools recipes")
+	}
+	if r.Spec.Privilege == "non-root" {
+		declared := r
+		declared.Spec.Privilege = "sudo"
+		if isBuiltinToolsRecipe(declared) {
+			return invalid("built-in guest tools require an explicit sudo privilege declaration")
+		}
 	}
 	if r.Spec.TimeoutSeconds < 1 || r.Spec.TimeoutSeconds > 300 {
 		return invalid("timeoutSeconds must be 1..300")

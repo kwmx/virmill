@@ -32,9 +32,13 @@ func importPulseCommand(token uint64) tea.Cmd {
 
 func (m Workspace) importBusyView(width, height int) []string {
 	seconds := int(m.ImportElapsed.Seconds())
+	source := m.Import.Draft.SelectedSource
+	if source == "" {
+		source = m.Import.Draft.Source
+	}
 	return pageLines([]string{
-		"Checking appliance", "", filepath.Base(m.Import.Draft.Source), "",
-		"Reading the declared hardware and disk list.",
+		"Reading image settings", "", filepath.Base(source), "",
+		"Detecting the source type and available settings.",
 		"Disk checksums are verified during preparation.", "",
 		fmt.Sprintf("Elapsed %d:%02d", seconds/60, seconds%60), "",
 		"> [ Cancel inspection ]",
@@ -83,10 +87,11 @@ func (m *Workspace) browseImport(target string, index int) tea.Cmd {
 	}
 	switch target {
 	case "source":
-		start = d.Source
-		if d.Kind == "disks" {
-			kind = "directory"
+		start = d.SelectedSource
+		if start == "" {
+			start = d.Source
 		}
+		kind = "source"
 	case "destination":
 		kind, start = "directory", d.DestinationParent
 	case "disk":
@@ -141,8 +146,10 @@ func (m *Workspace) importPicked(path string) {
 	}
 	switch target {
 	case "source":
-		if d.Source != path {
+		if d.SelectedSource != path || d.Source != path {
+			d.SelectedSource = path
 			d.Source = path
+			d.Description = nil
 			d.Report = nil
 			d.VMName, d.VCPUs, d.MemoryMiB = "", "", ""
 			m.Import.VM = nil
@@ -305,20 +312,20 @@ func (m *Workspace) importInspection(data any) {
 	if m.Import == nil {
 		return
 	}
-	var report importer.Report
+	var report importer.SourceDescription
 	b, err := json.Marshal(data)
 	if err == nil {
 		err = json.Unmarshal(b, &report)
 	}
 	if err == nil {
-		err = m.Import.Draft.ApplyInspection(report)
+		err = m.Import.Draft.ApplySourceDescription(report)
 	}
 	if err != nil {
 		m.Import.Error = validation.SafeText(fmt.Sprint(err))
 		return
 	}
 	m.Import.Error = ""
-	if m.Import.Draft.SystemID != "" {
+	if m.Import.Draft.Kind != "ova" || m.Import.Draft.SystemID != "" {
 		m.Import.Page = 3
 		m.Import.Focus = 0
 	} else {
@@ -343,13 +350,20 @@ func (m Workspace) settingsExportRequest() (app.Request, error) {
 }
 
 func (m *Workspace) describeImport() tea.Cmd {
-	if m.Import == nil || !guidedPath(m.Import.Draft.Source) {
+	if m.Import == nil {
+		return nil
+	}
+	source := m.Import.Draft.SelectedSource
+	if source == "" {
+		source = m.Import.Draft.Source
+	}
+	if !guidedPath(source) {
 		return nil
 	}
 	m.Busy = true
 	m.Error, m.Import.Error, m.Notice = "", "", ""
 	m.ImportStarted = time.Now()
 	m.ImportElapsed = 0
-	cmd := m.request("import-inspect", "import.describe", app.Request{Path: m.Import.Draft.Source})
+	cmd := m.request("import-inspect", "import.source.describe", app.Request{Path: source})
 	return tea.Batch(cmd, importPulseCommand(m.Pending["import-inspect"]))
 }

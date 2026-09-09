@@ -25,6 +25,7 @@ import (
 type Workspace struct {
 	Creation           *CreationForm
 	SavedCreation      *CreationForm
+	SavedGuestTools    *GuidedForm
 	PreparedBasics     map[string]ImportDraft
 	SavedImport        *ImportForm
 	CreationPicking    bool
@@ -346,8 +347,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	switch a.Command {
 	case "vm create", "vm create-devices":
 		return m.openCreationSources()
-	case "import prepare":
-		return m.openImport("ova")
+	case "import prepare", "import source describe":
+		return m.openImport("auto")
 	case "import prepare-install":
 		return m.openImport("iso")
 	case "import prepare-disks":
@@ -369,6 +370,14 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 			m.Advanced = false
 			return nil
 		}
+	case "guest tools install":
+		if vm.Key.UUID != "" {
+			m.guided("guest-tools")
+			m.Advanced = false
+			return nil
+		}
+		m.Error = "Choose a VM first, then open Guest tools."
+		return nil
 	case "guest recipe run":
 		if vm.Key.UUID != "" {
 			m.guided("guest-recipe")
@@ -612,6 +621,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.AckIndex = 0
 			m.Offset = 0
 			m.Reviewing = false
+			if m.Form != nil && m.Form.Kind == "guest-tools" {
+				m.SavedGuestTools = m.Form
+			}
 			m.Form = nil
 			m.ActionForm = nil
 			m.Advanced = false
@@ -912,6 +924,10 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Reviewing = false
 				} else {
 					m.Plan = nil
+					if m.SavedGuestTools != nil {
+						m.Form = m.SavedGuestTools
+						m.SavedGuestTools = nil
+					}
 				}
 				m.Offset = 0
 			case "pgdown":
@@ -1021,9 +1037,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.CatalogMode = "all"
 		case "i":
 			if m.Section == 0 || m.Section == 1 {
-				m.advanced()
-				m.CatalogSection = 1
-				m.CatalogMode = "import"
+				return m, m.openImport("auto")
 			}
 		case "a":
 			m.advanced()
@@ -1114,7 +1128,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "g":
 			if !m.Busy && (m.Section == 0 || m.Section == 1) {
-				m.guided("guest-recipe")
+				m.guided("guest-tools")
 			}
 		case "n":
 			if !m.Busy && m.Section == 6 {
@@ -1269,7 +1283,7 @@ func (m Workspace) content(width, height int) []string {
 		return strings.Split(m.Picker.View(width, height), "\n")
 	}
 	if m.Help {
-		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest recipe.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
+		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest tools.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
 	}
 	if m.ExportForm != nil {
 		return m.importExportView(width, height)
@@ -1546,7 +1560,7 @@ func (m Workspace) buttons() []workspaceButton {
 			}
 		}
 		if m.Detail != nil {
-			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
+			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
 		return append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"})
 	}

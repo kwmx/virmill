@@ -268,6 +268,9 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, raw []byte, step d
 		contextErr := child.Err()
 		stop()
 		if runErr != nil {
+			if in.Recipe.Spec.Privilege == "sudo" {
+				return safeFailure(runErr, "guest tools completion is unknown; check Jobs and the guest before trying another installation; remote changes may continue")
+			}
 			return safeFailure(runErr, "SSH stage completion is unknown; output and diagnostics withheld")
 		}
 		if contextErr != nil {
@@ -286,6 +289,9 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, raw []byte, step d
 		return err
 	}
 	if !completed(step.ID, &receipt) {
+		if in.Recipe.Spec.Privilege == "sudo" && step.ID != "readiness" && receipt.ExitCode != nil {
+			return toolsStageFailure(*receipt.ExitCode)
+		}
 		return domain.Fail("GUEST_RECIPE_FAILED", "guest recipe stage failed its declared exit or non-root readiness policy; output withheld")
 	}
 	return nil

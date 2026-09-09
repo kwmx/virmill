@@ -110,6 +110,9 @@ func Register(appService *app.Service) {
 	s := &Service{Engine: appService.Engine, Store: appService.Engine.Store, Tool: image.Tool{}}
 	disks := &DiskSetService{Service: s, FilesTool: image.Tool{}}
 	install := &InstallationService{Service: s, EmptyTool: image.Tool{}}
+	appService.Extensions["import.source.describe"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) {
+		return describeAnySource(ctx, uid, r, disks)
+	}
 	appService.Engine.Handlers["import.prepare-install"] = install
 	appService.Extensions["import.prepare-install"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return install.Plan(ctx, uid, r) }
 	appService.Engine.Handlers["import.prepare-disks"] = disks

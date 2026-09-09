@@ -51,19 +51,22 @@ func (f ImportForm) View(width, height int) string {
 	if width < 40 || height < 10 {
 		return strings.Join([]string{clean("Resize to continue editing."), clean("Your options are retained.")}[:min(height, 2)], "\n")
 	}
-	title := map[string]string{"ova": "Import an appliance", "iso": "Prepare installation media", "disks": "Import disk images"}[f.Draft.Kind]
+	title := map[string]string{"ova": "Import an appliance", "iso": "Prepare installation media", "disks": "Import disk images", "auto": "Import images"}[f.Draft.Kind]
 	if title == "" {
 		title = "Import options"
 	}
 	page := max(0, min(f.Page, 3))
 	steps := []string{"Choose the source", "Choose where to save", "Prepare disk images", "Review the appliance"}
 	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared images in a new folder. VM setup follows.", "First prepare the images. CPU, RAM, firmware and networks come next.", "Read from appliance metadata. Files are verified during preparation."}
-	if f.Draft.Kind == "ova" {
+	if f.Draft.Kind == "ova" || f.Draft.HasSourceDescription() {
 		purpose[1] = "Choose a destination. Your VM settings stay with this import."
 		purpose[2] = "Review disk conversion, then confirm the VM before creation."
 	}
 	if page == 3 {
-		title = "Review appliance"
+		title = "Review source"
+		if f.Draft.Kind == "ova" {
+			title = "Review appliance"
+		}
 	}
 	lines := []string{clean(title), ""}
 	lines = append(lines, wrap(purpose[page], width)...)
@@ -72,7 +75,7 @@ func (f ImportForm) View(width, height int) string {
 	} else {
 		lines = append(lines, clean(fmt.Sprintf("Step %d of 3 · %s", page+1, steps[page])), "")
 	}
-	if page == 2 && f.Draft.Kind == "ova" {
+	if page == 2 && (f.Draft.Kind == "ova" || f.Draft.HasSourceDescription()) {
 		cpus, cpuOK := guidedNumber(f.Draft.VCPUs, 512)
 		memory, memoryOK := guidedNumber(f.Draft.MemoryMiB, 1<<20)
 		cpuLabel, memoryLabel := "CPU: review summary", "RAM: review summary"
@@ -314,7 +317,7 @@ func NewImportForm(kind string) ImportForm {
 }
 
 func (f ImportForm) controls() []importControl {
-	if !slices.Contains([]string{"ova", "iso", "disks"}, f.Draft.Kind) {
+	if !slices.Contains([]string{"auto", "ova", "iso", "disks"}, f.Draft.Kind) {
 		return nil
 	}
 	d := f.Draft
@@ -328,7 +331,14 @@ func (f ImportForm) controls() []importControl {
 		if d.Kind == "disks" {
 			label, help = "Source folder", "Choose the folder containing your disks and any backing files."
 		}
-		controls = append(controls, importPath("source", label, help, d.Source))
+		source := d.SelectedSource
+		if source == "" {
+			source = d.Source
+		}
+		if d.Kind == "auto" || d.SelectedSource != "" {
+			label, help = "File or folder", "Choose an appliance, ISO, disk image or image folder."
+		}
+		controls = append(controls, importPath("source", label, help, source))
 		if d.Kind == "ova" {
 			if d.Report != nil && d.Report.Source == d.Source {
 				controls = append(controls, importButton("inspect", "Recheck source", "Read this archive again if its contents have changed."))
@@ -348,6 +358,9 @@ func (f ImportForm) controls() []importControl {
 				controls = append(controls, importControl{id: "system", label: "Appliance", kind: "choice", value: value, choices: choices, help: "Left/Right selects a system. Its complete disk list is included."})
 			}
 		}
+		if d.Kind != "ova" && d.HasSourceDescription() {
+			controls = append(controls, importButton("inspect", "Recheck source", "Read this source again if its contents changed."))
+		}
 		if d.Kind == "iso" {
 			controls = append(controls, importText("mediaID", "Media name", "A short name identifying the installer in the prepared image.", d.MediaID))
 			controls = append(controls, importButton("advanced", "Advanced verification", "Optional: compare the ISO against a publisher's SHA-256 checksum."))
@@ -355,17 +368,19 @@ func (f ImportForm) controls() []importControl {
 				controls = append(controls, importText("sha256", "Expected SHA-256", "Optional publisher checksum; leave blank if unavailable.", d.SHA256))
 			}
 		}
-		nextHelp := "Choose where to save a prepared copy of this source."
+		nextHelp := "Read the source type and sizes, then review its VM settings."
 		if d.Kind == "ova" && (d.Report == nil || d.Report.Source != d.Source) {
 			nextHelp = "Check the appliance, then choose where to save its copy."
 		}
 		controls = append(controls, importButton("next", "Continue", nextHelp))
 	case 3:
-		return f.applianceControls()
+		return f.sourceControls()
 	case 1:
 		backLabel := "Back: Source"
 		if f.Draft.Kind == "ova" && f.Draft.Report != nil && f.Draft.SystemID != "" {
 			backLabel = "Back: Appliance"
+		} else if f.Draft.HasSourceDescription() {
+			backLabel = "Back: Source summary"
 		}
 		controls = append(controls,
 			importPath("destination", "Save in", "Choose an existing parent folder with enough free space.", d.DestinationParent),
@@ -560,9 +575,23 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 				return f, none
 			}
 			if f.Page == 0 {
-				if !guidedPath(f.Draft.Source) {
-					f.Error = map[string]string{"ova": "Choose an OVA file to continue.", "iso": "Choose an ISO file to continue.", "disks": "Choose the folder containing your disk images."}[f.Draft.Kind]
+				selected := f.Draft.SelectedSource
+				if selected == "" {
+					selected = f.Draft.Source
+				}
+				if !guidedPath(selected) {
+					f.Error = map[string]string{"ova": "Choose an OVA file to continue.", "iso": "Choose an ISO file to continue.", "disks": "Choose a disk image or folder.", "auto": "Choose a file or folder to continue."}[f.Draft.Kind]
 					f.Focus = 0
+					return f, none
+				}
+				if f.Draft.Kind != "ova" {
+					if !f.Draft.HasSourceDescription() {
+						f.Error = ""
+						return f, ImportIntent{Kind: "inspect"}
+					}
+					f.Page = 3
+					f.Focus = 0
+					f.Error = ""
 					return f, none
 				}
 				if f.Draft.Kind == "ova" {
@@ -678,6 +707,8 @@ func (f *ImportForm) setText(id, value string) {
 	switch id {
 	case "source":
 		f.Draft.Source = value
+		f.Draft.SelectedSource = value
+		f.Draft.Description = nil
 		f.Draft.VMName, f.Draft.VCPUs, f.Draft.MemoryMiB = "", "", ""
 		f.Draft.selectionSource, f.Draft.selectionSystem = "", ""
 		f.Draft.Report = nil
@@ -728,6 +759,9 @@ func (f *ImportForm) setText(id, value string) {
 func (f ImportForm) previousPage() int {
 	if f.Page == 3 {
 		return 0
+	}
+	if f.Page == 1 && f.Draft.HasSourceDescription() {
+		return 3
 	}
 	if f.Page == 1 && f.Draft.Kind == "ova" && f.Draft.Report != nil && f.Draft.Report.Source == f.Draft.Source && f.Draft.SystemID != "" {
 		return 3

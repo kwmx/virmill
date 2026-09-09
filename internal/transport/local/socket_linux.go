@@ -171,7 +171,7 @@ func (s *Server) Serve() error {
 
 func heavyRead(method string) bool {
 	switch method {
-	case "import.describe", "import.inspect", "import.prepare", "import.prepare-install", "import.prepare-disks":
+	case "import.source.describe", "import.describe", "import.inspect", "import.prepare", "import.prepare-install", "import.prepare-disks":
 		return true
 	}
 	return false
@@ -334,7 +334,7 @@ func clientWaitError(ctx context.Context, method string, err error) error {
 	var networkError net.Error
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) || errors.As(err, &networkError) && networkError.Timeout() {
 		message := "Request timed out; no result was received."
-		if method == "import.inspect" || method == "import.describe" {
+		if method == "import.inspect" || method == "import.describe" || method == "import.source.describe" {
 			message = "Appliance inspection timed out; no job was submitted."
 		} else if heavyRead(method) {
 			message = "Import preview timed out; no job was submitted."

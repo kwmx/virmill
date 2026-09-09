@@ -38,6 +38,9 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 	if err := s.DevicePolicy.Validate(s.Machine); err != nil {
 		return "", err
 	}
+	if s.GuestAgent && s.DevicePolicy == nil {
+		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "guest-agent channel requires an explicit automatic device-placement policy")
+	}
 	if len(volumes) != len(s.Disks)+len(s.Media) {
 		return "", errors.New("complete volume set required")
 	}
@@ -92,6 +95,9 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 	}
 	if scsi > 0 {
 		b.WriteString(`<controller type="scsi" index="0" model="virtio-scsi"/>`)
+	}
+	if s.GuestAgent {
+		b.WriteString(creationGuestAgentDevices)
 	}
 	sata, scsi = 0, 0
 	for i, d := range s.Disks {
@@ -427,6 +433,9 @@ func matchesCreationPolicy(wanted, observed string, policy *domain.CreationDevic
 		return err
 	}
 	if err = memoryKiB(g); err != nil {
+		return err
+	}
+	if err = normalizeCreationGuestAgent(w, g); err != nil {
 		return err
 	}
 	if policy != nil {

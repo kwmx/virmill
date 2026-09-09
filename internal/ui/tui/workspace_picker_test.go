@@ -20,8 +20,7 @@ func TestImportOpensBrowserAndAutomaticallyDescribesSelection(t *testing.T) {
 	t.Setenv("HOME", root)
 	m := fixtureWorkspace()
 	m.Section = 1
-	m, _ = wk(m, "i")
-	m, cmd := wk(m, "enter")
+	m, cmd := wk(m, "i")
 	if m.Picker == nil || m.Import == nil || cmd == nil {
 		t.Fatal("import must open explorer")
 	}
@@ -53,8 +52,7 @@ func TestPickerCancelAndResizeCannotSubmitUnderlyingForm(t *testing.T) {
 	t.Setenv("HOME", root)
 	m := fixtureWorkspace()
 	m.Section = 1
-	m, _ = wk(m, "i")
-	m, cmd := wk(m, "enter")
+	m, cmd := wk(m, "i")
 	pending := cmd()
 	m, _ = wk(m, "esc")
 	if m.Picker != nil || m.Import == nil {
@@ -147,8 +145,7 @@ func TestUnsupportedPickerPathReturnsEditableForm(t *testing.T) {
 	t.Setenv("HOME", root)
 	m := fixtureWorkspace()
 	m.Section = 1
-	m, _ = wk(m, "i")
-	m, cmd := wk(m, "enter")
+	m, cmd := wk(m, "i")
 	n, _ := m.Update(cmd())
 	m = n.(Workspace)
 	m, cmd = wk(m, "enter")

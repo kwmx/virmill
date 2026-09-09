@@ -96,14 +96,10 @@ func TestAllToolsCategoriesAndImportSources(t *testing.T) {
 	}
 	m, _ = wk(m, "esc")
 	m, _ = wk(m, "i")
-	if !strings.Contains(m.View(), "Choose a source") || len(m.catalog()) != 3 {
-		t.Fatal("import choices missing", m.View())
+	if m.Picker == nil || m.Import == nil || !strings.Contains(m.View(), "Choose a file") {
+		t.Fatal("unified import browser missing", m.View())
 	}
-	for _, a := range m.catalog() {
-		if !strings.HasPrefix(a.Command, "import ") {
-			t.Fatal("unrelated import task", a)
-		}
-	}
+
 }
 
 func TestCancelReadOnlyTaskIgnoresLateDetail(t *testing.T) {

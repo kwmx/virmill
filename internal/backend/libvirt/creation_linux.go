@@ -165,6 +165,7 @@ type domainCaps struct {
 		Interface capDevice `xml:"interface"`
 		Graphics  capDevice `xml:"graphics"`
 		TPM       capDevice `xml:"tpm"`
+		Channel   capDevice `xml:"channel"`
 	} `xml:"devices"`
 }
 
@@ -212,6 +213,9 @@ func openSystemFile(path string) (*os.File, error) {
 	return os.NewFile(uintptr(fd), path), nil
 }
 func checkCaps(c domainCaps, s domain.CreationSpec) error {
+	if s.GuestAgent && (c.Devices.Channel.Supported != "yes" || !enumHas(c.Devices.Channel.Enums, "type", "unix")) {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "This host does not advertise a supported UNIX guest-agent channel.")
+	}
 	if c.Domain != "kvm" || c.Arch != "x86_64" || c.Machine == "" || c.Path == "" || s.VCPUs > c.VCPU.Max {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "requested KVM machine or vCPU count is unavailable")
 	}

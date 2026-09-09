@@ -58,7 +58,7 @@ type FilePicker struct {
 func NewFilePicker(start, kind string) (FilePicker, tea.Cmd) {
 	home, _ := os.UserHomeDir()
 	p := FilePicker{kind: kind, home: home}
-	if kind != "file" && kind != "directory" {
+	if kind != "file" && kind != "directory" && kind != "source" {
 		p.kind = "file"
 	}
 	if start == "" {
@@ -82,7 +82,7 @@ func (p FilePicker) load(path string, choose bool) (FilePicker, tea.Cmd) {
 			return r
 		}
 		if !info.IsDir() {
-			if choose && kind == "file" && info.Mode().IsRegular() {
+			if choose && (kind == "file" || kind == "source") && info.Mode().IsRegular() {
 				r.selected = true
 				return r
 			}
@@ -99,7 +99,7 @@ func (p FilePicker) load(path string, choose bool) (FilePicker, tea.Cmd) {
 			r.err = err
 			return r
 		}
-		if choose && kind == "directory" {
+		if choose && (kind == "directory" || kind == "source") {
 			r.selected = true
 			return r
 		}
@@ -416,7 +416,7 @@ func (p FilePicker) Update(msg tea.Msg) (FilePicker, tea.Cmd, PickerResult) {
 			p.selected = n - 1
 		}
 	case "ctrl+s":
-		if p.kind == "directory" && p.directory != "" && !p.loading {
+		if (p.kind == "directory" || p.kind == "source") && p.directory != "" && !p.loading {
 			var cmd tea.Cmd
 			p, cmd = p.load(p.directory, true)
 			return p, cmd, result
@@ -475,8 +475,8 @@ func (p FilePicker) View(width, height int) string {
 		lines = append(lines, clean(p.message))
 	}
 	footer := "Enter open/select | / find | Esc back"
-	if p.kind == "directory" {
-		footer = "Enter open | Ctrl+S choose folder | Esc back"
+	if p.kind == "directory" || p.kind == "source" {
+		footer = "Enter open/select | Ctrl+S choose folder | Esc back"
 	}
 	tips := "Ctrl+N New folder | Backspace parent | Ctrl+H home | Ctrl+L path | . hidden"
 	rows := height - len(lines) - 2

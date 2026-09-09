@@ -1,0 +1,19 @@
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement/raw
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement/qcow2
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement/vmdk
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement/vdi
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement/vpc
+=== RUN   TestRealAutoDetectedSourceFormatsInConfinement/vhdx
+--- PASS: TestRealAutoDetectedSourceFormatsInConfinement (0.16s)
+    --- PASS: TestRealAutoDetectedSourceFormatsInConfinement/raw (0.03s)
+    --- PASS: TestRealAutoDetectedSourceFormatsInConfinement/qcow2 (0.02s)
+    --- PASS: TestRealAutoDetectedSourceFormatsInConfinement/vmdk (0.02s)
+    --- PASS: TestRealAutoDetectedSourceFormatsInConfinement/vdi (0.03s)
+    --- PASS: TestRealAutoDetectedSourceFormatsInConfinement/vpc (0.03s)
+    --- PASS: TestRealAutoDetectedSourceFormatsInConfinement/vhdx (0.03s)
+=== RUN   TestRealAutoDescriptionMissingBackingRemainsUnopened
+--- PASS: TestRealAutoDescriptionMissingBackingRemainsUnopened (0.03s)
+=== RUN   TestRealAutoDescriptionVMDKExtentsRequireExplicitSelection
+--- PASS: TestRealAutoDescriptionVMDKExtentsRequireExplicitSelection (0.04s)
+PASS

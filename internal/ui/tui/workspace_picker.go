@@ -81,7 +81,7 @@ func (m Workspace) updatePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.ImportPickerTarget != "" {
 		source := m.ImportPickerTarget == "source"
 		m.importPicked(result.Path)
-		if source && m.Import != nil && m.Import.Draft.Kind == "ova" && m.Import.Error == "" {
+		if source && m.Import != nil && m.Import.Error == "" {
 			return m, m.describeImport()
 		}
 		return m, nil

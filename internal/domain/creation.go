@@ -49,6 +49,7 @@ type CreationSpec struct {
 	CPU          CreationCPU           `json:"cpu"`
 	Firmware     CreationFirmware      `json:"firmware"`
 	Clock        string                `json:"clock"`
+	GuestAgent   bool                  `json:"guestAgent,omitempty"`
 	Graphics     string                `json:"graphics"`
 	Disks        []CreationDisk        `json:"disks"`
 	Media        []CreationMedia       `json:"media,omitempty"`

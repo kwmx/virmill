@@ -1,0 +1,9 @@
+{
+  "profile": "linux-auto",
+  "desktop": false,
+  "address": "192.0.2.42",
+  "port": 22,
+  "user": "guest",
+  "identityFile": "/home/operator/.ssh/guest_ed25519",
+  "knownHostsFile": "/home/operator/.ssh/known_hosts"
+}

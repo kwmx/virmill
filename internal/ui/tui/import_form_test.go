@@ -194,9 +194,22 @@ func TestImportFormNavigationAndTextSafety(t *testing.T) {
 	}
 	f.Draft.Source = "/media/install.iso"
 	f = importFocus(t, f, "next")
+	f, intent = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if f.Page != 0 || intent.Kind != "inspect" {
+		t.Fatal("selected source must be inspected before advancing")
+	}
+	if err := f.Draft.ApplySourceDescription(importer.SourceDescription{Source: f.Draft.Source, Kind: "iso", Name: "install"}); err != nil {
+		t.Fatal(err)
+	}
+	f = importFocus(t, f, "next")
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if f.Page != 3 {
+		t.Fatal("inspected source should show its summary")
+	}
+	f = importFocus(t, f, "next")
 	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	if f.Page != 1 {
-		t.Fatal("valid source should advance")
+		t.Fatal("reviewed source should advance to destination")
 	}
 	f = importFocus(t, f, "destination")
 	_, intent = f.Update(tea.KeyMsg{Type: tea.KeyCtrlO})

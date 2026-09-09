@@ -55,7 +55,11 @@
           "const": "linux-posix"
         },
         "privilege": {
-          "const": "non-root"
+          "enum": [
+            "non-root",
+            "sudo"
+          ],
+          "description": "sudo is accepted by the service only for an exact versioned built-in guest-tools recipe."
         },
         "transport": {
           "const": "ssh"

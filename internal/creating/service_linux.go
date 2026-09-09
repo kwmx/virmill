@@ -247,6 +247,10 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 	step := domain.Step{ID: "create", Action: "vm.create", Preconditions: []string{"unchanged successful local preparation receipt", "complete disk/NIC/boot mapping", "pinned hardware, firmware and active pool/network settings", "all target volume names and VM identity absent"}, Idempotency: "reconcile-before-retry", Compensation: "Retain original artifacts and clearly identified partial new volumes; no automatic disk deletion", Reconciliation: "Match created definition and durable verified-volume receipt; never replay allocation or upload", CompletionPredicate: "All independent new volumes verified before an exact persistent VM definition is observed"}
 	acks := []string{"host-mutation", "copy-managed-volumes", "new-vm-identity"}
 	risks := []string{"Creates new independent managed volumes and defines a powered-off VM; original source remains unchanged", "Guest drivers, boot, provisioning, routes and isolation are not verified by definition", "Failed allocation/upload/definition retains partial resources and the journal; no automatic deletion", "New UUID and MAC identities; guest OS identities/credentials remain in copied disks and need explicit guest adaptation"}
+	if in.Target.Spec.GuestAgent {
+		acks = append(acks, "guest-agent-channel")
+		risks = append(risks, "Adds a QEMU guest-agent channel for host/guest management; the guest agent must be installed separately and can report guest-controlled information")
+	}
 	if spec.Firmware.Mode == "uefi" {
 		if _, ok := s.Backend.(domain.ColdStateInspector); !ok || !nvramDigest(in.Target.FirmwareDigest) {
 			return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "UEFI creation requires native NVRAM declaration inspection and a bound firmware digest")

@@ -310,6 +310,10 @@
               "const": "isa-serial"
             }
           }
+        },
+        "guestAgent": {
+          "type": "boolean",
+          "description": "Explicit opt-in QEMU guest-agent channel. Guest software installation is separate."
         }
       }
     },
