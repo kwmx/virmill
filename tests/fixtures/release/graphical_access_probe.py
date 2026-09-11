@@ -51,7 +51,7 @@ def xml_for(identity, name):
     return f'''<domain type='qemu'><name>{name}</name><uuid>{identity}</uuid>
 <metadata><fixture xmlns='{NS}' id='{identity}'/></metadata>
 <memory unit='MiB'>128</memory><vcpu>1</vcpu>
-<os firmware='bios'><type arch='x86_64' machine='pc'>hvm</type><boot dev='hd'/></os>
+<os><type arch='x86_64' machine='pc'>hvm</type><boot dev='hd'/></os>
 <on_poweroff>destroy</on_poweroff><on_reboot>destroy</on_reboot><on_crash>destroy</on_crash>
 <devices><emulator>/usr/bin/qemu-system-x86_64</emulator>
 <graphics type='spice' autoport='yes'><listen type='address' address='127.0.0.1'/></graphics>

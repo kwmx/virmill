@@ -56,7 +56,7 @@ func PrepareConsole(ctx context.Context, client Client, connection, id, choiceID
 
 var consoleUUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 var consoleFingerprint = regexp.MustCompile(`^[0-9a-f]{64}$`)
-var consoleViewerVersion = regexp.MustCompile(`(?m)^virt-viewer version 11\.0(?:\s|$)`)
+var consoleViewerVersion = regexp.MustCompile(`(?m)^virt-viewer version 11\.0(?:-[0-9][A-Za-z0-9.+~]*)?(?:\s|$)`)
 var consoleDevice = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_.-]{0,127}$`)
 
 func prepareConsole(ctx context.Context, client Client, connection, id, choiceID, fingerprint string, env consoleEnvironment) (*ConsoleSession, error) {

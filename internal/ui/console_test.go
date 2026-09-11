@@ -199,3 +199,19 @@ func TestConsoleNilClient(t *testing.T) {
 		t.Fatal("nil service accepted")
 	}
 }
+
+func TestConsoleFedoraViewerVersion(t *testing.T) {
+	c, e := consoleFixture()
+	e.tempRoot = t.TempDir()
+	c.info.Choices = []domain.ConsoleChoice{{ID: "graphics:0", Kind: "graphical", Protocol: "spice", Available: true}}
+	e.version = func(context.Context, string, []string) (string, error) {
+		return "virt-viewer version 11.0-18.fc44\n", nil
+	}
+	session, err := prepareConsole(context.Background(), c, "qemu:///system", consoleTestUUID, "graphics:0", strings.Repeat("a", 64), e)
+	if err != nil {
+		t.Fatal("installed Fedora package rejected", err)
+	}
+	if err = session.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
