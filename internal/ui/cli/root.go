@@ -284,6 +284,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		return followOperation(ctx, client, o.Connection, job.ID, 0, &job, stream, emit)
 	}
+	add("vm console open", consoleCommand(client, o))
 	add("plan apply", apply)
 	completion := &cobra.Command{Use: "completion SHELL", Short: "Generate shell completions", Args: cobra.ExactArgs(1), ValidArgs: []string{"bash", "zsh", "fish", "powershell"}, RunE: func(c *cobra.Command, args []string) error {
 		switch args[0] {

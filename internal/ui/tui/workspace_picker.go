@@ -25,10 +25,17 @@ func (m *Workspace) browseField() tea.Cmd {
 	if m.Busy || m.Pending["apply"] != 0 {
 		return nil
 	}
+	m.PickerProtection = false
 	var fields []GuidedField
 	focus := 0
 	kind := ""
-	if m.ActionForm != nil {
+	if m.Protection != nil {
+		fields, focus = m.Protection.Fields, m.Protection.Focus
+		m.PickerProtection = true
+		if focus >= 0 && focus < len(fields) {
+			kind = guidedBrowseKind(fields[focus].Name)
+		}
+	} else if m.ActionForm != nil {
 		fields = m.ActionForm.Form.Fields
 		focus = m.ActionForm.Form.Focus
 		m.PickerAction = true
@@ -84,6 +91,21 @@ func (m Workspace) updatePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if source && m.Import != nil && m.Import.Error == "" {
 			return m, m.describeImport()
 		}
+		return m, nil
+	}
+	if m.PickerProtection && m.Protection != nil {
+		f := *m.Protection
+		f.Fields = slices.Clone(f.Fields)
+		if m.PickerField >= 0 && m.PickerField < len(f.Fields) {
+			field := &f.Fields[m.PickerField]
+			if guidedPath(result.Path) && len(result.Path) <= field.Limit {
+				field.Value, field.Cursor = result.Path, utf8.RuneCountInString(result.Path)
+				f.Error = ""
+			} else {
+				f.Error = "Choose a valid local path."
+			}
+		}
+		m.Protection, m.Picker = &f, nil
 		return m, nil
 	}
 	var f *GuidedForm

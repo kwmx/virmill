@@ -139,7 +139,7 @@ boot configurations remain unchanged with an explanation.
 
 ## Review, progress and recovery
 
-Dedicated forms cover creation/import, CPU/RAM, boot order, guest tools, cold
+Dedicated forms cover creation/import, CPU/RAM, boot order, guest tools, backup, restore and cold
 capture, guest recipes and repository initialization/checks. Each requests a
 shared service plan before any mutation. Some specialist catalog actions still
 use a **Settings file** for mappings described by the CLI `--input` contract;
@@ -179,3 +179,30 @@ markers identify focus and state, and untrusted output is sanitized.
 This page describes implemented controls, not a complete-v1 support certificate.
 Hardware and guest checks retain their recorded evidence level. All 71 acceptance
 scenarios remain required; see the [requirements-to-evidence matrix](requirements-to-evidence.md).
+
+## Open a guest and protect it
+
+Select a VM, open its details, then choose **Console**. Start it first if the
+console choices are unavailable. A graphical display opens on the host desktop;
+a plain SSH terminal needs a configured serial console. **Ctrl+]** leaves serial
+access. A serial port does not guarantee a guest login. Closing the console does
+not ask Virmill to stop the VM.
+
+The beta graphical adapter supports private SPICE with virt-viewer 11.0 installed
+by the administrator. Clipboard, sound, USB redirection and resizing stay off.
+Other viewer versions and VNC currently report an explicit unsupported reason.
+Missing tools or display access produce guidance, never an automatic host change.
+
+**Guest tools** shows Linux profile detection and SSH credentials first. Supply an
+existing private key and verified known-hosts file; do not paste key contents.
+Open **Advanced** for desktop tools or a different SSH port, then choose
+**Preview installation**. The guest must already be reachable, have its agent
+channel enabled and permit the reviewed guest administrator operation. Windows
+and unsupported distributions retain manual instructions.
+
+In **Protection**, select a recovery point and choose **Back up** or **Restore**.
+Back up selects an initialized encrypted repository and its password file with
+**Ctrl+O**. Restore asks for a new VM name and an observed active directory pool.
+The restored VM is stopped and disconnected; originals are retained. Firmware/TPM
+restoration is still unavailable and affected recovery points are refused.
+Review the plan before applying. Back from review preserves your choices.

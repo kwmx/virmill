@@ -1793,6 +1793,51 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill vm console open`
+
+Open the guest display or a configured serial console
+
+```text
+Usage:
+  virmill vm console open VM_UUID [flags]
+
+Flags:
+      --choice string   Console choice ID from vm console show; optional when exactly one is available
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm console show`
+
+Inspect available local graphical and serial console access
+
+```text
+Usage:
+  virmill vm console show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill vm create`
 
 Plan managed copies, optional NoCloud provisioning and a new powered-off VM from a prepared source

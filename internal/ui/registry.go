@@ -62,6 +62,7 @@ var Actions = []Action{
 	{"snapshot list", "snapshot.list", "Protection", "List retained local recovery set identities", "", ""},
 	{"snapshot show", "snapshot.show", "Protection", "Verify and inspect every member of a retained local recovery set", "id", ""},
 	{"snapshot restore", "snapshot.restore", "Protection", "Plan independent new volumes and a new disconnected VM from a complete cold recovery set", "id", "restore"},
+	{"vm console show", "vm.console.show", "VMs", "Inspect available local graphical and serial console access", "id", ""},
 	{"vm boot show", "vm.boot.get", "VMs", "Inspect separate live and next-boot device order using disk targets and NIC MACs", "id", ""},
 	{"vm boot set", "vm.plan", "VMs", "Review next-boot device order and eject retained installer media", "id", "set"},
 	{"vm readiness show", "vm.readiness.show", "VMs", "Observe a running VM's guest-agent channel and one bounded guest ping; no application readiness claim", "id", ""},

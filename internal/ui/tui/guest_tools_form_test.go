@@ -86,6 +86,7 @@ func TestGuestToolsFormExactPreviewRequest(t *testing.T) {
 				if err != nil || method != "guest.tools.install" || !reflect.DeepEqual(request, want) {
 					t.Fatal("request changed or acquired apply authority", method, request, err)
 				}
+				f.Focus = len(f.Fields) + 1
 				f, submit, cancel := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
 				if !submit || cancel || f.Error != "" {
 					t.Fatal("valid request cannot open review", f.Error)
@@ -104,6 +105,7 @@ func TestGuestToolsFormFailuresStayEditable(t *testing.T) {
 			if err == nil || method != "" || !reflect.DeepEqual(request, app.Request{}) || !strings.Contains(err.Error(), "Start this VM") {
 				t.Fatal("non-running guest accepted", method, request, err)
 			}
+			f.Focus = len(f.Fields) + 1
 			f, submit, cancel := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
 			if submit || cancel || f.Fields[f.Focus].Name != "address" || !strings.Contains(f.Error, "Start this VM") {
 				t.Fatal("running requirement not actionable", f.Error)
@@ -118,6 +120,7 @@ func TestGuestToolsFormFailuresStayEditable(t *testing.T) {
 		t.Run(tc.name+"/"+tc.value, func(t *testing.T) {
 			f := guestToolsFocus(t, guestToolsFormFixture(t), tc.name)
 			f.Fields[f.Focus].Value = tc.value
+			f.Focus = len(f.Fields) + 1
 			f, submit, cancel := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
 			if submit || cancel || !strings.Contains(f.Error, tc.hint) {
 				t.Fatal("invalid option submitted or lost guidance", f.Error)
@@ -196,6 +199,7 @@ func TestGuestToolsFormWorkspacePlanCancelRestoresEdits(t *testing.T) {
 	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
 	f = guestToolsFocus(t, f, "desktop")
 	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeySpace})
+	f.Focus = len(f.Fields) + 1
 	m.Form = &f
 	p := testWorkspacePlan(t)
 	p.Operation = "guest.tools.install"
@@ -241,5 +245,113 @@ func TestGuestToolsFormTerminalBounds(t *testing.T) {
 				t.Fatal("native guest-tools title missing or settings upload requested", view)
 			}
 		}
+	}
+}
+
+func TestGuestToolsSimpleDefaultAndOptionalAdvanced(t *testing.T) {
+	f := guestToolsFormFixture(t)
+	f.Focus = 0
+	view := f.View(80, 24)
+	for _, want := range []string{"Detect Linux (recommended)", "Needs guest SSH, passwordless sudo", "package repository access", "must already have a guest-agent channel", "Preview installation"} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("missing initial guidance %q: %s", want, view)
+		}
+	}
+	if strings.Contains(view, "SSH port:") || strings.Contains(view, "[ ] Desktop tools") {
+		t.Fatal("advanced controls crowd the initial form", view)
+	}
+	// Tab order keeps the required guest connection fields in front.
+	for _, want := range []int{2, 3, 4, 5, 7} {
+		var submit, cancel bool
+		f, submit, cancel = f.Update(tea.KeyMsg{Type: tea.KeyTab})
+		if submit || cancel || f.Focus != want {
+			t.Fatalf("bad primary navigation: focus %d want %d", f.Focus, want)
+		}
+	}
+	f, submit, cancel := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if submit || cancel || !f.ToolsAdvanced || f.Focus != 7 {
+		t.Fatal("Advanced submitted an operation or lost focus")
+	}
+	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if f.Focus != 1 {
+		t.Fatal("desktop toggle unreachable")
+	}
+	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeySpace})
+	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if f.Focus != 6 {
+		t.Fatal("SSH port unreachable")
+	}
+	f = guidedFill(t, f, map[string]string{"port": "2222"})
+	f.Focus = 7
+	f, submit, cancel = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if submit || cancel || f.ToolsAdvanced {
+		t.Fatal("Hide advanced did not collapse controls")
+	}
+	_, request, err := f.Request(f.VM.Key.ConnectionID)
+	if err != nil || request.Input["desktop"] != true || request.Input["port"] != float64(2222) {
+		t.Fatal("hiding advanced changed installation choices", request, err)
+	}
+	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if f.Focus != 8 {
+		t.Fatal("explicit preview button unreachable")
+	}
+	f, submit, cancel = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if !submit || cancel || f.Focus != 8 {
+		t.Fatal("preview button did not open review and preserve focus", f.Error)
+	}
+}
+
+func TestGuestToolsStoppedGuestExplainedBeforeCredentialInput(t *testing.T) {
+	f := guidedFixture(t, "guest-tools")
+	f.VM.State = "stopped"
+	f.Focus = len(f.Fields) + 1
+	f, submit, cancel := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if submit || cancel || !strings.Contains(f.Error, "Start this VM") || f.Focus != 2 {
+		t.Fatalf("credential requirements masked stopped VM: %+v", f)
+	}
+	if !strings.Contains(f.View(80, 24), "Start this VM first") {
+		t.Fatal("initial screen conceals stopped VM")
+	}
+}
+
+func TestGuestToolsAdvancedButtonDoesNotOpenCredentialPicker(t *testing.T) {
+	f := guestToolsFormFixture(t)
+	f.Focus = len(f.Fields)
+	m := fixtureWorkspace()
+	m.Form = &f
+	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyCtrlO})
+	if cmd != nil || next.(Workspace).Picker != nil {
+		t.Fatal("advanced button was mistaken for a file field")
+	}
+}
+
+func TestGuestToolsAdvancedErrorRevealsField(t *testing.T) {
+	f := guestToolsFormFixture(t)
+	f = guidedFill(t, f, map[string]string{"port": "0"})
+	f.Focus = 8
+	f, submit, _ := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if submit || f.Focus != 6 || !f.ToolsAdvanced || !strings.Contains(f.View(80, 24), "SSH port:") {
+		t.Fatal("invalid hidden port cannot be corrected", f.Error)
+	}
+}
+
+func TestGuestToolsFieldEnterAdvancesWithoutValidation(t *testing.T) {
+	f := guidedFixture(t, "guest-tools")
+	f.VM.State = "running"
+	for _, want := range []int{2, 3, 4, 5, 7} {
+		var submit, cancel bool
+		f, submit, cancel = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+		if submit || cancel || f.Focus != want || f.Error != "" {
+			t.Fatalf("ordinary field enter submitted or validated: focus=%d want=%d error=%s", f.Focus, want, f.Error)
+		}
+	}
+	f, submit, cancel := f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if submit || cancel || !f.ToolsAdvanced || f.Error != "" {
+		t.Fatal("Advanced submitted instead of opening options")
+	}
+	f.Focus = len(f.Fields) + 1
+	f, submit, cancel = f.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	if submit || cancel || f.Error == "" {
+		t.Fatal("Preview did not validate missing credentials")
 	}
 }

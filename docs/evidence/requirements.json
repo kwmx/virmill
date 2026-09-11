@@ -2044,7 +2044,10 @@
         "internal/helper/auxiliary_capture_linux.go",
         "internal/helper/auxiliary_transfer_linux.go",
         "docs/cold-capture-and-restore.md",
-        "docs/evidence/cold-recovery-run.md"
+        "docs/evidence/cold-recovery-run.md",
+        "docs/adr/0041-local-console-and-guided-protection.md",
+        "internal/ui/tui/protection_form.go",
+        "internal/ui/tui/workspace_protection.go"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/snapshot/SNAP-01",
@@ -2118,7 +2121,9 @@
         "internal/coldstore/store_linux_test.go",
         "internal/helper/auxiliary_transfer_linux_test.go",
         "internal/ui/cli/cold_recovery_test.go",
-        "internal/ui/tui/cold_recovery_test.go"
+        "internal/ui/tui/cold_recovery_test.go",
+        "internal/ui/tui/protection_form_test.go",
+        "internal/ui/tui/workspace_access_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2200,7 +2205,10 @@
         "cold-recovery-native-001",
         "cold-recovery-native-002",
         "beta-recovery-native-001",
-        "beta-recovery-native-002"
+        "beta-recovery-native-002",
+        "console-protection-ui-001",
+        "console-protection-integration-001",
+        "console-protection-final-001"
       ],
       "outstanding": [
         "Durable complete cold capture, immutable all-member publication, metadata-bound auxiliary delivery and new disconnected BIOS restoration are implemented through shared CLI/TUI. Focused generated-file/IPC/native-seam tests pass; frozen integrated and live evidence are being collected. Qualified firmware/TPM restore staging, identity-preserving replacement, checkpoint/revert and the full source/OS/crash matrix remain required.",
@@ -2325,7 +2333,10 @@
         "internal/localbackup/execute_linux.go",
         "internal/backend/restic/tool_linux.go",
         "internal/coldstore/store_linux.go",
-        "docs/local-backups.md"
+        "docs/local-backups.md",
+        "docs/adr/0041-local-console-and-guided-protection.md",
+        "internal/ui/tui/protection_form.go",
+        "internal/ui/tui/workspace_protection.go"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-01",
@@ -2363,7 +2374,9 @@
         "internal/backend/restic/native_linux_test.go",
         "internal/coldstore/restored_linux_test.go",
         "internal/ui/cli/local_backup_test.go",
-        "internal/ui/tui/local_backup_test.go"
+        "internal/ui/tui/local_backup_test.go",
+        "internal/ui/tui/protection_form_test.go",
+        "internal/ui/tui/workspace_access_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -2418,7 +2431,10 @@
         "restic-native-adapter-004",
         "beta-recovery-race-001",
         "beta-recovery-native-001",
-        "beta-recovery-native-002"
+        "beta-recovery-native-002",
+        "console-protection-ui-001",
+        "console-protection-integration-001",
+        "console-protection-final-001"
       ],
       "outstanding": [
         "Complete local stopped capture and new BIOS restore are implemented. Encrypted restic repository publication and restoration without original VM files/application database remain incomplete; a local catalog is not a full independent repository backup. Auxiliary restore and complete native recovery qualification remain required.",
@@ -2578,7 +2594,10 @@
         "internal/backend/restic/tool_linux.go",
         "internal/coldstore/store_linux.go",
         "docs/local-backups.md",
-        "docs/evidence/beta-recovery-run.md"
+        "docs/evidence/beta-recovery-run.md",
+        "docs/adr/0041-local-console-and-guided-protection.md",
+        "internal/ui/tui/protection_form.go",
+        "internal/ui/tui/workspace_protection.go"
       ],
       "plannedImplementation": "internal/app/protection",
       "plannedTest": "tests/integration/backup/BAK-06",
@@ -2587,7 +2606,9 @@
         "internal/backend/restic/native_linux_test.go",
         "internal/coldstore/restored_linux_test.go",
         "internal/ui/cli/local_backup_test.go",
-        "internal/ui/tui/local_backup_test.go"
+        "internal/ui/tui/local_backup_test.go",
+        "internal/ui/tui/protection_form_test.go",
+        "internal/ui/tui/workspace_access_test.go"
       ],
       "evidence": [
         "restic-native-adapter-001",
@@ -2597,7 +2618,10 @@
         "beta-recovery-race-001",
         "beta-recovery-native-001",
         "beta-recovery-native-002",
-        "beta-recovery-native-003"
+        "beta-recovery-native-003",
+        "console-protection-ui-001",
+        "console-protection-integration-001",
+        "console-protection-final-001"
       ],
       "outstanding": [
         "Isolated test restore catches identity/address conflicts and reports the exact readiness verified.",
@@ -2845,7 +2869,13 @@
         "internal/guestsetup/tools.go",
         "internal/backend/libvirt/creation_guest_agent.go",
         "docs/guest-tools.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/adr/0041-local-console-and-guided-protection.md",
+        "internal/domain/console.go",
+        "internal/backend/libvirt/console_linux.go",
+        "internal/ui/console_linux.go",
+        "internal/ui/tui/workspace_console.go",
+        "internal/ui/cli/console.go"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
@@ -2858,7 +2888,12 @@
         "internal/guestsetup/tools_test.go",
         "internal/backend/libvirt/creation_guest_agent_test.go",
         "internal/backend/libvirt/creation_guest_agent_caps_test.go",
-        "tests/fixtures/release/guest_agent_channel_probe.py"
+        "tests/fixtures/release/guest_agent_channel_probe.py",
+        "internal/backend/libvirt/console_linux_test.go",
+        "internal/ui/console_test.go",
+        "internal/app/console_test.go",
+        "internal/ui/cli/console_test.go",
+        "internal/ui/tui/workspace_access_test.go"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
@@ -2873,7 +2908,10 @@
         "general-sources-integration-001",
         "general-sources-ui-native-001",
         "general-sources-ui-native-002",
-        "guest-channel-native-001"
+        "guest-channel-native-001",
+        "console-protection-ui-001",
+        "console-protection-integration-001",
+        "console-protection-final-001"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -4485,7 +4523,15 @@
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
         "internal/ui/tui/boot_form.go",
-        "docs/evidence/beta-ux-flow-run.md"
+        "docs/evidence/beta-ux-flow-run.md",
+        "docs/adr/0041-local-console-and-guided-protection.md",
+        "internal/domain/console.go",
+        "internal/backend/libvirt/console_linux.go",
+        "internal/ui/console_linux.go",
+        "internal/ui/tui/workspace_console.go",
+        "internal/ui/cli/console.go",
+        "internal/ui/tui/protection_form.go",
+        "internal/ui/tui/workspace_protection.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4610,7 +4656,13 @@
         "internal/ui/tui/workspace_boot_test.go",
         "internal/ui/tui/boot_form_test.go",
         "internal/ui/tui/creation_friendly_test.go",
-        "internal/ui/tui/plan_summary_test.go"
+        "internal/ui/tui/plan_summary_test.go",
+        "internal/backend/libvirt/console_linux_test.go",
+        "internal/ui/console_test.go",
+        "internal/app/console_test.go",
+        "internal/ui/cli/console_test.go",
+        "internal/ui/tui/protection_form_test.go",
+        "internal/ui/tui/workspace_access_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4742,7 +4794,10 @@
         "beta-ux-upgrade-native-001",
         "beta-ux-coordinator-native-001",
         "beta-ux-workflow-native-001",
-        "beta-ux-final-core-001"
+        "beta-ux-final-core-001",
+        "console-protection-ui-001",
+        "console-protection-integration-001",
+        "console-protection-final-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4837,7 +4892,15 @@
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
         "internal/ui/tui/boot_form.go",
-        "docs/evidence/beta-ux-flow-run.md"
+        "docs/evidence/beta-ux-flow-run.md",
+        "docs/adr/0041-local-console-and-guided-protection.md",
+        "internal/domain/console.go",
+        "internal/backend/libvirt/console_linux.go",
+        "internal/ui/console_linux.go",
+        "internal/ui/tui/workspace_console.go",
+        "internal/ui/cli/console.go",
+        "internal/ui/tui/protection_form.go",
+        "internal/ui/tui/workspace_protection.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4896,7 +4959,13 @@
         "internal/ui/tui/workspace_boot_test.go",
         "internal/ui/tui/boot_form_test.go",
         "internal/ui/tui/creation_friendly_test.go",
-        "internal/ui/tui/plan_summary_test.go"
+        "internal/ui/tui/plan_summary_test.go",
+        "internal/backend/libvirt/console_linux_test.go",
+        "internal/ui/console_test.go",
+        "internal/app/console_test.go",
+        "internal/ui/cli/console_test.go",
+        "internal/ui/tui/protection_form_test.go",
+        "internal/ui/tui/workspace_access_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4969,7 +5038,10 @@
         "beta-ux-upgrade-native-001",
         "beta-ux-coordinator-native-001",
         "beta-ux-workflow-native-001",
-        "beta-ux-final-core-001"
+        "beta-ux-final-core-001",
+        "console-protection-ui-001",
+        "console-protection-integration-001",
+        "console-protection-final-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

@@ -30,11 +30,12 @@ type GuidedField struct {
 // GuidedForm only collects a preview request. The workspace owns service calls
 // and the separate immutable-plan approval flow.
 type GuidedForm struct {
-	Kind   string
-	VM     domain.VM
-	Fields []GuidedField
-	Focus  int
-	Error  string
+	Kind          string
+	VM            domain.VM
+	Fields        []GuidedField
+	Focus         int
+	Error         string
+	ToolsAdvanced bool
 }
 
 var guidedUUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
@@ -54,15 +55,15 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		field("sourceRoot", "Source directory", "Choose the directory containing this VM's disks.", 4096)
 		field("auxiliaryRootID", "Helper root ID (optional)", "For firmware/TPM: use an administrator-approved root ID.", 64)
 	case "guest-tools":
-		field("profile", "Guest system", "Left/Right chooses a supported system. Linux auto detects Debian, Ubuntu or Fedora.", 32)
+		field("profile", "Guest system", "Left/Right chooses a system. Automatic detection supports Debian, Ubuntu and Fedora only.", 32)
 		f.Fields[0].Value = "linux-auto"
 		f.Fields[0].Choices = []string{"linux-auto", "debian", "ubuntu", "fedora", "windows"}
 		field("desktop", "Desktop tools", "Optional desktop agent; clipboard/resizing also need compatible SPICE channels and viewer.", 5)
 		f.Fields[1].Value, f.Fields[1].Toggle = "false", true
-		field("address", "Guest IP address", "The selected VM's verified IP address.", 45)
-		field("user", "Guest SSH user", "An existing non-root user with passwordless sudo inside this guest.", 32)
-		field("identityFile", "SSH key", "Ctrl+O chooses an existing private key file. Never paste key contents.", 4096)
-		field("knownHostsFile", "Verified host keys", "Ctrl+O chooses a known-hosts file containing this guest's verified key.", 4096)
+		field("address", "Guest IP address", "Use this VM's IP address from its console or network settings.", 45)
+		field("user", "Guest SSH user", "An existing guest account with SSH access and passwordless sudo.", 32)
+		field("identityFile", "SSH key", "Choose the local private key used to log in to this guest. No key contents.", 4096)
+		field("knownHostsFile", "Verified host keys", "Choose known_hosts after verifying the guest fingerprint through a trusted console.", 4096)
 		field("port", "SSH port", "Usually 22.", 5)
 		f.Fields[6].Value, f.Fields[6].Cursor = "22", 2
 	case "guest-recipe":
@@ -160,7 +161,50 @@ func (f GuidedForm) Update(key tea.KeyMsg) (GuidedForm, bool, bool) {
 		f.Error = "Choose a supported form."
 		return f, false, false
 	}
-	f.Focus = max(0, min(f.Focus, len(f.Fields)-1))
+	if f.Kind == "guest-tools" && len(f.Fields) == 7 {
+		if f.Focus == 1 || f.Focus == 6 {
+			f.ToolsAdvanced = true
+		}
+		if f.Fields[0].Value != "windows" {
+			rows := f.guestToolsRows()
+			switch key.Type {
+			case tea.KeyTab, tea.KeyDown, tea.KeyShiftTab, tea.KeyUp:
+				at := max(0, slices.Index(rows, f.Focus))
+				delta := 1
+				if key.Type == tea.KeyShiftTab || key.Type == tea.KeyUp {
+					delta = -1
+				}
+				f.Focus = rows[(at+delta+len(rows))%len(rows)]
+				return f, false, false
+			}
+			if key.Type == tea.KeyEnter && f.Focus >= 0 && f.Focus < len(f.Fields) {
+				at := max(0, slices.Index(rows, f.Focus))
+				f.Focus = rows[(at+1)%len(rows)]
+				f.Error = ""
+				return f, false, false
+			}
+			if f.Focus == len(f.Fields) {
+				if key.Type == tea.KeyEnter || key.Type == tea.KeySpace || key.Type == tea.KeyLeft || key.Type == tea.KeyRight {
+					f.ToolsAdvanced = !f.ToolsAdvanced
+					f.Error = ""
+				}
+				return f, false, false
+			}
+			if f.Focus == len(f.Fields)+1 {
+				if key.Type == tea.KeySpace {
+					key = tea.KeyMsg{Type: tea.KeyEnter}
+				}
+				if key.Type != tea.KeyEnter {
+					return f, false, false
+				}
+			}
+		}
+	}
+	maxFocus := len(f.Fields) - 1
+	if f.Kind == "guest-tools" && len(f.Fields) == 7 {
+		maxFocus = len(f.Fields) + 1
+	}
+	f.Focus = max(0, min(f.Focus, maxFocus))
 	if f.Kind == "guest-tools" && f.Fields[0].Value == "windows" {
 		f.Focus = 0
 		if key.Type != tea.KeyLeft && key.Type != tea.KeyRight && key.Type != tea.KeySpace {
@@ -177,6 +221,9 @@ func (f GuidedForm) Update(key tea.KeyMsg) (GuidedForm, bool, bool) {
 			f.Error = err.Error()
 			if field >= 0 {
 				f.Focus = field
+				if f.Kind == "guest-tools" && (field == 1 || field == 6) {
+					f.ToolsAdvanced = true
+				}
 			}
 			return f, false, false
 		}
@@ -329,8 +376,17 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		if f.Kind == "guest-tools" && values["profile"] == "windows" {
 			return fail("profile", "Windows: use the reviewed VirtIO driver ISO and guest installer. Automatic SSH installation is unavailable; see guest tools catalog.")
 		}
+		if f.Kind == "guest-tools" && f.VM.State != "running" {
+			return fail("address", "Start this VM before installing guest tools. Guest SSH and an existing agent channel are required.")
+		}
 		for _, name := range names {
 			if !guidedPath(values[name]) {
+				if f.Kind == "guest-tools" {
+					if name == "identityFile" {
+						return fail(name, "Choose the guest login's private SSH key with Ctrl+O. Credential references use absolute file paths.")
+					}
+					return fail(name, "Choose a known_hosts file with this guest's verified fingerprint using Ctrl+O. Use absolute file paths.")
+				}
 				return fail(name, "Recipe and SSH credential references must be canonical absolute file paths.")
 			}
 		}
@@ -348,9 +404,6 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		if f.Kind == "guest-tools" {
 			if !slices.Contains([]string{"linux-auto", "debian", "ubuntu", "fedora"}, values["profile"]) || values["desktop"] != "true" && values["desktop"] != "false" {
 				return fail("profile", "Choose supported guest tools.")
-			}
-			if f.VM.State != "running" {
-				return fail("address", "Start this VM before installing guest tools. Enable the guest-agent channel in VM setup first.")
 			}
 			r.ID, r.Action = f.VM.Key.UUID, "install"
 			r.Input = map[string]any{"profile": values["profile"], "desktop": values["desktop"] == "true", "address": values["address"], "port": float64(port), "user": values["user"], "identityFile": values["identityFile"], "knownHostsFile": values["knownHostsFile"]}
@@ -444,7 +497,7 @@ func (f GuidedForm) View(width, height int) string {
 		return strings.Join(lines[:min(height, len(lines))], "\n")
 	}
 	if f.Kind == "guest-tools" && len(f.Fields) > 0 && f.Fields[0].Value == "windows" {
-		lines := []string{clip(f.Title()), clip("> Guest system: < windows >"), "",
+		lines := []string{clip(f.Title()), clip("> Guest system: < Windows (manual) >"), "",
 			clip("Install inside Windows using trusted VirtIO driver media."),
 			clip("1. Open the driver disc already attached to your VM."),
 			clip("2. Run its signed guest-tools installer as administrator."),
@@ -453,6 +506,9 @@ func (f GuidedForm) View(width, height int) string {
 			clip("Automatic Windows installation is not available."),
 			clip("Left/Right Change system   Esc Back")}
 		return strings.Join(lines[:min(height, len(lines))], "\n")
+	}
+	if f.Kind == "guest-tools" && len(f.Fields) == 7 {
+		return f.guestToolsView(width, height)
 	}
 	lines := []string{clip(f.Title()), clip(f.note())}
 	footer := []string{}
@@ -514,4 +570,107 @@ func (f GuidedForm) View(width, height int) string {
 	}
 	lines = append(lines, footer...)
 	return strings.Join(lines[:min(height, len(lines))], "\n")
+}
+
+// Wire field indexes remain stable for the workspace's file picker.
+func (f GuidedForm) guestToolsRows() []int {
+	rows := []int{0, 2, 3, 4, 5, 7}
+	if f.ToolsAdvanced || f.Focus == 1 || f.Focus == 6 {
+		rows = append(rows, 1, 6)
+	}
+	return append(rows, 8)
+}
+
+func (f GuidedForm) guestToolsView(width, height int) string {
+	clean := func(s string) string {
+		return ansi.Truncate(strings.NewReplacer("\n", " ", "\t", " ").Replace(validation.SafeText(s)), width, "…")
+	}
+	lines := []string{"Install guest tools", "Adds QEMU guest agent for VM status and graceful shutdown."}
+	if f.VM.State != "running" {
+		lines = append(lines, "Start this VM first, then return here.")
+	} else {
+		lines = append(lines, "Needs guest SSH, passwordless sudo and package repository access.")
+	}
+	lines = append(lines, "The VM must already have a guest-agent channel.", "")
+	footer := []string{}
+	if f.Error != "" {
+		footer = append(footer, wrap("Issue: "+validation.SafeText(f.Error), width)...)
+	}
+	footer = append(footer, "Tab/Arrows Select   Enter Next/Choose   Ctrl+O Browse   Esc Back")
+	if len(footer) > height/3 {
+		footer = append(footer[:max(1, height/3-1)], footer[len(footer)-1])
+	}
+	rows := f.guestToolsRows()
+	at := max(0, slices.Index(rows, f.Focus))
+	count := max(1, height-len(lines)-len(footer)-2)
+	first := max(0, at-count+1)
+	for _, index := range rows[first:min(len(rows), first+count)] {
+		label := ""
+		if index == 7 {
+			label = "[ Advanced: desktop tools and SSH port ]"
+			if f.Fields[1].Value == "true" || f.Fields[6].Value != "22" {
+				desktop := "off"
+				if f.Fields[1].Value == "true" {
+					desktop = "on"
+				}
+				label = "[ Advanced: desktop " + desktop + ", SSH " + f.Fields[6].Value + " ]"
+			}
+			if f.ToolsAdvanced {
+				label = "[ Hide advanced options ]"
+			}
+		} else if index == 8 {
+			label = "[ Preview installation ]"
+		} else {
+			field := f.Fields[index]
+			value := validation.SafeText(field.Value)
+			if index == 0 {
+				labels := map[string]string{"linux-auto": "Detect Linux (recommended)", "debian": "Debian", "ubuntu": "Ubuntu", "fedora": "Fedora", "windows": "Windows (manual)"}
+				value = labels[value]
+				if value == "" {
+					value = "Choose a supported system"
+				}
+				label = field.Label + ": < " + value + " >"
+			} else if field.Toggle {
+				mark := " "
+				if value == "true" {
+					mark = "x"
+				}
+				label = "[" + mark + "] " + field.Label
+			} else {
+				room := max(4, width-ansi.StringWidth(field.Label)-7)
+				if index == f.Focus {
+					runes := []rune(value)
+					cursor := max(0, min(field.Cursor, len(runes)))
+					before := string(runes[:cursor])
+					cells := ansi.StringWidth(before)
+					if cells >= room {
+						before = "…" + ansi.Cut(before, cells-room+2, cells)
+					}
+					value = before + "|" + string(runes[cursor:])
+				}
+				label = field.Label + ": [" + ansi.Truncate(value, room, "…") + "]"
+			}
+		}
+		prefix := "  "
+		if index == f.Focus {
+			prefix = "> "
+		}
+		lines = append(lines, prefix+label)
+	}
+	hint := "Review the packages and permissions before installation."
+	if f.Focus >= 0 && f.Focus < len(f.Fields) {
+		hint = f.Fields[f.Focus].Hint
+	}
+	if f.Focus == 7 {
+		hint = "Optional SPICE desktop tools and a different SSH port."
+	}
+	lines = append(lines, wrap(validation.SafeText(hint), width)...)
+	if len(lines) > height-len(footer) {
+		lines = lines[:height-len(footer)]
+	}
+	lines = append(lines, footer...)
+	for i := range lines {
+		lines[i] = clean(lines[i])
+	}
+	return strings.Join(lines, "\n")
 }

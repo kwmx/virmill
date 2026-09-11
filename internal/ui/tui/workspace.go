@@ -23,6 +23,12 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	Protection         *ProtectionForm
+	PickerProtection   bool
+	Console            *domain.ConsoleInfo
+	ConsoleIndex       int
+	ConsoleLoading     bool
+	ConsoleVM          domain.VM
 	Boot               *BootForm
 	BootVM             domain.VM
 	BootLoading        bool
@@ -142,6 +148,9 @@ func (m *Workspace) page(section int) tea.Cmd {
 	m.Pending = maps.Clone(m.Pending)
 	delete(m.Pending, "detail")
 	delete(m.Pending, "boot-load")
+	delete(m.Pending, "protection-pools")
+	delete(m.Pending, "console-load")
+	m.Protection, m.Console, m.ConsoleLoading = nil, nil, false
 	m.Boot, m.BootLoading = nil, false
 	delete(m.Pending, "plan")
 	if m.Pending["apply"] == 0 {
@@ -367,6 +376,10 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 			m.Advanced = false
 			return m.preview(a.Mutation)
 		}
+	case "vm console show":
+		return m.openConsole()
+	case "snapshot restore", "backup create":
+		return m.openProtection(a.Command)
 	case "vm boot set":
 		return m.openBootForm()
 	case "vm set":
@@ -442,12 +455,21 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.Picker != nil {
 		switch msg.(type) {
-		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, importPulse, importExportReply:
+		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, importPulse, importExportReply, consolePrepared, consoleClosed:
 		default:
 			return m.updatePicker(msg)
 		}
 	}
 	switch v := msg.(type) {
+	case consolePrepared:
+		return m.receiveConsolePrepared(v)
+	case consoleClosed:
+		m.Busy = false
+		m.Notice = "Console closed. Virmill did not stop the VM."
+		if v.Err != nil {
+			m.Error = "Console ended: " + validation.SafeText(v.Err.Error()) + ". Refresh access and try again."
+		}
+		return m, nil
 	case importPulse:
 		if m.Import != nil && m.Pending["import-inspect"] == v.Token {
 			m.ImportElapsed = time.Since(m.ImportStarted)
@@ -504,10 +526,13 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			text := validation.SafeText(err.Error())
 			m.Errors[v.Kind] = text
-			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "boot-load" || v.Kind == "import-inspect" {
+			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "boot-load" || v.Kind == "console-load" || v.Kind == "protection-pools" || v.Kind == "import-inspect" {
 				m.Error = text
 				m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
 				m.Notice = ""
+			}
+			if v.Kind == "console-load" {
+				m.ConsoleLoading = false
 			}
 			if v.Kind == "boot-load" {
 				m.BootLoading = false
@@ -640,6 +665,10 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Form = nil
 			m.ActionForm = nil
 			m.Advanced = false
+		case "console-load":
+			m.receiveConsole(v.Response.Data)
+		case "protection-pools":
+			m.receiveProtectionPools(v.Response.Data)
 		case "boot-load":
 			m.receiveBoot(v.Response.Data)
 		case "job-update":
@@ -647,6 +676,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 		case "apply":
+			m.Protection = nil
 			m.Boot = nil
 			m.SavedForm, m.SavedActionForm = nil, nil
 			prepared := m.Import != nil
@@ -758,6 +788,12 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Help = false
 			}
 			return m, nil
+		}
+		if (m.Console != nil || m.ConsoleLoading) && m.Plan == nil {
+			return m.updateConsole(v)
+		}
+		if m.Protection != nil && m.Plan == nil {
+			return m.updateProtection(v)
 		}
 		if (m.Boot != nil || m.BootLoading) && m.Plan == nil {
 			return m.updateBoot(v)
@@ -1226,6 +1262,12 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.Picker == nil && m.Plan == nil && (m.Console != nil || m.ConsoleLoading) {
+		return "Up/Down Select   Enter Open   Esc Back"
+	}
+	if m.Picker == nil && m.Plan == nil && m.Protection != nil {
+		return "Tab Next   Left/Right Choose   Ctrl+O Browse   Esc Back"
+	}
 	if (m.Boot != nil || m.BootLoading) && m.Plan == nil {
 		return "Tab Next option   Space Select   Left/Right Reorder   Esc Back"
 	}
@@ -1313,6 +1355,12 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.Console != nil || m.ConsoleLoading {
+		return m.consoleView(width, height)
+	}
+	if m.Protection != nil && m.Plan == nil && m.Picker == nil {
+		return strings.Split(m.Protection.View(width, height), "\n")
+	}
 	if (m.Boot != nil || m.BootLoading) && m.Plan == nil {
 		if m.BootLoading {
 			return []string{"Reading boot devices...", "Esc cancels this view."}
@@ -1482,12 +1530,18 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.Import != nil || m.Creation != nil || m.CreationPicking) && m.Plan == nil
+	importModal := (m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
 		if m.Creation != nil || m.CreationPicking {
 			title = "Create VM"
+		}
+		if m.Protection != nil {
+			title = "Protection"
+		}
+		if m.Console != nil || m.ConsoleLoading {
+			title = "Console"
 		}
 	}
 	header := m.color(" Virmill ", "1;35") + m.color(" / "+title, "1") + "   " + validation.SafeText(m.Connection) + "   beta"
@@ -1585,7 +1639,7 @@ func (m Workspace) buttons() []workspaceButton {
 			}
 		}
 		if m.Detail != nil {
-			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
+			return append(out[1:], workspaceButton{"Console", "action:vm console show"}, workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
 		return append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"})
 	}
@@ -1594,7 +1648,7 @@ func (m Workspace) buttons() []workspaceButton {
 		3:  {{"Details", "enter"}, {"Refresh", "r"}},
 		4:  {},
 		5:  {{"Validate lab", "action:lab validate"}},
-		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"New repository", "n"}},
+		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"Back up", "action:backup create"}, {"New repository", "n"}},
 		7:  {{"USB devices", "action:device usb list"}, {"PCI devices", "action:host pci list"}},
 		8:  {{"Details", "enter"}, {"Create VM", "action:vm create"}, {"Events", "action:operation watch"}, {"Refresh", "r"}},
 		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
@@ -1603,7 +1657,7 @@ func (m Workspace) buttons() []workspaceButton {
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
-	if m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()
