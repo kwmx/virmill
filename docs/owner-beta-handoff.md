@@ -1,17 +1,17 @@
-# Owner beta handoff — updated 9 September 2026
+# Owner beta handoff — updated 11 September 2026
 
 **Virmill 1.0.0-beta.1 is installed and running on the authorized Fedora 44 test
 VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** the installed CLI and coordinator use `1b22c55`.
-Import opens one browser for OVA, ISO and supported QEMU/VirtualBox/VMware/Hyper-V
-disk formats, followed by detected details, editable CPU/RAM and Advanced settings.
-Guest tools now has supported Linux profiles and a desktop-tools toggle, with
-explicit Windows guidance. See [source and guest-tools evidence](evidence/general-sources-run.md)
-for verified behavior and remaining limits. Exit any already-open TUI and run
-`virmill` again.
+**Current UI update:** the installed CLI and coordinator use `47d1a8b`.
+A complete keyboard-only import → preparation → creation → boot-order-edit run
+passed on the test VM. Reviews now lead with changes and warnings; Back retains
+form input, jobs refresh automatically, and boot/installer settings use observed
+devices. See [task-completion evidence](evidence/beta-ux-flow-run.md) for exact
+hashes and limits. Console access and guided protection workflows still block
+publication readiness. Exit any already-open TUI and run `virmill` again.
 
 ## Start testing now
 

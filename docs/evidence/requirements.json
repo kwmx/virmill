@@ -151,7 +151,8 @@
         "internal/app/estimates.go",
         "internal/operations/engine.go",
         "docs/adr/0015-operation-downtime-estimates.md",
-        "docs/evidence/downtime-estimates-run.md"
+        "docs/evidence/downtime-estimates-run.md",
+        "docs/evidence/beta-ux-flow-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
@@ -187,7 +188,9 @@
         "boot-media-native-disk-boot-001",
         "boot-media-captured-001",
         "downtime-core-001",
-        "downtime-native-preview-001"
+        "downtime-native-preview-001",
+        "beta-ux-workflow-native-001",
+        "beta-ux-final-core-001"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
@@ -477,7 +480,8 @@
         "docs/adr/0040-task-review-and-observed-job-navigation.md",
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
-        "internal/ui/tui/boot_form.go"
+        "internal/ui/tui/boot_form.go",
+        "docs/evidence/beta-ux-flow-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -593,7 +597,8 @@
         "general-sources-ui-native-002",
         "general-owner-sources-native-001",
         "guest-channel-native-001",
-        "beta-ux-flow-core-001"
+        "beta-ux-flow-core-001",
+        "beta-ux-workflow-native-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -710,7 +715,8 @@
         "internal/importing/source_description_linux.go",
         "internal/ui/tui/source_summary.go",
         "docs/import-source-review.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/evidence/beta-ux-flow-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
@@ -781,7 +787,8 @@
         "appliance-summary-native-002",
         "general-sources-core-001",
         "general-sources-integration-001",
-        "general-owner-sources-native-001"
+        "general-owner-sources-native-001",
+        "beta-ux-workflow-native-001"
       ],
       "outstanding": [
         "Generic confined preparation is exercised on generated files; native definition code has synthetic coordinator and test-driver XML evidence only. Real generic guests remain unqualified.",
@@ -3019,7 +3026,8 @@
         "docs/adr/0040-task-review-and-observed-job-navigation.md",
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
-        "internal/ui/tui/boot_form.go"
+        "internal/ui/tui/boot_form.go",
+        "docs/evidence/beta-ux-flow-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-01",
@@ -3075,7 +3083,10 @@
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
         "graceful-reboot-native-001",
-        "beta-ux-flow-core-001"
+        "beta-ux-flow-core-001",
+        "beta-ux-workflow-native-001",
+        "beta-ux-coordinator-native-001",
+        "beta-ux-final-core-001"
       ],
       "outstanding": [
         "A real PTY import approval detached while the coordinator completed two-disk conversion; CLI reconnection returned coherent persisted result/events. Additional client disconnects, all handlers and multi-client transport faults remain required.",
@@ -3434,7 +3445,8 @@
         "creation-core-001",
         "cleanup-core-001",
         "nvram-recovery-integration-001",
-        "nvram-binding-frozen-core-001"
+        "nvram-binding-frozen-core-001",
+        "beta-ux-final-core-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -4472,7 +4484,8 @@
         "docs/adr/0040-task-review-and-observed-job-navigation.md",
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
-        "internal/ui/tui/boot_form.go"
+        "internal/ui/tui/boot_form.go",
+        "docs/evidence/beta-ux-flow-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4724,7 +4737,12 @@
         "general-sources-coordinator-native-001",
         "general-sources-upgrade-native-002",
         "general-sources-coordinator-native-002",
-        "beta-ux-flow-core-001"
+        "beta-ux-flow-core-001",
+        "beta-ux-packages-001",
+        "beta-ux-upgrade-native-001",
+        "beta-ux-coordinator-native-001",
+        "beta-ux-workflow-native-001",
+        "beta-ux-final-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4818,7 +4836,8 @@
         "docs/adr/0040-task-review-and-observed-job-navigation.md",
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
-        "internal/ui/tui/boot_form.go"
+        "internal/ui/tui/boot_form.go",
+        "docs/evidence/beta-ux-flow-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4945,7 +4964,12 @@
         "general-sources-coordinator-native-001",
         "general-sources-upgrade-native-002",
         "general-sources-coordinator-native-002",
-        "beta-ux-flow-core-001"
+        "beta-ux-flow-core-001",
+        "beta-ux-packages-001",
+        "beta-ux-upgrade-native-001",
+        "beta-ux-coordinator-native-001",
+        "beta-ux-workflow-native-001",
+        "beta-ux-final-core-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

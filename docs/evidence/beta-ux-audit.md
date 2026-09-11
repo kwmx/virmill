@@ -69,3 +69,12 @@ checksums, release notes and clearly scoped support evidence. Actual publication
 requires owner review and explicitly chosen real repository/download/signing
 coordinates. Example domains and module paths are not destinations. This audit
 does not approve publishing or reduce mandatory 1.0 scope.
+
+## Integrated follow-up
+
+Revision `47d1a8b` resolves the baseline boot/media form, lost review input and
+divergent import entry points. Native 80×24 keyboard-only creation and subsequent
+boot-order editing passed, with automatic job completion and unchanged unrelated
+VM configuration. See [recorded evidence](beta-ux-flow-run.md). Console/access and
+settings-file-dependent protection workflows remain open; publication is not yet
+qualified.
