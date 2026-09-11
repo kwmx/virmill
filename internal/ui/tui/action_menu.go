@@ -20,7 +20,7 @@ func actionGroup(a ui.Action) (int, string) {
 		return 10, "Power"
 	case strings.HasPrefix(c, "import ") || c == "vm create":
 		return 30, "Create and import"
-	case c == "vm set" || c == "vm autostart" || strings.HasPrefix(c, "guest recipe ") || strings.HasPrefix(c, "guest tools "):
+	case c == "vm set" || c == "vm boot set" || c == "vm autostart" || strings.HasPrefix(c, "guest recipe ") || strings.HasPrefix(c, "guest tools "):
 		return 20, "Configure and guest setup"
 	case strings.HasPrefix(c, "snapshot "):
 		return 10, "Capture and restore"
@@ -66,7 +66,7 @@ func (m Workspace) commonAction(a ui.Action) bool {
 		return m.selectedVM().State == "running" || m.selectedVM().Key.UUID == ""
 	case "vm resume":
 		return m.selectedVM().State == "paused"
-	case "vm set", "vm create", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
+	case "vm set", "vm boot set", "vm create", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
 		return true
 	}
 	return false

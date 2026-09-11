@@ -214,11 +214,11 @@ func TestGuestToolsFormWorkspacePlanCancelRestoresEdits(t *testing.T) {
 	}
 	next, follow := m.Update(cmd())
 	m = next.(Workspace)
-	if follow != nil || m.Plan == nil || m.Form != nil || m.SavedGuestTools == nil || m.Busy || m.Reviewing || len(client.calls) != 1 || client.calls[0] != "guest.tools.install" || client.requests[0].Apply != nil {
+	if follow != nil || m.Plan == nil || m.Form != nil || m.SavedForm == nil || m.Busy || m.Reviewing || len(client.calls) != 1 || client.calls[0] != "guest.tools.install" || client.requests[0].Apply != nil {
 		t.Fatal("preview failed or approved installation implicitly", m.Error)
 	}
 	m, cmd = wk(m, "esc")
-	if cmd != nil || m.Plan != nil || m.SavedGuestTools != nil || m.Form == nil || !reflect.DeepEqual(*m.Form, f) || len(client.calls) != 1 {
+	if cmd != nil || m.Plan != nil || m.SavedForm != nil || m.Form == nil || !reflect.DeepEqual(*m.Form, f) || len(client.calls) != 1 {
 		t.Fatal("cancel lost edited guest-tools form or executed guest work")
 	}
 }

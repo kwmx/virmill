@@ -24,7 +24,7 @@ root.mkdir(mode=0o700)
 fd=os.open(a.binary,os.O_RDONLY|os.O_NOFOLLOW)
 with os.fdopen(os.dup(fd),'rb') as f: require(hashlib.file_digest(f,'sha256').hexdigest()==a.binary_sha256,'wrong binary')
 r=Runner(a,root,fd)
-report={'status':'failed','scope':'two tiny OVA disks; TUI hardware/export/mkdir; native powered-off definition; no boot claim'}
+report={'status':'failed','scope':'two tiny OVA disks; full TUI source/prepare/approve/create/export/mkdir; native powered-off definition; no boot claim'}
 before=inventory(r.cli('vm','list'),a.connection)
 prior_jobs=r.cli('operation','list')
 owner_media={p.name:generation(p.stat()) for p in (Path.home()/'images').iterdir()}
@@ -32,7 +32,8 @@ t=None
 try:
     # A reproducible archive with VirtualBox-compatible units and explicit SATA
     # attachments. No supplied owner media is copied or modified.
-    name='virmill-hardware-'+root.parent.name[-8:]
+    name='virmill-hardware-'+hashlib.sha256(str(root).encode()).hexdigest()[:12]
+    require(all(vm['name']!=name for vm in before.values()),'fixture guest name already exists')
     ovf='''<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData">
 <References><File ovf:id="f1" ovf:href="boot.raw"/><File ovf:id="f2" ovf:href="data.raw"/></References>
 <DiskSection><Disk ovf:diskId="boot" ovf:fileRef="f1" ovf:capacity="1048576" ovf:format="raw"/><Disk ovf:diskId="data" ovf:fileRef="f2" ovf:capacity="1048576" ovf:format="raw"/></DiskSection>
@@ -57,21 +58,6 @@ try:
     if firmware is None:firmware=next((f for f in choices['firmware'] if f['firmware']['mode']=='uefi' and not f['firmware']['secureBoot'] and not f['firmware']['tpm'] and f['firmware']['format']=='raw'),None)
     require(firmware is not None,'no suitable firmware advertised for blank fixture')
     report['selectedFirmware']=firmware
-    inp={'destination':str(root/'prepared'),'systemID':'hardware-fixture','disks':[{'id':d,'format':'raw','maximumVirtualBytes':1<<20} for d in ('boot','data')]}
-    plan=r.cli('import','prepare',str(source),'--input',json.dumps(inp));r.save('preparation-plan.json',plan)
-    def apply(plan,label):
-        args=['plan','apply',plan['planID'],'--digest',plan['planDigest'],'--idempotency-key',root.name+'-'+label,'--detach']
-        for ack in plan['acknowledgements']:args.extend(['--ack',ack])
-        job=r.cli(*args);r.save(label+'-accepted.json',job)
-        end=time.monotonic()+90
-        while time.monotonic()<end:
-            job=r.cli('operation','show',job['operationID'])
-            if job['state'] in ('succeeded','failed','partial','canceled','recovery-required'):break
-            time.sleep(.3)
-        r.save(label+'-job.json',job)
-        require(job['state']=='succeeded',label+' did not succeed: '+json.dumps(job))
-        return job
-    prepared=apply(plan,'prepare');report['preparationOperationID']=prepared['operationID']
     t=Terminal(r,'hardware-wizard-80x24',80,24)
     def wait(label,predicate,key=None):return t.wait(label,predicate,t.send(key) if key is not None else -1)
     def focus(label):
@@ -86,32 +72,82 @@ try:
         while t.read(.05) and not t.screen.complete():pass
         wait('Edit '+label,lambda s:value in s and selected_label(s,label),value.encode())
     wait('Overview',lambda s:'Virtual machines' in s)
-    wait('Buttons',lambda s:'>[' in s,b'\t')
-    for i in range(8):
-        if '>[ Create VM ]' in t.screen.text():break
-        old=t.screen.text();wait('Choose Create VM '+str(i),lambda s:s!=old,b'\x1b[C')
-    require('>[ Create VM ]' in t.screen.text(),'Create VM button missing')
-    wait('Prepared image chooser',lambda s:'hardware-fixture' in s and 'Choose prepared images' in s,b'\r')
-    for i in range(50):
-        if selected_label(t.screen.text(),'hardware-fixture'):break
-        old=t.screen.text();wait('Select prepared source '+str(i),lambda s:s!=old,b'\x1b[B')
-    wait('Detected hardware fields',lambda s:'CPU cores' in s and 'Memory (MiB)' in s,b'\r')
-    require('2048' in t.screen.text(),'detected RAM absent from screen')
+    def picker(screen): return re.search(r'Choose a (?:source|file|folder)\b',screen) is not None
+    def browser_path(path):
+        wait('Browser location',lambda screen:picker(screen) and 'Path:' in screen,b'\x0c')
+        t.send(b'\x15')
+        while t.read(.05) and not t.screen.complete():pass
+        wait('Fixture location entered',lambda screen:str(path) in screen,str(path).encode())
+        return wait('Open fixture location',lambda screen:'Path:' not in screen,b'\r')
+    def reviewed_plan(label):
+        for page in range(12):
+            if re.search(r'Plan ID:\s*([0-9a-f-]{36})',t.screen.text()):break
+            old=t.screen.text();wait(label+' review page '+str(page),lambda screen:screen!=old,b'\x1b[6~')
+        matched=re.search(r'Plan ID:\s*([0-9a-f-]{36})',t.screen.text())
+        require(matched is not None,'plan identity absent')
+        plan=r.cli('plan','show',matched.group(1));r.save(label+'-plan.json',plan)
+        return plan
+    def apply_in_tui(plan,label):
+        # Acknowledge only the plan just displayed and read back. CLI calls below
+        # observe the accepted job; all plan approval and Apply input uses TUI.
+        wait(label+' confirmation',lambda screen:'Confirm reviewed changes' in screen,b'\r')
+        require(plan['planID'] in t.screen.text(),'confirmation changed plan identity')
+        for ack in plan['acknowledgements']:
+            require(re.search(r'>\s*\[ \]',t.screen.text()),'unchecked focused acknowledgement required')
+            wait(label+' acknowledge '+ack,lambda screen:re.search(r'>\s*\[x\]',screen) is not None,b' ')
+            old=t.screen.text()
+            wait(label+' next acknowledgement',lambda screen:screen!=old,b'\t')
+        focus('Apply reviewed plan')
+        wait(label+' accepted',lambda screen:'Operation accepted.' in screen or 'Job /' in screen or 'VM options' in screen,b'\r')
+        end=time.monotonic()+90
+        job=None
+        while time.monotonic()<end:
+            found=[j for j in r.cli('operation','list') if j['planID']==plan['planID']]
+            require(len(found)<=1,'one reviewed plan unexpectedly accepted more than once')
+            if found:
+                job=found[0]
+                if job['state'] in ('succeeded','failed','partial','canceled','recovery-required'):break
+            t.read(.3)
+        require(job is not None,'accepted job not found')
+        r.save(label+'-job.json',job)
+        require(job['state']=='succeeded',label+' did not succeed: '+json.dumps(job))
+        return job
+    wait('Unified source browser',picker,b'i')
+    browser_path(root)
+    wait('Source filename filter',lambda screen:'Enter done' in screen,b'/')
+    wait('Tiny source listed',lambda screen:source.name in screen,source.name.encode())
+    wait('Source filter complete',lambda screen:'Enter open/select' in screen,b'\r')
+    wait('Appliance summary',lambda screen:'Review appliance' in screen and 'CPU cores' in screen,b'\r')
+    require('2048' in t.screen.text(),'detected RAM absent from summary')
+    edit('VM name',name);edit('CPU cores','3');edit('Memory (MiB)','1024')
+    activate('Continue',lambda screen:'New folder name' in screen)
+    activate('Save in',picker);browser_path(root)
+    if picker(t.screen.text()):
+        wait('Destination parent selected',lambda screen:'New folder name' in screen,b'\x13')
+    edit('New folder name','prepared')
+    activate('Continue',lambda screen:'Preview image preparation' in screen)
+    activate('Preview image preparation',lambda screen:'Nothing has been applied' in screen)
+    preparation=reviewed_plan('preparation')
+    require(preparation['operation']=='import.prepare','different preparation operation')
+    require(preparation['review']['destination']==str(root/'prepared'),'preparation destination changed')
+    prepared=apply_in_tui(preparation,'prepare');report['preparationOperationID']=prepared['operationID']
+    wait('Preparation opens VM setup automatically',lambda screen:'VM options' in screen and 'Memory (MiB)' in screen)
+    require('1024' in t.screen.text(),'edited summary RAM did not carry into VM setup')
     edit('VM name',name);edit('CPU cores','3');edit('Memory (MiB)','1024')
     focus('Storage pool')
     for i in range(12):
         if re.search(r'Storage pool:.*< virmill-test >',t.screen.text()):break
         old=t.screen.text();wait('Choose test storage '+str(i),lambda s:s!=old,b'\x1b[C')
     require(re.search(r'Storage pool:.*< virmill-test >',t.screen.text()),'test pool not selected')
-    activate('Hardware options',lambda s:'Advanced hardware' in s)
     focus('Firmware')
     for i in range(len(choices['firmware'])+1):
         if ('< '+firmware['label']+' >') in t.screen.text():break
         old=t.screen.text();wait('Choose fixture firmware '+str(i),lambda s:s!=old,b'\x1b[C')
     require(('< '+firmware['label']+' >') in t.screen.text(),'explicit firmware choice failed')
+    activate('Advanced hardware',lambda s:'Advanced hardware' in s and 'Guest agent channel' in s)
     activate('Done',lambda s:'VM options' in s)
     activate('Continue',lambda s:'Disks and boot' in s)
-    require(re.search(r'Controller bus:.*< sata >',t.screen.text()),'detected SATA bus missing')
+    require(re.search(r'Controller bus:.*< SATA >',t.screen.text()),'detected SATA bus missing')
     activate('Continue',lambda s:'Network adapters' in s)
     activate('Export settings',lambda s:'File name' in s and 'Export settings' in s)
     wait('Export folder explorer',lambda s:'Choose a folder' in s,b'\x0f')
@@ -129,12 +165,13 @@ try:
     wait('Export hardware settings',lambda s:'Settings exported:' in s,b'\r')
     exported=json.loads((root/'exported/virmill-vm-settings.json').read_text());r.save('export-readback.json',exported)
     require(exported['hardware']['vcpus']==3 and exported['hardware']['memoryMiB']==1024,'exported values differ')
-    activate('Preview VM creation',lambda s:'Plan ID:' in s and 'Plan digest:' in s)
-    matched=re.search(r'Plan ID:\s*([0-9a-f-]{36})',t.screen.text());require(matched is not None,'plan identity absent')
-    creation=r.cli('plan','show',matched.group(1));r.save('creation-plan.json',creation)
+    activate('Preview VM creation',lambda s:'Nothing has been applied' in s)
+    creation=reviewed_plan('creation')
     wait('Back retains hardware options',lambda s:'Network adapters' in s,b'\x1b')
-    t.close();t=None
-    job=apply(creation,'create');report['creationOperationID']=job['operationID']
+    activate('Preview VM creation',lambda s:'Nothing has been applied' in s)
+    creation=reviewed_plan('creation-after-back')
+    job=apply_in_tui(creation,'create');report['creationOperationID']=job['operationID']
+    wait('Creation job completes without refresh',lambda screen:'Job / Completed' in screen and job['operationID'] in screen)
     receipt=r.cli('vm','creation','result',job['operationID']);r.save('creation-result.json',receipt)
     require(receipt['complete'] is True,'creation receipt incomplete');vmid=receipt['receipt']['vmID'];vm=r.cli('vm','show',vmid);r.save('created-vm.json',vm)
     import xml.etree.ElementTree as E
@@ -142,7 +179,50 @@ try:
     require(xml.findtext('vcpu')=='3' and xml.findtext('memory')=='1048576','native CPU/RAM differ')
     require(len(xml.findall("devices/disk[@device='disk']"))==2 and len(xml.findall('devices/interface'))==0,'disk/NIC definition differs')
     require(vm['state'] in ('stopped','shut off'),'fixture guest unexpectedly running')
-    report.update(status='passed',vmID=vmid,vcpus=3,memoryMiB=1024,disks=2,guestStarted=False,sourceFixturePreserved=generation(source.stat())==source_before)
+    # The only edited VM is the UUID returned by this probe's creation job.
+    original_order=[d.find('target').get('dev') for d in sorted(xml.findall("devices/disk[@device='disk']"),key=lambda d:int(d.find('boot').get('order')))]
+    require(len(original_order)==2,'two observed boot disks required')
+    wait('VM list after creation',lambda screen:'NAME' in screen,b'2')
+    wait('Find only new fixture VM',lambda screen:'Search:' in screen and 'Enter Keep filter' in screen,b'/')
+    wait('New fixture UUID filter',lambda screen:vmid in screen,vmid.encode())
+    wait('Finish new VM filter',lambda screen:name[:16] in screen and '1 of 1 selected' in screen and 'Enter Keep filter' not in screen,b'\r')
+    wait('New VM details',lambda screen:name in screen and vmid in screen and 'Boot / installer' in screen,b'\r')
+    wait('Detail buttons',lambda screen:'>[' in screen,b'\t')
+    for i in range(12):
+        if '>[ Boot / installer ]' in t.screen.text():break
+        old=t.screen.text();wait('Choose Boot / installer '+str(i),lambda screen:screen!=old,b'\x1b[C')
+    require('>[ Boot / installer ]' in t.screen.text(),'boot form action missing')
+    wait('Observed boot devices',lambda screen:'Boot order and installer media' in screen and name in screen,b'\r')
+    first=original_order[0]
+    for i in range(6):
+        if re.search(r'>\s*\[1\] disk '+re.escape(first)+r'\b',t.screen.text()):break
+        old=t.screen.text();wait('Select first boot disk '+str(i),lambda screen:screen!=old,b'\t')
+    require(re.search(r'>\s*\[1\] disk '+re.escape(first)+r'\b',t.screen.text()),'first observed boot disk not selected')
+    wait('Move boot disk later',lambda screen:re.search(r'>\s*\[2\] disk '+re.escape(first)+r'\b',screen) is not None,b'\x1b[C')
+    activate('Preview changes',lambda screen:'Nothing has been applied' in screen)
+    boot=reviewed_plan('boot')
+    wait('Back preserves requested boot order',lambda screen:'Boot order and installer media' in screen and '[2] disk '+first in screen,b'\x1b')
+    activate('Preview changes',lambda screen:'Nothing has been applied' in screen)
+    boot=reviewed_plan('boot-after-back')
+    boot_job=apply_in_tui(boot,'boot');report['bootOperationID']=boot_job['operationID']
+    wait('Boot edit completion refreshes automatically',lambda screen:'Job / Completed' in screen and boot_job['operationID'] in screen)
+    edited=r.cli('vm','show',vmid);r.save('boot-edited-vm.json',edited)
+    edited_xml=E.fromstring(edited['persistentXML'])
+    edited_order=[d.find('target').get('dev') for d in sorted(edited_xml.findall("devices/disk[@device='disk']"),key=lambda d:int(d.find('boot').get('order')))]
+    require(edited_order==list(reversed(original_order)),'native boot order does not match TUI edit')
+    require(edited['state'] in ('stopped','shut off'),'boot editor started the VM')
+    # Remove only order nodes when comparing; all other persistent settings,
+    # disk paths and backend-generated metadata must remain identical.
+    for doc in (xml,edited_xml):
+        for disk in doc.findall('devices/disk'):
+            boot_node=disk.find('boot')
+            if boot_node is not None:disk.remove(boot_node)
+    def semantic(node):return (node.tag,tuple(sorted(node.attrib.items())),(node.text or '').strip(),tuple(semantic(child) for child in node))
+    require(semantic(xml)==semantic(edited_xml),'boot edit changed unrelated persistent XML')
+    report['bootOrderBefore']=original_order;report['bootOrderAfter']=edited_order
+    t.close();t=None
+    require(generation(source.stat())==source_before,'fixture source changed during import')
+    report.update(status='passed',vmID=vmid,vcpus=3,memoryMiB=1024,disks=2,guestStarted=False,allMutationApprovalThroughTUI=True,automaticJobCompletionObserved=True,sourceFixturePreserved=generation(source.stat())==source_before)
 except BaseException as error:report['error']=repr(error)
 finally:
     if t is not None:t.close()

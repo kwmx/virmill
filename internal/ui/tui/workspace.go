@@ -23,9 +23,12 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	Boot               *BootForm
+	BootVM             domain.VM
+	BootLoading        bool
 	Creation           *CreationForm
 	SavedCreation      *CreationForm
-	SavedGuestTools    *GuidedForm
+	SavedForm          *GuidedForm
 	PreparedBasics     map[string]ImportDraft
 	SavedImport        *ImportForm
 	CreationPicking    bool
@@ -50,6 +53,7 @@ type Workspace struct {
 	PickerField                  int
 	PickerAction                 bool
 	ActionForm                   *ActionForm
+	SavedActionForm              *ActionForm
 	ActionTitle                  string
 
 	Client                                                    ui.Client
@@ -70,6 +74,7 @@ type Workspace struct {
 	Plan                                                      *domain.Plan
 	Approved                                                  []bool
 	AckIndex                                                  int
+	ApplyKey                                                  string
 	Reviewing                                                 bool
 	Busy                                                      bool
 	legacy                                                    Model
@@ -88,7 +93,9 @@ var workspaceMethods = map[string]string{"vms": "inventory.list", "networks": "n
 func NewWorkspace(c ui.Client, connection string) Workspace {
 	return Workspace{Client: c, Connection: connection, Width: 80, Height: 24, NoColor: os.Getenv("NO_COLOR") != "" || os.Getenv("VIRMILL_NO_COLOR") == "1" || os.Getenv("TERM") == "dumb", ASCII: os.Getenv("VIRMILL_ASCII") == "1" || os.Getenv("TERM") == "dumb", Data: map[string]any{}, Errors: map[string]string{}, Pending: map[string]uint64{}, legacy: New(c, connection)}
 }
-func (m Workspace) Init() tea.Cmd { return func() tea.Msg { return workspaceTick{} } }
+func (m Workspace) Init() tea.Cmd {
+	return tea.Batch(func() tea.Msg { return workspaceTick{} }, jobRefreshTick())
+}
 func (m *Workspace) request(kind, method string, r app.Request) tea.Cmd {
 	m.sequence++
 	token := m.sequence
@@ -134,6 +141,8 @@ func (m *Workspace) refresh() tea.Cmd {
 func (m *Workspace) page(section int) tea.Cmd {
 	m.Pending = maps.Clone(m.Pending)
 	delete(m.Pending, "detail")
+	delete(m.Pending, "boot-load")
+	m.Boot, m.BootLoading = nil, false
 	delete(m.Pending, "plan")
 	if m.Pending["apply"] == 0 {
 		m.Busy = false
@@ -358,6 +367,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 			m.Advanced = false
 			return m.preview(a.Mutation)
 		}
+	case "vm boot set":
+		return m.openBootForm()
 	case "vm set":
 		if vm.Key.UUID != "" {
 			m.guided("resources")
@@ -431,7 +442,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.Picker != nil {
 		switch msg.(type) {
-		case workspaceReply, workspaceTick, creationPulse, importPulse, importExportReply:
+		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, importPulse, importExportReply:
 		default:
 			return m.updatePicker(msg)
 		}
@@ -477,6 +488,8 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.request("preparation-job", "operation.get", app.Request{ID: v.OperationID})
 	case workspaceTick:
 		return m, m.refresh()
+	case jobRefreshPulse:
+		return m, m.refreshJobs()
 	case workspaceReply:
 		if m.Pending[v.Kind] != v.Token {
 			return m, nil
@@ -491,10 +504,13 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			text := validation.SafeText(err.Error())
 			m.Errors[v.Kind] = text
-			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "import-inspect" {
+			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "boot-load" || v.Kind == "import-inspect" {
 				m.Error = text
 				m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
 				m.Notice = ""
+			}
+			if v.Kind == "boot-load" {
+				m.BootLoading = false
 			}
 			if v.Kind == "import-inspect" && m.Import != nil {
 				m.Import.Error = importError(err)
@@ -526,14 +542,11 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				delete(m.Errors, v.Kind)
 			}
 			if v.Kind == "apply" {
-				m.SavedCreation = m.Creation
-				m.SavedImport = m.Import
-				m.Creation = nil
-				m.CreationPicking = false
-				m.Import = nil
-				m.Plan = nil
+				// Preserve the exact review and request identity when the reply
+				// is uncertain. A deliberate retry cannot become a second job.
 				m.Reviewing = false
-				m.Notice = "Submission failed or its reply was lost. Check Jobs before submitting again."
+				m.Notice = "Submission was not confirmed. Check Jobs; retrying this review reuses the same request."
+
 			}
 			return m, nil
 		}
@@ -617,17 +630,25 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.Plan = &p
+			m.ApplyKey = ""
 			m.Approved = make([]bool, len(p.Acknowledgements))
 			m.AckIndex = 0
 			m.Offset = 0
 			m.Reviewing = false
-			if m.Form != nil && m.Form.Kind == "guest-tools" {
-				m.SavedGuestTools = m.Form
-			}
+			m.SavedForm = m.Form
+			m.SavedActionForm = m.ActionForm
 			m.Form = nil
 			m.ActionForm = nil
 			m.Advanced = false
+		case "boot-load":
+			m.receiveBoot(v.Response.Data)
+		case "job-update":
+			if m.Section == 8 && resourceID(m.Detail) != "" && resourceID(m.Detail) == resourceID(data) {
+				m.Detail = data
+			}
 		case "apply":
+			m.Boot = nil
+			m.SavedForm, m.SavedActionForm = nil, nil
 			prepared := m.Import != nil
 			if prepared {
 				m.PreparedBasics = maps.Clone(m.PreparedBasics)
@@ -737,6 +758,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Help = false
 			}
 			return m, nil
+		}
+		if (m.Boot != nil || m.BootLoading) && m.Plan == nil {
+			return m.updateBoot(v)
 		}
 		if m.ExportForm != nil {
 			return m.updateImportExport(v)
@@ -924,9 +948,10 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Reviewing = false
 				} else {
 					m.Plan = nil
-					if m.SavedGuestTools != nil {
-						m.Form = m.SavedGuestTools
-						m.SavedGuestTools = nil
+					m.ActionForm, m.SavedActionForm = m.SavedActionForm, nil
+					if m.SavedForm != nil {
+						m.Form = m.SavedForm
+						m.SavedForm = nil
 					}
 				}
 				m.Offset = 0
@@ -934,13 +959,13 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Offset += max(1, m.Height-11)
 			case "pgup":
 				m.Offset = max(0, m.Offset-max(1, m.Height-11))
-			case "down", "j":
+			case "down", "j", "tab":
 				if m.Reviewing {
 					m.AckIndex = min(len(m.Approved), m.AckIndex+1)
 				} else {
 					m.Offset++
 				}
-			case "up", "k":
+			case "up", "k", "shift+tab":
 				if m.Reviewing {
 					m.AckIndex = max(0, m.AckIndex-1)
 				} else {
@@ -977,7 +1002,10 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if !m.Busy && m.Pending["apply"] == 0 {
 					m.Busy = true
 					m.Error = ""
-					return m, m.request("apply", "operation.apply", app.Request{Apply: &operations.ApplyRequest{PlanID: m.Plan.ID, PlanDigest: m.Plan.Digest, IdempotencyKey: domain.ID(), Acknowledgements: append([]string{}, m.Plan.Acknowledgements...)}})
+					if m.ApplyKey == "" {
+						m.ApplyKey = domain.ID()
+					}
+					return m, m.request("apply", "operation.apply", app.Request{Apply: &operations.ApplyRequest{PlanID: m.Plan.ID, PlanDigest: m.Plan.Digest, IdempotencyKey: m.ApplyKey, Acknowledgements: append([]string{}, m.Plan.Acknowledgements...)}})
 				}
 			}
 			return m, nil
@@ -1012,7 +1040,10 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case "enter":
 				buttons := m.buttons()
-				key = buttons[min(m.ButtonIndex, len(buttons)-1)].key
+				if len(buttons) == 0 {
+					return m, nil
+				}
+				key = buttons[max(0, min(m.ButtonIndex, len(buttons)-1))].key
 				m.ButtonFocus = false
 				if key == "esc" {
 					return m.Update(tea.KeyMsg{Type: tea.KeyEsc})
@@ -1195,6 +1226,9 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if (m.Boot != nil || m.BootLoading) && m.Plan == nil {
+		return "Tab Next option   Space Select   Left/Right Reorder   Esc Back"
+	}
 	if m.Picker != nil {
 		if m.Picker.mode == "mkdir" {
 			return "Enter Create folder   Esc Cancel"
@@ -1257,7 +1291,7 @@ func (m Workspace) hints() string {
 	}
 	if m.Plan != nil {
 		if m.Reviewing {
-			return "Space Acknowledge   Up/Down Select   Enter Continue   Esc Review"
+			return "Space Check   Tab Next   Enter Continue   Esc Review"
 		}
 		return "PgUp/PgDn Read plan   Enter Review & apply   Esc Cancel"
 	}
@@ -1279,6 +1313,12 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if (m.Boot != nil || m.BootLoading) && m.Plan == nil {
+		if m.BootLoading {
+			return []string{"Reading boot devices...", "Esc cancels this view."}
+		}
+		return strings.Split(m.Boot.View(width, height), "\n")
+	}
 	if m.Picker != nil {
 		return strings.Split(m.Picker.View(width, height), "\n")
 	}
@@ -1315,32 +1355,14 @@ func (m Workspace) content(width, height int) []string {
 	}
 	if m.Plan != nil {
 		if m.Reviewing {
-			lines := []string{"Confirm reviewed changes", m.Plan.Operation, "", "Plan: " + m.Plan.ID, "Digest: " + m.Plan.Digest, ""}
-			for i, ack := range m.Plan.Acknowledgements {
-				mark := "[ ]"
-				if m.Approved[i] {
-					mark = "[x]"
-				}
-				prefix := "  "
-				if i == m.AckIndex {
-					prefix = "> "
-				}
-				lines = append(lines, prefix+mark+" "+ack)
-			}
-			prefix := "  "
-			if m.AckIndex == len(m.Approved) {
-				prefix = "> "
-			}
-			lines = append(lines, "", prefix+"[ Apply reviewed plan ]", "", "Esc returns to the complete plan. Nothing is applied until this button is selected.")
-			offset := m.Offset
-			if m.AckIndex+6 >= height {
-				offset = max(offset, m.AckIndex+7-height)
-			}
-			return pageLines(lines, width, height, offset)
+			return m.confirmationLines(width, height)
 		}
 		return pageLines(PlanDetails(*m.Plan, width), width, height, m.Offset)
 	}
 	if m.Detail != nil {
+		if m.Section == 8 && field(m.Detail, "state") != "" && !m.Raw {
+			return pageLines(m.jobDetails(width), width, height, m.Offset)
+		}
 		lines := []string{m.DetailTitle, ""}
 		if m.Section == 1 && m.DetailTitle == "VM details" {
 			vm := m.selectedVM()
@@ -1546,6 +1568,9 @@ func (m Workspace) View() string {
 type workspaceButton struct{ label, key string }
 
 func (m Workspace) buttons() []workspaceButton {
+	if m.Section == 8 && m.Detail != nil && field(m.Detail, "state") != "" {
+		return m.jobButtons()
+	}
 	if m.Section == 0 || m.Section == 1 {
 		out := []workspaceButton{{"Details", "enter"}}
 		vm := m.selectedVM()
@@ -1560,7 +1585,7 @@ func (m Workspace) buttons() []workspaceButton {
 			}
 		}
 		if m.Detail != nil {
-			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
+			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
 		return append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"})
 	}
@@ -1578,7 +1603,7 @@ func (m Workspace) buttons() []workspaceButton {
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
-	if m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

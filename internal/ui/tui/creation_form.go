@@ -170,11 +170,16 @@ func (f CreationForm) controls() []importControl {
 			poolHelp = "No active file-based pool. Start or create one in Storage, then reopen this form."
 		}
 		choice("pool", "Storage pool", poolHelp, poolName, pools)
-		firmware := "Choose required firmware"
+		firmware := ""
 		if i := f.firmwareIndex(); i >= 0 {
 			firmware = f.Options.Firmware[i].Label
 		}
-		c = append(c, importButton("advanced", "Hardware options: "+firmware, "Choose firmware and review machine, CPU mode and display options."), importButton("next", "Continue", "Map each prepared disk to this VM."))
+		labels := []string{}
+		for _, option := range f.Options.Firmware {
+			labels = append(labels, option.Label)
+		}
+		choice("firmware", "Firmware", "Match the original BIOS or UEFI. This is required for the guest to boot.", firmware, labels)
+		c = append(c, importButton("advanced", "Advanced hardware", "Optional: CPU model, display, guest tools channel and other devices."), importButton("next", "Continue to disks", "Review storage controllers and the order in which devices boot."))
 	case 1:
 		total := len(f.Spec.Disks) + len(f.Spec.Media)
 		if total > 0 {
@@ -209,7 +214,7 @@ func (f CreationForm) controls() []importControl {
 			}
 			choice("boot", "Boot priority", "1 boots first. Media may use 0 to attach without booting; priorities must be unique.", strconv.Itoa(boot), orders)
 		}
-		c = append(c, importButton("back", "Back", "Return to CPU, memory and storage."), importButton("next", "Continue", "Map every original network adapter explicitly."))
+		c = append(c, importButton("back", "Back", "Return to CPU, memory and storage."), importButton("next", "Continue to networks", "Choose network access for each adapter; cables start disconnected."))
 	case 2:
 		if len(f.Spec.NICs) > 0 {
 			i := max(0, min(f.NIC, len(f.Spec.NICs)-1))
@@ -240,7 +245,7 @@ func (f CreationForm) controls() []importControl {
 			}
 			choice("network", "Network", networkHelp, selected, networks)
 			choice("nicModel", "Adapter model", "Guest drivers must support this model; host support is rechecked in the plan.", nic.Model, []string{"virtio", "e1000e", "rtl8139"})
-			choice("link", "Cable", "Down keeps this adapter disconnected on first boot.", nic.Link, []string{"down", "up"})
+			choice("link", "Cable", "Disconnected blocks this adapter on first boot. Connected allows network access.", nic.Link, []string{"down", "up"})
 			if nic.SourceIndex == -1 {
 				c = append(c, importButton("removeNIC", "Remove new adapter", "Only this added adapter is removed; original adapters stay mapped."))
 			}
@@ -266,16 +271,16 @@ func (f CreationForm) controls() []importControl {
 		}
 		choice("firmware", "Firmware", "Match the guest's original BIOS/UEFI needs. No firmware is chosen automatically.", value, labels)
 		choice("clock", "Hardware clock", "UTC is suggested; some guests expect local time.", f.Spec.Clock, []string{"utc", "localtime"})
-		choice("guestAgent", "Guest agent channel", "Opt in to host/guest integration. Install guest tools after the guest boots.", strconv.FormatBool(f.Spec.GuestAgent), []string{"false", "true"})
+		choice("guestAgent", "Guest agent channel", "Enable before installing QEMU guest tools. It allows host/guest communication.", strconv.FormatBool(f.Spec.GuestAgent), []string{"false", "true"})
 		choice("graphics", "Display", "A local VNC socket provides a console without exposing a TCP port.", f.Spec.Graphics, f.Options.Graphics)
 		if p := f.Spec.DevicePolicy; p != nil {
 			choice("usb", "USB controller", "Adding a controller does not attach host USB devices.", p.USBController, []string{"none", "qemu-xhci"})
-			choice("balloon", "Memory balloon", "Virtio ballooning requires a compatible guest driver.", p.MemoryBalloon, []string{"none", "virtio"})
+			choice("balloon", "Memory balloon", "Allows the host to adjust guest memory; requires a virtio driver in the guest.", p.MemoryBalloon, []string{"none", "virtio"})
 			watchdog := []string{"none"}
 			if p.Chipset == "q35" {
 				watchdog = append(watchdog, "reset")
 			}
-			choice("watchdog", "Watchdog", "Reset allows the guest watchdog to restart a stuck guest.", p.WatchdogAction, watchdog)
+			choice("watchdog", "Watchdog", "Restart if the guest watchdog detects a hang. Requires guest configuration.", p.WatchdogAction, watchdog)
 		}
 		c = append(c, importButton("done", "Done", "Return to the main VM options."))
 	}
@@ -420,6 +425,23 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.Page = max(0, f.Page-1)
 			f.Focus = 0
 		case "next":
+			// Stop at the first unfinished field on this or an earlier step.
+			// Later disk/network choices remain editable on their own pages.
+			if _, err := f.Request("qemu:///system"); err != nil {
+				invalid := f
+				invalid.FocusError(err)
+				if invalid.Page <= f.Page || invalid.Page == 3 {
+					if f.Page == 0 && strings.Contains(err.Error(), "firmware") {
+						invalid.Page = 0
+						for i, control := range invalid.controls() {
+							if control.id == "firmware" {
+								invalid.Focus = i
+							}
+						}
+					}
+					return invalid, none
+				}
+			}
 			f.Page = min(2, f.Page+1)
 			f.Focus = 0
 		case "preview", "export":
@@ -655,6 +677,9 @@ func (f CreationForm) View(width, height int) string {
 		purpose = "Choose VM hardware before preparing the images."
 	}
 	lines := []string{clean("Create a VM"), clean(purpose), "", clean(titles[page]), ""}
+	if page < 3 {
+		lines[3] = clean(fmt.Sprintf("Step %d of 3 · %s", page+1, titles[page]))
+	}
 	controls := f.controls()
 	if len(controls) == 0 {
 		return strings.Join(lines, "\n")
@@ -681,8 +706,18 @@ func (f CreationForm) View(width, height int) string {
 		}
 		footer = append(footer, clean(marker+"[ "+controls[primary].label+" ]"))
 	}
-	footer = append(footer, clean(controls[focus].help))
+	help := wrap(validation.SafeText(controls[focus].help), width)
+	footer = append(footer, help[:min(2, len(help))]...)
+	footer = append(footer, clean("Tab next · Left/Right change · Esc back"))
+	// Leave room for the focused control even when an error and help wrap.
+	for len(lines)+len(footer)+2 > height && len(lines) > 2 {
+		lines = append(lines[:2], lines[3:]...)
+	}
 	room := max(1, height-len(lines)-len(footer))
+	showScroll := len(body) > room && room > 1
+	if showScroll {
+		room--
+	}
 	pos := slices.Index(body, focus)
 	start := max(0, pos-room+1)
 	if pos < 0 {
@@ -695,7 +730,7 @@ func (f CreationForm) View(width, height int) string {
 		if i == focus {
 			marker = "> "
 		}
-		value := validation.SafeText(c.value)
+		value := validation.SafeText(creationFriendlyValue(c.id, c.value))
 		row := ""
 		switch c.kind {
 		case "button":
@@ -714,6 +749,9 @@ func (f CreationForm) View(width, height int) string {
 			row = c.label + ": [" + value + "]"
 		}
 		lines = append(lines, clean(marker+row))
+	}
+	if showScroll {
+		lines = append(lines, clean(fmt.Sprintf("Options %d–%d of %d · Tab to see more", start+1, min(len(body), start+room), len(body))))
 	}
 	lines = append(lines, footer...)
 	return strings.Join(lines[:min(height, len(lines))], "\n")
@@ -823,4 +861,24 @@ func (f *CreationForm) FocusError(err error) {
 		}
 	}
 	f.cursorField = ""
+}
+
+// creationFriendlyValue keeps protocol values out of simple decisions without
+// changing the declaration sent to the shared service.
+func creationFriendlyValue(id, value string) string {
+	labels := map[string]map[string]string{
+		"guestAgent": {"false": "Disabled", "true": "Enabled"},
+		"link":       {"down": "Disconnected", "up": "Connected"},
+		"graphics":   {"none": "No display", "vnc-unix": "Local console (VNC)"},
+		"cpuMode":    {"host-model": "Host-compatible (host-model)", "host-passthrough": "Host CPU (host-passthrough)", "custom": "Choose a CPU model"},
+		"clock":      {"utc": "UTC", "localtime": "Local time"},
+		"usb":        {"none": "Disabled", "qemu-xhci": "USB 3 (qemu-xhci)"},
+		"balloon":    {"none": "Disabled", "virtio": "Enabled (virtio)"},
+		"watchdog":   {"none": "Disabled", "reset": "Restart guest on timeout"},
+		"bus":        {"sata": "SATA", "scsi": "SCSI", "virtio": "Virtio (guest driver required)"},
+	}
+	if text := labels[id][value]; text != "" {
+		return text
+	}
+	return value
 }

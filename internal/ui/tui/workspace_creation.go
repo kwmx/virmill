@@ -131,10 +131,7 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			if m.CreationIndex >= len(m.CreationChoices) {
 				m.CreationPicking = false
 				m.Error = ""
-				m.advanced()
-				m.CatalogSection = 1
-				m.CatalogMode = "import"
-				return m, nil
+				return m, m.openImport("auto")
 			}
 			return m, m.loadCreation(m.CreationChoices[m.CreationIndex].OperationID, "")
 		}

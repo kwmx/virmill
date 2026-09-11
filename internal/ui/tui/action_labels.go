@@ -49,6 +49,7 @@ var actionText = map[string]struct{ label, description string }{
 	"snapshot show":                 {"Verify local capture", "Inspect and verify every member of a retained recovery set."},
 	"snapshot restore":              {"Restore capture as new VM", "Create independent disks and a new disconnected VM from a capture."},
 	"vm boot show":                  {"View VM boot order", "Compare active and next-boot disk and network device order."},
+	"vm boot set":                   {"Edit boot order and installer", "Choose which device boots first or eject an installer disc for the next boot."},
 	"vm readiness show":             {"Check guest agent", "Check the running VM's guest-agent channel and response."},
 	"guest tools install":           {"Guest tools", "Install supported guest integration tools with a reviewed plan."},
 	"guest tools catalog":           {"Supported guest tools", "Read Linux installation requirements and Windows guidance."},

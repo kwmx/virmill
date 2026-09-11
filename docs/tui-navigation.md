@@ -1,210 +1,181 @@
 # TUI workspace
 
-Run **`virmill`** in a terminal to open the full-screen interface. `virmill tui`
-is equivalent. The noninteractive CLI remains available with explicit commands;
-redirected stdin prints help instead of trying to draw a terminal UI.
+Run **`virmill`** in a terminal to open the interface. `virmill tui` is equivalent.
+Explicit subcommands remain available for scripts. Redirected stdin prints help
+instead of drawing a terminal UI.
 
-The default Overview loads real VM inventory, running/stopped counts, available
-pool storage and durable jobs. It is a resource workspace, not a command prompt.
-The connection remains visible. At 105 columns and wider, sections appear in a
-sidebar; smaller terminals use a single content pane and compact navigation.
+Overview shows VM inventory, running/stopped counts, storage and durable jobs.
+The connection remains visible. Terminals at least 105 columns wide show the
+section sidebar; narrower terminals use a single content pane.
 
-## Choose a task
+## Find an action
 
 - **Tab / Shift-Tab** moves between content, action buttons and navigation.
-  Use left/right on buttons, up/down in lists, then Enter to activate.
+  Use arrows to select a row or button, then **Enter** to open it.
 - **1–9** opens Overview, VMs, Networks, Storage, Templates, Labs, Protection,
   Devices and Jobs. **0** opens Plugins; **,** opens Settings.
-- **Enter** on a resource opens its complete details, including stable IDs.
-  **/** filters resource names, states and IDs. Enter keeps the filter;
-  Esc clears it. Search text never acts as a command.
-- Common tasks have direct buttons: VM Start/Shut down/Resume follows the
-  observed state; Create VM and Import sit beside Details. Other sections expose
-  tasks such as Create network, Restore, Read job events and Install plugin.
-- **a More** shows a short list of everyday tasks for the selected resource.
-  **Advanced tools...** holds saved-state, recovery, diagnostics and other
-  specialist tasks. Select that entry or press **A**; Esc returns to common tasks.
-  Each task has a brief explanation. All tools retains every implemented action.
-- **: All tools** exposes all implemented actions. Left/Right switches sections;
-  **/** searches task names and descriptions (for example, CPU). Esc clears a
-  search, then returns to the resource page. **i Import** opens source preparation
-  choices directly from Overview or VMs: OVA appliance, ISO installer or existing
-  disk images. Choosing a source type opens the explorer automatically.
-- **r** refreshes observations. **x** in a details page toggles raw data/native
-  XML. PgUp/PgDn scrolls long details or plans.
-- **?** opens modal help. **Esc** returns to the previous page or cancels a form.
-  **q / Ctrl-C** detaches; accepted daemon jobs keep running.
+- **Enter** on a resource opens its details. **/** filters names, states and IDs;
+  Enter keeps the filter, and Esc clears it. Search text is never a command.
+- Common VM buttons include state-appropriate power actions, CPU/RAM,
+  **Boot / installer**, **Guest tools** and Capture. Create VM and Import are
+  available from the workspace. Selecting a VM never starts it.
+- **a More** shows everyday tasks for the selected resource. **Advanced tools...**
+  (or **A**) opens specialist actions. Each action includes a short explanation.
+- **: All tools** lists every implemented action. Left/Right changes sections;
+  **/** searches names and descriptions. Esc clears the search, then goes back.
+- **r** refreshes observations. **x** in details toggles technical data/native XML.
+  **PgUp / PgDn** scrolls long details and reviews.
+- **?** opens help. **Esc** goes back or cancels a form. **q / Ctrl-C** detaches;
+  accepted jobs continue in the coordinator.
 
-VM details show state-sensitive power controls, CPU/RAM, Capture and More.
-Restart, Pause, saved-state controls and Guest setup are grouped under More. These use the selected stable VM identity;
-refreshing a list preserves that identity. If it disappears or becomes ambiguous,
-select a row again before acting. Neither list selection nor navigation starts a VM.
+Actions use the selected VM's stable identity. If the VM disappears or becomes
+ambiguous, select it again before acting.
 
-## Choose files without typing full paths
+## Browse files and create folders
 
-For an empty field, the explorer starts in your **home folder**. Reopening a
-populated field starts at its existing folder or the selected file's parent. Use arrows and Enter to open a folder or select a file.
-**Backspace** goes to the parent; **Ctrl+H** goes home. **/** filters names,
-**Ctrl+L** enters a path (including ~/), and **.** shows hidden entries.
-For folder fields, **Ctrl+S** chooses the current folder. **Ctrl+O** reopens the
-explorer from a path field in a form.
+The explorer starts in your **home folder** for an empty field. Reopening a path
+starts at that folder or the selected file's parent. It does not assume a test
+folder such as `~/images` exists.
 
-Selection fills one field and returns to the form. Esc backs out without applying
-anything. The explorer reads names and metadata only. It does not extract media
-or create folders. Permission errors stay visible; links and special files are
-not offered. New destination names can be typed after choosing their parent.
+Use arrows and **Enter** to open a folder or select a file. **Backspace** goes to
+the parent, **Ctrl+H** goes home, **/** filters names, **Ctrl+L** enters a location
+(including `~/`), and **.** shows hidden entries. **Ctrl+S** selects the current
+folder when choosing a folder or a source directory. **Ctrl+O** reopens the
+explorer from a form's path field.
 
-## Import options
+**Ctrl+N** opens **New folder**. Enter a name and press Enter to create a private
+folder in the current directory. Esc cancels. The new folder is highlighted;
+Enter opens it, and Ctrl+S selects it. Existing files and folders are never
+replaced. Permission errors stay visible; links and special files are not offered.
 
-Choose **Import**, then OVA, ISO or existing disks. Each opens a three-page form;
-no settings file is required. **Tab / Shift-Tab** moves between options,
-**Enter** activates the selected button or file explorer, left/right changes
-selectors, and **Space** changes a checkbox. A short explanation follows the
-focused option. **Back** or Esc returns one page without losing your choices.
-While editing an import, the sidebar and unrelated shortcuts are hidden. The
-primary Continue or Preview button remains visible as options scroll.
+Selecting a source reads metadata. It does not extract archives or start an import.
 
-1. **Source:** choose an OVA/ISO file or the folder containing existing disks.
-   For OVA, **Continue** checks the appliance automatically. A single appliance
-   advances to Destination; choose a member when the archive contains several
-   systems. Large files can take several minutes: the checking screen shows
-   elapsed time and **Cancel inspection** (Enter or Esc). Cancellation stops
-   the read, keeps the chosen source and does not submit a job. For ISO, the media name identifies the
-   installer; **Advanced verification** accepts an optional publisher checksum.
-2. **Destination:** choose an existing parent with **Save in**, then enter a new
-   folder name. The reviewed import creates that folder; browsing does not.
-   Existing output folders and original media are preserved.
-3. **Disks:** use the disk selector to edit each disk. ISO imports offer
-   **Add blank disk**, a disk name and capacity in MiB. OVA retains every disk
-   attached to the selected appliance. OVA and existing disks require an explicit
-   source format and maximum virtual-size limit; that limit does not resize the
-   disk. Existing disks offer separate **Add disk file** and
-   **Add backing / extent file** buttons. Include every file needed by the chain;
-   backing files do not become extra guest disks.
+## Import an image
 
-For ISO and existing disks, stop any program or VM using the source images, then
-explicitly check **Source images are not in use**. Check every disk's size and
-format before selecting **Preview import**. Changing the source clears dependent
-inspection and source-confirmation choices. The backend repeats source, format,
-dependency and space checks; selecting a filename does not certify its contents.
+Choose **Import** or press **i** from Overview or VMs. One explorer accepts OVA,
+ISO, QCOW2, raw/IMG, VMDK, VDI, VHD and VHDX files, or a directory containing disk
+images and their dependencies. Virmill detects the actual supported format;
+extensions alone do not establish what a file contains. Driver availability
+still depends on the supported QEMU build.
 
-**Export settings** is optional. It saves the current validated options to a new
-private JSON file; choose its folder and filename, then Enter to export. Existing
-files are never replaced. The exported object can be reused with the existing
-CLI `--input` option, supplying the source path separately. For example:
+1. **Review the source.** Selecting a file inspects it automatically and opens
+   **Review appliance** or **Review source**. Choose a system when an OVA contains
+   several. Edit the VM name, CPU cores and memory directly. Appliance values are
+   labeled as detected; disks and ISO images use labeled suggestions where they
+   do not provide hardware settings. A disk does not reliably identify its OS,
+   firmware or installed drivers. **Advanced settings** opens optional hardware
+   choices before any copying. Done or Esc returns to the summary.
+2. **Choose where to save.** Select an existing parent with **Save in**, then enter
+   a **New folder name**. The reviewed preparation job creates that destination.
+   Existing output folders and the original media remain untouched.
+3. **Review the disks.** Switch disks with Left/Right. Detected source formats and
+   sizes fill the controls. The maximum virtual size is a safety limit, not a
+   resize operation; lowering it cannot shrink an existing disk. ISO imports
+   offer blank disks for installation. For disk sets, include all required
+   backing and extent files; dependencies do not become extra guest disks.
+4. **Preview image preparation.** Review the source, destination, disk conversion
+   and required storage. Space errors name the shortfall in readable units;
+   **Back: Destination** returns to the location choice. Confirm the listed
+   consequences and choose **Apply reviewed plan** to start preparation.
 
-```sh
-virmill import prepare-install /path/to/installer.iso \
-  --input "$(cat -- "$HOME/virmill-import-settings.json")"
-```
+For ISO and existing disks, stop programs or VMs using the selected images and
+check **Source images are not in use**. The backend repeats source identity,
+dependency, format and free-space checks. A quick metadata summary is not a
+checksum verification or proof that the guest will boot.
 
-Use `import prepare` for OVA or `import prepare-disks` for a disk-source folder.
-Exporting does not create a plan or start an import. The settings file contains
-the chosen destination and disk options; check those before reusing it elsewhere.
+**Tab / Shift-Tab** selects an option, **Left/Right** changes a selector,
+**Space** toggles a checkbox, and **Enter** opens a path field or activates a
+button. Contextual help explains the focused option. Back retains choices;
+changing the source clears settings that depended on it. Cancel inspection stops
+the read and retains the source without submitting a job.
 
-These workflows **prepare images**. Applying their plans does not define a VM,
-boot it or install a guest OS. VM creation remains a separate action.
+Compressed archives such as 7z or ZIP must first be extracted into a new folder.
+Loose OVF descriptors and native recovery exports are not interchangeable with
+ordinary disk imports; use their documented workflow where available. Do not
+assume that every recognized container or guest configuration is supported.
 
-Import inspection, import previews and plan submission wait up to 20 minutes by
-default. CLI `--timeout` overrides the client wait. Only one import inspection or
-preview runs at a time per coordinator; a busy message means another check is
-finishing. Preview cancellation may leave a saved plan, but starts no operation.
-An interrupted apply has uncertain acceptance: check Jobs before submitting again.
+## Configure the VM
 
-## Forms and review
+Preparation creates independent images. It does not define or start a VM.
+When preparation completes while its job is still open, VM setup opens
+automatically. Otherwise choose **Create VM** and select the prepared images.
+The CPU/RAM choices from the source summary carry into this setup.
 
-CPU/RAM, cold capture, guest recipes, and repository initialization/checks have
-dedicated labeled forms. Each input takes one row, with a short explanation only
-for the focused field. CPU/RAM fields left blank remain unchanged. A stopped
-VM is required for the implemented next-boot resource edit. Enter validates the
-form and requests a service plan; it does not apply the changes.
+The ordinary **VM options** page contains name, CPU cores, memory, storage pool
+and **Firmware**. Choose BIOS or UEFI to match the original guest or installer.
+Unknown firmware is not guessed. **Advanced hardware** keeps machine type,
+CPU model, display, clock, USB controller, memory balloon, watchdog and the guest
+agent channel available without putting all those decisions on the first page.
+Changing the machine reloads its supported options; unsupported retained choices
+must be reviewed rather than silently replaced.
 
-Other implemented actions are also reachable through the catalog. Where a
-dedicated form is not yet available, the catalog form
-collects a stable ID or explicit path, with a **Settings file** field for
-advanced mappings. That file contains the JSON object described by the CLI
-`--input` documentation. The TUI does not ask you to type a shell command or paste
-a JSON request envelope. For older examples shaped as `{id,path,input}`, put the
-ID/path into their labeled fields and save only `input` as the settings file.
-Use the supplied examples as a starting point. File paths must be canonical and
-absolute; symlinks/special files and duplicate JSON keys are refused. The file
-is read only after explicit form submission. Credential values remain file
-references, not pasted secrets.
+**Continue to disks** reviews storage controllers and boot priority; priority 1
+boots first. **Continue to networks** configures each adapter separately. Original
+adapters remain represented. Choose a network and a compatible adapter model;
+**Disconnected** keeps the cable down on first boot. Connecting multiple networks
+can bypass isolation through the guest. No network exposure is enabled silently.
 
-Plans show human-readable steps, exact affected resources, complete identifiers,
-policy values, risks, estimates and immutable digest. Enter opens the confirmation
-page. Explicitly check every required acknowledgement with Space/Enter, select
-**Apply reviewed plan**, and press Enter. The TUI submits that exact plan ID and
-digest; backend authorization and stale-state checks remain authoritative.
-Esc returns to the full review or cancels without applying. Hidden help or an
-undersized terminal cannot submit an action. Lost replies direct you to Jobs;
-there is no automatic retry with a new operation identity.
+Continue catches unfinished fields on the current step and moves focus to the
+problem. **Preview VM creation** requests a separate reviewed plan. Creation
+leaves the VM powered off; Start is a separate action. Completed creation does not
+claim guest boot, provisioning or connectivity verification.
 
-Accepted operations open Job details. Refresh to observe progress; detaching does
-not cancel them. Use the job's More menu for explicit cancellation or
-reconciliation. Reconciliation observes uncertain effects; it does not blindly
-replay them. Reopen an existing plan with **Review saved plan** in Jobs to review it.
+## Guest tools and installer media
 
-## Terminal options and current boundaries
+For a new VM, enable **Guest agent channel** under Advanced hardware if you intend
+to install QEMU guest tools. After the guest boots, **Guest tools** opens a guided
+Linux installation form with a guest-system choice and optional desktop tools.
+It requires a reachable guest, a non-root SSH account with the documented sudo
+access, a key file and verified SSH host keys. Windows has manual instructions;
+Linux package installation is not a universal guest adaptation service. See
+[Guest tools](guest-tools.md) for supported profiles and verification boundaries.
 
-Use at least **80×24** for normal operation. The UI remains navigable down to
-60×18; smaller windows retain state and suppress actions until resized.
-`virmill --no-color`, `NO_COLOR=1`, or `VIRMILL_NO_COLOR=1` disables color.
-`VIRMILL_ASCII=1` uses ASCII framing. State and focus also use text markers.
-Untrusted names/output are sanitized before rendering; detail pages wrap complete
-identifiers instead of silently truncating them to a table cell.
+On a stopped VM, **Boot / installer** opens observed boot devices. **Space**
+includes or excludes a device; **Left/Right** moves its priority. **Installer
+media** can eject a loaded read-only CD-ROM while keeping its file. Preview shows
+the exact next-boot changes before approval. This control does not attach an
+arbitrary new ISO, start a VM or prove that OS installation finished. Unsupported
+boot configurations remain unchanged with an explanation.
 
-The catalog covers every currently implemented program action. It does not create
-missing backend features: the complete VM creation wizard, multi-NIC editing, USB
-attachment/reconnection and the complete lab/protection workflows still need
-implementation or qualification. Import preparation has native controls; advanced
-VM creation mappings still use parameter files. All 71 complete-v1
-acceptance scenarios remain required. See the [evidence matrix](requirements-to-evidence.md).
+## Review, progress and recovery
 
-## Import and VM hardware
+Dedicated forms cover creation/import, CPU/RAM, boot order, guest tools, cold
+capture, guest recipes and repository initialization/checks. Each requests a
+shared service plan before any mutation. Some specialist catalog actions still
+use a **Settings file** for mappings described by the CLI `--input` contract;
+the TUI does not require a shell command or pasted request envelope.
 
-Image preparation now explains storage errors in GiB, including how much space is
-missing. Use **Back: Destination** to choose another location. The source disk's
-maximum size is a safety limit, not a resize control; reducing it cannot make an
-existing disk smaller. Known appliance capacities fill this field automatically.
-CPU/RAM detected from an appliance are shown before preparation. Choose
-**CPU, RAM and VM settings** to edit hardware before copying; those choices carry
-through to VM creation. Changing the preparation input invalidates that saved
-configuration and requires reviewing it again.
+Plans show steps, affected resources, identifiers, risks, storage estimates and
+an immutable digest. Enter opens confirmation. Check every required
+acknowledgement, select **Apply reviewed plan**, then press Enter. The backend
+rechecks authorization and state. Esc returns to review; backing out of review
+restores the originating form and its values. Closing help or using an undersized
+terminal cannot submit changes.
 
-After preparation succeeds, VM setup opens when you are still viewing that job.
-Otherwise choose **Create VM** from VMs or Jobs and select your prepared images.
-Set the name, CPU cores, memory and storage pool, then choose firmware under
-**Hardware options**. Continue through disk mappings and network adapters to preview
-creation. Detected CPU/RAM values and suggested fallbacks are labeled. Invalid fields
-open on the relevant page. Each original network adapter needs an explicit network
-selection; a down cable keeps it disconnected. Creation leaves the VM powered off.
+Accepted operations open Job details. Jobs refresh automatically every three
+seconds and show the current status, failure explanation and available next
+actions. **Events** opens recorded activity. Detaching does not cancel a job.
+Use **Cancel job** when offered; cancellation may wait for a safe boundary.
+**Check recovery** observes uncertain effects rather than blindly retrying them.
+Review an existing saved plan through **Review saved plan** in Jobs.
 
-**Export settings** saves reusable JSON from the current controls. In any explorer,
-**Ctrl+N** opens **New folder**; enter a name and press Enter to create it. Escape
-cancels the prompt. The new folder is highlighted; Enter opens it, and Ctrl+S selects
-it when choosing a destination. Existing files and folders are never overwritten.
+After a lost apply reply, inspect Jobs before submitting again: acceptance may
+already have occurred. There is no automatic retry with a new operation identity.
 
-Settings remain while returning from preview. If submission fails, inspect Jobs
-before trying again; the coordinator may already have accepted it. Reopening the
-same creation source recovers retained in-session settings. Accepted jobs and
-prepared images survive TUI closure, but incomplete wizard edits currently require
-an explicit export to survive a TUI restart.
+## Export settings and terminal options
 
-### Review an appliance before importing
+**Export settings** saves validated import or creation choices to a new private
+JSON file. Choose a folder and filename; existing files are never replaced.
+Export does not start a job. CLI users can reuse that object with `--input`,
+supplying the source or prepared-operation identity separately. Inspect saved
+paths before reusing settings on another host. In-session drafts survive Back;
+unfinished wizard edits need an explicit export to survive closing the TUI.
 
-Choose an OVA in the explorer. Virmill reads its declared settings automatically
-and opens **Review appliance**. Edit VM name, CPU cores and memory directly.
-**Advanced settings** opens hardware choices before choosing a destination;
-**Done** or Esc returns to the summary. Tab moves among editable fields and
-actions; arrow keys read the full device list. Continue selects the destination
-and disk preparation options. Existing source media stays untouched.
+Use **80×24** or larger for normal operation. Narrower layouts retain choices;
+very small windows ask you to resize. `virmill --no-color`, `NO_COLOR=1`, or
+`VIRMILL_NO_COLOR=1` disables color. `VIRMILL_ASCII=1` uses ASCII framing. Text
+markers identify focus and state, and untrusted output is sanitized.
 
-The quick summary does not verify disk contents. Preparation performs full
-checksum and safety checks and presents a separate plan for review. A listed
-firmware-state file is not a supported restoration promise. Device or OS
-discrepancies are shown for review. CPU/RAM edits survive the in-session handoff
-to VM creation; unfinished drafts do not yet survive closing the TUI.
-
-For the same read-only metadata in the CLI, use `virmill import describe FILE.ova`.
-Use `virmill import inspect FILE.ova` when full archive verification is needed.
+This page describes implemented controls, not a complete-v1 support certificate.
+Hardware and guest checks retain their recorded evidence level. All 71 acceptance
+scenarios remain required; see the [requirements-to-evidence matrix](requirements-to-evidence.md).

@@ -35,18 +35,22 @@ func HumanDetails(value any, width int) []string {
 	return f.lines
 }
 
-// PlanDetails keeps approval identities first, then presents all plan fields.
+// PlanDetails explains the requested change first, then retains every plan field.
 // False, zero, empty and unknown values remain visible; review is not a claim
 // that the plan has been applied or its completion predicates verified.
 func PlanDetails(p domain.Plan, width int) []string {
 	f := newDetails(width)
+	planSummary(f, p)
+	f.line("", 0)
+	f.line("Complete plan details", 0)
+	f.line("Exact identities, checks and recovery information follow.", 0)
 	fields := []struct {
 		label string
 		value any
 	}{
 		{"Operation", p.Operation}, {"Plan ID", p.ID}, {"Plan digest", p.Digest},
 		{"Affected resources", p.ResourceIDs}, {"Acknowledgements", p.Acknowledgements},
-		{"Risks", p.Risks}, {"Steps", p.Steps}, {"Estimates", p.Estimates},
+		{"Steps", p.Steps}, {"Estimates", p.Estimates},
 		{"Input digest", p.InputDigest}, {"Connection ID", p.ConnectionID},
 		{"Actor UID", p.ActorUID}, {"Created at", p.CreatedAt}, {"Expires at", p.ExpiresAt},
 		{"API version", p.APIVersion}, {"Before fingerprints", p.Before},
@@ -56,6 +60,136 @@ func PlanDetails(p domain.Plan, width int) []string {
 		f.value(field.label, reflect.ValueOf(field.value), 0)
 	}
 	return f.lines
+}
+
+// The summary is an introduction, never a replacement for the frozen review.
+// It reads only named non-secret fields and does not execute custom formatters.
+func planSummary(f *details, p domain.Plan) {
+	command := strings.ReplaceAll(p.Operation, ".", " ")
+	switch p.Operation {
+	case "vm.create.devices-v1":
+		command = "vm create"
+	case "vm.configure-resources", "vm.configure-hardware":
+		command = "vm set"
+	case "vm.create.resume":
+		command = "vm creation resume"
+	case "vm.create.cleanup":
+		command = "vm creation cleanup"
+	case "vm.create.accept-devices-v1":
+		command = "vm creation accept"
+	case "snapshot.capture-cold-v1":
+		command = "snapshot create"
+	case "snapshot.restore-new-v1":
+		command = "snapshot restore"
+	case "backup.local-repository-init-v1":
+		command = "backup repository init"
+	case "backup.local-repository-check-v1":
+		command = "backup repository check"
+	case "backup.local-create-v1":
+		command = "backup create"
+	case "backup.local-restore-v1":
+		command = "backup restore"
+	}
+	if p.Operation == "guest.recipe.run" {
+		f.line("Run guest setup", 0)
+		f.line("Run the reviewed setup steps inside the selected VM over SSH.", 0)
+	} else if action, ok := actionText[command]; ok {
+		f.line(action.label, 0)
+		f.line(action.description, 0)
+	} else {
+		f.scalar("Review action", p.Operation, 0)
+	}
+	f.line("Nothing has been applied. Review the changes and warnings below.", 0)
+	f.line("", 0)
+	for _, field := range []struct {
+		label string
+		path  []string
+	}{
+		{"VM name", []string{"target", "spec", "name"}},
+		{"CPU cores", []string{"target", "spec", "vcpus"}},
+		{"Memory (MiB)", []string{"target", "spec", "memoryMiB"}},
+		{"CPU cores requested", []string{"requested", "vcpus"}},
+		{"Memory requested (MiB)", []string{"requested", "memoryMiB"}},
+		{"Apply mode", []string{"requested", "applyMode"}},
+		{"Source", []string{"source"}},
+		{"Source folder", []string{"sourceDirectory"}},
+		{"Save to", []string{"destination"}},
+		{"Guest address", []string{"address"}},
+		{"Guest setup", []string{"recipe", "metadata", "name"}},
+		{"Guest privilege", []string{"recipe", "spec", "privilege"}},
+	} {
+		if v, ok := planSummaryField(reflect.ValueOf(p.Review), field.path); ok {
+			f.value(field.label, v, 0)
+		}
+	}
+	f.value("Affected resources", reflect.ValueOf(p.ResourceIDs), 0)
+	if p.Estimates.AdditionalBytes > 0 {
+		f.scalar("Extra space estimate", planSpace(p.Estimates.AdditionalBytes), 0)
+	}
+	shutdown, _ := planSummaryField(reflect.ValueOf(p.Review), []string{"requiresShutdown"})
+	if p.Estimates.RequiresDowntime || shutdown.IsValid() && shutdown.Kind() == reflect.Bool && shutdown.Bool() {
+		f.line("Downtime: required by this plan.", 0)
+	}
+	if p.Estimates.Notes != "" {
+		f.scalar("Estimate notes", p.Estimates.Notes, 0)
+	}
+	f.line("", 0)
+	if len(p.Risks) == 0 {
+		f.line("Warnings: none supplied by the planner; this is not a safety guarantee.", 0)
+	} else {
+		f.value("Warnings and effects to review", reflect.ValueOf(p.Risks), 0)
+	}
+}
+
+func planSpace(n uint64) string {
+	const gib = uint64(1 << 30)
+	const mib = uint64(1 << 20)
+	unit, divisor := "bytes", uint64(1)
+	if n >= gib {
+		unit, divisor = "GiB", gib
+	} else if n >= mib {
+		unit, divisor = "MiB", mib
+	}
+	if divisor == 1 {
+		return strconv.FormatUint(n, 10) + " bytes"
+	}
+	// Round up without integer overflow: this is required space, not allocation.
+	tenths := (n%divisor*10 + divisor - 1) / divisor
+	whole := n/divisor + tenths/10
+	return strconv.FormatUint(whole, 10) + "." + strconv.FormatUint(tenths%10, 10) + " " + unit + " (" + strconv.FormatUint(n, 10) + " bytes)"
+}
+
+func planSummaryField(v reflect.Value, path []string) (reflect.Value, bool) {
+	for depth := 0; v.IsValid() && (v.Kind() == reflect.Interface || v.Kind() == reflect.Pointer); depth++ {
+		if v.IsNil() || depth >= detailDepth {
+			return reflect.Value{}, false
+		}
+		v = v.Elem()
+	}
+	if !v.IsValid() {
+		return v, false
+	}
+	if len(path) == 0 {
+		switch v.Kind() {
+		case reflect.String, reflect.Bool, reflect.Int, reflect.Int64, reflect.Uint, reflect.Uint64, reflect.Float64:
+			return v, true
+		}
+		return v, false
+	}
+	switch v.Kind() {
+	case reflect.Map:
+		if v.Type().Key() == reflect.TypeOf("") {
+			return planSummaryField(v.MapIndex(reflect.ValueOf(path[0])), path[1:])
+		}
+	case reflect.Struct:
+		for i := 0; i < v.NumField(); i++ {
+			field := v.Type().Field(i)
+			if field.IsExported() && strings.Split(field.Tag.Get("json"), ",")[0] == path[0] {
+				return planSummaryField(v.Field(i), path[1:])
+			}
+		}
+	}
+	return reflect.Value{}, false
 }
 
 type details struct {

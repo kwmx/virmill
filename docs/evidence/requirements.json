@@ -473,7 +473,11 @@
         "internal/importing/source_description_linux.go",
         "internal/ui/tui/source_summary.go",
         "docs/import-source-review.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/adr/0040-task-review-and-observed-job-navigation.md",
+        "internal/ui/tui/workspace_jobs.go",
+        "internal/ui/tui/workspace_boot.go",
+        "internal/ui/tui/boot_form.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -525,7 +529,12 @@
         "internal/backend/image/describe_linux_test.go",
         "internal/importing/source_description_linux_test.go",
         "internal/ui/tui/source_summary_test.go",
-        "tests/fixtures/release/general_sources_probe.py"
+        "tests/fixtures/release/general_sources_probe.py",
+        "internal/ui/tui/workspace_jobs_test.go",
+        "internal/ui/tui/workspace_boot_test.go",
+        "internal/ui/tui/boot_form_test.go",
+        "internal/ui/tui/creation_friendly_test.go",
+        "internal/ui/tui/plan_summary_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -583,7 +592,8 @@
         "general-sources-ui-native-001",
         "general-sources-ui-native-002",
         "general-owner-sources-native-001",
-        "guest-channel-native-001"
+        "guest-channel-native-001",
+        "beta-ux-flow-core-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -3005,7 +3015,11 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "docs/adr/0040-task-review-and-observed-job-navigation.md",
+        "internal/ui/tui/workspace_jobs.go",
+        "internal/ui/tui/workspace_boot.go",
+        "internal/ui/tui/boot_form.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-01",
@@ -3027,7 +3041,13 @@
         "internal/helper/network_authorization_test.go",
         "tests/fixtures/network/network_packet_fixture.py",
         "tests/fixtures/network/test_packet_parsers.py",
-        "tests/fixtures/network_parent/create_native.py"
+        "tests/fixtures/network_parent/create_native.py",
+        "internal/ui/tui/workspace_jobs_test.go",
+        "internal/ui/tui/workspace_boot_test.go",
+        "internal/ui/tui/boot_form_test.go",
+        "internal/ui/tui/creation_friendly_test.go",
+        "internal/ui/tui/plan_summary_test.go",
+        "tests/fixtures/release/hardware_ux_probe.py"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -3054,7 +3074,8 @@
         "discovery-native-upgrade-001",
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
-        "graceful-reboot-native-001"
+        "graceful-reboot-native-001",
+        "beta-ux-flow-core-001"
       ],
       "outstanding": [
         "A real PTY import approval detached while the coordinator completed two-disk conversion; CLI reconnection returned coherent persisted result/events. Additional client disconnects, all handlers and multi-client transport faults remain required.",
@@ -4447,7 +4468,11 @@
         "internal/guestsetup/tools.go",
         "internal/backend/libvirt/creation_guest_agent.go",
         "docs/guest-tools.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/adr/0040-task-review-and-observed-job-navigation.md",
+        "internal/ui/tui/workspace_jobs.go",
+        "internal/ui/tui/workspace_boot.go",
+        "internal/ui/tui/boot_form.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4567,7 +4592,12 @@
         "internal/ui/tui/source_summary_test.go",
         "tests/fixtures/release/general_sources_probe.py",
         "internal/guestsetup/tools_test.go",
-        "internal/backend/libvirt/creation_guest_agent_test.go"
+        "internal/backend/libvirt/creation_guest_agent_test.go",
+        "internal/ui/tui/workspace_jobs_test.go",
+        "internal/ui/tui/workspace_boot_test.go",
+        "internal/ui/tui/boot_form_test.go",
+        "internal/ui/tui/creation_friendly_test.go",
+        "internal/ui/tui/plan_summary_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4693,7 +4723,8 @@
         "general-sources-upgrade-native-001",
         "general-sources-coordinator-native-001",
         "general-sources-upgrade-native-002",
-        "general-sources-coordinator-native-002"
+        "general-sources-coordinator-native-002",
+        "beta-ux-flow-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4783,7 +4814,11 @@
         "internal/guestsetup/tools.go",
         "internal/backend/libvirt/creation_guest_agent.go",
         "docs/guest-tools.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/adr/0040-task-review-and-observed-job-navigation.md",
+        "internal/ui/tui/workspace_jobs.go",
+        "internal/ui/tui/workspace_boot.go",
+        "internal/ui/tui/boot_form.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4837,7 +4872,12 @@
         "internal/ui/tui/source_summary_test.go",
         "tests/fixtures/release/general_sources_probe.py",
         "internal/guestsetup/tools_test.go",
-        "internal/backend/libvirt/creation_guest_agent_test.go"
+        "internal/backend/libvirt/creation_guest_agent_test.go",
+        "internal/ui/tui/workspace_jobs_test.go",
+        "internal/ui/tui/workspace_boot_test.go",
+        "internal/ui/tui/boot_form_test.go",
+        "internal/ui/tui/creation_friendly_test.go",
+        "internal/ui/tui/plan_summary_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4904,7 +4944,8 @@
         "general-sources-upgrade-native-001",
         "general-sources-coordinator-native-001",
         "general-sources-upgrade-native-002",
-        "general-sources-coordinator-native-002"
+        "general-sources-coordinator-native-002",
+        "beta-ux-flow-core-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
