@@ -2212,7 +2212,8 @@
       ],
       "outstanding": [
         "Durable complete cold capture, immutable all-member publication, metadata-bound auxiliary delivery and new disconnected BIOS restoration are implemented through shared CLI/TUI. Focused generated-file/IPC/native-seam tests pass; frozen integrated and live evidence are being collected. Qualified firmware/TPM restore staging, identity-preserving replacement, checkpoint/revert and the full source/OS/crash matrix remain required.",
-        "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario."
+        "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
+        "Selected-capture backup and fresh-VM restore now have guided forms with exact shared requests and review/back tests. Native protection execution was not rerun for this UI-only slice; firmware/TPM restoration and all acceptance variants remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2439,7 +2440,8 @@
       "outstanding": [
         "Complete local stopped capture and new BIOS restore are implemented. Encrypted restic repository publication and restoration without original VM files/application database remain incomplete; a local catalog is not a full independent repository backup. Auxiliary restore and complete native recovery qualification remain required.",
         "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
-        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario."
+        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
+        "Selected-capture backup and fresh-VM restore now have guided forms with exact shared requests and review/back tests. Native protection execution was not rerun for this UI-only slice; firmware/TPM restoration and all acceptance variants remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2626,7 +2628,8 @@
       "outstanding": [
         "Isolated test restore catches identity/address conflicts and reports the exact readiness verified.",
         "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
-        "Encrypted two-disk BIOS capture backup, full repository check, empty-journal recovery, new-VM restore and synthetic second-disk boot passed in beta-recovery-native-002/003. Firmware/TPM recovery and the complete backup acceptance matrix remain open."
+        "Encrypted two-disk BIOS capture backup, full repository check, empty-journal recovery, new-VM restore and synthetic second-disk boot passed in beta-recovery-native-002/003. Firmware/TPM recovery and the complete backup acceptance matrix remain open.",
+        "Selected-capture backup and fresh-VM restore now have guided forms with exact shared requests and review/back tests. Native protection execution was not rerun for this UI-only slice; firmware/TPM restoration and all acceptance variants remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2875,7 +2878,8 @@
         "internal/backend/libvirt/console_linux.go",
         "internal/ui/console_linux.go",
         "internal/ui/tui/workspace_console.go",
-        "internal/ui/cli/console.go"
+        "internal/ui/cli/console.go",
+        "docs/evidence/console-protection-run.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
@@ -2893,7 +2897,9 @@
         "internal/ui/console_test.go",
         "internal/app/console_test.go",
         "internal/ui/cli/console_test.go",
-        "internal/ui/tui/workspace_access_test.go"
+        "internal/ui/tui/workspace_access_test.go",
+        "tests/fixtures/release/console_access_probe.py",
+        "tests/fixtures/release/graphical_access_probe.py"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
@@ -2911,12 +2917,18 @@
         "guest-channel-native-001",
         "console-protection-ui-001",
         "console-protection-integration-001",
-        "console-protection-final-001"
+        "console-protection-final-001",
+        "console-serial-native-001",
+        "console-graphical-native-001",
+        "console-graphical-native-002",
+        "console-graphical-native-003",
+        "console-viewer-version-001"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
         "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
-        "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open."
+        "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open.",
+        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4531,7 +4543,8 @@
         "internal/ui/tui/workspace_console.go",
         "internal/ui/cli/console.go",
         "internal/ui/tui/protection_form.go",
-        "internal/ui/tui/workspace_protection.go"
+        "internal/ui/tui/workspace_protection.go",
+        "docs/evidence/console-protection-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4662,7 +4675,9 @@
         "internal/app/console_test.go",
         "internal/ui/cli/console_test.go",
         "internal/ui/tui/protection_form_test.go",
-        "internal/ui/tui/workspace_access_test.go"
+        "internal/ui/tui/workspace_access_test.go",
+        "tests/fixtures/release/console_access_probe.py",
+        "tests/fixtures/release/graphical_access_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -4797,7 +4812,18 @@
         "beta-ux-final-core-001",
         "console-protection-ui-001",
         "console-protection-integration-001",
-        "console-protection-final-001"
+        "console-protection-final-001",
+        "console-serial-native-001",
+        "console-graphical-native-001",
+        "console-graphical-native-002",
+        "console-graphical-native-003",
+        "console-viewer-version-001",
+        "console-protection-packages-001",
+        "console-protection-packages-002",
+        "console-protection-upgrade-native-001",
+        "console-protection-upgrade-native-002",
+        "console-protection-restart-native-001",
+        "console-protection-restart-native-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4815,7 +4841,8 @@
         "Versioned cold declaration and source inventory are integrated into shared CLI/TUI inspection/verification. Guarded source files and transferred QEMU lock lifetime are prerequisites; no capture endpoint, durable complete publication, encrypted repository or identity-safe restore is established by these checks.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
-        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios."
+        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios.",
+        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4900,7 +4927,8 @@
         "internal/ui/tui/workspace_console.go",
         "internal/ui/cli/console.go",
         "internal/ui/tui/protection_form.go",
-        "internal/ui/tui/workspace_protection.go"
+        "internal/ui/tui/workspace_protection.go",
+        "docs/evidence/console-protection-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -4965,7 +4993,8 @@
         "internal/app/console_test.go",
         "internal/ui/cli/console_test.go",
         "internal/ui/tui/protection_form_test.go",
-        "internal/ui/tui/workspace_access_test.go"
+        "internal/ui/tui/workspace_access_test.go",
+        "tests/fixtures/release/console_access_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5041,13 +5070,15 @@
         "beta-ux-final-core-001",
         "console-protection-ui-001",
         "console-protection-integration-001",
-        "console-protection-final-001"
+        "console-protection-final-001",
+        "console-serial-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required.",
-        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios."
+        "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios.",
+        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -5954,7 +5985,13 @@
         "beta-recovery-race-001",
         "beta-recovery-reproducibility-001",
         "beta-recovery-fix-reproducibility-001",
-        "beta-recovery-fix-artifacts-001"
+        "beta-recovery-fix-artifacts-001",
+        "console-protection-packages-001",
+        "console-protection-packages-002",
+        "console-protection-upgrade-native-001",
+        "console-protection-upgrade-native-002",
+        "console-protection-restart-native-001",
+        "console-protection-restart-native-002"
       ],
       "outstanding": [
         "Generated help and current examples documented; full workflow tutorials depend on remaining implementation and fixtures.",

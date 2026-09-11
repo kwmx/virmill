@@ -78,3 +78,10 @@ boot-order editing passed, with automatic job completion and unchanged unrelated
 VM configuration. See [recorded evidence](beta-ux-flow-run.md). Console/access and
 settings-file-dependent protection workflows remain open; publication is not yet
 qualified.
+
+
+Console discovery/session launch and selected-capture backup/restore forms now
+have an integrated follow-up in [console/protection evidence](console-protection-run.md).
+Native CLI/TUI serial attachment and return passed. Viewer/version restrictions,
+live guest-tools installation, external backup receipt UX and firmware/TPM
+restoration remain explicit qualification or implementation gaps.

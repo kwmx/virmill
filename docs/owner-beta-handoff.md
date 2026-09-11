@@ -5,13 +5,14 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** the installed CLI and coordinator use `47d1a8b`.
-A complete keyboard-only import → preparation → creation → boot-order-edit run
-passed on the test VM. Reviews now lead with changes and warnings; Back retains
-form input, jobs refresh automatically, and boot/installer settings use observed
-devices. See [task-completion evidence](evidence/beta-ux-flow-run.md) for exact
-hashes and limits. Console access and guided protection workflows still block
-publication readiness. Exit any already-open TUI and run `virmill` again.
+**Current UI update:** the installed CLI and coordinator use `2c6091f`.
+The unified OVA/ISO/disk import and hardware controls remain available. This update
+adds Console from VM details, guided selected-capture backup/restore forms and a
+simpler guest-tools setup with optional advanced fields. Live CLI/TUI serial
+attachment and a real private SPICE viewer connection passed; closing either
+kept the guest running. See [console/protection evidence](evidence/console-protection-run.md)
+for exact hashes, retained failures and support limits. VNC launch and live guest
+package installation remain unqualified. Exit any open TUI and run `virmill` again.
 
 ## Start testing now
 
