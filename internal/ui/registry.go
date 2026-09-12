@@ -56,6 +56,7 @@ var Actions = []Action{
 	{"network show", "network.get", "Networks", "Inspect live/persistent network configuration by stable UUID", "id", ""},
 	{"vm list", "inventory.list", "VMs", "List native libvirt inventory without adoption", "", ""},
 	{"vm show", "inventory.get", "VMs", "Inspect live and persistent state by UUID", "id", ""},
+	{"vm resources show", "vm.resources.show", "VMs", "Show current and next-boot CPU/RAM values and supported edits", "id", ""},
 	{"vm recovery inspect", "vm.recovery.inspect", "Protection", "Inspect configured disks, backing sources, firmware, TPM and unresolved dependencies without reading source bytes", "id", ""},
 	{"vm recovery auxiliary inspect", "vm.recovery.auxiliary.inspect", "Protection", "Inspect complete explicit firmware/TPM member metadata through VM-specific administrator policy; no state bytes are read or captured", "id", ""},
 	{"snapshot create", "snapshot.create", "Protection", "Plan a complete stopped capture with independent disks, original configuration and required firmware/TPM state", "id", "create"},

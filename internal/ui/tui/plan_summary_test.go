@@ -65,6 +65,30 @@ func TestPlanSummaryDoesNotInventUnknownOperationEffects(t *testing.T) {
 	}
 }
 
+func TestResourcePlanSummaryShowsExactBeforeAndAfter(t *testing.T) {
+	p := domain.Plan{Operation: "vm.configure-resources", Review: map[string]any{
+		"requested":       map[string]any{"vcpus": float64(2), "memoryMiB": float64(1), "applyMode": "next-boot"},
+		"beforeResources": domain.ResourceValues{VCPUs: resourceNumber(1), MemoryBytes: resourceNumber(1000000)},
+		"afterResources":  domain.ResourceValues{VCPUs: resourceNumber(2), MemoryBytes: resourceNumber(1 << 20)},
+	}}
+	var socket domain.Plan
+	b, _ := json.Marshal(p)
+	if err := json.Unmarshal(b, &socket); err != nil {
+		t.Fatal(err)
+	}
+	for _, plan := range []domain.Plan{p, socket} {
+		summary, _, _ := strings.Cut(strings.Join(PlanDetails(plan, 80), "\n"), "Complete plan details")
+		for _, want := range []string{"CPU cores (next boot): 1 -> 2", "RAM (next boot): 1000000 bytes -> 1 MiB", "Apply mode: next-boot"} {
+			if !strings.Contains(summary, want) {
+				t.Fatal(summary)
+			}
+		}
+		if strings.Contains(summary, "CPU cores requested:") || strings.Contains(summary, "Memory requested (MiB):") {
+			t.Fatal("duplicated resource choices", summary)
+		}
+	}
+}
+
 func TestPlanSummarySpaceRoundsUpWithoutOverflow(t *testing.T) {
 	for _, tt := range []struct {
 		n    uint64

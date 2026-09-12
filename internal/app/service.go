@@ -179,6 +179,8 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "console discovery is unavailable for this provider")
 		}
 		return observer.InspectConsole(ctx, r.Connection, r.ID)
+	case "vm.resources.show":
+		return s.resourceView(ctx, r)
 	case "vm.guest-agent.show":
 		if r.ID == "" || r.Path != "" || r.Action != "" || len(r.Input) != 0 || r.After != 0 || r.Apply != nil {
 			return nil, domain.Fail("INVALID_INPUT", "Guest-agent inspection requires only a stable VM UUID")
@@ -480,6 +482,33 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		}
 	}
 	review := map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "requiresShutdown": h.action == "set", "diskDeletion": false}
+	if h.action == "set" && input["editVersion"] == float64(1) {
+		id, _ := input["vmID"].(string)
+		v, err := h.s.GetVM(ctx, p.ConnectionID, id)
+		if err != nil {
+			return nil, err
+		}
+		if v.Fingerprint != input["editBeforeFingerprint"] {
+			return nil, domain.Fail("STALE_PLAN", "VM changed during CPU/RAM review; refresh settings")
+		}
+		edit, err := resourceEdit(input)
+		if err != nil {
+			return nil, err
+		}
+		after, err := xmlpatch.EditResources(v.PersistentXML, edit)
+		if err != nil {
+			return nil, err
+		}
+		beforeValues, err := xmlpatch.ReadResourceValues(v.PersistentXML)
+		if err != nil {
+			return nil, err
+		}
+		afterValues, err := xmlpatch.ReadResourceValues(after)
+		if err != nil {
+			return nil, err
+		}
+		review["beforeResources"], review["afterResources"] = beforeValues, afterValues
+	}
 	if h.action == "set" && input["editVersion"] == float64(2) {
 		id, _ := input["vmID"].(string)
 		v, err := h.s.GetVM(ctx, p.ConnectionID, id)

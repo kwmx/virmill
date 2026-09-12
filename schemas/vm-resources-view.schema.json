@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-resources-view.schema.json",
+  "title": "Observed live and next-boot resource settings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resource",
+    "name",
+    "state",
+    "fingerprint",
+    "hasManagedSave",
+    "persistent",
+    "live",
+    "canEditCPU",
+    "canEditMemory",
+    "requiresShutdown",
+    "applyModes"
+  ],
+  "properties": {
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "providerID",
+        "connectionID",
+        "kind",
+        "resourceUUID"
+      ],
+      "properties": {
+        "providerID": {
+          "const": "libvirt"
+        },
+        "connectionID": {
+          "enum": [
+            "qemu:///system",
+            "qemu:///session"
+          ]
+        },
+        "kind": {
+          "const": "vm"
+        },
+        "resourceUUID": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "fingerprint": {
+      "type": "string"
+    },
+    "hasManagedSave": {
+      "type": "boolean"
+    },
+    "persistent": {
+      "$ref": "#/$defs/values"
+    },
+    "live": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/values"
+        }
+      ]
+    },
+    "canEditCPU": {
+      "type": "boolean"
+    },
+    "canEditMemory": {
+      "type": "boolean"
+    },
+    "cpuReason": {
+      "type": "string"
+    },
+    "memoryReason": {
+      "type": "string"
+    },
+    "requiresShutdown": {
+      "type": "boolean"
+    },
+    "applyModes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "const": "next-boot"
+      }
+    }
+  },
+  "$defs": {
+    "values": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vcpus",
+        "maximumVcpus",
+        "memoryBytes",
+        "maximumMemoryBytes"
+      ],
+      "properties": {
+        "vcpus": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 18446744073709551615
+        },
+        "maximumVcpus": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 18446744073709551615
+        },
+        "memoryBytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 18446744073709551615
+        },
+        "maximumMemoryBytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 18446744073709551615
+        },
+        "cpuError": {
+          "type": "string"
+        },
+        "memoryError": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -52,6 +52,7 @@ var actionText = map[string]struct{ label, description string }{
 	"vm boot show":                  {"View VM boot order", "Compare active and next-boot disk and network device order."},
 	"vm guest-agent enable":         {"Enable guest integration", "Add the management channel before installing QEMU guest tools."},
 	"vm guest-agent show":           {"Guest integration status", "Check the guest-agent management channel."},
+	"vm resources show":             {"CPU and memory settings", "Compare current and next-boot values, then review changes."},
 	"backup receipt show":           {"Inspect recovery receipt", "Read recovery identifiers for a verified backup operation."},
 	"backup receipt read":           {"Open recovery receipt", "Read a saved receipt without accessing its backup repository."},
 	"backup receipts":               {"Saved backups", "Choose a verified backup to recover or save its recovery receipt."},

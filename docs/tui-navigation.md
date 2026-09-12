@@ -139,6 +139,12 @@ boot configurations remain unchanged with an explanation.
 
 ## Review, progress and recovery
 
+**CPU / RAM** reads the selected VM again, compares **Live** and **Next boot**
+values, and fills the requested settings for you. Only changed fields enter the
+review. Running guests offer a separate graceful-shutdown preview; unsupported
+layouts explain which setting needs advanced configuration. See
+[CPU and memory settings](cpu-memory-settings.md).
+
 Dedicated forms cover creation/import, CPU/RAM, boot order, guest tools, backup, restore and cold
 capture, guest recipes and repository initialization/checks. Each requests a
 shared service plan before any mutation. Some specialist catalog actions still

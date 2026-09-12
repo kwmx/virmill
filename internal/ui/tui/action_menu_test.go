@@ -20,7 +20,11 @@ func TestTaskMenuGroupsAndSearchByPlainLanguage(t *testing.T) {
 	}
 	m, _ = wk(m, "/")
 	m, _ = wk(m, "CPU")
-	if len(m.catalog()) != 2 || m.catalog()[0].Command != "vm set" || m.catalog()[1].Command != "vm creation options" {
+	found := map[string]bool{}
+	for _, action := range m.catalog() {
+		found[action.Command] = true
+	}
+	if !found["vm set"] || !found["vm creation options"] || !found["vm resources show"] {
 		t.Fatal("ordinary CPU search did not find editor", m.catalog())
 	}
 	m, _ = wk(m, "esc")

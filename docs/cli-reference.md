@@ -2255,6 +2255,29 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill vm resources show`
+
+Show current and next-boot CPU/RAM values and supported edits
+
+```text
+Usage:
+  virmill vm resources show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill vm restore-saved`
 
 Plan restoration of saved state

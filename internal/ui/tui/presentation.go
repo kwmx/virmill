@@ -103,6 +103,7 @@ func planSummary(f *details, p domain.Plan) {
 	}
 	f.line("Nothing has been applied. Review the changes and warnings below.", 0)
 	f.line("", 0)
+	resourceChanges := resourcePlanChanges(f, p)
 	for _, field := range []struct {
 		label string
 		path  []string
@@ -120,6 +121,9 @@ func planSummary(f *details, p domain.Plan) {
 		{"Guest setup", []string{"recipe", "metadata", "name"}},
 		{"Guest privilege", []string{"recipe", "spec", "privilege"}},
 	} {
+		if len(field.path) == 2 && field.path[0] == "requested" && resourceChanges[field.path[1]] {
+			continue
+		}
 		if v, ok := planSummaryField(reflect.ValueOf(p.Review), field.path); ok {
 			f.value(field.label, v, 0)
 		}

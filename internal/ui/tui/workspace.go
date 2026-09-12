@@ -23,6 +23,11 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	Resources            *resourceSetup
+	ResourceSummary      *domain.VMResourceView
+	ResourceSummaryVM    domain.VM
+	ResourceSummaryError string
+
 	draftWriter                               *setupWriter
 	draftSaved, draftResume                   *SavedSetupDocument
 	draftSequence                             uint64
@@ -398,12 +403,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		return m.openProtection(a.Command)
 	case "vm boot set":
 		return m.openBootForm()
-	case "vm set":
-		if vm.Key.UUID != "" {
-			m.guided("resources")
-			m.Advanced = false
-			return nil
-		}
+	case "vm set", "vm resources show":
+		return m.openResources()
 	case "snapshot create":
 		if vm.Key.UUID != "" {
 			m.guided("capture")
@@ -551,6 +552,21 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.draftChoice = 0
 				m.Error = "Could not check the saved preparation: " + importError(err) + ". Choose Continue prepared setup to retry."
 				m.Notice = "Saved choices were kept. No operation was repeated."
+			}
+			if v.Kind == "resources-load" {
+				m.Busy = false
+				if m.Resources != nil {
+					m.Resources.Loading = false
+					m.Resources.Error = text
+					m.Error = ""
+				}
+			}
+			if v.Kind == "resources-summary" {
+				m.ResourceSummaryError = text
+			}
+			if v.Kind == "plan" && m.Resources != nil {
+				m.Resources.Error = importError(err)
+				m.Error = ""
 			}
 			if v.Kind == "guest-agent-load" {
 				m.failGuestAgent(text)
@@ -725,6 +741,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Form = nil
 			m.ActionForm = nil
 			m.Advanced = false
+		case "resources-load":
+			m.receiveResources(v.Response.Data)
+		case "resources-summary":
+			m.receiveResourceSummary(v.Response.Data)
 		case "guest-agent-load":
 			m.receiveGuestAgent(v.Response.Data)
 		case "backup-receipts":
@@ -742,6 +762,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 		case "apply":
+			m.resetResources()
 			draftCommand := m.setupAccepted(resourceID(data))
 			m.resetBackupRecovery()
 			m.resetGuestAgent()
@@ -789,6 +810,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ActionForm = nil
 			m.Advanced = false
 			m.Offset = 0
+			return m, m.requestResourceSummary()
 		default:
 			selectedID := ""
 			rows := m.rows()
@@ -836,6 +858,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.resetBackupRecovery()
 				m.resetGuestAgent()
+				m.resetResources()
 				m.Form = nil
 				m.ActionForm = nil
 				m.Import = nil
@@ -859,6 +882,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Help = false
 			}
 			return m, nil
+		}
+		if m.Resources != nil && m.Plan == nil {
+			return m.updateResources(v)
 		}
 		if (m.Console != nil || m.ConsoleLoading) && m.Plan == nil {
 			return m.updateConsole(v)
@@ -1266,7 +1292,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "e":
 			if !m.Busy && (m.Section == 0 || m.Section == 1) {
-				m.guided("resources")
+				return m, m.openResources()
 			}
 		case "c":
 			if !m.Busy && (m.Section == 0 || m.Section == 1) {
@@ -1341,6 +1367,12 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.Resources != nil && m.Plan == nil && m.Resources.Details {
+		return "Up/Down Scroll   PgUp/PgDn Page   Esc Back"
+	}
+	if m.Resources != nil && m.Plan == nil {
+		return "Tab/Arrows Select   Enter Next/Choose   Ctrl-U Clear   Esc Back"
+	}
 	if m.draftModal != "" {
 		return "Enter Choose   Tab Next option   Esc Back"
 	}
@@ -1446,6 +1478,9 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.Resources != nil && m.Plan == nil {
+		return m.resourcesView(width, height)
+	}
 	if m.draftModal != "" {
 		return m.setupView(width, height)
 	}
@@ -1519,6 +1554,8 @@ func (m Workspace) content(width, height int) []string {
 				autostart = "On"
 			}
 			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Start with the action buttons below. More opens additional tasks.", "", "Start with host: "+autostart)
+			lines = append(lines, "")
+			lines = append(lines, m.resourceSummaryLines(vm)...)
 			if vm.HasManagedSave {
 				lines = append(lines, "Saved session: available; starting resumes the saved runtime")
 			}
@@ -1642,7 +1679,7 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
+	importModal := (m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
@@ -1651,6 +1688,9 @@ func (m Workspace) View() string {
 		}
 		if m.Protection != nil || m.BackupRecovery != nil {
 			title = "Protection"
+		}
+		if m.Resources != nil {
+			title = "CPU and RAM"
 		}
 		if m.GuestAgent != nil {
 			title = "Guest tools"
@@ -1778,7 +1818,7 @@ func (m Workspace) footerButtons() string {
 	if m.draftModal != "" {
 		return m.hints()
 	}
-	if m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()
