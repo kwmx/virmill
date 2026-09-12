@@ -11,6 +11,8 @@ No supplied media, existing guest or network is changed. Explicit reviewed hard
 stop is used only for this fresh no-OS fixture, which cannot honor guest shutdown.
 SPICE main/display channels and an Xvfb PNG prove a virtual-desktop connection, not
 physical display/input, OS compatibility, clipboard opt-in or release acceptance.
+--resume-viewer rechecks only the same retained guest after the known first
+viewer-fixture failure, in a fresh output child; no preparation/creation replay.
 --self-test is pure XML/assembly/receipt validation without native actions.
 """
 import argparse
@@ -27,6 +29,7 @@ import stat
 import subprocess
 import sys
 import time
+import tempfile
 import unittest
 import uuid
 import xml.etree.ElementTree as ET
@@ -110,6 +113,37 @@ def check_owned(vm, receipt, name, pool):
     return tree
 
 
+
+def direct_children(pid, proc=Path('/proc')):
+    """Read direct children from every kernel thread of this exact CLI process."""
+    require(isinstance(pid, int) and 0 < pid < 1 << 31, 'invalid process ID')
+    tasks = list((proc / str(pid) / 'task').iterdir())
+    require(len(tasks) <= 1024, 'CLI task count exceeds bound')
+    children = set()
+    for task in tasks:
+        require(task.name.isascii() and task.name.isdecimal(), 'invalid task ID')
+        try:
+            with (task / 'children').open('rb') as stream: raw = stream.read(65537)
+        except FileNotFoundError:
+            continue  # A kernel thread may exit between directory/read calls.
+        require(len(raw) <= 65536, 'task child list exceeds bound')
+        for value in raw.split():
+            require(re.fullmatch(rb'[0-9]+', value), 'invalid direct child PID')
+            child = int(value); require(0 < child < 1 << 31, 'direct child PID out of range')
+            children.add(child)
+        require(len(children) <= 4096, 'direct child count exceeds bound')
+    return sorted(children)
+
+
+def process_start(pid):
+    # proc stat's parenthesized comm can contain spaces. Field22 follows field3
+    # at index19 after the closing parenthesis, not at whitespace index21.
+    raw = Path(f'/proc/{pid}/stat').read_text()
+    fields = raw[raw.rfind(')') + 2:].split()
+    require(len(fields) > 19 and fields[19].isdecimal(), 'invalid process start identity')
+    return fields[19]
+
+
 def viewer_roundtrip(runner, native, identity, name):
     out = runner.directory / 'viewer'; out.mkdir(mode=0o700)
     process = xvfb = None; master = None; transcript = bytearray()
@@ -149,28 +183,36 @@ def viewer_roundtrip(runner, native, identity, name):
         deadline = time.monotonic() + 30; connected = None; viewer = None
         while time.monotonic() < deadline:
             drain(); require(process.poll() is None, 'console exited before viewer connection')
-            children = Path(f'/proc/{process.pid}/task/{process.pid}/children').read_text().split()
+            children = direct_children(process.pid)
+            viewer = None
             for child in children:
                 try:
                     if Path(f'/proc/{child}/exe').resolve(strict=True) == Path('/usr/bin/virt-viewer'):
-                        viewer = int(child); viewer_start = Path(f'/proc/{child}/stat').read_text().split()[21]
+                        require(viewer is None, 'multiple direct virt-viewer children')
+                        viewer = child; viewer_start = process_start(child)
                 except FileNotFoundError: pass
             observed = spice(); window = native('/usr/bin/xwininfo', '-root', '-tree', env=env).stdout.decode()
+            diagnostics = {'cliPID': process.pid, 'directChildren': children, 'viewerPID': viewer,
+                           'viewerStart': viewer_start if viewer else None, 'windowMatched': name in window,
+                           'channelTypes': sorted({c.get('channel-type') for c in observed.get('channels', [])}),
+                           'allChannelsUnix': all(c.get('family') == 'unix' for c in observed.get('channels', []))}
+            (out / 'process-diagnostics.json').write_text(json.dumps(diagnostics, indent=2) + '\n')
             if viewer and {1, 2}.issubset({c.get('channel-type') for c in observed.get('channels', [])}) and name in window:
                 connected = observed; break
             time.sleep(.3)
-        require(connected is not None and all(c.get('family') == 'unix' for c in connected['channels']), 'no private main/display connection')
+        require(connected is not None and all(c.get('family') == 'unix' for c in connected['channels']),
+                'viewer predicate failed: ' + json.dumps(diagnostics, sort_keys=True))
         (out / 'window.txt').write_text(window); time.sleep(.5)
         frame = framebuffer_png(out / 'Xvfb_screen0', out / 'viewer.png')
         require(Path(f'/proc/{viewer}/exe').resolve(strict=True) == Path('/usr/bin/virt-viewer')
-                and Path(f'/proc/{viewer}/stat').read_text().split()[21] == viewer_start, 'viewer process identity changed')
+                and process_start(viewer) == viewer_start, 'viewer process identity changed')
         os.kill(viewer, signal.SIGINT)
         deadline = time.monotonic() + 15
         while process.poll() is None and time.monotonic() < deadline: drain(); time.sleep(.1)
         require(process.poll() == 0 and not spice().get('channels'), 'viewer did not close normally')
         require(runner.cli('vm', 'show', identity)['state'] == 'running', 'closing viewer stopped guest')
         return {'mainAndDisplayConnected': connected, 'framebuffer': frame, 'viewerExitCode': 0,
-                'guestRunningAfterViewerClose': True, 'scope': 'virtual desktop only'}
+                'guestRunningAfterViewerClose': True, 'process': diagnostics, 'scope': 'virtual desktop only'}
     finally:
         if process is not None and process.poll() is None:
             os.killpg(process.pid, signal.SIGTERM); process.wait(timeout=5)
@@ -330,7 +372,138 @@ def execute(stage):
     return 0 if report['status'] == 'passed' else 1
 
 
+def resume_viewer(stage):
+    """Recheck only the retained product-created guest; do not replay creation."""
+    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+            'wrong authorized host/actor')
+    stage = canonical_path(str(stage.absolute()))
+    require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000
+            and stat.S_IMODE(stage.stat().st_mode) == 0o700, 'private original staged root required')
+    os.umask(0o077)
+    expected = strict_json((stage / 'binaries.json').read_bytes())
+    original = stage / 'spice-creation'
+    prior = strict_json((original / 'report.json').read_bytes())
+    require(prior['status'] == 'failed' and prior['binaries'] == expected
+            and prior.get('error') == "RuntimeError('no private main/display connection')"
+            and all(prior.get(key) is True for key in ('ownedFixtureStoppedAndRetained', 'existingGuestsPreserved',
+                                                     'existingJobsPreserved', 'sourcesPreserved', 'tuiConsoleDiscovery80x24'))
+            and prior['bootMarkerSerial']['biosMarkerObserved'], 'original run was not the reviewed viewer-only fixture failure')
+    require(all(sha('/usr/bin/' + name) == expected[name] for name in ('virmill', 'virmilld')), 'installed binaries differ from original run')
+    name = 'virmill-spice-' + hashlib.sha256(str(stage).encode()).hexdigest()[:12]
+    require(prior['fixtureName'] == name and str(uuid.UUID(prior['vmID'])) == prior['vmID'], 'original fixture identity differs')
+    identity = prior['vmID']; source = original / 'fixture.iso'
+    require(sha(source) == prior['sourceSHA256'], 'original source ISO changed')
+    retained = strict_json((original / 'creation-result.json').read_bytes())
+    receipt = retained['receipt']
+    pool = strict_json((original / 'selected-pool.json').read_bytes())
+    require(pool['name'] == 'virmill-test' and receipt['vmID'] == identity
+            and receipt['operationID'] == prior['creationOperationID'] and retained['complete'], 'original receipt/pool binding differs')
+    pool_id = pool['key']['resourceUUID']
+    original_report_sha = sha(original / 'report.json')
+    fd = os.open('/usr/bin/virmill', os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(os.dup(fd), 'rb') as stream:
+        require(hashlib.file_digest(stream, 'sha256').hexdigest() == expected['virmill'], 'held executable differs')
+    out = stage / 'spice-viewer-recheck'; out.mkdir(mode=0o700)
+    runner = Runner(argparse.Namespace(binary='/usr/bin/virmill', connection=URI), out, fd)
+    logs, plans, allowed_jobs = [], set(), set()
+    report = {'status': 'failed', 'scope': 'new viewer observation on same retained product-created ISO guest; no creation replay',
+              'binaries': expected, 'vmID': identity, 'fixtureName': name, 'creationOperationID': receipt['operationID'],
+              'originalFailedReportSHA256': original_report_sha, 'sourceSHA256': prior['sourceSHA256']}
+    before = prior_jobs = media = None; start_planned = False
+    def native(*argv, timeout=30, check=True, env=None):
+        result = subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, timeout=timeout,
+                                env=env or dict(os.environ, LC_ALL='C'))
+        require(len(result.stdout) + len(result.stderr) < 2 << 20, 'native output bound')
+        logs.append({'argv': list(argv), 'exitCode': result.returncode,
+                     'stdout': result.stdout.decode(errors='replace'), 'stderr': result.stderr.decode(errors='replace')})
+        runner.save('native-commands.json', logs)
+        require(not check or result.returncode == 0, 'native viewer command failed')
+        return result
+    def lifecycle(action):
+        plan = runner.cli('vm', 'start', identity) if action == 'start' else runner.cli('vm', 'stop', identity, '--hard')
+        operation = 'vm.start' if action == 'start' else 'vm.hard-stop'
+        acks = {'host-mutation'} if action == 'start' else {'host-mutation', 'data-loss-hard-stop'}
+        resource = 'libvirt|' + URI + '|vm|' + identity
+        require(plan['operation'] == operation and plan['actorUID'] == 1000 and plan['connectionID'] == URI
+                and plan['resourceIDs'] == [resource] and plan['review']['vmID'] == identity
+                and len(plan['acknowledgements']) == len(acks) and set(plan['acknowledgements']) == acks,
+                'viewer recheck lifecycle scope differs')
+        plans.add(plan['planID']); runner.save(action + '-plan.json', plan)
+        argv = ['plan', 'apply', plan['planID'], '--digest', plan['planDigest'], '--detach',
+                '--idempotency-key', 'spice-viewer-recheck-' + identity + '-' + action]
+        for ack in plan['acknowledgements']: argv += ['--ack', ack]
+        job = runner.cli(*argv); allowed_jobs.add(job['operationID']); report[action + 'OperationID'] = job['operationID']
+        runner.save(action + '-accepted.json', job)
+        deadline = time.monotonic() + 90
+        while job['state'] not in TERMINAL and time.monotonic() < deadline:
+            time.sleep(.4); job = runner.cli('operation', 'show', job['operationID'])
+        runner.save(action + '-job.json', job)
+        require(job['state'] == 'succeeded', 'viewer recheck ' + action + ' incomplete; do not replay')
+    try:
+        before = inventory(runner.cli('vm', 'list'), URI)
+        prior_jobs = runner.cli('operation', 'list')
+        require(all(job['state'] in TERMINAL for job in prior_jobs), 'another operation is active')
+        media = media_listing(Path.home() / 'images')
+        runner.save('before-vms.json', before); runner.save('before-jobs.json', prior_jobs)
+        job = runner.cli('operation', 'show', receipt['operationID'])
+        require(job['state'] == 'succeeded' and job['planID'] == receipt['planID'], 'original creation operation no longer succeeded')
+        require(runner.cli('vm', 'creation', 'result', receipt['operationID']) == retained, 'fresh creation receipt differs from original')
+        vm = runner.cli('vm', 'show', identity); check_owned(vm, receipt, name, pool_id)
+        require(vm['state'] == 'stopped', 'retained fixture is not stopped')
+        runner.save('before-fixture.json', vm)
+        start_planned = True; lifecycle('start')
+        running = runner.cli('vm', 'show', identity); check_owned(running, receipt, name, pool_id)
+        require(running['state'] == 'running', 'recheck did not start retained fixture')
+        choices = runner.cli('vm', 'console', 'show', identity); runner.save('console-options.json', choices)
+        graphical = [choice for choice in choices['choices'] if choice['id'] == 'graphics:0']
+        require(len(graphical) == 1 and graphical[0]['protocol'] == 'spice' and graphical[0]['available'], 'retained SPICE console unavailable')
+        report['viewer'] = viewer_roundtrip(runner, native, identity, name)
+        report['status'] = 'passed'
+    except BaseException as error:
+        report['error'] = repr(error)
+    finally:
+        try:
+            if start_planned:
+                accepted = [job for job in runner.cli('operation', 'list') if job['planID'] in plans]
+                allowed_jobs.update(job['operationID'] for job in accepted)
+                require(all(job['state'] == 'succeeded' for job in accepted), 'active/uncertain own job retained for review')
+                current = runner.cli('vm', 'show', identity); check_owned(current, receipt, name, pool_id)
+                if current['state'] == 'running': lifecycle('stop')
+                require(runner.cli('vm', 'show', identity)['state'] == 'stopped', 'owned fixture did not stop')
+                report['ownedFixtureStoppedAndRetained'] = True
+        except BaseException as error: report.update(status='failed', cleanupError=repr(error))
+        try:
+            if before is not None:
+                after = inventory(runner.cli('vm', 'list'), URI); runner.save('after-vms.json', after)
+                require(after == before, 'guest inventory/configuration not restored to baseline')
+                report['allGuestsPreserved'] = True
+            if prior_jobs is not None:
+                indexed = {job['operationID']: job for job in runner.cli('operation', 'list')}
+                require(all(indexed.get(job['operationID']) == job for job in prior_jobs)
+                        and set(indexed) - {job['operationID'] for job in prior_jobs} <= allowed_jobs, 'unrelated jobs changed')
+                report['existingJobsPreserved'] = True
+            if media is not None: require(media_listing(Path.home() / 'images') == media, 'owner source media changed')
+            require(sha(source) == prior['sourceSHA256'] and sha(original / 'report.json') == original_report_sha,
+                    'source or original failed report changed')
+            report['sourceAndOriginalFailurePreserved'] = True
+        except BaseException as error: report.update(status='failed', preservationError=repr(error))
+        runner.save('report.json', report); os.close(fd); print(json.dumps(report, sort_keys=True))
+    return 0 if report['status'] == 'passed' else 1
+
+
 class Tests(unittest.TestCase):
+    def test_direct_children_include_all_threads_and_deduplicate(self):
+        with tempfile.TemporaryDirectory(prefix='virmill-proc-fixture-') as directory:
+            proc = Path(directory); tasks = proc / '100' / 'task'
+            for task, data in [('100', ''), ('101', '200 201'), ('102', '200'), ('103', None)]:
+                path = tasks / task; path.mkdir(parents=True)
+                if data is not None: (path / 'children').write_text(data)
+            self.assertEqual(direct_children(100, proc), [200, 201])
+            (tasks / '102' / 'children').write_text('invalid')
+            with self.assertRaises(RuntimeError): direct_children(100, proc)
+            (tasks / '102' / 'children').write_bytes(b' ' * 65537)
+            with self.assertRaises(RuntimeError): direct_children(100, proc)
+
     def test_boot_marker_prints_serial_and_graphics(self):
         raw = boot_assembly('VIRMILL CONSOLE PASS ' + 'a' * 32)
         self.assertIn('int $0x10', raw); self.assertIn('outb %al, %dx', raw); self.assertIn('.org 510', raw)
@@ -359,9 +532,9 @@ class Tests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    p = argparse.ArgumentParser(description=__doc__); p.add_argument('--root', type=Path); p.add_argument('--execute-disposable', action='store_true'); p.add_argument('--self-test', action='store_true')
+    p = argparse.ArgumentParser(description=__doc__); p.add_argument('--root', type=Path); p.add_argument('--execute-disposable', action='store_true'); p.add_argument('--self-test', action='store_true'); p.add_argument('--resume-viewer', action='store_true')
     a = p.parse_args()
     if a.self_test:
-        require(a.root is None and not a.execute_disposable, 'self-test cannot select native actions'); unittest.main(argv=[sys.argv[0]])
+        require(a.root is None and not a.execute_disposable and not a.resume_viewer, 'self-test cannot select native actions'); unittest.main(argv=[sys.argv[0]])
     else:
-        require(a.root is not None and a.execute_disposable, 'explicit disposable root/run required'); sys.exit(execute(a.root))
+        require(a.root is not None and a.execute_disposable, 'explicit disposable root/run required'); sys.exit(resume_viewer(a.root) if a.resume_viewer else execute(a.root))

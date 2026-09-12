@@ -649,7 +649,13 @@
         "beta-ux-workflow-native-001",
         "spice-creation-core-001",
         "spice-normalization-native-001",
-        "spice-fixture-unit-001"
+        "spice-fixture-unit-001",
+        "spice-creation-packages-001",
+        "spice-creation-upgrade-001",
+        "spice-creation-restart-001",
+        "spice-creation-native-001",
+        "spice-fixture-unit-002",
+        "spice-viewer-recheck-native-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -938,7 +944,8 @@
         "general-sources-integration-001",
         "general-sources-ui-native-001",
         "general-sources-ui-native-002",
-        "spice-creation-core-001"
+        "spice-creation-core-001",
+        "spice-creation-native-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
@@ -1282,7 +1289,9 @@
         "nvram-binding-tui-fixture-003",
         "nvram-binding-tui-003",
         "guest-channel-native-001",
-        "spice-creation-core-001"
+        "spice-creation-core-001",
+        "spice-creation-native-001",
+        "spice-viewer-recheck-native-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
@@ -2840,7 +2849,13 @@
       "evidence": [
         "spice-creation-core-001",
         "spice-normalization-native-001",
-        "spice-fixture-unit-001"
+        "spice-fixture-unit-001",
+        "spice-creation-packages-001",
+        "spice-creation-upgrade-001",
+        "spice-creation-restart-001",
+        "spice-creation-native-001",
+        "spice-fixture-unit-002",
+        "spice-viewer-recheck-native-001"
       ],
       "outstanding": [
         "Serial/SSH/viewer access and supported shares/clipboard honor opt-in and endpoint exposure rules."
@@ -5104,7 +5119,12 @@
         "observed-resources-upgrade-001",
         "observed-resources-restart-001",
         "observed-resources-native-001",
-        "spice-creation-core-001"
+        "spice-creation-core-001",
+        "spice-creation-packages-001",
+        "spice-creation-upgrade-001",
+        "spice-creation-restart-001",
+        "spice-creation-native-001",
+        "spice-viewer-recheck-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5405,7 +5425,12 @@
         "observed-resources-upgrade-001",
         "observed-resources-restart-001",
         "observed-resources-native-001",
-        "spice-creation-core-001"
+        "spice-creation-core-001",
+        "spice-creation-packages-001",
+        "spice-creation-upgrade-001",
+        "spice-creation-restart-001",
+        "spice-creation-native-001",
+        "spice-viewer-recheck-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

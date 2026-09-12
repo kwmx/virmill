@@ -5,20 +5,32 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `3b74fc7`.
-CPU/RAM settings now show live and next-boot values, prefill editable fields, and
-review exact before/after changes. Unsupported layouts explain their limits;
-running guests receive shutdown guidance. An actual 80×24 TUI edit on a fresh
-stopped guest passed native XML, CLI and reopened-TUI readback, with unrelated
-configuration, guests, jobs and source media preserved. See
-[current resource-settings evidence](evidence/observed-resources-run.md).
+**Current UI update:** installed CLI and coordinator use `a1d6cb6`.
+CPU/RAM settings show live and next-boot values, prefill editable fields and review
+exact before/after changes. Unsupported layouts explain their limits; running
+guests receive shutdown guidance. The preceding native stopped-VM TUI edit and
+readback passed; see [resource settings](evidence/observed-resources-run.md).
 
-Import and creation retain resumable choices, source inspection and advanced
-hardware controls. The earlier real Fedora 44 guest-tools install/repeat/ping
-qualification remains in [guest-tools evidence](evidence/wizard-drafts-tools-run.md).
-Graphical creation-to-console integration, full TUI guest-tools submission, other
-guest profiles and complete release qualification remain open. Exit any open TUI
-and run `virmill` again.
+New creation forms now suggest **Local display (SPICE)** when advertised by the
+host. The selected display and desktop requirement appear before creation; saved
+VNC/none choices remain unchanged. Actual generated ISO preparation, creation,
+boot marker, TUI console selection and a private graphical viewer connection
+passed at their recorded levels. The viewer closed without stopping the guest;
+the fixture then stopped it through a reviewed operation. See
+[creation/console evidence](evidence/spice-creation-run.md), including a corrected
+viewer-process test observation and the retained original failure.
+
+Import/creation retain resumable choices and advanced hardware controls. The
+previous real Fedora 44 guest-tools install/repeat/ping evidence remains in
+[guest-tools results](evidence/wizard-drafts-tools-run.md). Full TUI guest-tools
+submission, other guest profiles, desktop-sharing opt-ins and complete release
+qualification remain open. Graphical viewing needs a desktop session; a plain SSH
+terminal can use configured serial access. Exit any open TUI and run `virmill`
+again to load the update.
+
+The new generated ISO fixture `virmill-spice-8c6fbc43309d` is retained stopped,
+with its receipt-bound managed media. It contains only a test boot marker, not an
+installed operating system. Existing guests, jobs and source media were preserved.
 
 One historical fixture job remains recovery-required because the previous build
 rejected its own agent connection change after installing packages. Its owned

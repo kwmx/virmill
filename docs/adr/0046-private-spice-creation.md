@@ -1,6 +1,6 @@
 # 0046 — Connect new graphical VMs to the supported viewer
 
-Status: implemented in source; product creation/viewer qualification pending.
+Status: implemented; scoped product ISO creation/boot and same-guest viewer recheck passed.
 
 The creation form suggested private VNC, while the console adapter deliberately
 refused VNC launch because its pinned viewer does not enforce the required
@@ -34,5 +34,7 @@ unsupported viewer versions remain explicit gaps rather than silent fallback.
 
 Native stopped-definition normalization passed with the exact private graphics
 shape. This is feasibility evidence, not product creation, guest boot or viewer
-verification. The next fixture must use the actual import/create/start workflows
-and observe a real viewer connection. All 71 acceptance scenarios remain required.
+verification. The product fixture used actual import/create/start workflows; the corrected
+same-guest recheck verified the real viewer connection and clean close. See
+[scoped evidence](../evidence/spice-creation-run.md), including the original fixture
+observation failure. All 71 acceptance scenarios remain required.
