@@ -125,3 +125,38 @@ connection and optional startup help. Retry uses existing observation requests;
 no UI service mutation was added. Root reviewed the integration and static
 analysis passed. `coordinator-recovery-ui-001` records the full TUI race suite,
 including stale replies, existing workflow preservation and retry behavior.
+
+The final startup-help runtime is `4950971025e8af08c764ccdce68a95f9aad5eb2c`.
+`coordinator-recovery-packages-001`, `coordinator-recovery-upgrade-001` and
+`coordinator-recovery-restart-001` passed. The final restart preserved all 29
+jobs, journal tables, current VM inventory and media metadata; new PID 3391.
+The installed unit remains enabled at sign-in. Network form/service code is
+unchanged from the passing three-profile native preview; the startup card only
+changes disconnected Overview/Settings behavior.
+
+- CLI SHA-256: `e55ad16f9a27566a126995948633aeecf9b42d386eb31f76472c264109e0e0e2`
+- Coordinator: `ab0c5879d044cf3a418a18c2257692c23b4df21fceb8d88fbc63d5685a55c578`
+- Core RPM: `aa7d7b887fa2c9c4d87289a83d0e00c031f3cec0b64cd076f5241a8dbfaafb9e`
+- Built implementation digest: `f97232dc9822ee3b8a9765a414a6282561126f5816778212a94548f6af87ca2d`
+
+Local RPM/DEB artifacts are unsigned; no publication occurred. Two stale tracker
+notes were corrected using existing native evidence: import drafts now resume
+across TUI restart, and Fedora guest tools now have real install/repeat/ping and
+TUI repeat-submission evidence. No acceptance status was promoted.
+
+`coordinator-recovery-tui-installed-001` passed the final installed frontend in
+an actual 80×24 terminal using a new private runtime/state directory with no
+coordinator socket. Overview, Retry retaining the outage, readable expanded
+start/enable/status guidance, Settings and normal quit all passed. Root inspected
+the saved screens. The normal coordinator remained running; no service command,
+VM/network operation or configuration write was performed by this UI fixture.
+This is process/terminal integration evidence, not hardware or successful service
+recovery certification. The ledger's additional source digest includes the new
+fixture; the installed binary hashes match frozen 4950971 above.
+
+Agent contributions: draft_workflow supplied the guided network form and full
+issue reader; draft_persistence supplied shared-service/CLI tests, integration
+review and the startup card; guest_tools_fixture supplied bounded installed-TUI
+fixtures. Root owned shared contracts, integration, all remote changes, package
+verification, recorded evidence and release status. All 71 acceptance statuses
+remain unchanged. No new native network activation or packet test was claimed.

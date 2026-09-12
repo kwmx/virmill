@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "acceptanceSupport": [
+    "UX-01",
+    "UX-02"
+  ],
+  "binaries": {
+    "virmill": "e55ad16f9a27566a126995948633aeecf9b42d386eb31f76472c264109e0e0e2",
+    "virmilld": "ab0c5879d044cf3a418a18c2257692c23b4df21fceb8d88fbc63d5685a55c578"
+  },
+  "scope": "installed 80x24 TUI missing-socket guidance, retry, help and Settings; no service or virtualization action",
+  "isolatedSocket": "/home/virmill-test/virmill-tests/coordinator-recovery-4950971/coordinator-recovery/r/virmill/control.sock",
+  "overviewOffline": true,
+  "retryRemainsOffline": true,
+  "helpCommands": [
+    "systemctl --user start virmilld.service",
+    "systemctl --user enable virmilld.service",
+    "systemctl --user status virmilld.service"
+  ],
+  "settingsOffline": true,
+  "normalQuit": true,
+  "socketStillAbsent": true
+}

@@ -1,17 +1,21 @@
 # Owner beta handoff — updated 12 September 2026
 
 **Virmill 1.0.0-beta.1 was installed and verified running on the authorized
-Fedora 44 test VM.** SSH access and coordinator readiness are verified after reboot. This is the owner-test beta requested within one day. Complete 1.0 remains
+Fedora 44 test VM.** SSH access and coordinator readiness are verified after reboot. This is an owner-test beta. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `4d5fe54`.
+**Current UI update:** installed CLI and coordinator use `4950971`.
 **Networks → Create network** offers simple purpose/subnet choices, advanced
 access controls, export, and a complete scrollable error reader. Actual NAT,
 isolated-lab and guest-only TUI previews passed and matched CLI plans. Back
 retains settings and cancellation preserves existing resources. The two retained
 test networks' missing allocation records were recovered from their original
 verified evidence. See [network form evidence](evidence/network-form-run.md).
+If the coordinator is unavailable, Overview and Settings now explain how to
+start it, offer **Retry connection**, and keep optional sign-in setup under
+**More help**. The test VM's service is enabled at sign-in. See
+[startup help](coordinator-startup.md).
 Completed local VM jobs now offer **Open VM** after checking the saved result.
 Guest tools checks runtime state first and offers reviewed start guidance for
 stopped guests. Prose and review warnings wrap by words. See [job/setup evidence](evidence/guided-job-completion-run.md).
@@ -58,6 +62,10 @@ ssh virmill-test@virmill-test.home
 virmill version --output json
 virmill
 ```
+
+Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
+`build/coordinator-recovery-delivery/`. The full installed build revision is
+`4950971025e8af08c764ccdce68a95f9aad5eb2c`.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use
