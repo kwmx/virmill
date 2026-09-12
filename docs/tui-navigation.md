@@ -168,8 +168,22 @@ already have occurred. There is no automatic retry with a new operation identity
 JSON file. Choose a folder and filename; existing files are never replaced.
 Export does not start a job. CLI users can reuse that object with `--input`,
 supplying the source or prepared-operation identity separately. Inspect saved
-paths before reusing settings on another host. In-session drafts survive Back;
-unfinished wizard edits need an explicit export to survive closing the TUI.
+paths before reusing settings on another host.
+
+Import and VM setup choices are saved automatically on this computer, including
+advanced hardware choices. When you reopen setup, choose **Resume saved setup**
+or **Start new setup**. Virmill re-inspects the source and available hardware
+before restoring the choices. If preparation was submitted, **Continue prepared
+setup** checks its job first; an uncertain submission leads to Jobs instead of
+repeating it. Saving choices never approves an operation.
+
+Drafts live under `$XDG_STATE_HOME/virmill/tui-drafts` (normally
+`~/.local/state/virmill/tui-drafts`). They exclude credentials, approvals and
+cached appliance metadata. Keep one setup window active: another window changing
+the same draft pauses saving and shows an explanation. Storage errors remain
+visible; do not assume choices were saved after an error. Export remains useful
+for a separate reusable settings file. Disk and ISO resume checks compare
+reported metadata; preparation independently verifies media before mutation.
 
 Use **80×24** or larger for normal operation. Narrower layouts retain choices;
 very small windows ask you to resize. `virmill --no-color`, `NO_COLOR=1`, or

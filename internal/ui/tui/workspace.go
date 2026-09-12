@@ -23,6 +23,13 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	draftWriter                               *setupWriter
+	draftSaved, draftResume                   *SavedSetupDocument
+	draftSequence                             uint64
+	draftLoading, draftBypass, draftSubmitted bool
+	draftModal, draftError                    string
+	draftChoice                               int
+
 	BackupRecovery        *BackupRecoveryForm
 	BackupRecoveryLoading bool
 	PickerBackupRecovery  bool
@@ -105,7 +112,7 @@ func NewWorkspace(c ui.Client, connection string) Workspace {
 	return Workspace{Client: c, Connection: connection, Width: 80, Height: 24, NoColor: os.Getenv("NO_COLOR") != "" || os.Getenv("VIRMILL_NO_COLOR") == "1" || os.Getenv("TERM") == "dumb", ASCII: os.Getenv("VIRMILL_ASCII") == "1" || os.Getenv("TERM") == "dumb", Data: map[string]any{}, Errors: map[string]string{}, Pending: map[string]uint64{}, legacy: New(c, connection)}
 }
 func (m Workspace) Init() tea.Cmd {
-	return tea.Batch(func() tea.Msg { return workspaceTick{} }, jobRefreshTick())
+	return tea.Batch(func() tea.Msg { return workspaceTick{} }, jobRefreshTick(), m.loadSetup())
 }
 func (m *Workspace) request(kind, method string, r app.Request) tea.Cmd {
 	m.sequence++
@@ -455,7 +462,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	return nil
 }
 
-func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.Picker != nil {
 		switch msg.(type) {
 		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, importPulse, importExportReply, consolePrepared, consoleClosed:
@@ -537,6 +544,14 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
 				m.Notice = ""
 			}
+			if v.Kind == "draft-preparation-job" {
+				m.Busy = false
+				m.draftResume = nil
+				m.draftModal = "creation"
+				m.draftChoice = 0
+				m.Error = "Could not check the saved preparation: " + importError(err) + ". Choose Continue prepared setup to retry."
+				m.Notice = "Saved choices were kept. No operation was repeated."
+			}
 			if v.Kind == "guest-agent-load" {
 				m.failGuestAgent(text)
 			}
@@ -595,6 +610,8 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		delete(m.Errors, v.Kind)
 		data := generic(v.Response.Data)
 		switch v.Kind {
+		case "draft-preparation-job":
+			return m, m.resumePreparedJob(v.Response.Data)
 		case "creation-sources":
 			m.Busy = false
 			b, _ := json.Marshal(v.Response.Data)
@@ -609,12 +626,37 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Error = "Could not read hardware choices. Try Create VM again."
 				return m, nil
 			}
+			if m.draftResume != nil && m.draftResume.State == "submitted" && m.draftResume.Import != nil && m.draftResume.OperationID == bundle.OperationID {
+				saved := m.draftResume
+				f := NewCreationForm(bundle.OperationID, bundle.Source, bundle.Options, bundle.Pools, bundle.Networks)
+				if saved.Creation != nil {
+					saved.Creation.restore(&f)
+				} else {
+					applyImportBasics(&f, saved.Import.form().Draft)
+				}
+				m.Creation = &f
+				m.draftResume = nil
+			}
+			if m.draftResume != nil && m.draftResume.Creation != nil && m.draftResume.Import == nil {
+				saved := m.draftResume
+				if saved.Creation.OperationID != bundle.OperationID || saved.SourceBinding == "" || saved.SourceBinding != setupBinding(bundle.Source) {
+					m.Error = "Prepared images changed or could not be matched. Saved choices were kept. Go back and start a new setup."
+					return m, nil
+				}
+				f := NewCreationForm(bundle.OperationID, bundle.Source, bundle.Options, bundle.Pools, bundle.Networks)
+				saved.Creation.restore(&f)
+				m.Creation = &f
+				m.draftResume = nil
+			}
 			if m.Creation == nil && m.SavedCreation != nil && m.SavedCreation.OperationID == bundle.OperationID {
 				m.Creation = m.SavedCreation
 				m.SavedCreation = nil
 			}
 			if m.Creation != nil && m.Creation.OperationID == bundle.OperationID {
 				m.Creation.SetOptions(bundle.Options)
+				m.Creation.Source = bundle.Source
+				m.Creation.Pools = bundle.Pools
+				m.Creation.Networks = bundle.Networks
 			} else {
 				f := NewCreationForm(bundle.OperationID, bundle.Source, bundle.Options, bundle.Pools, bundle.Networks)
 				f.BeforePreparation = bundle.OperationID == ""
@@ -631,6 +673,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				delete(m.PreparedBasics, bundle.OperationID)
 			}
 			m.CreationPicking = false
+			m.draftSubmitted = false
 			m.Notice = ""
 			m.Error = ""
 		case "preparation-job":
@@ -699,6 +742,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 		case "apply":
+			draftCommand := m.setupAccepted(resourceID(data))
 			m.resetBackupRecovery()
 			m.resetGuestAgent()
 			m.Protection = nil
@@ -736,9 +780,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if prepared {
 				m.PendingPreparation = resourceID(data)
 				m.Notice = "Preparing images. CPU, RAM and network setup opens when ready."
-				return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), creationTick(m.PendingPreparation))
+				return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), creationTick(m.PendingPreparation), draftCommand)
 			}
-			return m, m.request("jobs", "operation.list", app.Request{})
+			return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), draftCommand)
 		case "detail":
 			m.Detail = data
 			m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
@@ -1074,7 +1118,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if m.ApplyKey == "" {
 						m.ApplyKey = domain.ID()
 					}
-					return m, m.request("apply", "operation.apply", app.Request{Apply: &operations.ApplyRequest{PlanID: m.Plan.ID, PlanDigest: m.Plan.Digest, IdempotencyKey: m.ApplyKey, Acknowledgements: append([]string{}, m.Plan.Acknowledgements...)}})
+					apply := m.request("apply", "operation.apply", app.Request{Apply: &operations.ApplyRequest{PlanID: m.Plan.ID, PlanDigest: m.Plan.Digest, IdempotencyKey: m.ApplyKey, Acknowledgements: append([]string{}, m.Plan.Acknowledgements...)}})
+					guarded := m.guardSetupApply(apply)
+					return m, guarded
 				}
 			}
 			return m, nil
@@ -1295,6 +1341,9 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.draftModal != "" {
+		return "Enter Choose   Tab Next option   Esc Back"
+	}
 	if m.Picker == nil && m.Plan == nil && m.BackupRecovery != nil && m.ExportForm == nil {
 		return "Tab Next   Enter Choose   Ctrl+O Browse   Esc Back"
 	}
@@ -1397,6 +1446,9 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.draftModal != "" {
+		return m.setupView(width, height)
+	}
 	if m.BackupRecovery != nil && m.Plan == nil && m.Picker == nil && m.ExportForm == nil {
 		return m.backupRecoveryView(width, height)
 	}
@@ -1590,7 +1642,7 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
+	importModal := (m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
@@ -1664,6 +1716,9 @@ func (m Workspace) View() string {
 		lines = append(lines, "")
 	}
 	message := m.Notice
+	if m.draftError != "" {
+		message = m.draftError
+	}
 	if m.Error != "" {
 		message = "Error: " + m.Error
 	}

@@ -62,6 +62,10 @@ func importError(err error) string {
 }
 
 func (m *Workspace) openImport(kind string) tea.Cmd {
+	if m.offerSetup(kind) {
+		return nil
+	}
+	m.draftSubmitted = false
 	if m.SavedImport != nil && m.SavedImport.Draft.Kind == kind {
 		m.Import = m.SavedImport
 		m.SavedImport = nil
@@ -197,6 +201,15 @@ func (m *Workspace) importPicked(path string) {
 	m.Import.Error = ""
 }
 func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if m.draftResume != nil && !m.Busy {
+		if key.Type == tea.KeyEsc {
+			m.Import = nil
+			m.draftResume = nil
+			m.draftModal = "auto"
+			m.draftChoice = 0
+		}
+		return m, nil
+	}
 	if m.Busy {
 		if key.Type == tea.KeyEsc || (key.Type == tea.KeyEnter && m.Pending["import-inspect"] != 0) {
 			inspection := m.Pending["import-inspect"] != 0
@@ -214,6 +227,13 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 			m.Error = ""
 			m.Import.Error = ""
+			if m.draftResume != nil && inspection {
+				m.Import = nil
+				m.draftResume = nil
+				m.draftModal = "auto"
+				m.draftChoice = 0
+				m.Notice = "Inspection canceled. Your saved choices were kept."
+			}
 		}
 		return m, nil
 	}
@@ -323,7 +343,48 @@ func (m *Workspace) importInspection(data any) {
 	if err == nil {
 		err = json.Unmarshal(b, &report)
 	}
-	if err == nil {
+	if err == nil && m.draftResume != nil && m.draftResume.Import != nil {
+		saved := m.draftResume
+		if saved.SourceBinding != "" && saved.SourceBinding != setupBinding(&report) {
+			m.Import.Error = "The source settings changed. Your saved choices were kept. Go back and Start new setup to use the changed source."
+			return
+		}
+		fresh := NewImportForm(saved.Import.Kind)
+		fresh.Draft.SelectedSource = m.Import.Draft.SelectedSource
+		fresh.Draft.Source = m.Import.Draft.Source
+		if err = fresh.Draft.ApplySourceDescription(report); err == nil {
+			restored := saved.Import.form()
+			if saved.SourceBinding == "" {
+				// Inspection had not completed when the terminal closed. Use
+				// detected defaults, retaining only explicit ordinary choices.
+				restored = fresh
+				restored.Draft.DestinationParent = saved.Import.DestinationParent
+				restored.Draft.DestinationName = saved.Import.DestinationName
+				if saved.Import.VMName != "" {
+					restored.Draft.VMName = saved.Import.VMName
+				}
+				if saved.Import.VCPUs != "" {
+					restored.Draft.VCPUs = saved.Import.VCPUs
+				}
+				if saved.Import.MemoryMiB != "" {
+					restored.Draft.MemoryMiB = saved.Import.MemoryMiB
+				}
+			}
+			restored.Draft.Description = fresh.Draft.Description
+			restored.Draft.Report = fresh.Draft.Report
+			restored.Draft.selectionSource = restored.Draft.Source
+			restored.Draft.selectionSystem = restored.Draft.SystemID
+			m.Import = &restored
+			if saved.Creation != nil && saved.SourceBinding != "" {
+				f := CreationForm{BeforePreparation: true, Source: importCreationSource(restored.Draft)}
+				saved.Creation.restore(&f)
+				m.Import.VM = &f
+				m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
+			}
+			m.draftResume = nil
+			m.Notice = "Saved choices restored. Review available hardware before continuing."
+		}
+	} else if err == nil {
 		err = m.Import.Draft.ApplySourceDescription(report)
 	}
 	if err != nil {

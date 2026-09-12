@@ -50,15 +50,16 @@ type parameters struct {
 	Arguments      []string `json:"arguments"`
 }
 type frozenInput struct {
-	Version      int                `json:"version"`
-	Resource     domain.ResourceKey `json:"resource"`
-	Fingerprint  string             `json:"fingerprint"`
-	Recipe       Recipe             `json:"recipe"`
-	RecipeSHA256 string             `json:"recipeSHA256"`
-	ScriptSHA256 map[string]string  `json:"scriptSHA256"`
-	Target       guestssh.Target    `json:"target"`
-	Arguments    []string           `json:"arguments"`
-	Tool         guestssh.Identity  `json:"sshTool"`
+	Version          int                `json:"version"`
+	Resource         domain.ResourceKey `json:"resource"`
+	Fingerprint      string             `json:"fingerprint"`
+	ToolsFingerprint string             `json:"toolsFingerprint,omitempty"`
+	Recipe           Recipe             `json:"recipe"`
+	RecipeSHA256     string             `json:"recipeSHA256"`
+	ScriptSHA256     map[string]string  `json:"scriptSHA256"`
+	Target           guestssh.Target    `json:"target"`
+	Arguments        []string           `json:"arguments"`
+	Tool             guestssh.Identity  `json:"sshTool"`
 }
 
 func (s *Service) Register(a *app.Service) {
@@ -238,6 +239,13 @@ func (s *Service) planRecipe(ctx context.Context, uid uint32, r app.Request, rec
 		return nil, invalid("recipe digest unavailable")
 	}
 	in := frozenInput{Version: 1, Resource: key, Fingerprint: vm.Fingerprint, Recipe: recipe, RecipeSHA256: digest, ScriptSHA256: scriptDigests(recipe), Target: target, Arguments: append([]string{}, args.Arguments...), Tool: tool}
+	if isBuiltinToolsRecipe(recipe) {
+		in.Version = 2
+		in.ToolsFingerprint, err = toolsVMFingerprint(vm)
+		if err != nil {
+			return nil, err
+		}
+	}
 	warnings := []string{"The reviewer binds the supplied address and known-hosts key to this VM; native IP identity is unavailable.", "Reviewed recipe scripts and arguments persist in private journal input. Do not embed credentials.", "A remote script may change guest state before an interrupted SSH response; reconciliation never reruns it."}
 	if recipe.Spec.Privilege == "sudo" {
 		warnings = append(warnings, "This built-in uses passwordless sudo inside the guest to install packages from its configured repositories and start qemu-guest-agent. Dependencies may change; there is no automatic rollback or reboot.", "The guest needs the org.qemu.guest_agent.0 virtio channel. Desktop package installation does not prove clipboard or display integration works.")
@@ -265,8 +273,11 @@ func decodeInput(p domain.Plan, raw []byte) (frozenInput, error) {
 	if err := strictDecode(raw, &in); err != nil {
 		return in, err
 	}
-	if in.Version != 1 || !validUUID(in.Resource.UUID) || in.Resource != (domain.ResourceKey{ProviderID: "libvirt", ConnectionID: p.ConnectionID, Kind: "vm", UUID: in.Resource.UUID}) || !local(p.ConnectionID) || p.ActorUID == 0 || p.Operation != operation || !digestPattern.MatchString(in.Fingerprint) {
+	if (in.Version != 1 && in.Version != 2) || !validUUID(in.Resource.UUID) || in.Resource != (domain.ResourceKey{ProviderID: "libvirt", ConnectionID: p.ConnectionID, Kind: "vm", UUID: in.Resource.UUID}) || !local(p.ConnectionID) || p.ActorUID == 0 || p.Operation != operation || !digestPattern.MatchString(in.Fingerprint) {
 		return in, invalid("stored recipe identity is invalid")
+	}
+	if in.Version == 1 && in.ToolsFingerprint != "" || in.Version == 2 && (!isBuiltinToolsRecipe(in.Recipe) || !digestPattern.MatchString(in.ToolsFingerprint)) {
+		return in, invalid("stored guest tools comparison contract is invalid")
 	}
 	if err := in.Recipe.Validate(); err != nil {
 		return in, err
@@ -302,7 +313,15 @@ func (s *Service) Validate(ctx context.Context, p domain.Plan, raw []byte) error
 	if err = validateVM(vm, in.Resource); err != nil {
 		return err
 	}
-	if vm.Fingerprint != in.Fingerprint {
+	unchanged := vm.Fingerprint == in.Fingerprint
+	if in.Version == 2 {
+		observed, err := toolsVMFingerprint(vm)
+		if err != nil {
+			return err
+		}
+		unchanged = observed == in.ToolsFingerprint
+	}
+	if !unchanged {
 		return domain.Fail("SOURCE_CHANGED", "VM changed after guest recipe review")
 	}
 	tool, err := s.Transport.Identity(ctx)

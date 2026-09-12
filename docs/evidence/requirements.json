@@ -2905,7 +2905,11 @@
         "internal/ui/tui/workspace_guest_agent.go",
         "internal/localbackup/receipts_linux.go",
         "internal/ui/tui/workspace_backup_recovery.go",
-        "docs/evidence/guest-integration-receipts-run.md"
+        "docs/evidence/guest-integration-receipts-run.md",
+        "internal/guestsetup/tools_binding.go",
+        "internal/backend/xmlpatch/guest_tools_binding.go",
+        "docs/adr/0044-guest-tools-live-channel-binding.md",
+        "docs/evidence/wizard-drafts-tools-run.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
@@ -2931,7 +2935,10 @@
         "internal/localbackup/receipts_linux_test.go",
         "internal/ui/tui/workspace_guest_agent_test.go",
         "internal/ui/tui/workspace_backup_recovery_test.go",
-        "internal/ui/cli/guest_agent_receipt_test.go"
+        "internal/ui/cli/guest_agent_receipt_test.go",
+        "internal/guestsetup/tools_binding_test.go",
+        "internal/backend/xmlpatch/guest_tools_binding_test.go",
+        "tests/fixtures/release/guest_tools_fedora_probe.py"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
@@ -2959,7 +2966,11 @@
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
         "guest-integration-native-channel-001",
-        "guest-integration-final-native-channel-001"
+        "guest-integration-final-native-channel-001",
+        "guest-tools-fedora-copy-001",
+        "guest-tools-fedora-inspect-001",
+        "guest-tools-fedora-live-001",
+        "wizard-drafts-tools-core-001"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -2967,7 +2978,8 @@
         "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open.",
         "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
-        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough."
+        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
+        "First real Fedora install applied packages but verification stopped on live channel-state fingerprint change; v2 narrow comparison implemented. Corrected fresh native install and repeat required; old recovery-required job is retained."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4664,7 +4676,12 @@
         "internal/ui/tui/workspace_guest_agent.go",
         "internal/localbackup/receipts_linux.go",
         "internal/ui/tui/workspace_backup_recovery.go",
-        "docs/evidence/guest-integration-receipts-run.md"
+        "docs/evidence/guest-integration-receipts-run.md",
+        "internal/ui/tui/workspace_drafts.go",
+        "internal/ui/tui/draft_document.go",
+        "internal/ui/tui/draft_store_linux.go",
+        "docs/adr/0043-private-resumable-wizard-drafts.md",
+        "docs/evidence/wizard-drafts-tools-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4803,7 +4820,10 @@
         "internal/localbackup/receipts_linux_test.go",
         "internal/ui/tui/workspace_guest_agent_test.go",
         "internal/ui/tui/workspace_backup_recovery_test.go",
-        "internal/ui/cli/guest_agent_receipt_test.go"
+        "internal/ui/cli/guest_agent_receipt_test.go",
+        "internal/ui/tui/workspace_drafts_test.go",
+        "internal/ui/tui/draft_document_test.go",
+        "internal/ui/tui/draft_store_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4962,7 +4982,8 @@
         "guest-integration-final-native-channel-001",
         "guest-integration-final-packages-001",
         "guest-integration-final-upgrade-001",
-        "guest-integration-final-restart-001"
+        "guest-integration-final-restart-001",
+        "wizard-drafts-tools-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5069,7 +5090,12 @@
         "internal/ui/cli/console.go",
         "internal/ui/tui/protection_form.go",
         "internal/ui/tui/workspace_protection.go",
-        "docs/evidence/console-protection-run.md"
+        "docs/evidence/console-protection-run.md",
+        "internal/ui/tui/workspace_drafts.go",
+        "internal/ui/tui/draft_document.go",
+        "internal/ui/tui/draft_store_linux.go",
+        "docs/adr/0043-private-resumable-wizard-drafts.md",
+        "docs/evidence/wizard-drafts-tools-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5135,7 +5161,10 @@
         "internal/ui/cli/console_test.go",
         "internal/ui/tui/protection_form_test.go",
         "internal/ui/tui/workspace_access_test.go",
-        "tests/fixtures/release/console_access_probe.py"
+        "tests/fixtures/release/console_access_probe.py",
+        "internal/ui/tui/workspace_drafts_test.go",
+        "internal/ui/tui/draft_document_test.go",
+        "internal/ui/tui/draft_store_linux_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5212,7 +5241,8 @@
         "console-protection-ui-001",
         "console-protection-integration-001",
         "console-protection-final-001",
-        "console-serial-native-001"
+        "console-serial-native-001",
+        "wizard-drafts-tools-core-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

@@ -1,6 +1,6 @@
 # Native Linux guest-tools qualification plan
 
-Status: **planned; root read-only host preflight completed, guest inspection and bootstrap checks outstanding; no native guest-tools pass**.
+Status: **independent Fedora copy and offline inspection complete; bootstrap and live installation checks outstanding; no native guest-tools pass**.
 Scope: GUEST-03 package installation and fixed host-to-agent handshake, UX-01
 CLI/TUI flow; GUEST-01 only where the actual supported first-boot profile runs.
 The root agent alone may run SSH or mutate the owner-authorized disposable host.
@@ -252,3 +252,34 @@ and TUI updates, failure/idempotency tests, and real Kali 2026.2 package/service
 agent evidence. Its Debian ancestry is not sufficient. That extension can use
 the supplied Kali media after this decision; it must not silently broaden the
 meaning of the existing `debian` profile.
+
+## Observed fixture preparation — 12 September 2026
+
+The stopped Fedora source contains 622,919,680 bytes with SHA-256
+`3a6b44a4db1299ec7bef95e2921b83fdaa17dc5b74449b588e66fc81d63fae59`.
+An ordinary-user independent copy was made and verified at
+`~/virmill-tests/guest-tools-fedora-copy-001/fedora-copy.qcow2`; the original
+source and existing guests were preserved. Product confined metadata inspection
+recognized one standalone QCOW2 disk. The initial fixture call used the wrong
+virt-inspector option spelling and failed before inspection; the installed tool
+requires `--format=qcow2`. Both the failure (`guest-tools-fedora-copy-001`) and
+successful corrected inspection (`guest-tools-fedora-inspect-001`) are retained.
+
+Offline inspection identified Fedora Linux 44 Cloud Edition, x86-64, Btrfs root,
+with NetworkManager 1.56.0-1.fc44, cloud-init 25.3-3.fc44, systemd 259.5-1.fc44,
+OpenSSH server 10.2p1-7.fc44, sudo 1.9.17-7.p2.fc44 and QEMU guest agent
+10.2.2-1.fc44 already installed. Host virt-inspector/virt-customize report 1.56.0;
+guestfish/libguestfs report 1.60.1, QEMU image tools 10.2.2. These are observed
+versions, not inferred from dependency examples. The installed customizer's
+`--selinux-relabel` is a compatibility no-op, so the fixture must explicitly
+handle copied guest labeling during boot.
+
+The existing `default` NAT network is active with UUID
+`e4aa7897-db51-45de-a0dc-a13554eba163`, bridge `virbr0` and IPv4
+`192.168.122.1/24`. The bounded follow-up may attach only the new fixture to that
+network, leaving its definition/state unchanged. A fresh MAC-specific DHCP lease
+and an independently injected host key bind the fixture SSH target. This avoids
+creating or changing host networking merely to test guest package installation;
+it does not claim network isolation qualification. Actual installation still
+requires removing the existing agent only from a new fixture copy, installing
+through Virmill and observing the native agent response.

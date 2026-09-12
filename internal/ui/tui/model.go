@@ -582,9 +582,21 @@ func Run(c ui.Client, connection string) error {
 func RunOptions(c ui.Client, connection string, noColor bool) error {
 	m := NewWorkspace(c, connection)
 	m.NoColor = m.NoColor || noColor
+	store, storeErr := NewDraftStore()
+	if storeErr == nil {
+		defer store.Close()
+		m.AttachDraftStore(store)
+	} else {
+		m.Error = "Draft saving is unavailable: " + validation.SafeText(storeErr.Error())
+	}
 	final, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
-	if w, ok := final.(Workspace); ok && w.ImportCancel != nil {
-		w.ImportCancel()
+	if w, ok := final.(Workspace); ok {
+		if w.ImportCancel != nil {
+			w.ImportCancel()
+		}
+		if saveErr := w.flushSetup(); saveErr != nil && err == nil {
+			err = fmt.Errorf("TUI closed, but setup could not be saved: %w", saveErr)
+		}
 	}
 	return err
 }

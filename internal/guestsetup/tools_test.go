@@ -121,6 +121,7 @@ func (s *toolsFixtureTransport) Run(ctx context.Context, target guestssh.Target,
 }
 
 func toolsRequest(h *recipeHarness) app.Request {
+	h.provider.vm.LiveXML = "<domain id='7'><devices><channel type='unix'><target type='virtio' name='org.qemu.guest_agent.0' state='disconnected'/></channel></devices></domain>"
 	return app.Request{Connection: h.request.Connection, ID: h.request.ID, Input: map[string]any{"profile": "linux-auto", "desktop": false, "address": "192.0.2.42", "port": 2222, "user": "guest", "identityFile": "/private/identity", "knownHostsFile": "/private/known-hosts"}}
 }
 

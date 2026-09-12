@@ -33,6 +33,10 @@ func creationTick(id string) tea.Cmd {
 }
 
 func (m *Workspace) openCreationSources() tea.Cmd {
+	if m.offerSetup("creation") {
+		return nil
+	}
+	m.draftSubmitted = false
 	if m.Creation != nil {
 		m.SavedCreation = m.Creation
 	}
