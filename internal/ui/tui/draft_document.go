@@ -95,6 +95,14 @@ func decodeSetup(raw []byte, connection string) (SavedSetupDocument, error) {
 	return d, nil
 }
 func (m Workspace) setupDocument() *SavedSetupDocument {
+	if h := m.CreationNetwork; h != nil {
+		w := m
+		w.CreationNetwork = nil
+		w.Creation = &h.Creation
+		w.Import = h.Import
+		w.Connection = h.Connection
+		return w.setupDocument()
+	}
 	d := &SavedSetupDocument{Version: 1, Connection: m.Connection, State: "editing"}
 	if m.Import != nil {
 		d.Import = saveImportValues(*m.Import)

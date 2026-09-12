@@ -23,15 +23,17 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
-	AutostartTarget      *domain.VM
-	RemovalTarget        *domain.VM
-	coordinator          coordinatorConnection
-	NetworkForm          *NetworkForm
-	JobOutcome           *jobOutcome
-	Resources            *resourceSetup
-	ResourceSummary      *domain.VMResourceView
-	ResourceSummaryVM    domain.VM
-	ResourceSummaryError string
+	AutostartTarget        *domain.VM
+	RemovalTarget          *domain.VM
+	coordinator            coordinatorConnection
+	NetworkForm            *NetworkForm
+	CreationNetwork        *creationNetworkHandoff
+	CreationNetworkRefresh *creationNetworkRefresh
+	JobOutcome             *jobOutcome
+	Resources              *resourceSetup
+	ResourceSummary        *domain.VMResourceView
+	ResourceSummaryVM      domain.VM
+	ResourceSummaryError   string
 
 	draftWriter                               *setupWriter
 	draftSaved, draftResume                   *SavedSetupDocument
@@ -170,6 +172,11 @@ func (m *Workspace) page(section int) tea.Cmd {
 	m.resetAutostartLoad()
 	m.resetRemovalLoad()
 	m.resetNetworkForm()
+	m.CreationNetwork = nil
+	if m.CreationNetworkRefresh != nil {
+		m.Creation, m.Import = nil, nil
+	}
+	m.cancelCreationNetworkRefresh()
 	m.resetJobOutcome()
 	m.resetBackupRecovery()
 	m.resetGuestAgent()
@@ -580,6 +587,14 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.resetAutostartLoad()
 				m.Busy, m.Notice, m.Error = false, "", text
 			}
+			if v.Kind == "creation-networks" {
+				m.Busy, m.Notice = false, ""
+				m.CreationNetworkRefresh = nil
+				if m.Creation != nil {
+					m.Creation.Error = "Could not refresh networks: " + text
+					m.Error = ""
+				}
+			}
 			if v.Kind == "resources-load" {
 				m.Busy = false
 				if m.Resources != nil {
@@ -673,6 +688,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err := json.Unmarshal(b, &m.CreationChoices); err != nil {
 				m.Error = "Could not read the prepared-image list. Try Create VM again."
 			}
+		case "creation-networks":
+			m.receiveCreationNetworks(v.Response.Data)
 		case "creation-load":
 			m.Busy = false
 			b, _ := json.Marshal(v.Response.Data)
@@ -745,7 +762,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 			if job.State == "succeeded" {
-				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.AutostartTarget == nil && m.RemovalTarget == nil && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
+				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.AutostartTarget == nil && m.RemovalTarget == nil && m.CreationNetwork == nil && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
 					return m, m.loadCreation(job.ID, "")
 				}
 				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
@@ -767,6 +784,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if digest, err := operations.PlanDigest(p); err != nil || digest != p.Digest {
 				m.Error = "The returned plan digest does not match its review. No approval is available."
+				return m, nil
+			}
+			if m.CreationNetwork != nil && m.NetworkForm != nil && (p.Operation != "network.create" || p.ConnectionID != m.CreationNetwork.Connection) {
+				m.Error = "The review does not match network creation. No approval is available; VM choices are kept."
 				return m, nil
 			}
 			m.Plan = &p
@@ -807,9 +828,15 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "job-update":
 			if m.Section == 8 && resourceID(m.Detail) != "" && resourceID(m.Detail) == resourceID(data) {
 				m.Detail = data
+				if m.canAutoReturnCreationNetwork() && field(data, "state") == "succeeded" {
+					return m, m.returnCreationNetwork(true)
+				}
 				return m, m.loadJobOutcome(false)
 			}
 		case "apply":
+			if handled, cmd := m.acceptCreationNetwork(v.Response.Data); handled {
+				return m, cmd
+			}
 			m.resetNetworkForm()
 			m.resetResources()
 			draftCommand := m.setupAccepted(resourceID(data))
@@ -1288,6 +1315,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "job-open-vm":
 			return m, m.openJobVM()
+		case "creation-network-return":
+			return m, m.returnCreationNetwork(true)
 		case "job-refresh-result":
 			return m, m.loadJobOutcome(true)
 		case "q":
@@ -1816,7 +1845,7 @@ func (m Workspace) View() string {
 		if m.NetworkForm != nil {
 			title = "Create network"
 		}
-		if m.Creation != nil || m.CreationPicking {
+		if (m.Creation != nil || m.CreationPicking) && m.NetworkForm == nil {
 			title = "Create VM"
 		}
 		if m.Protection != nil || m.BackupRecovery != nil {
@@ -1915,6 +1944,9 @@ type workspaceButton struct{ label, key string }
 func (m Workspace) buttons() []workspaceButton {
 	if m.connectionRecoveryVisible() {
 		return m.connectionRecoveryButtons()
+	}
+	if m.Section == 8 && m.Detail == nil && m.CreationNetwork != nil && m.CreationNetwork.JobID != "" {
+		return []workspaceButton{{"Back to VM setup", "creation-network-return"}, {"Details", "enter"}, {"Refresh", "r"}}
 	}
 	if m.Section == 8 && m.Detail != nil && field(m.Detail, "state") != "" {
 		return m.jobButtons()

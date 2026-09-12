@@ -115,6 +115,15 @@ adapters remain represented. Choose a network and a compatible adapter model;
 **Disconnected** keeps the cable down on first boot. Connecting multiple networks
 can bypass isolation through the guest. No network exposure is enabled silently.
 
+If the network you need is missing, choose **Create network** on this step.
+Your VM settings stay saved while you choose the network's purpose and review
+its separate creation plan. Cancel returns to the same VM settings. After a
+successful network job, setup returns with refreshed choices; **Back to VM
+setup** also lets you return while the job is running or needs attention.
+Choose the new network for the intended adapter yourself. Its cable stays as
+you set it. **Refresh networks** reads the list again without changing any VM
+setting. An unavailable selected network is identified so you can resolve it.
+
 Continue catches unfinished fields on the current step and moves focus to the
 problem. **Preview VM creation** requests a separate reviewed plan. Creation
 leaves the VM powered off; Start is a separate action. Completed creation does not

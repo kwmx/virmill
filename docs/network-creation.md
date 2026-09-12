@@ -47,8 +47,11 @@ virmill plan apply PLAN_ID --digest PLAN_DIGEST \
 virmill network creation result OPERATION_ID
 ```
 
-In the TUI, open **Networks**, select **network create**, and enter the declaration
-path. Review the returned plan and its acknowledgements through the normal plan
+In the TUI, **Networks → Create network** offers name, purpose and subnet
+controls. Advanced options contain access policies; importing a declaration is
+optional. The VM creation wizard also offers **Create network** on its Networks
+step, retaining your VM settings across the separate network review and job.
+Review the returned plan and its acknowledgements through the normal plan
 approval screen. Page through the complete definition, risks and helper step,
 then confirm its exact digest. Esc exits approval without submitting it. The
 same section provides creation result and recovery actions. `plan show` retains

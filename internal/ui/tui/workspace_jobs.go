@@ -29,6 +29,9 @@ func (m *Workspace) refreshJobs() tea.Cmd {
 func (m Workspace) jobButtons() []workspaceButton {
 	state := field(m.Detail, "state")
 	out := []workspaceButton{}
+	if m.creationNetworkJobMatches() {
+		out = append(out, workspaceButton{"Back to VM setup", "creation-network-return"})
+	}
 	if o := m.currentJobOutcome(); o != nil {
 		if o.Error != "" {
 			out = append(out, workspaceButton{"Refresh result", "job-refresh-result"})

@@ -234,16 +234,23 @@ func (f CreationForm) controls() []importControl {
 			networks := []string{}
 			selected := ""
 			for _, n := range f.Networks {
-				if n.Active {
+				if n.Active && guidedUUID.MatchString(n.Key.UUID) && n.Key.UUID != "00000000-0000-0000-0000-000000000000" {
 					networks = append(networks, n.Key.UUID)
 					if n.Key.UUID == nic.NetworkID {
 						selected = n.Name
+						if selected == "" {
+							selected = n.Key.UUID
+						}
 					}
 				}
 			}
 			networkHelp := "Choose a network. Multiple networks may bypass isolation through the guest."
 			if len(networks) == 0 {
-				networkHelp = "No active networks. Start or create one in Networks, then reopen this form."
+				networkHelp = "No active networks. Choose Create network or Refresh networks; VM choices stay here."
+			}
+			if nic.NetworkID != "" && selected == "" {
+				selected = "Unavailable: " + nic.NetworkID
+				networkHelp = "This network is unavailable. Refresh networks or choose another; your selection is retained."
 			}
 			choice("network", "Network", networkHelp, selected, networks)
 			choice("nicModel", "Adapter model", "Guest drivers must support this model; host support is rechecked in the plan.", nic.Model, []string{"virtio", "e1000e", "rtl8139"})
@@ -256,7 +263,10 @@ func (f CreationForm) controls() []importControl {
 		if f.BeforePreparation {
 			previewLabel, previewHelp = "Review image preparation", "Keep these VM choices and review preparing the source images first."
 		}
-		c = append(c, importButton("addNIC", "Add network adapter", "Add an adapter with no network chosen and its cable disconnected."), importButton("back", "Back", "Review disk mappings."), importButton("preview", previewLabel, previewHelp), importButton("export", "Export settings", "Save these choices for reuse without creating a VM."))
+		c = append(c,
+			importButton("create-network", "Create network", "Create a network in a separate review, then return with your VM choices kept."),
+			importButton("refresh-networks", "Refresh networks", "Read available networks again. Keep all VM choices; selecting a network is separate."),
+			importButton("addNIC", "Add network adapter", "Add an adapter with no network chosen and its cable disconnected."), importButton("back", "Back", "Review disk mappings."), importButton("preview", previewLabel, previewHelp), importButton("export", "Export settings", "Save these choices for reuse without creating a VM."))
 	case 3:
 		choice("machine", "Machine", "Changing machine reloads observed host choices and preserves your selections.", f.Spec.Machine, f.Options.Machines)
 		choice("cpuMode", "CPU mode", "Host model is a host-derived default; custom chooses an explicit compatible model.", f.Spec.CPU.Mode, f.Options.CPUModes)
@@ -417,6 +427,8 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 	}
 	if c.kind == "button" && activate {
 		switch c.id {
+		case "create-network", "refresh-networks":
+			return f, ImportIntent{Kind: c.id}
 		case "advanced":
 			f.Page = 3
 			f.Focus = 0
@@ -629,7 +641,7 @@ func (f CreationForm) Request(connection string) (app.Request, error) {
 		if n.SourceIndex >= 0 {
 			sourceNICs[n.SourceIndex] = true
 		}
-		if !slices.ContainsFunc(f.Networks, func(v domain.VirtualNetwork) bool { return v.Active && v.Key.UUID == n.NetworkID }) {
+		if !guidedUUID.MatchString(n.NetworkID) || n.NetworkID == "00000000-0000-0000-0000-000000000000" || !slices.ContainsFunc(f.Networks, func(v domain.VirtualNetwork) bool { return v.Active && v.Key.UUID == n.NetworkID }) {
 			return fail("Adapter " + n.ID + ": choose an active network, even with its cable disconnected.")
 		}
 		if !slices.Contains([]string{"virtio", "e1000e", "rtl8139"}, n.Model) || !slices.Contains([]string{"down", "up"}, n.Link) {

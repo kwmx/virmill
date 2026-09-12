@@ -54,6 +54,9 @@ func (m Workspace) updateNetworkForm(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	m.NetworkForm = &f
 	switch action {
 	case "back":
+		if m.CreationNetwork != nil {
+			return m, m.returnCreationNetwork(false)
+		}
 		m.resetNetworkForm()
 		m.Error, m.Notice = "", ""
 	case "preview":

@@ -113,6 +113,7 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.Busy {
 		if key.Type == tea.KeyEsc {
 			m.Pending = maps.Clone(m.Pending)
+			m.cancelCreationNetworkRefresh()
 			delete(m.Pending, "creation-load")
 			delete(m.Pending, "creation-sources")
 			delete(m.Pending, "plan")
@@ -149,6 +150,10 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	switch intent.Kind {
+	case "create-network":
+		return m, m.openCreationNetwork()
+	case "refresh-networks":
+		return m, m.refreshCreationNetworks()
 	case "cancel":
 		m.Creation = nil
 		m.CreationPicking = false

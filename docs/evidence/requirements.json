@@ -1443,7 +1443,10 @@
         "internal/ui/tui/network_form.go",
         "internal/ui/tui/workspace_network.go",
         "docs/adr/0048-guided-network-declarations.md",
-        "docs/evidence/network-form-run.md"
+        "docs/evidence/network-form-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-01",
@@ -1466,7 +1469,10 @@
         "internal/ui/cli/network_inline_test.go",
         "internal/ui/tui/network_form_test.go",
         "internal/ui/tui/workspace_network_test.go",
-        "tests/fixtures/release/network_form_tui_probe.py"
+        "tests/fixtures/release/network_form_tui_probe.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -1485,7 +1491,8 @@
         "protected-network-native-001",
         "protected-network-native-002",
         "network-form-core-001",
-        "network-form-tui-native-002"
+        "network-form-tui-native-002",
+        "creation-network-handoff-ui-001"
       ],
       "outstanding": [
         "Allowed-host NAT/lab definition, authenticated IPv6 filters and activation now execute through shared CLI/TUI. Native namespace DHCP, peer/host IPv4, NAT DNS/TCP and lab no-default-route checks passed in native005; its overall result failed a strict active-zone comparison while existing ens19 DHCP repeatedly failed. Full required profiles and real guest/host preservation qualification remain open."
@@ -1596,7 +1603,10 @@
         "internal/ui/tui/network_form.go",
         "internal/ui/tui/workspace_network.go",
         "docs/adr/0048-guided-network-declarations.md",
-        "docs/evidence/network-form-run.md"
+        "docs/evidence/network-form-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-03",
@@ -1617,7 +1627,10 @@
         "internal/ui/cli/network_inline_test.go",
         "internal/ui/tui/network_form_test.go",
         "internal/ui/tui/workspace_network_test.go",
-        "tests/fixtures/release/network_form_tui_probe.py"
+        "tests/fixtures/release/network_form_tui_probe.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "protected-network-repro-001",
@@ -1628,7 +1641,8 @@
         "protected-network-packet-parsers-003",
         "protected-network-native-003",
         "network-form-core-001",
-        "network-form-tui-native-002"
+        "network-form-tui-native-002",
+        "creation-network-handoff-ui-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1665,7 +1679,10 @@
         "internal/ui/tui/network_form.go",
         "internal/ui/tui/workspace_network.go",
         "docs/adr/0048-guided-network-declarations.md",
-        "docs/evidence/network-form-run.md"
+        "docs/evidence/network-form-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-04",
@@ -1686,7 +1703,10 @@
         "internal/ui/cli/network_inline_test.go",
         "internal/ui/tui/network_form_test.go",
         "internal/ui/tui/workspace_network_test.go",
-        "tests/fixtures/release/network_form_tui_probe.py"
+        "tests/fixtures/release/network_form_tui_probe.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "protected-network-repro-001",
@@ -1698,7 +1718,8 @@
         "protected-network-packet-parsers-003",
         "protected-network-native-003",
         "network-form-core-001",
-        "network-form-tui-native-002"
+        "network-form-tui-native-002",
+        "creation-network-handoff-ui-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1821,7 +1842,10 @@
         "internal/ui/tui/network_form.go",
         "internal/ui/tui/workspace_network.go",
         "docs/adr/0048-guided-network-declarations.md",
-        "docs/evidence/network-form-run.md"
+        "docs/evidence/network-form-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/app/network",
       "plannedTest": "tests/integration/network/NET-06",
@@ -1852,7 +1876,10 @@
         "internal/ui/cli/network_inline_test.go",
         "internal/ui/tui/network_form_test.go",
         "internal/ui/tui/workspace_network_test.go",
-        "tests/fixtures/release/network_form_tui_probe.py"
+        "tests/fixtures/release/network_form_tui_probe.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -1875,7 +1902,8 @@
         "automatic-allocation-static-001",
         "automatic-allocation-native-001",
         "network-form-core-001",
-        "network-form-tui-native-002"
+        "network-form-tui-native-002",
+        "creation-network-handoff-ui-001"
       ],
       "outstanding": [
         "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic.",
@@ -3775,7 +3803,10 @@
         "internal/ui/tui/workspace_removal.go",
         "docs/vm-removal.md",
         "docs/adr/0050-retain-disks-definition-removal.md",
-        "docs/evidence/removal-guided-run.md"
+        "docs/evidence/removal-guided-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-03",
@@ -3799,7 +3830,10 @@
         "internal/backend/libvirt/removal_linux_test.go",
         "internal/ui/tui/guided_removal_test.go",
         "internal/ui/tui/workspace_removal_test.go",
-        "tests/fixtures/release/removal_native_cycle.py"
+        "tests/fixtures/release/removal_native_cycle.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3812,7 +3846,8 @@
         "removal-guided-cycle-native-001",
         "removal-guided-restart-native-001",
         "removal-corrected-restart-native-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "creation-network-handoff-ui-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -5001,7 +5036,10 @@
         "internal/ui/tui/workspace_removal.go",
         "docs/vm-removal.md",
         "docs/adr/0050-retain-disks-definition-removal.md",
-        "docs/evidence/removal-guided-run.md"
+        "docs/evidence/removal-guided-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5175,7 +5213,10 @@
         "internal/backend/libvirt/removal_linux_test.go",
         "internal/ui/tui/guided_removal_test.go",
         "internal/ui/tui/workspace_removal_test.go",
-        "tests/fixtures/release/removal_native_cycle.py"
+        "tests/fixtures/release/removal_native_cycle.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5374,7 +5415,9 @@
         "removal-guided-core-001",
         "removal-guided-outcome-001",
         "removal-guided-cycle-native-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-fixture-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5522,7 +5565,10 @@
         "internal/ui/tui/workspace_removal.go",
         "docs/vm-removal.md",
         "docs/adr/0050-retain-disks-definition-removal.md",
-        "docs/evidence/removal-guided-run.md"
+        "docs/evidence/removal-guided-run.md",
+        "internal/ui/tui/workspace_creation_network.go",
+        "docs/adr/0051-network-creation-within-vm-setup.md",
+        "docs/evidence/creation-network-handoff-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5623,7 +5669,10 @@
         "internal/backend/libvirt/removal_linux_test.go",
         "internal/ui/tui/guided_removal_test.go",
         "internal/ui/tui/workspace_removal_test.go",
-        "tests/fixtures/release/removal_native_cycle.py"
+        "tests/fixtures/release/removal_native_cycle.py",
+        "internal/ui/tui/workspace_creation_network_test.go",
+        "internal/ui/tui/creation_network_actions_test.go",
+        "tests/fixtures/release/creation_network_handoff_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5741,7 +5790,9 @@
         "removal-guided-cycle-native-001",
         "removal-guided-packages-001",
         "removal-corrected-packages-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-fixture-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
