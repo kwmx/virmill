@@ -1,0 +1,10 @@
+Actual 80x24 workspace PTY: Actions catalog, search, select-only Enter, clear, back and no-results feedback passed; no action was submitted
+Packaged CPU/RAM preview: strict resource schema and native test-URI refusal pass; no host configuration effect
+test_debian_archive_structure_and_rpm_metadata (__main__.Artifacts.test_debian_archive_structure_and_rpm_metadata) ... ok
+test_private_daemon_cli_and_lab_validation (__main__.Artifacts.test_private_daemon_cli_and_lab_validation) ... ok
+test_staged_install_and_uninstall_preserve_user_artifacts (__main__.Artifacts.test_staged_install_and_uninstall_preserve_user_artifacts) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.905s
+
+OK

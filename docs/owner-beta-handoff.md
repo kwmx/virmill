@@ -5,7 +5,13 @@ Fedora 44 test VM.** SSH access and coordinator readiness are verified after reb
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `d4036d2`.
+**Current UI update:** installed CLI and coordinator use `5b743b6`.
+**VMs → More → Advanced tools → Remove VM, keep disks** now offers exact-name
+confirmation, a separate preview and a clear retained-storage outcome. Actual
+80×24 TUI/CLI plan parity and one durable definition removal passed on a newly
+generated BIOS fixture, with its full disk hash unchanged. Existing guests and
+source media were preserved. Firmware/TPM and selected-disk deletion remain
+unsupported in this beta. See [removal evidence](evidence/removal-guided-run.md).
 **VMs → More → Change VM automatic startup** now shows current settings and a
 simple toggle with a separate before/after preview. Actual TUI/CLI plan comparison
 and native enable/restore-to-Off jobs passed without starting or stopping the
@@ -20,7 +26,8 @@ If the coordinator is unavailable, Overview and Settings now explain how to
 start it, offer **Retry connection**, and keep optional sign-in setup under
 **More help**. The test VM's service is enabled at sign-in. See
 [startup help](coordinator-startup.md).
-Completed local VM jobs now offer **Open VM** after checking the saved result.
+Completed local VM jobs offer **Open VM** when their saved result identifies an
+existing VM; removal instead explains the retained disks.
 Guest tools checks runtime state first and offers reviewed start guidance for
 stopped guests. Prose and review warnings wrap by words. See [job/setup evidence](evidence/guided-job-completion-run.md).
 CPU/RAM settings show live and next-boot values, prefill editable fields and review
@@ -68,8 +75,8 @@ virmill
 ```
 
 Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
-`build/autostart-delivery/`. The full installed build revision is
-`d4036d2b834042f37bb3dd7995385ffede4688a6`.
+`build/removal-corrected-delivery/`. The full installed build revision is
+`5b743b6dc6d5f7b975856519f3975a2101c3222f`.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use
