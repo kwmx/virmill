@@ -5,8 +5,16 @@ Fedora 44 test VM.** SSH access and coordinator readiness are verified after reb
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `7efd7c1`.
-**Disks and boot** now maintains a complete order when you move a device.
+**Current UI update:** installed CLI and coordinator use `dc45ee3`.
+**Jobs → Activity** opens the selected job directly with full scrollable messages,
+UTC times, paging and labeled Refresh/Back buttons. **Checked** confirms a
+successful refresh. Read failures keep earlier events and show the full issue.
+The actual 80×24 CLI/message comparison, refresh and return-to-job test passed;
+existing guests, all 32 jobs, networks and media were unchanged. See
+[Activity evidence](evidence/job-activity-run.md). Final unsigned RPM/DEB artifacts
+are retained in `build/job-activity-final-delivery/dist/`.
+
+**Disks and boot** maintains a complete order when you move a device.
 **Attach only** excludes installer media from booting and closes the numbering gap;
 re-enabling it inserts it back into the order. Prepared ISO sources receive the
 host-supported SATA suggestion; saved controller choices remain unchanged.
@@ -91,8 +99,8 @@ virmill
 ```
 
 Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
-`build/boot-order-delivery/`. The full installed build revision is
-`7efd7c14cf830abcde4ce04fe446f4012f5cf61a`.
+`build/job-activity-final-delivery/`. The full installed build revision is
+`dc45ee39165ea4dd5699e4f771dd1b1d85a02f99`.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use

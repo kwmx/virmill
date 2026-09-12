@@ -434,7 +434,10 @@
         "creation-boot-order-restart-native-001",
         "job-activity-packages-001",
         "job-activity-upgrade-native-001",
-        "job-activity-restart-native-001"
+        "job-activity-restart-native-001",
+        "job-activity-packages-002",
+        "job-activity-upgrade-native-002",
+        "job-activity-restart-native-002"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -3793,7 +3796,9 @@
         "job-activity-restart-native-001",
         "job-activity-native-001",
         "job-activity-ui-002",
-        "job-activity-fixture-002"
+        "job-activity-fixture-002",
+        "job-activity-restart-native-002",
+        "job-activity-native-002"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -3914,7 +3919,8 @@
         "job-activity-fixture-001",
         "job-activity-native-001",
         "job-activity-ui-002",
-        "job-activity-fixture-002"
+        "job-activity-fixture-002",
+        "job-activity-native-002"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -4669,7 +4675,9 @@
         "creation-boot-order-upgrade-native-001",
         "creation-boot-order-restart-native-001",
         "job-activity-packages-001",
-        "job-activity-upgrade-native-001"
+        "job-activity-upgrade-native-001",
+        "job-activity-packages-002",
+        "job-activity-upgrade-native-002"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -5524,7 +5532,8 @@
         "job-activity-fixture-001",
         "job-activity-native-001",
         "job-activity-ui-002",
-        "job-activity-fixture-002"
+        "job-activity-fixture-002",
+        "job-activity-native-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5932,7 +5941,11 @@
         "job-activity-restart-native-001",
         "job-activity-native-001",
         "job-activity-ui-002",
-        "job-activity-fixture-002"
+        "job-activity-fixture-002",
+        "job-activity-packages-002",
+        "job-activity-upgrade-native-002",
+        "job-activity-restart-native-002",
+        "job-activity-native-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

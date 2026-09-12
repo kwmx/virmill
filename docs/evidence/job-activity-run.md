@@ -37,3 +37,36 @@ local decoder checks. Final runtime and native results follow below.
 
 `job-activity-ui-002` passed the full TUI and CLI race suites (7.200s and
 3.396s) after adding successful-read feedback.
+
+`job-activity-packages-002` passed all three final package/private-IPC tests.
+`job-activity-upgrade-native-002` and `job-activity-restart-native-002` installed
+and activated the corrected beta, preserving all 32 jobs, journal tables, guests
+and source-media observations. `job-activity-native-002` passed actual 80×24 direct
+Activity access, all four full event messages matched to CLI, a completed refresh
+with advancing Checked time and no duplicate events, and Back to the same job.
+VM, job, network and supplied-media observations were unchanged. No apply was
+attempted. Root inspected the refreshed Activity and return-to-job captures.
+
+Installed source: `dc45ee39165ea4dd5699e4f771dd1b1d85a02f99`.
+CLI SHA-256: `ed22c433a6e788b3b5ce86824d78ac7e7093664111e1332666af9404bdab2394`.
+Coordinator SHA-256: `5504d95235c7f7c184898be65e43faaafe8750f6482a2529e36f2deafa0883cf`.
+Core RPM SHA-256: `1cd30924398ce2ad0a94b701481f6f4fa1db1bcb7ba63a0395846e696e840346`.
+Unsigned RPM/DEB artifacts and manifests are in `build/job-activity-final-delivery/`.
+Native stage: `~/virmill-tests/job-activity-dc45ee3`; report and captures are in its
+`job-activity-tui/` directory, also copied into the local delivery directory.
+This is recorded-event observation, not new crash-recovery qualification.
+
+The owner requested committing and pushing the beta to the configured main
+branch. Pre-push checks found no ignored-but-tracked files, outgoing media,
+packages, credential files or local test configuration. All 4,006 outgoing blobs
+were checked for private-key/token markers; the only matches were synthetic
+rejection-test strings in two provisioning tests, inspected as such. No outgoing
+blob exceeded 10 MiB. This bounded check is not a full security audit. The Git
+remote is `git@github.com:kwmx/virmill.git`; no example destination is used.
+
+Automatic approval review rejected the combined final commit/push command before
+execution: it requires explicit owner confirmation that `kwmx/virmill` is the
+intended destination for source and evidence-log egress. The final evidence is
+committed locally in a separate command. No GitHub push or release was performed
+at this point; destination approval remains pending. This does not affect the
+verified installed beta or its recorded tests.
