@@ -1,7 +1,8 @@
 # Guest integration and receipt recovery beta evidence
 
-Installed source: `96532cb921e10ab496da8857df5e94a35d261319` (12 September 2026).
-Implementation digest: `ad87b7d669a0ae58c710c5a278a68a6f8245b96c9aa0678d3f7fdf900e06bd5c`.
+Installed source: `e53f2e21e0ecf6b0c7a2bd6153f487df12d56236` (12 September 2026).
+Implementation digest: `aeff9a74528122d8c825e24272e324fb3a0d2ed3b080a11ddd4a6cc5332395e9`.
+Initial integrated source `96532cb` remains separately recorded below.
 Go 1.27.1 and existing exact vendored dependencies; no dependency versions changed.
 
 The beta adds guided existing-VM guest-agent connection setup, fresh state during
@@ -42,13 +43,30 @@ authorized host; local copies are ignored under `build/guest-integration-deliver
 The native fixture never booted and has no guest OS. It proves configuration and
 UI behavior, not agent package installation, agent response or OS compatibility.
 
+Final terminal inspection led to a small UI cleanup: VM details now keep internal
+fingerprints and duplicate identity fields behind `x`, and guest-tools guidance
+and its footer match the observed setup state and actual Enter behavior.
+`guest-integration-screen-polish-001` retained a failed obsolete text assertion;
+`...screen-polish-002` passed after the assertion was updated. No product failure
+was hidden. The final package checks (`guest-integration-final-packages-001`),
+RPM replacement (`...final-upgrade-001`) and idle restart (`...final-restart-001`)
+passed. Current coordinator PID is 82340.
+
+`guest-integration-final-native-channel-001` repeated the bounded native edit and
+both terminal paths on installed `e53f2e2`; all passed. Final fixture UUID was
+`d5fcf23f-6c61-44ce-a287-38b952930a63`, definition digest
+`2ca6d8a3a9422ba5ef115a93c4c16e29ed28ac68c3f9217aa94d389819b65129`.
+It was undefined after verification. Final remote evidence is under
+`~/virmill-tests/guest-integration-e53f2e2`, with local copies in
+`build/guest-integration-final-delivery`. Earlier results remain intact.
+
 ## Installed artifacts
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `/usr/bin/virmill` | `3254c67a8651cd6db3ab0331342c43d0192052cf15da6697bb1a17aef6b53ca2` |
-| `/usr/bin/virmilld` | `957feef702132708366a502a6be482bcf11d8a60541d32b35c3a56ce39d36e55` |
-| Core RPM | `613b57b710fdb20fa31509849c1ebd92a0158ae9fc9e4f273b3b149171990751` |
+| `/usr/bin/virmill` | `472e4ae0ce295a6bd1c2169c0d5edc5a67086a018ddfab0d5d65dd2daffa57a8` |
+| `/usr/bin/virmilld` | `3e86f876ddd2047bbc5cf3d52921b86f898bb7837ee0409bd900c9755d2f309f` |
+| Core RPM | `03969431ff1688028fc9e181d063264ad1bff21528b325b7535aa4c2635af254` |
 
 The separate helper package was built but not installed in this update. Helper
 policy, host networking and supplied guest media were not changed. `.gitignore`

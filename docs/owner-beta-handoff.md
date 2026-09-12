@@ -5,7 +5,7 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `96532cb`.
+**Current UI update:** installed CLI and coordinator use `e53f2e2`.
 The unified OVA/ISO/disk import and hardware controls remain available. Guest tools
 now checks the VM's connection and offers a guided, reviewed setup action when it
 is missing. Backup recovery uses saved receipts instead of manually entered hashes.

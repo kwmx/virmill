@@ -206,7 +206,8 @@
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
-        "guest-integration-native-channel-001"
+        "guest-integration-native-channel-001",
+        "guest-integration-final-native-channel-001"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
@@ -2957,7 +2958,8 @@
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
-        "guest-integration-native-channel-001"
+        "guest-integration-native-channel-001",
+        "guest-integration-final-native-channel-001"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -3963,7 +3965,8 @@
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
-        "guest-integration-native-channel-001"
+        "guest-integration-native-channel-001",
+        "guest-integration-final-native-channel-001"
       ],
       "outstanding": [
         "NoCloud credential refusals withhold rejected values. New resource-edit plans persist hashes instead of opaque XML; secure XML differences fail closed, and returned native definition errors withhold XML values. Full secret store, inventory/guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required.",
@@ -4251,7 +4254,8 @@
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
-        "guest-integration-native-channel-001"
+        "guest-integration-native-channel-001",
+        "guest-integration-final-native-channel-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -4954,7 +4958,11 @@
         "guest-integration-receipts-packages-001",
         "guest-integration-receipts-native-upgrade-001",
         "guest-integration-receipts-native-restart-001",
-        "guest-integration-screen-polish-002"
+        "guest-integration-screen-polish-002",
+        "guest-integration-final-native-channel-001",
+        "guest-integration-final-packages-001",
+        "guest-integration-final-upgrade-001",
+        "guest-integration-final-restart-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
