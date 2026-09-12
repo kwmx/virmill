@@ -230,3 +230,18 @@ Back up selects an initialized encrypted repository and its password file with
 The restored VM is stopped and disconnected; originals are retained. Firmware/TPM
 restoration is still unavailable and affected recovery points are refused.
 Review the plan before applying. Back from review preserves your choices.
+
+### Completed jobs and guest tools
+
+After a VM job completes, **Open VM** takes you to fresh VM details. Creation
+checks its saved receipt first; the completed copy/definition is separate from
+booting and configuring the guest. If the result cannot be verified, **Refresh
+result** retries the observation and leaves the job unchanged. Events and advanced
+job tools remain available.
+
+**Guest tools** checks the selected guest before asking for SSH settings. A
+stopped guest with its management channel configured offers **Preview start VM**.
+After starting, return through **Open VM → Guest tools**. Paused or saved guests
+explain which state to resolve first. **Prepare options / Windows help** remains
+available for advance preparation. Running with a configured channel opens the
+installation form; neither condition alone proves software is installed.

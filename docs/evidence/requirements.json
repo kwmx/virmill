@@ -2998,7 +2998,10 @@
         "internal/guestsetup/tools_binding.go",
         "internal/backend/xmlpatch/guest_tools_binding.go",
         "docs/adr/0044-guest-tools-live-channel-binding.md",
-        "docs/evidence/wizard-drafts-tools-run.md"
+        "docs/evidence/wizard-drafts-tools-run.md",
+        "internal/ui/tui/workspace_job_outcome.go",
+        "docs/adr/0047-guided-job-completion.md",
+        "docs/evidence/guided-job-completion-run.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
@@ -3027,7 +3030,10 @@
         "internal/ui/cli/guest_agent_receipt_test.go",
         "internal/guestsetup/tools_binding_test.go",
         "internal/backend/xmlpatch/guest_tools_binding_test.go",
-        "tests/fixtures/release/guest_tools_fedora_probe.py"
+        "tests/fixtures/release/guest_tools_fedora_probe.py",
+        "internal/ui/tui/workspace_job_outcome_test.go",
+        "internal/ui/tui/wrap_test.go",
+        "tests/fixtures/release/guest_tools_tui_probe.py"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
@@ -3064,7 +3070,9 @@
         "wizard-drafts-tools-upgrade-001",
         "wizard-drafts-tools-restart-001",
         "wizard-drafts-tools-focused-001",
-        "guest-tools-fedora-live-002"
+        "guest-tools-fedora-live-002",
+        "guided-job-core-001",
+        "guided-job-ui-002"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -4787,7 +4795,10 @@
         "docs/evidence/observed-resources-run.md",
         "docs/adr/0046-private-spice-creation.md",
         "docs/evidence/spice-creation-run.md",
-        "schemas/vm-creation-input.schema.json"
+        "schemas/vm-creation-input.schema.json",
+        "internal/ui/tui/workspace_job_outcome.go",
+        "docs/adr/0047-guided-job-completion.md",
+        "docs/evidence/guided-job-completion-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4941,7 +4952,10 @@
         "internal/creating/spice_compatibility_linux_test.go",
         "internal/ui/tui/creation_display_test.go",
         "tests/fixtures/release/spice_normalization_probe.py",
-        "tests/fixtures/release/spice_creation_probe.py"
+        "tests/fixtures/release/spice_creation_probe.py",
+        "internal/ui/tui/workspace_job_outcome_test.go",
+        "internal/ui/tui/wrap_test.go",
+        "tests/fixtures/release/guest_tools_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5124,7 +5138,9 @@
         "spice-creation-upgrade-001",
         "spice-creation-restart-001",
         "spice-creation-native-001",
-        "spice-viewer-recheck-native-001"
+        "spice-viewer-recheck-native-001",
+        "guided-job-core-001",
+        "guided-job-ui-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5249,7 +5265,10 @@
         "docs/adr/0046-private-spice-creation.md",
         "docs/evidence/spice-creation-run.md",
         "internal/backend/libvirt/creation_xml.go",
-        "schemas/vm-creation-input.schema.json"
+        "schemas/vm-creation-input.schema.json",
+        "internal/ui/tui/workspace_job_outcome.go",
+        "docs/adr/0047-guided-job-completion.md",
+        "docs/evidence/guided-job-completion-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5330,7 +5349,10 @@
         "internal/creating/spice_compatibility_linux_test.go",
         "internal/ui/tui/creation_display_test.go",
         "tests/fixtures/release/spice_normalization_probe.py",
-        "tests/fixtures/release/spice_creation_probe.py"
+        "tests/fixtures/release/spice_creation_probe.py",
+        "internal/ui/tui/workspace_job_outcome_test.go",
+        "internal/ui/tui/wrap_test.go",
+        "tests/fixtures/release/guest_tools_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5430,7 +5452,9 @@
         "spice-creation-upgrade-001",
         "spice-creation-restart-001",
         "spice-creation-native-001",
-        "spice-viewer-recheck-native-001"
+        "spice-viewer-recheck-native-001",
+        "guided-job-core-001",
+        "guided-job-ui-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

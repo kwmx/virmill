@@ -103,7 +103,7 @@ func (m *Workspace) receiveGuestAgent(data any) {
 	m.GuestAgent.Error = ""
 	m.GuestAgent.Index = 0
 	m.Error = ""
-	if report.Present {
+	if report.Present && report.State == "running" && !report.HasManagedSave {
 		m.continueGuestTools()
 	}
 }
@@ -138,7 +138,13 @@ func (m Workspace) guestAgentButtons() []guestAgentButton {
 	case g.Report == nil:
 		buttons = append(buttons, guestAgentButton{"Refresh connection status", "refresh", "Read the VM's current connection settings."})
 	case g.VM.HasManagedSave:
-		buttons = append(buttons, guestAgentButton{"Refresh connection status", "refresh", "Saved runtime state must be resolved before changing VM devices."})
+		buttons = append(buttons, guestAgentButton{"Refresh connection status", "refresh", "Return after resuming the saved VM from VM controls."})
+	case g.Report.Present && g.VM.State == "stopped":
+		buttons = append(buttons,
+			guestAgentButton{"Preview start VM", "start", "Review starting this VM. Return to Guest tools when it is running."},
+			guestAgentButton{"Refresh connection status", "refresh", "Check whether the VM is running and ready for installation options."})
+	case g.Report.Present:
+		buttons = append(buttons, guestAgentButton{"Refresh connection status", "refresh", "Check the VM state again after resolving it in VM controls."})
 	case g.VM.State == "running":
 		buttons = append(buttons, guestAgentButton{"Preview shut down VM", "stop", "Ask the guest to shut down. Return to Guest tools when it has stopped."})
 	case (g.VM.State == "stopped" || g.VM.State == "shut off" || g.VM.State == "shutoff") && g.Report.CanEnable:
@@ -146,7 +152,11 @@ func (m Workspace) guestAgentButtons() []guestAgentButton {
 	default:
 		buttons = append(buttons, guestAgentButton{"Refresh connection status", "refresh", "Read current availability before trying again."})
 	}
-	return append(buttons, guestAgentButton{"Installation options / Windows help", "continue", "Choose a guest system, read manual instructions, or prepare SSH settings."}, guestAgentButton{"Back to VM", "back", "Return without changing this VM."})
+	options := guestAgentButton{"Installation options / Windows help", "continue", "Choose a guest system, read manual instructions, or prepare SSH settings."}
+	if g.Report != nil && (g.VM.State != "running" || g.VM.HasManagedSave) {
+		options = guestAgentButton{"Prepare options / Windows help", "continue", "Prepare settings or read Windows help. Installation needs a running VM."}
+	}
+	return append(buttons, options, guestAgentButton{"Back to VM", "back", "Return without changing this VM."})
 }
 func (m Workspace) updateGuestAgent(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.GuestAgent == nil {
@@ -193,6 +203,11 @@ func (m Workspace) updateGuestAgent(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.Error = ""
 			m.Notice = "Preparing a graceful shutdown review..."
 			return m, m.request("plan", "vm.plan", app.Request{ID: g.VM.Key.UUID, Action: "stop"})
+		case "start":
+			m.Busy = true
+			m.Error = ""
+			m.Notice = "Preparing a VM start review..."
+			return m, m.request("plan", "vm.plan", app.Request{ID: g.VM.Key.UUID, Action: "start"})
 		case "enable":
 			m.Busy = true
 			m.Error = ""
@@ -210,14 +225,19 @@ func (m Workspace) guestAgentView(width, height int) []string {
 	if g.Loading {
 		return pageLines([]string{"Guest tools", "Checking the VM's guest-agent connection...", "Esc goes back."}, width, height, 0)
 	}
-	lines := []string{"Guest tools · " + validation.SafeText(g.VM.Name), "Set up the connection, then install software inside the guest.", ""}
+	lines := []string{"Guest tools · " + validation.SafeText(g.VM.Name), "Install software inside a running guest.", ""}
 	switch {
 	case g.Report == nil:
 		lines = append(lines, "Connection status could not be checked.")
+	case g.Report.Present:
+		lines = append(lines, "Connection configured; software and agent response are not checked.")
+		lines = append(lines, guestAgentRuntimeHelp(g.VM)...)
 	case g.VM.HasManagedSave:
 		lines = append(lines, "This VM has saved runtime state.", "Resolve it before adding the guest-agent connection.")
 	case g.VM.State == "running":
 		lines = append(lines, "The guest-agent connection is missing.", "Shut down this VM before adding it.")
+	case g.VM.State != "stopped":
+		lines = append(lines, guestAgentRuntimeHelp(g.VM)...)
 	case g.Report.CanEnable:
 		lines = append(lines, "The guest-agent connection is missing.", "Enable it so this host can exchange management messages with the guest.")
 	default:
@@ -244,4 +264,19 @@ func (m Workspace) guestAgentView(width, height int) []string {
 	}
 	lines = append(lines, "", "Tab/Arrows Select   Enter Choose   Esc Back")
 	return pageLines(lines, width, height, 0)
+}
+
+func guestAgentRuntimeHelp(vm domain.VM) []string {
+	switch {
+	case vm.HasManagedSave:
+		return []string{"This VM has saved runtime state.", "Resume it from VM controls, then return here and refresh."}
+	case vm.State == "stopped":
+		return []string{"This VM is stopped. Start it before installing guest tools."}
+	case vm.State == "paused" || vm.State == "suspended":
+		return []string{"This VM is " + vm.State + ".", "Resume it from VM controls, then return here and refresh."}
+	case vm.State == "shutting-down":
+		return []string{"This VM is shutting down. Wait for it to stop, then refresh."}
+	default:
+		return []string{"VM state: " + validation.SafeText(vm.State) + ".", "Check its state in VM controls, then return here and refresh."}
+	}
 }

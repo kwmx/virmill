@@ -23,6 +23,7 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	JobOutcome           *jobOutcome
 	Resources            *resourceSetup
 	ResourceSummary      *domain.VMResourceView
 	ResourceSummaryVM    domain.VM
@@ -162,6 +163,7 @@ func (m *Workspace) refresh() tea.Cmd {
 	return m.request(kind, workspaceMethods[kind], app.Request{})
 }
 func (m *Workspace) page(section int) tea.Cmd {
+	m.resetJobOutcome()
 	m.resetBackupRecovery()
 	m.resetGuestAgent()
 	m.Pending = maps.Clone(m.Pending)
@@ -333,6 +335,7 @@ func (m *Workspace) showRow() tea.Cmd {
 	if len(rows) == 0 {
 		return nil
 	}
+	m.resetJobOutcome()
 	m.Selected = max(0, min(m.Selected, len(rows)-1))
 	row := rows[m.Selected]
 	m.Detail = row
@@ -361,6 +364,7 @@ func (m *Workspace) showRow() tea.Cmd {
 	return nil
 }
 func (m *Workspace) advanced() {
+	m.resetJobOutcome()
 	m.Pending = maps.Clone(m.Pending)
 	delete(m.Pending, "detail")
 	m.Advanced = true
@@ -579,6 +583,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Error = ""
 				}
 			}
+			if v.Kind == "job-open-vm" {
+				m.Busy = false
+				m.Error = "Could not open this job's VM: " + text
+			}
 			if v.Kind == "console-load" {
 				m.ConsoleLoading = false
 			}
@@ -757,9 +765,14 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.receiveProtectionPools(v.Response.Data)
 		case "boot-load":
 			m.receiveBoot(v.Response.Data)
+		case "job-outcome":
+			m.receiveJobOutcome(v.Response.Data)
+		case "job-open-vm":
+			return m, m.receiveJobVM(v.Response.Data)
 		case "job-update":
 			if m.Section == 8 && resourceID(m.Detail) != "" && resourceID(m.Detail) == resourceID(data) {
 				m.Detail = data
+				return m, m.loadJobOutcome(false)
 			}
 		case "apply":
 			m.resetResources()
@@ -810,7 +823,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ActionForm = nil
 			m.Advanced = false
 			m.Offset = 0
-			return m, m.requestResourceSummary()
+			return m, tea.Batch(m.requestResourceSummary(), m.loadJobOutcome(false))
 		default:
 			selectedID := ""
 			rows := m.rows()
@@ -1144,6 +1157,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if m.ApplyKey == "" {
 						m.ApplyKey = domain.ID()
 					}
+					m.resetJobOutcome()
 					apply := m.request("apply", "operation.apply", app.Request{Apply: &operations.ApplyRequest{PlanID: m.Plan.ID, PlanDigest: m.Plan.Digest, IdempotencyKey: m.ApplyKey, Acknowledgements: append([]string{}, m.Plan.Acknowledgements...)}})
 					guarded := m.guardSetupApply(apply)
 					return m, guarded
@@ -1155,6 +1169,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.Help {
 				m.Help = false
 			} else if m.Detail != nil {
+				m.resetJobOutcome()
 				m.Pending = maps.Clone(m.Pending)
 				delete(m.Pending, "detail")
 				m.Detail = nil
@@ -1199,6 +1214,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		switch key {
+		case "job-open-vm":
+			return m, m.openJobVM()
+		case "job-refresh-result":
+			return m, m.loadJobOutcome(true)
 		case "q":
 			m.Quit = true
 			return m, tea.Quit
@@ -1825,7 +1844,7 @@ func (m Workspace) footerButtons() string {
 	labels := make([]string, len(buttons))
 	for i, b := range buttons {
 		key := b.key
-		if strings.HasPrefix(key, "action:") {
+		if strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") {
 			key = ""
 		} else if key == "enter" {
 			key = "Enter"

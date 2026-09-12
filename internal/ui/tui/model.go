@@ -568,11 +568,31 @@ func (m Model) View() string {
 
 func wrap(s string, width int) []string {
 	width = max(1, width)
-	lines := strings.Split(ansi.Hardwrap(s, width, true), "\n")
-	for i := range lines {
-		// A single grapheme can be wider than an extremely narrow terminal.
-		lines[i] = ansi.Truncate(lines[i], width, "")
+	var lines []string
+	for _, line := range strings.Split(s, "\n") {
+		plain := ansi.Strip(line)
+		body := strings.TrimLeft(plain, " ")
+		firstWord, _, _ := strings.Cut(body, " ")
+		// Keep explicit layout in tables, preformatted output and JSON/XML.
+		// Ordinary prose may be indented, but its leading spaces must not be
+		// discarded when the first word is wider than the remaining row.
+		structured := strings.ContainsAny(plain, "\t\r") ||
+			strings.Contains(body, "  ") || strings.HasSuffix(plain, " ") ||
+			strings.HasPrefix(body, "{") || strings.HasPrefix(body, "}") ||
+			strings.HasPrefix(body, "[") || strings.HasPrefix(body, "]") ||
+			strings.HasPrefix(body, "\"") || strings.HasPrefix(body, "<") ||
+			(len(plain) != len(body) && len(plain)-len(body)+ansi.StringWidth(firstWord) > width)
+		if structured {
+			lines = append(lines, strings.Split(ansi.Hardwrap(line, width, true), "\n")...)
+		} else {
+			// Wordwrap first, then split only overlong tokens. The pinned
+			// combined Wrap helper can split an ASCII base from its combining
+			// accent when the base fills the row.
+			lines = append(lines, strings.Split(ansi.Hardwrap(ansi.Wordwrap(line, width, ""), width, true), "\n")...)
+		}
 	}
+	// Do not truncate: a grapheme wider than a one-cell viewport must remain
+	// intact. Workspace renders an ASCII resize message at such tiny sizes.
 	return lines
 }
 func Run(c ui.Client, connection string) error {

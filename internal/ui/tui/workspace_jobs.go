@@ -28,7 +28,15 @@ func (m *Workspace) refreshJobs() tea.Cmd {
 }
 func (m Workspace) jobButtons() []workspaceButton {
 	state := field(m.Detail, "state")
-	out := []workspaceButton{{"Events", "action:operation watch"}}
+	out := []workspaceButton{}
+	if o := m.currentJobOutcome(); o != nil {
+		if o.Error != "" {
+			out = append(out, workspaceButton{"Refresh result", "job-refresh-result"})
+		} else if !o.Loading && o.VMID != "" {
+			out = append(out, workspaceButton{"Open VM", "job-open-vm"})
+		}
+	}
+	out = append(out, workspaceButton{"Events", "action:operation watch"})
 	if !domain.Terminal(state) && state != "interrupted" && state != "reconciling" {
 		out = append(out, workspaceButton{"Cancel job", "action:operation cancel"})
 	}
@@ -72,8 +80,21 @@ func (m Workspace) jobDetails(width int) []string {
 			status = "Job state: " + state
 		}
 	}
+	if o := m.currentJobOutcome(); o != nil {
+		switch {
+		case o.Loading:
+			next = "Checking the completed result..."
+		case o.Error != "":
+			next = "The job completed, but its result could not be checked. Choose Refresh result."
+		case o.Title != "":
+			status, next = o.Title, o.Summary
+		}
+	}
 	lines := []string{"Job / " + status, "", next, "", "Operation ID: " + resourceID(j), "Status: " + state}
 
+	if o := m.currentJobOutcome(); o != nil && o.Error != "" {
+		lines = append(lines, "", "Result issue: "+o.Error)
+	}
 	if field(j, "cancelRequested") == "true" {
 		lines = append(lines, "Cancellation has been requested.")
 	}
