@@ -81,7 +81,7 @@ func (m *Workspace) openImport(kind string) tea.Cmd {
 	return m.browseImport("source", 0)
 }
 func (m *Workspace) browseImport(target string, index int) tea.Cmd {
-	if m.Busy || (m.Import == nil && !((m.Creation != nil || m.BackupRecovery != nil) && target == "export-parent")) {
+	if m.Busy || (m.Import == nil && !((m.NetworkForm != nil || m.Creation != nil || m.BackupRecovery != nil) && target == "export-parent")) {
 		return nil
 	}
 	kind, start := "file", ""
@@ -406,6 +406,14 @@ func (m *Workspace) openSettingsExport(name string) {
 	m.ExportForm = &e
 }
 func (m Workspace) settingsExportRequest() (app.Request, error) {
+	if m.NetworkForm != nil {
+		r, err := m.NetworkForm.Request()
+		if err != nil {
+			return r, err
+		}
+		r.Input = r.Input["document"].(map[string]any)
+		return r, nil
+	}
 	if m.BackupRecovery != nil {
 		f := m.BackupRecovery
 		if f.Selected < 0 || f.Selected >= len(f.Receipts) {

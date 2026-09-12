@@ -88,10 +88,10 @@ func networkRisks(d domain.NetworkDefinition) []string {
 }
 func (s *Service) planNetworkCreation(ctx context.Context, uid uint32, r Request) (domain.Plan, error) {
 	var empty domain.Plan
-	if r.Path == "" || r.ID != "" || r.After != 0 || r.Apply != nil || len(r.Input) != 0 || r.Action != "create" || r.Connection != "qemu:///system" {
+	if r.ID != "" || r.After != 0 || r.Apply != nil || r.Action != "create" || r.Connection != "qemu:///system" {
 		return empty, domain.Fail("INVALID_INPUT", "network creation requires one Network document and qemu:///system")
 	}
-	b, err := readDeclaration(ctx, r.Path)
+	b, err := networkDeclaration(ctx, r)
 	if err != nil {
 		return empty, err
 	}
@@ -498,4 +498,30 @@ func (s *Service) networkCreationResult(ctx context.Context, uid uint32, r Reque
 		return nil, err
 	}
 	return result, nil
+}
+
+// File and guided clients supply the same declaration. Inline input changes only
+// transport: schema validation, plans and durable mutation recipes remain shared.
+func networkDeclaration(ctx context.Context, r Request) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if r.Path != "" {
+		if len(r.Input) != 0 {
+			return nil, domain.Fail("INVALID_INPUT", "choose a Network file or an inline document, not both")
+		}
+		return readDeclaration(ctx, r.Path)
+	}
+	if len(r.Input) != 1 {
+		return nil, domain.Fail("INVALID_INPUT", "supply a Network file or input.document")
+	}
+	doc, ok := r.Input["document"].(map[string]any)
+	if !ok || doc == nil {
+		return nil, domain.Fail("INVALID_INPUT", "input.document must be a complete Network object")
+	}
+	b, err := json.Marshal(doc)
+	if err != nil || len(b) > wire.MaxFrame {
+		return nil, domain.Fail("INVALID_INPUT", "Network document cannot be encoded or exceeds the document limit")
+	}
+	return b, ctx.Err()
 }

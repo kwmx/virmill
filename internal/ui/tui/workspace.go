@@ -23,6 +23,7 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	NetworkForm          *NetworkForm
 	JobOutcome           *jobOutcome
 	Resources            *resourceSetup
 	ResourceSummary      *domain.VMResourceView
@@ -163,6 +164,7 @@ func (m *Workspace) refresh() tea.Cmd {
 	return m.request(kind, workspaceMethods[kind], app.Request{})
 }
 func (m *Workspace) page(section int) tea.Cmd {
+	m.resetNetworkForm()
 	m.resetJobOutcome()
 	m.resetBackupRecovery()
 	m.resetGuestAgent()
@@ -386,6 +388,9 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	m.ActionTitle = actionLabel(a)
 	vm := m.selectedVM()
 	switch a.Command {
+	case "network create":
+		m.openNetworkForm()
+		return nil
 	case "vm create", "vm create-devices":
 		return m.openCreationSources()
 	case "import prepare", "import source describe":
@@ -568,6 +573,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if v.Kind == "resources-summary" {
 				m.ResourceSummaryError = text
 			}
+			if v.Kind == "plan" && m.NetworkForm != nil && m.ActionForm == nil {
+				m.NetworkForm.Error = importError(err)
+				m.Error, m.Notice = "", ""
+			}
 			if v.Kind == "plan" && m.Resources != nil {
 				m.Resources.Error = importError(err)
 				m.Error = ""
@@ -714,7 +723,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 			if job.State == "succeeded" {
-				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
+				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
 					return m, m.loadCreation(job.ID, "")
 				}
 				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
@@ -775,6 +784,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.loadJobOutcome(false)
 			}
 		case "apply":
+			m.resetNetworkForm()
 			m.resetResources()
 			draftCommand := m.setupAccepted(resourceID(data))
 			m.resetBackupRecovery()
@@ -872,6 +882,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.resetBackupRecovery()
 				m.resetGuestAgent()
 				m.resetResources()
+				m.resetNetworkForm()
 				m.Form = nil
 				m.ActionForm = nil
 				m.Import = nil
@@ -916,6 +927,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if m.ExportForm != nil {
 			return m.updateImportExport(v)
+		}
+		if m.NetworkForm != nil && m.Plan == nil && m.ActionForm == nil {
+			return m.updateNetworkForm(v)
 		}
 		if (m.Creation != nil || m.CreationPicking) && m.Plan == nil {
 			return m.updateCreation(v)
@@ -1386,6 +1400,9 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.NetworkForm != nil && m.Plan == nil && m.ExportForm == nil && m.Picker == nil && m.ActionForm == nil {
+		return "Tab/Arrows Select   Enter Choose   Ctrl-U Clear   Esc Back"
+	}
 	if m.Resources != nil && m.Plan == nil && m.Resources.Details {
 		return "Up/Down Scroll   PgUp/PgDn Page   Esc Back"
 	}
@@ -1497,6 +1514,9 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.NetworkForm != nil && m.Plan == nil && m.ExportForm == nil && m.Picker == nil && m.ActionForm == nil {
+		return m.NetworkForm.View(width, height)
+	}
 	if m.Resources != nil && m.Plan == nil {
 		return m.resourcesView(width, height)
 	}
@@ -1698,10 +1718,13 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
+	importModal := (m.NetworkForm != nil || m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
+		if m.NetworkForm != nil {
+			title = "Create network"
+		}
 		if m.Creation != nil || m.CreationPicking {
 			title = "Create VM"
 		}
@@ -1837,7 +1860,7 @@ func (m Workspace) footerButtons() string {
 	if m.draftModal != "" {
 		return m.hints()
 	}
-	if m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

@@ -167,6 +167,11 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			cmd.Use = "run VM_UUID RECIPE_PATH"
 			cmd.Args = cobra.ExactArgs(2)
 		}
+		if a.Command == "network create" {
+			cmd.Use = "create [PATH]"
+			cmd.Args = cobra.MaximumNArgs(1)
+			cmd.Long += " Supply either PATH or --input containing a complete Network object under document."
+		}
 		if a.Command == "plugin new" {
 			cmd.Use = "new [PATH]"
 			cmd.Args = cobra.MaximumNArgs(1)

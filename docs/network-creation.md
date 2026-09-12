@@ -124,3 +124,30 @@ of DHCP options, DNS, internet reachability, guest routes, IPv6 or isolation. Th
 separately from real guest and hardware qualification.
 
 Automatic selection and configured planned reservations: [allocation guide](network-allocation.md).
+
+## Guided TUI and inline declarations
+
+Open **Networks → Create network**. Enter a name, choose the purpose and use
+**auto** to have the service propose a currently available private subnet.
+**Advanced options** exposes host access, DHCP/DNS and default-route advertising.
+The purpose summary explains access before preview; changing purpose loads its
+visible defaults. Review every page before applying. The operation creates no
+VM membership and does not configure guest addresses.
+
+**Export settings** saves a complete Network declaration to a new file without
+applying it. **Advanced declaration file** opens the existing file workflow.
+Canceling a preview keeps form choices; a service error explains the problem and
+leaves them available to correct. Native network and bridge names remain bound
+to generated UUIDs; the declaration name/display name is retained as metadata.
+
+CLI users can continue to use a declaration file or supply the identical object:
+
+```sh
+virmill network create --input '{"document":{"apiVersion":"virmill/v1","kind":"Network","metadata":{"name":"private-lab"},"spec":{"type":"lab","ipv4":{"cidr":"auto","dhcp":{"enabled":true,"advertiseDefaultRoute":false}},"ipv6":{"mode":"disabled"},"hostAccess":"services-only","egress":"none"}}}' --plan
+```
+
+Choose either a path or `input.document`. Unknown fields, mixed sources,
+unsupported policy and conflicting subnets are refused by the shared service.
+The resulting plan has the same acknowledgement and helper-grant requirements
+as a file-based plan. Auto selection is rechecked at apply; it is not a promise
+that the host network cannot change after preview.

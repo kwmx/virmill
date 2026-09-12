@@ -245,3 +245,12 @@ After starting, return through **Open VM → Guest tools**. Paused or saved gues
 explain which state to resolve first. **Prepare options / Windows help** remains
 available for advance preparation. Running with a configured channel opens the
 installation form; neither condition alone proves software is installed.
+
+### Create a network without writing a file
+
+**Networks → Create network** opens name, purpose and subnet controls.
+**Advanced options** exposes access, DHCP/DNS and route advertisement. Read the
+short access summary and choose **Preview network**. Back retains your choices;
+applying always uses the separate reviewed-plan confirmation. **Export settings**
+saves the declaration for reuse. **Advanced declaration file** remains available
+for an existing document. See [network creation](network-creation.md).
