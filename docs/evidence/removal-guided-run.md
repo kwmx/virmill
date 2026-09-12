@@ -24,3 +24,11 @@ Agents supplied the bounded backend adapter, confirmation form, service recovery
 and ownership tests, independent integration review, and native fixture. Root owns
 the service contract, ownership-check correction, integration, all remote mutations,
 packaging and release tracking.
+
+First native pass (`removal-guided-cycle-native-001`) failed safely at Preview:
+libvirt rejects `DOMAIN_XML_SECURE` on a read-only connection. The new fixture
+`f6aaab31-50aa-4c08-9235-0c9d687441f1` remained defined and stopped; no removal job
+was submitted. Its disk SHA and unrelated guest/network/recovery/media metadata
+were unchanged. The actual 80×24 form displayed the issue and full-issue action.
+The adapter correction opens an ordinary writable libvirt connection for the
+secure read; inspection still invokes no mutation. Exact absence remains read-only.

@@ -142,7 +142,9 @@
         "autostart-guided-tui-native-001",
         "autostart-guided-cycle-native-001",
         "removal-guided-core-001",
-        "removal-guided-outcome-001"
+        "removal-guided-outcome-001",
+        "removal-guided-cycle-native-001",
+        "removal-secure-inspection-core-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -409,7 +411,8 @@
         "boot-media-captured-001",
         "autostart-guided-core-001",
         "autostart-guided-tui-native-001",
-        "removal-guided-core-001"
+        "removal-guided-core-001",
+        "removal-guided-cycle-native-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -3700,7 +3703,8 @@
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
-        "removal-guided-core-001"
+        "removal-guided-core-001",
+        "removal-guided-cycle-native-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -3791,7 +3795,8 @@
         "nvram-recovery-integration-001",
         "nvram-binding-frozen-core-001",
         "beta-ux-final-core-001",
-        "removal-guided-core-001"
+        "removal-guided-core-001",
+        "removal-guided-cycle-native-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -3970,7 +3975,8 @@
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
-        "removal-guided-core-001"
+        "removal-guided-core-001",
+        "removal-guided-cycle-native-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -4520,7 +4526,9 @@
         "guest-integration-receipts-core-003",
         "guest-integration-native-channel-001",
         "guest-integration-final-native-channel-001",
-        "removal-guided-core-001"
+        "removal-guided-core-001",
+        "removal-guided-cycle-native-001",
+        "removal-secure-inspection-core-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -5337,7 +5345,8 @@
         "autostart-guided-tui-native-001",
         "autostart-guided-cycle-native-001",
         "removal-guided-core-001",
-        "removal-guided-outcome-001"
+        "removal-guided-outcome-001",
+        "removal-guided-cycle-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5699,7 +5708,8 @@
         "autostart-guided-core-001",
         "autostart-guided-tui-native-001",
         "removal-guided-core-001",
-        "removal-guided-outcome-001"
+        "removal-guided-outcome-001",
+        "removal-guided-cycle-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

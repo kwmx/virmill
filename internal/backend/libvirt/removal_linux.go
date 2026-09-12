@@ -73,7 +73,10 @@ func (p *Provider) InspectDefinitionRemoval(ctx context.Context, uri, id string)
 	if err := ctx.Err(); err != nil {
 		return domain.DefinitionRemoval{}, err
 	}
-	c, err := connect(uri, false)
+	// Libvirt requires a writable connection for DOMAIN_XML_SECURE, even
+	// though this inspection only reads state. No mutation occurs here; the
+	// separately authorized RemoveDefinition method owns the undefine call.
+	c, err := connect(uri, true)
 	if err != nil {
 		return domain.DefinitionRemoval{}, err
 	}
