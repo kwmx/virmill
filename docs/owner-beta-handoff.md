@@ -5,7 +5,11 @@ Fedora 44 test VM.** SSH access and coordinator readiness are verified after reb
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `4950971`.
+**Current UI update:** installed CLI and coordinator use `d4036d2`.
+**VMs → More → Change VM automatic startup** now shows current settings and a
+simple toggle with a separate before/after preview. Actual TUI/CLI plan comparison
+and native enable/restore-to-Off jobs passed without starting or stopping the
+guest. See [automatic startup evidence](evidence/autostart-guided-run.md).
 **Networks → Create network** offers simple purpose/subnet choices, advanced
 access controls, export, and a complete scrollable error reader. Actual NAT,
 isolated-lab and guest-only TUI previews passed and matched CLI plans. Back
@@ -64,8 +68,8 @@ virmill
 ```
 
 Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
-`build/coordinator-recovery-delivery/`. The full installed build revision is
-`4950971025e8af08c764ccdce68a95f9aad5eb2c`.
+`build/autostart-delivery/`. The full installed build revision is
+`d4036d2b834042f37bb3dd7995385ffede4688a6`.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use

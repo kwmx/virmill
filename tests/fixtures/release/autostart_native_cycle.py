@@ -6,6 +6,7 @@ Uses only public reviewed plans/jobs. Unknown job outcomes are retained without
 replay; inspect the report and actual policy before recovery. Not a boot test.
 """
 import argparse, hashlib, json, os, socket, stat, time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from autostart_tui_probe import IDENTITY, NAME, URI, TERMINAL_STATES, normalize
 from tui_workspace_probe import Runner, canonical_path, require, strict_json, media_listing
@@ -23,10 +24,16 @@ r=Runner(argparse.Namespace(binary='/usr/bin/virmill',connection=URI),out,fd)
 report={'status':'failed','vmID':IDENTITY,'scope':'native SetAutostart true/false and durable readback only; no guest power action or reboot test','binaries':expected,'jobs':[]}
 before=jobs=media=None
 try:
+ prior_path=canonical_path(str(Path.home()/'virmill-tests/wizard-drafts-tools-f371fa8/guest-tools-fedora/report.json'))
+ prior_raw=prior_path.read_bytes();prior=strict_json(prior_raw)
+ require(prior['status']=='passed' and prior['vmID']==IDENTITY and prior['name']==NAME and prior['ownedFixtureStopped'] and prior['sourcesAndNetworksPreserved'],'prior test ownership report differs')
+ report['originalFixtureReportSHA256']=hashlib.sha256(prior_raw).hexdigest()
  before=r.cli('vm','list');jobs=r.cli('operation','list');media=media_listing(Path.home()/'images')
  require(all(j['state'] in TERMINAL_STATES for j in jobs),'active job prevents test')
  original=next(v for v in before if v['key']['resourceUUID']==IDENTITY)
- require(original['name']==NAME and original['ownership']=='managed' and original['state']=='stopped' and original['persistentXML'] and original['autostart'] is False,'retained owned stopped fixture differs')
+ require(original['name']==NAME and original['ownership']=='external' and original['state']=='stopped' and original['persistentXML'] and original['autostart'] is False,'retained owned stopped fixture differs')
+ tree=ET.fromstring(original['persistentXML']);marker=tree.find('metadata/{urn:virmill:guest-tools-fixture:v1}fixture')
+ require(tree.findtext('uuid')==IDENTITY and marker is not None and marker.get('id')==IDENTITY and [d.get('file') for d in tree.findall("devices/disk[@device='disk']/source")]==[prior['installedDisk']],'fixture definition differs from retained ownership evidence')
  r.save('before-vms.json',before);r.save('before-jobs.json',jobs)
  for label,old in [('enable',False),('restore',True)]:
   plan=r.cli('vm','autostart',IDENTITY,'--input',json.dumps({'enabled':not old}),'--plan')

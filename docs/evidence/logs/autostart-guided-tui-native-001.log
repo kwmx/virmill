@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "vmID": "71001e0c-e99d-4e26-a886-0553533c5fa0",
+  "binaries": {
+    "virmill": "80092a0c95c6c08096244addce23d3a7dfa2c6fd8043b02f6845438634967ec0",
+    "virmilld": "316adcd009ed60dff3669e4cb04c8630135c84e77360d6c4ed348da5ce0bd13b"
+  },
+  "acceptanceSupport": [
+    "CORE-02",
+    "CORE-05",
+    "UX-01",
+    "UX-02"
+  ],
+  "scope": "actual installed TUI/CLI automatic-startup preview only; no apply or reboot/startup behavior claim",
+  "beforeAutostart": false,
+  "requestedAutostart": true,
+  "tuiPlanID": "13743033-f50e-4e68-92b1-c90f4e09d4a1",
+  "cliPlanID": "849a8103-6e14-40fe-a8a4-64715ca7007d",
+  "semanticParity": true,
+  "backRetainedChoice": true,
+  "canceledWithoutApply": true,
+  "preserved": true
+}

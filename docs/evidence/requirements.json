@@ -127,7 +127,9 @@
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
         "graceful-reboot-native-001",
-        "autostart-guided-core-001"
+        "autostart-guided-core-001",
+        "autostart-guided-tui-native-001",
+        "autostart-guided-cycle-native-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -380,7 +382,8 @@
         "boot-media-native-live-refusal-001",
         "boot-media-native-stale-preservation-001",
         "boot-media-captured-001",
-        "autostart-guided-core-001"
+        "autostart-guided-core-001",
+        "autostart-guided-tui-native-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -5240,7 +5243,9 @@
         "coordinator-recovery-ui-001",
         "coordinator-recovery-packages-001",
         "coordinator-recovery-tui-installed-001",
-        "autostart-guided-core-001"
+        "autostart-guided-core-001",
+        "autostart-guided-tui-native-001",
+        "autostart-guided-cycle-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5587,7 +5592,8 @@
         "coordinator-recovery-ui-001",
         "coordinator-recovery-packages-001",
         "coordinator-recovery-tui-installed-001",
-        "autostart-guided-core-001"
+        "autostart-guided-core-001",
+        "autostart-guided-tui-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
