@@ -61,7 +61,7 @@ Keep the selected connection consistent across planning, applying and inspection
 Bare `virmill` opens the resource workspace. Select a VM row and press Enter for
 its details; Tab focuses visible action buttons. `a` opens the current section's
 actions and `:` shows the full action catalog. Use labeled forms for common
-workflows and parameter files for advanced mappings. Read the current
+workflows; advanced file import is optional when that form offers it. Read the current
 [TUI navigation guide](tui-navigation.md) for focus, search, review and terminal
 options. CLI and TUI use the same shared service.
 

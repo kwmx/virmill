@@ -425,7 +425,10 @@
         "removal-guided-cycle-native-002",
         "creation-network-handoff-packages-001",
         "creation-network-handoff-upgrade-native-001",
-        "creation-network-handoff-restart-native-001"
+        "creation-network-handoff-restart-native-001",
+        "creation-network-corrected-packages-001",
+        "creation-network-corrected-upgrade-native-001",
+        "creation-network-corrected-restart-native-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -3857,7 +3860,10 @@
         "creation-network-handoff-ui-001",
         "creation-network-handoff-restart-native-001",
         "creation-network-handoff-native-001",
-        "creation-network-issue-ui-001"
+        "creation-network-issue-ui-001",
+        "creation-network-corrected-restart-native-001",
+        "creation-network-refusal-native-001",
+        "creation-network-refusal-native-002"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -4602,7 +4608,12 @@
         "removal-guided-cycle-native-002",
         "creation-network-handoff-packages-001",
         "creation-network-handoff-upgrade-native-001",
-        "creation-network-handoff-restart-native-001"
+        "creation-network-handoff-restart-native-001",
+        "creation-network-corrected-packages-001",
+        "creation-network-corrected-upgrade-native-001",
+        "creation-network-corrected-restart-native-001",
+        "creation-network-refusal-native-001",
+        "creation-network-refusal-native-002"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -5434,7 +5445,11 @@
         "creation-network-handoff-fixture-001",
         "creation-network-handoff-native-001",
         "creation-network-issue-ui-001",
-        "creation-network-handoff-fixture-002"
+        "creation-network-handoff-fixture-002",
+        "creation-network-handoff-fixture-003",
+        "creation-network-refusal-native-001",
+        "creation-network-handoff-fixture-004",
+        "creation-network-refusal-native-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5814,7 +5829,12 @@
         "creation-network-handoff-packages-001",
         "creation-network-handoff-native-001",
         "creation-network-issue-ui-001",
-        "creation-network-handoff-fixture-002"
+        "creation-network-handoff-fixture-002",
+        "creation-network-corrected-packages-001",
+        "creation-network-handoff-fixture-003",
+        "creation-network-refusal-native-001",
+        "creation-network-handoff-fixture-004",
+        "creation-network-refusal-native-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

@@ -32,6 +32,7 @@ def main():
     parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--grant', type=Path)
     parser.add_argument('--register-root', type=Path)
+    parser.add_argument('--allow-storage-root', action='append', default=[])
     a = parser.parse_args()
     os.umask(0o077)
     assert socket.gethostname() in ('virmill-test', 'virmill-test.home')
@@ -50,6 +51,7 @@ def main():
         assert stat.S_ISREG(st.st_mode) and st.st_uid == 0 and st.st_nlink == 1 and st.st_mode & 0o022 == 0
         before = policy.read_bytes(); data = json.loads(before)
         assert len(before) < 65536 and data['apiVersion'] == 'virmill/v1' and 1000 in data['actors']
+        assert sorted(data.get('roots', {}).items()) == sorted(change['approvedStorageRoots'].items()), 'existing storage authority was not explicitly approved'
         assert identity['keyID'] not in data['keys'] or data['keys'][identity['keyID']] == identity['publicKey']
         data['keys'][identity['keyID']] = identity['publicKey']
         if change.get('networkID'):
@@ -63,6 +65,7 @@ def main():
         os.chown(evidence, 1000, 1000); os.chmod(evidence, 0o600)
         temporary = policy.with_name('helper-policy.handoff-' + uuid.uuid4().hex + '.json')
         fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        os.fchown(fd, st.st_uid, st.st_gid)
         os.fchmod(fd, stat.S_IMODE(st.st_mode))
         with os.fdopen(fd, 'w') as f:
             f.write(json.dumps(data, sort_keys=True) + '\n'); f.flush(); os.fsync(f.fileno())
@@ -72,6 +75,12 @@ def main():
         print(json.dumps({'policyUpdated': True, 'networkID': change.get('networkID')}))
         return
     assert os.getuid() == os.geteuid() == 1000 and Path.home() == Path('/home/virmill-test')
+    policy = json.loads(run('sudo', '-n', 'cat', '/etc/virmill/helper-policy.json'))
+    approved_roots = dict(item.split('=', 1) for item in a.allow_storage_root)
+    assert policy.get('roots', {}) == approved_roots, 'registering a key also grants existing storage-root authority; explicit exact --allow-storage-root ID=PATH required'
+    unit = run('systemctl', 'cat', 'virmill-host-helper.socket')
+    assert 'SocketGroup=virmill-test' in unit and 'DirectoryMode=0755' in unit
+    assert run('systemctl', 'is-active', 'firewalld').strip() == 'active'
     config = Path.home() / '.config/virmill'; assert config.is_dir() and not config.is_symlink()
     key = config / 'helper-key.pem'
     if not key.exists():
@@ -83,7 +92,7 @@ def main():
             f.flush(); os.fsync(f.fileno())
     identity = json.loads(run('/usr/bin/virmill', 'host', 'helper', 'identity', '--output', 'json', '--non-interactive'))
     assert identity['error'] is None; identity = identity['data']
-    change = {'identity': identity}; approval = None
+    change = {'identity': identity, 'approvedStorageRoots': approved_roots}; approval = None
     if a.grant:
         request = a.grant.resolve(strict=True)
         assert request.parent == root / 'creation-network-handoff'
@@ -98,9 +107,6 @@ def main():
     change_path = root / ('helper-grant-public.json' if a.grant else 'helper-bootstrap-public.json')
     with change_path.open('x') as f: json.dump(change, f)
     run('sudo', '-n', 'python3', str(Path(__file__).resolve()), '--execute-disposable', '--root', str(root), '--register-root', str(change_path))
-    unit = run('systemctl', 'cat', 'virmill-host-helper.socket')
-    assert 'SocketGroup=virmill-test' in unit and 'DirectoryMode=0755' in unit
-    assert run('systemctl', 'is-active', 'firewalld').strip() == 'active'
     run('sudo', '-n', 'systemctl', 'start', 'virmill-host-helper.socket')
     if approval is not None:
         approval['approved'] = True

@@ -67,3 +67,49 @@ requesting explicit owner authorization beyond earlier testing/sudo permission.
 No bootstrap command ran. The owner was asked for this exact scope plus a single
 reviewed test-network grant. Ordinary UI packaging work continues while that
 approval is pending.
+
+Independent review of the unexecuted helper setup found two issues: registering
+a key also enables existing managed-storage helper operations under the policy's
+`images` root, and replacement must preserve the original policy group as well
+as mode. The fixture now requires explicit exact existing-root authorization,
+preserves UID/GID/mode, and checks socket/firewalld prerequisites before writing
+policy. The owner approval request was revised to disclose that storage authority.
+The helper setup remains unexecuted pending that approval.
+
+Corrected runtime `e318527fb0d97b45d4d8859f45f11583eb427186` passed
+`creation-network-corrected-packages-001`,
+`creation-network-corrected-upgrade-native-001` and
+`creation-network-corrected-restart-native-001`. The corrected core was installed
+and activated with all 32 prior jobs and each fixture's observed guest inventory,
+journal tables and source-media metadata preserved.
+
+Corrected CLI SHA-256: `1a62bb0f7a565f6fae39aaa3bfc1c663d98c637178d7d678cc1ce39196d19d95`.
+Coordinator SHA-256: `be18dd82a8517e971092a539c460624609cf02eef75444cc29bb2a5f88caf752`.
+Core RPM SHA-256: `6c731f8907111efcb15d170a6962962b887a368c5add3c4e7fc00b3fe304394c`.
+Current unsigned artifacts: `build/creation-network-corrected-delivery/`.
+Current native stage: `~/virmill-tests/creation-network-e318527`.
+Fixture-only source changes after runtime freeze are bound by ledger source
+digests; exact installed runtime is bound by the binary hashes above.
+
+`creation-network-refusal-native-001` captured the corrected full 80×24 error
+and no accepted job, then failed in the fixture's unsupported 512×32 diagnostic
+resize. Root decoded the retained actual PTY transcript and inspected the full
+message. The fixture was corrected to its supported 120×36 diagnostic size;
+`creation-network-handoff-fixture-004` passed its six pure checks. The original
+failed report and screenshots are retained, and the continuation uses a new
+private stage rather than overwriting them.
+
+`creation-network-refusal-native-002` passed on the installed corrected runtime.
+The actual 80×24 wizard preserved CPU/RAM/disks and disconnected, unselected
+adapters through cancel and refresh; normalized CLI/TUI network plans matched.
+The precise missing-key refusal displayed its complete issue and administrator
+guidance. No matching job was accepted, no network was created and all prior
+guest/job/network inventories and source-media metadata were preserved. This
+passes error/preservation behavior only: `completedJobReturnedToWizard` is false.
+The successful-job handoff remains locally tested but natively blocked pending
+the explicit helper authorization. Root inspected the recorded screen.
+
+Final report and issue screen are retained under
+`~/virmill-tests/creation-network-refusal-e318527/creation-network-handoff/` and
+`build/creation-network-corrected-delivery/`. Previous failures remain in their
+original stages and ledger entries. No package publication occurred.

@@ -13,6 +13,9 @@ Optional --await-helper-approval pauses for at most 120s at the exact preview.
 The parent writes helper-approval.json only after separately installing its exact
 version1 networks policy grant. The marker grants no authority itself. Setup and
 job observation each have a 180s PTY bound; approval waiting is bounded separately.
+--expect-helper-refusal instead verifies the real80x24 missing-key error and
+administrator guidance with no accepted job or network creation. These modes
+are mutually exclusive; expected refusal never qualifies successful handoff.
 """
 import argparse
 import copy
@@ -115,7 +118,20 @@ def submission_issue(screen):
     return ''
 
 
-def execute(stage, await_helper_approval=False):
+class ExpectedHelperRefusal(Exception):
+    pass
+
+
+def validate_helper_refusal(screen):
+    text = ' '.join(screen.split())
+    require('PERMISSION_DENIED' in text and 'helper-key.pem' in text
+            and 'Submission needs attention' in text
+            and 'A host administrator must finish helper setup' in text,
+            'expected missing-helper-key refusal and administrator guidance not visible at80x24')
+
+
+def execute(stage, await_helper_approval=False, expect_helper_refusal=False):
+    require(not (await_helper_approval and expect_helper_refusal), 'helper approval and expected refusal modes are mutually exclusive')
     require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
@@ -309,12 +325,16 @@ def execute(stage, await_helper_approval=False):
                 runner.save('report.json', report)
                 # Capture a diagnostic width as well as the actual80x24 failure
                 # so older one-line error renderers do not hide recovery text.
-                update = terminal.resize(512, 32)
-                terminal.wait('Full submission issue (diagnostic512x32)', lambda s: bool(submission_issue(s)), update)
-                failure['diagnostic512x32'] = terminal.screen.text()
+                update = terminal.resize(120, 36)
+                terminal.wait('Full submission issue (diagnostic120x36)', lambda s: bool(submission_issue(s)), update)
+                failure['diagnostic120x36'] = terminal.screen.text()
                 runner.save('submission-issue.json', failure)
+                if expect_helper_refusal:
+                    validate_helper_refusal(failure['screen80x24'])
+                    raise ExpectedHelperRefusal()
                 raise RuntimeError('TUI reported a submission issue before any matching job was observed; see submission-issue.json; apply was not retried')
         runner.save('network-job.json', job)
+        require(not expect_helper_refusal, 'expected helper-key refusal did not occur; do not claim error UX passed')
         require(job is not None and job['state'] == 'succeeded', 'network job not durably successful; fixture retained')
         wait('Network completion returns to VM setup', vm_networks)
         require_same_setup(baseline_draft, snapshot('setup-after-job'))
@@ -330,6 +350,10 @@ def execute(stage, await_helper_approval=False):
         focus('Cable'); require('< Disconnected >' in terminal.screen.text(), 'explicit selection connected adapter cable')
         report.update(status='passed', operationID=allowed_job, canceledChoicesPreserved=True, refreshedChoicesPreserved=True,
                       completedJobReturnedToWizard=True, noAutomaticSelectionOrCableConnection=True, newNetworkReachable=True)
+    except ExpectedHelperRefusal:
+        report.update(status='passed', scope='native80x24 missing-helper-key refusal and recovery guidance; no network creation or completed job handoff',
+                      expectedHelperRefusal=True, completedJobReturnedToWizard=False,
+                      networkCreated=False, helperSetupRequired=True)
     except BaseException as error:
         report['error'] = repr(error)
     finally:
@@ -341,10 +365,12 @@ def execute(stage, await_helper_approval=False):
                 if plan is not None:
                     found = [j for j in current_jobs if j['planID'] == plan['planID']]
                     require(len(found) <= 1, 'duplicate submitted job')
+                    if expect_helper_refusal: require(not found, 'expected refusal unexpectedly accepted a job')
                     if found: allowed_job = found[0]['operationID']; report['operationID'] = allowed_job
                 require([j for j in current_jobs if j['operationID'] != allowed_job] == prior_jobs, 'unrelated jobs changed')
             if prior_networks is not None:
                 current = network_snapshot(virsh); runner.save('after-networks.json', current)
+                if expect_helper_refusal: require(current == prior_networks, 'expected refusal changed native networks')
                 require({k: v for k, v in current.items() if k != report['networkID']} == prior_networks, 'existing native networks changed')
             if prior_media is not None: require(media_listing(Path.home() / 'images') == prior_media, 'owner media metadata changed')
             if prior_source is not None: require(media_listing(source_path) == prior_source, 'prepared source metadata changed')
@@ -355,6 +381,13 @@ def execute(stage, await_helper_approval=False):
 
 
 class Tests(unittest.TestCase):
+    def test_expected_refusal_requires_specific_error_and_visible_recovery(self):
+        good = 'Submission needs attention\nPERMISSION_DENIED: private helper-key.pem unavailable\nA host administrator must finish helper setup before this action can run.'
+        validate_helper_refusal(good)
+        for bad in (good.replace('PERMISSION_DENIED', 'WAIT_TIMEOUT'), good.replace('helper-key.pem', 'socket'),
+                    good.replace('Submission needs attention', 'Review plan'), good.split('A host administrator')[0]):
+            with self.assertRaises(RuntimeError): validate_helper_refusal(bad)
+
     def test_exact_helper_marker_refuses_other_plan_or_profile(self):
         plan = {'operation': 'network.create', 'actorUID': 1000, 'connectionID': URI, 'planID': str(uuid.uuid4()),
                 'planDigest': 'a' * 64, 'review': {'definition': {'type': 'lab', 'hostAccess': 'allow', 'uuid': str(uuid.uuid4())}}}
@@ -418,10 +451,12 @@ class Tests(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path); parser.add_argument('--execute-disposable', action='store_true'); parser.add_argument('--self-test', action='store_true')
-    parser.add_argument('--await-helper-approval', action='store_true', help='Wait up to120s for an exact helper-approval.json marker after parent-managed policy setup')
+    helper_mode = parser.add_mutually_exclusive_group()
+    helper_mode.add_argument('--await-helper-approval', action='store_true', help='Wait up to120s for an exact helper-approval.json marker after parent-managed policy setup')
+    helper_mode.add_argument('--expect-helper-refusal', action='store_true', help='Require missing-helper-key refusal and administrator guidance at80x24; no network success claim')
     args = parser.parse_args()
     if args.self_test:
         unittest.main(argv=[__file__], exit=False).result.wasSuccessful() or exit(1)
     else:
         require(args.execute_disposable and args.root is not None, '--execute-disposable and --root required')
-        raise SystemExit(execute(args.root, args.await_helper_approval))
+        raise SystemExit(execute(args.root, args.await_helper_approval, args.expect_helper_refusal))

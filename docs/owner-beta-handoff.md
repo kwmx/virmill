@@ -5,8 +5,17 @@ Fedora 44 test VM.** SSH access and coordinator readiness are verified after reb
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `5b743b6`.
-**VMs → More → Advanced tools → Remove VM, keep disks** now offers exact-name
+**Current UI update:** installed CLI and coordinator use `e318527`.
+VM setup's Networks step now offers **Create network** and **Refresh networks**
+while preserving CPU/RAM, disks and adapter choices. Native cancel/refresh and
+CLI/TUI plan comparison passed. Network submission exposed missing helper setup;
+no job or network was created. Complete native network handoff remains blocked
+pending explicit helper authorization. Submission errors now appear in full at
+the top of the scrollable review with next steps, rather than only in the footer.
+The actual 80×24 error/recovery display and unchanged-resource checks passed.
+See [network handoff evidence](evidence/creation-network-handoff-run.md).
+
+**VMs → More → Advanced tools → Remove VM, keep disks** offers exact-name
 confirmation, a separate preview and a clear retained-storage outcome. Actual
 80×24 TUI/CLI plan parity and one durable definition removal passed on a newly
 generated BIOS fixture, with its full disk hash unchanged. Existing guests and
@@ -75,8 +84,8 @@ virmill
 ```
 
 Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
-`build/removal-corrected-delivery/`. The full installed build revision is
-`5b743b6dc6d5f7b975856519f3975a2101c3222f`.
+`build/creation-network-corrected-delivery/`. The full installed build revision is
+`e318527fb0d97b45d4d8859f45f11583eb427186`.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use
