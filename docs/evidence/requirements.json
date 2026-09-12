@@ -88,7 +88,14 @@
         "internal/ui/tui/workspace_removal.go",
         "docs/vm-removal.md",
         "docs/adr/0050-retain-disks-definition-removal.md",
-        "docs/evidence/removal-guided-run.md"
+        "docs/evidence/removal-guided-run.md",
+        "internal/domain/disk_removal.go",
+        "internal/app/disk_removal.go",
+        "internal/app/disk_removal_references.go",
+        "internal/backend/libvirt/disk_removal_linux.go",
+        "internal/ui/tui/removal_disks.go",
+        "docs/adr/0054-explicit-selected-disk-removal.md",
+        "docs/evidence/disk-removal-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -117,7 +124,12 @@
         "internal/backend/libvirt/removal_linux_test.go",
         "internal/ui/tui/guided_removal_test.go",
         "internal/ui/tui/workspace_removal_test.go",
-        "tests/fixtures/release/removal_native_cycle.py"
+        "tests/fixtures/release/removal_native_cycle.py",
+        "internal/app/disk_removal_test.go",
+        "internal/backend/libvirt/disk_removal_linux_test.go",
+        "internal/ui/tui/removal_disks_test.go",
+        "internal/ui/cli/removal_disks_test.go",
+        "tests/fixtures/release/disk_removal_native_cycle.py"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -146,7 +158,9 @@
         "removal-guided-outcome-001",
         "removal-guided-cycle-native-001",
         "removal-secure-inspection-core-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "disk-removal-fixture-001",
+        "disk-removal-ui-service-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -2203,7 +2217,14 @@
         "internal/importing/disks_linux.go",
         "internal/backend/image/guard_linux.go",
         "internal/backend/image/tool_linux.go",
-        "internal/platform/linux/sandbox.go"
+        "internal/platform/linux/sandbox.go",
+        "internal/domain/disk_removal.go",
+        "internal/app/disk_removal.go",
+        "internal/app/disk_removal_references.go",
+        "internal/backend/libvirt/disk_removal_linux.go",
+        "internal/ui/tui/removal_disks.go",
+        "docs/adr/0054-explicit-selected-disk-removal.md",
+        "docs/evidence/disk-removal-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-03",
@@ -2216,7 +2237,12 @@
         "internal/importing/disks_linux_test.go",
         "internal/backend/image/files_linux_test.go",
         "internal/platform/linux/sandbox_file_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/disk_removal_test.go",
+        "internal/backend/libvirt/disk_removal_linux_test.go",
+        "internal/ui/tui/removal_disks_test.go",
+        "internal/ui/cli/removal_disks_test.go",
+        "tests/fixtures/release/disk_removal_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2224,7 +2250,9 @@
         "cleanup-confinement-001",
         "cleanup-artifacts-001",
         "disk-set-core-001",
-        "disk-set-confinement-001"
+        "disk-set-confinement-001",
+        "disk-removal-fixture-001",
+        "disk-removal-ui-service-001"
       ],
       "outstanding": [
         "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete."
@@ -3603,7 +3631,14 @@
         "internal/ui/tui/job_activity.go",
         "internal/ui/tui/workspace_job_activity.go",
         "docs/adr/0053-direct-job-activity.md",
-        "docs/evidence/job-activity-run.md"
+        "docs/evidence/job-activity-run.md",
+        "internal/domain/disk_removal.go",
+        "internal/app/disk_removal.go",
+        "internal/app/disk_removal_references.go",
+        "internal/backend/libvirt/disk_removal_linux.go",
+        "internal/ui/tui/removal_disks.go",
+        "docs/adr/0054-explicit-selected-disk-removal.md",
+        "docs/evidence/disk-removal-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -3702,7 +3737,12 @@
         "internal/ui/tui/workspace_removal_test.go",
         "tests/fixtures/release/removal_native_cycle.py",
         "internal/ui/tui/workspace_job_activity_test.go",
-        "tests/fixtures/release/job_activity_tui_probe.py"
+        "tests/fixtures/release/job_activity_tui_probe.py",
+        "internal/app/disk_removal_test.go",
+        "internal/backend/libvirt/disk_removal_linux_test.go",
+        "internal/ui/tui/removal_disks_test.go",
+        "internal/ui/cli/removal_disks_test.go",
+        "tests/fixtures/release/disk_removal_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3798,7 +3838,8 @@
         "job-activity-ui-002",
         "job-activity-fixture-002",
         "job-activity-restart-native-002",
-        "job-activity-native-002"
+        "job-activity-native-002",
+        "disk-removal-ui-service-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -4178,7 +4219,14 @@
         "docs/evidence/automatic-allocation-artifacts.json",
         "internal/helper/auxiliary_capture_linux.go",
         "internal/helper/auxiliary_transfer_linux.go",
-        "internal/helper/server_linux.go"
+        "internal/helper/server_linux.go",
+        "internal/domain/disk_removal.go",
+        "internal/app/disk_removal.go",
+        "internal/app/disk_removal_references.go",
+        "internal/backend/libvirt/disk_removal_linux.go",
+        "internal/ui/tui/removal_disks.go",
+        "docs/adr/0054-explicit-selected-disk-removal.md",
+        "docs/evidence/disk-removal-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -4232,7 +4280,12 @@
         "tests/fixtures/network/test_packet_parsers.py",
         "tests/fixtures/network_parent/create_native.py",
         "internal/helper/auxiliary_capture_linux_test.go",
-        "internal/helper/auxiliary_transfer_linux_test.go"
+        "internal/helper/auxiliary_transfer_linux_test.go",
+        "internal/app/disk_removal_test.go",
+        "internal/backend/libvirt/disk_removal_linux_test.go",
+        "internal/ui/tui/removal_disks_test.go",
+        "internal/ui/cli/removal_disks_test.go",
+        "tests/fixtures/release/disk_removal_native_cycle.py"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -4281,7 +4334,8 @@
         "protected-network-native-001",
         "protected-network-native-002",
         "protected-network-native-003",
-        "automatic-allocation-native-001"
+        "automatic-allocation-native-001",
+        "disk-removal-ui-service-001"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",
@@ -5134,7 +5188,14 @@
         "internal/ui/tui/job_activity.go",
         "internal/ui/tui/workspace_job_activity.go",
         "docs/adr/0053-direct-job-activity.md",
-        "docs/evidence/job-activity-run.md"
+        "docs/evidence/job-activity-run.md",
+        "internal/domain/disk_removal.go",
+        "internal/app/disk_removal.go",
+        "internal/app/disk_removal_references.go",
+        "internal/backend/libvirt/disk_removal_linux.go",
+        "internal/ui/tui/removal_disks.go",
+        "docs/adr/0054-explicit-selected-disk-removal.md",
+        "docs/evidence/disk-removal-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5316,7 +5377,12 @@
         "internal/ui/tui/creation_boot_order_test.go",
         "tests/fixtures/release/boot_order_tui_probe.py",
         "internal/ui/tui/workspace_job_activity_test.go",
-        "tests/fixtures/release/job_activity_tui_probe.py"
+        "tests/fixtures/release/job_activity_tui_probe.py",
+        "internal/app/disk_removal_test.go",
+        "internal/backend/libvirt/disk_removal_linux_test.go",
+        "internal/ui/tui/removal_disks_test.go",
+        "internal/ui/cli/removal_disks_test.go",
+        "tests/fixtures/release/disk_removal_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5533,7 +5599,9 @@
         "job-activity-native-001",
         "job-activity-ui-002",
         "job-activity-fixture-002",
-        "job-activity-native-002"
+        "job-activity-native-002",
+        "disk-removal-fixture-001",
+        "disk-removal-ui-service-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5691,7 +5759,14 @@
         "internal/ui/tui/job_activity.go",
         "internal/ui/tui/workspace_job_activity.go",
         "docs/adr/0053-direct-job-activity.md",
-        "docs/evidence/job-activity-run.md"
+        "docs/evidence/job-activity-run.md",
+        "internal/domain/disk_removal.go",
+        "internal/app/disk_removal.go",
+        "internal/app/disk_removal_references.go",
+        "internal/backend/libvirt/disk_removal_linux.go",
+        "internal/ui/tui/removal_disks.go",
+        "docs/adr/0054-explicit-selected-disk-removal.md",
+        "docs/evidence/disk-removal-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5800,7 +5875,12 @@
         "internal/ui/tui/creation_boot_order_test.go",
         "tests/fixtures/release/boot_order_tui_probe.py",
         "internal/ui/tui/workspace_job_activity_test.go",
-        "tests/fixtures/release/job_activity_tui_probe.py"
+        "tests/fixtures/release/job_activity_tui_probe.py",
+        "internal/app/disk_removal_test.go",
+        "internal/backend/libvirt/disk_removal_linux_test.go",
+        "internal/ui/tui/removal_disks_test.go",
+        "internal/ui/cli/removal_disks_test.go",
+        "tests/fixtures/release/disk_removal_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5945,7 +6025,9 @@
         "job-activity-packages-002",
         "job-activity-upgrade-native-002",
         "job-activity-restart-native-002",
-        "job-activity-native-002"
+        "job-activity-native-002",
+        "disk-removal-fixture-001",
+        "disk-removal-ui-service-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

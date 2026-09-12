@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-removal-input.schema.json",
+  "title": "Explicit selected-disk VM removal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["deleteDisks"],
+  "properties": {
+    "deleteDisks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9]{0,31}$"}
+    }
+  }
+}

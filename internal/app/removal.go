@@ -47,6 +47,9 @@ func validRemoval(d domain.DefinitionRemoval) bool {
 	return true
 }
 func (s *Service) planRemoval(ctx context.Context, uid uint32, r Request) (domain.Plan, error) {
+	if len(r.Input) != 0 {
+		return s.planDiskRemoval(ctx, uid, r)
+	}
 	var empty domain.Plan
 	key := domain.ResourceKey{ProviderID: "libvirt", ConnectionID: r.Connection, Kind: "vm", UUID: r.ID}
 	if !removalIdentity(key) || (r.Action != "" && r.Action != "remove") || r.Path != "" || r.After != 0 || r.Apply != nil || len(r.Input) != 0 {

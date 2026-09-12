@@ -2257,16 +2257,17 @@ Global Flags:
 
 ## `virmill vm remove`
 
-Plan removal of a stopped VM definition, retaining its disks and backups
+Plan removal of a stopped VM; keep disks by default or explicitly select disks for deletion; backups are retained
 
 ```text
 Usage:
   virmill vm remove ID [flags]
 
 Flags:
-      --after int      Event cursor
-      --input string   JSON parameters; secrets must be references (default "{}")
-      --plan           Return preview (apply separately after review) (default true)
+      --after int                 Event cursor
+      --delete-disk stringArray   Permanently delete selected guest disk targets (vda,vdb); repeatable; omitted keeps all disks
+      --input string              JSON parameters; secrets must be references (default "{}")
+      --plan                      Return preview (apply separately after review) (default true)
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

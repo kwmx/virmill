@@ -67,7 +67,7 @@ func PlanDetails(p domain.Plan, width int) []string {
 func planSummary(f *details, p domain.Plan) {
 	command := strings.ReplaceAll(p.Operation, ".", " ")
 	switch p.Operation {
-	case "vm.remove-definition-v1":
+	case "vm.remove-definition-v1", "vm.remove-disks-v1":
 		command = "vm remove"
 	case "vm.create.devices-v1":
 		command = "vm create"
@@ -109,6 +109,13 @@ func planSummary(f *details, p domain.Plan) {
 		f.scalar("VM", fmt.Sprint(p.Review["vmName"]), 0)
 		f.line("Remove this VM definition from libvirt. Keep its disks and backups.", 0)
 		f.line("This frees no disk space and creates no configuration backup.", 0)
+	}
+	if p.Operation == "vm.remove-disks-v1" {
+		f.scalar("VM", fmt.Sprint(p.Review["vmName"]), 0)
+		f.line("Permanently remove this VM and the selected disk files. This cannot be undone.", 0)
+		f.value("Selected disks", reflect.ValueOf(p.Review["disks"]), 0)
+		f.value("Kept files", reflect.ValueOf(p.Review["retainedSources"]), 0)
+		f.line("Backups are kept. No configuration backup or undo copy is created.", 0)
 	}
 	if p.Operation == "vm.autostart" {
 		before, beforeOK := p.Review["beforeAutostart"].(bool)

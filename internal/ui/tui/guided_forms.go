@@ -54,6 +54,7 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	switch kind {
 	case "remove-definition":
 		field("confirmation", "Type VM name", "Type the exact VM name above, then choose Preview.", 256)
+		f.Fields = append(f.Fields, removalDiskFields(vm.PersistentXML)...)
 	case "autostart":
 		field("enabled", "Requested", "Choose whether this VM should start with its libvirt service.", 5)
 		f.Fields[0].Value, f.Fields[0].Toggle = strconv.FormatBool(vm.Autostart), true
@@ -135,6 +136,9 @@ func (f GuidedForm) Title() string {
 func (f GuidedForm) note() string {
 	switch f.Kind {
 	case "remove-definition":
+		if len(f.Fields) > 1 {
+			return "Keep disks by default. Select only the disks to permanently delete."
+		}
 		return "Remove the VM definition. Disks and backups are kept."
 	case "autostart":
 		if f.VM.Key.ConnectionID == "qemu:///session" {
@@ -379,6 +383,18 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 			return fail("confirmation", "Type the VM name exactly as shown before previewing removal.")
 		}
 		r.ID, r.Action = f.VM.Key.UUID, "remove"
+		selected := []string{}
+		for _, field := range f.Fields[1:] {
+			if !field.Toggle || len(field.Choices) != 0 || (field.Value != "true" && field.Value != "false") {
+				return fail(field.Name, "Choose Keep or Delete for each disk.")
+			}
+			if field.Value == "true" {
+				selected = append(selected, strings.TrimPrefix(field.Name, "delete:"))
+			}
+		}
+		if len(selected) != 0 {
+			r.Input["deleteDisks"] = selected
+		}
 		return "vm.remove", r, -1, nil
 	case "autostart":
 		if !f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 || values["enabled"] != "true" && values["enabled"] != "false" {
@@ -681,15 +697,25 @@ func (f GuidedForm) updateRemoval(key tea.KeyMsg) (GuidedForm, bool, bool) {
 		f.removalIssueOpen, f.removalIssueOffset = true, 0
 		return f, false, false
 	}
-	if len(f.Fields) != 1 || f.Fields[0].Name != "confirmation" || f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 {
+	if len(f.Fields) < 1 || f.Fields[0].Name != "confirmation" || f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 {
 		f.Error = "The removal form is incomplete; reopen it."
 		f.syncRemovalIssue()
 		return f, false, false
 	}
-	f.Focus = max(0, min(f.Focus, 1))
+	f.Focus = max(0, min(f.Focus, len(f.Fields)))
 	switch key.Type {
-	case tea.KeyTab, tea.KeyDown, tea.KeyShiftTab, tea.KeyUp:
-		f.Focus = 1 - f.Focus
+	case tea.KeyTab, tea.KeyDown:
+		f.Focus = (f.Focus + 1) % (len(f.Fields) + 1)
+		return f, false, false
+	case tea.KeyShiftTab, tea.KeyUp:
+		f.Focus = (f.Focus + len(f.Fields)) % (len(f.Fields) + 1)
+		return f, false, false
+	}
+	if f.Focus > 0 && f.Focus < len(f.Fields) {
+		if key.Type == tea.KeyEnter || key.Type == tea.KeySpace || key.Type == tea.KeyLeft || key.Type == tea.KeyRight {
+			f.Fields[f.Focus].Value = strconv.FormatBool(f.Fields[f.Focus].Value != "true")
+			f.Error = ""
+		}
 		return f, false, false
 	}
 	if f.Focus == 0 {
@@ -698,13 +724,13 @@ func (f GuidedForm) updateRemoval(key tea.KeyMsg) (GuidedForm, bool, bool) {
 			return f, false, false
 		}
 		// Reuse the bounded text editor without its Enter-to-preview behavior.
-		editor := GuidedForm{Fields: slices.Clone(f.Fields)}
+		editor := GuidedForm{Fields: slices.Clone(f.Fields[:1])}
 		if key.Type == tea.KeyCtrlU {
 			editor.Fields[0].Value, editor.Fields[0].Cursor = "", 0
 		} else {
 			editor, _, _ = editor.Update(key)
 		}
-		f.Fields, f.Error = editor.Fields, editor.Error
+		f.Fields[0], f.Error = editor.Fields[0], editor.Error
 		f.syncRemovalIssue()
 		return f, false, false
 	}
@@ -731,6 +757,9 @@ func (f GuidedForm) removalView(width, height int) string {
 		lines := append([]string{"Removal issue", ""}, rows[offset:end]...)
 		lines = append(lines, fmt.Sprintf("Lines %d–%d of %d", offset+1, end, len(rows)), "Up/Down Scroll   PgUp/PgDn Page   Esc Back to settings")
 		return strings.Join(pageLines(lines, width, height, 0), "\n")
+	}
+	if len(f.Fields) > 1 {
+		return f.removalDiskView(width, height)
 	}
 	lines := []string{f.Title()}
 	lines = append(lines, wrap("VM: "+validation.SafeText(f.VM.Name), width)...)

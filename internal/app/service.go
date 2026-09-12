@@ -55,6 +55,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	e.Handlers["vm.configure-guest-agent"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.reboot"] = &rebootHandler{s: s}
 	e.Handlers["vm.remove-definition-v1"] = &removalHandler{s: s}
+	e.Handlers["vm.remove-disks-v1"] = &diskRemovalHandler{s: s}
 	e.Handlers["network.create"] = &networkCreationHandler{s: s}
 	e.Handlers["network.creation.resume"] = &networkResumeHandler{networkCreationHandler{s: s}}
 	return s

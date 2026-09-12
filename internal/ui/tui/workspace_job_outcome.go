@@ -113,6 +113,14 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 			return fail(fmt.Errorf("Creation completion could not be verified. Inspect the job and its creation result."))
 		}
 		o.VMID = r.VMID
+	case "vm.remove-disks-v1":
+		if p.ConnectionID != o.Connection || p.Review["diskDeletion"] != true || p.Review["backupsDeleted"] != false || p.Review["configurationRemoved"] != true || p.Review["backupCreated"] != false {
+			return fail(fmt.Errorf("Disk removal result does not match its reviewed deletion plan. Inspect the job."))
+		}
+		o.Title = "VM and selected disks removed"
+		o.Summary = "The VM definition and explicitly selected disk files were deleted. Unselected disks and backups were kept. No configuration backup or undo copy was created."
+		o.VMID = ""
+		return o
 	case "vm.remove-definition-v1":
 		if p.ConnectionID != o.Connection || p.Review["diskDeletion"] != false || p.Review["backupsDeleted"] != false || p.Review["configurationRemoved"] != true || p.Review["backupCreated"] != false {
 			return fail(fmt.Errorf("Removal result does not match the retained-storage plan. Inspect the job."))

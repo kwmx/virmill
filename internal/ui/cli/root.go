@@ -124,6 +124,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			use += " " + strings.ToUpper(a.Argument)
 		}
 		var input string
+		var deleteDisks []string
 		var after int64
 		var hard, planOnly, follow bool
 		pluginFlags := map[string]*string{}
@@ -141,6 +142,10 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		if a.Command == "vm stop" {
 			cmd.Flags().BoolVar(&hard, "hard", false, "Plan abrupt power-off, requiring data-loss acknowledgement")
+		}
+		if a.Command == "vm remove" {
+			cmd.Flags().StringArrayVar(&deleteDisks, "delete-disk", nil, "Permanently delete selected guest disk targets (vda,vdb); repeatable; omitted keeps all disks")
+			cmd.Long += " Disks and backups are kept by default. --delete-disk accepts guest target IDs, not host paths; selected disk deletion is irreversible and requires its own plan acknowledgement. Backups are retained."
 		}
 		if strings.HasPrefix(a.Command, "plugin ") {
 			for _, spec := range []struct{ flag, key, help string }{
@@ -195,6 +200,29 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			}
 			if r.Input == nil {
 				r.Input = map[string]any{}
+			}
+			if a.Command == "vm remove" && c.Flags().Changed("delete-disk") {
+				if _, exists := r.Input["deleteDisks"]; exists {
+					return domain.Fail("INVALID_INPUT", "deleteDisks was supplied by both --delete-disk and JSON; choose one")
+				}
+				selected := []string{}
+				seen := map[string]bool{}
+				for _, value := range deleteDisks {
+					for _, target := range strings.Split(value, ",") {
+						if target == "" || strings.TrimSpace(target) != target || strings.ContainsAny(target, "/\\ \t\r\n") || len(target) > 32 {
+							return domain.Fail("INVALID_INPUT", "--delete-disk needs a nonempty guest disk target such as vda, not a host path")
+						}
+						if seen[target] {
+							return domain.Fail("INVALID_INPUT", "duplicate --delete-disk target: "+target)
+						}
+						seen[target] = true
+						selected = append(selected, target)
+					}
+				}
+				if len(selected) == 0 {
+					return domain.Fail("INVALID_INPUT", "--delete-disk requires at least one explicit guest disk target")
+				}
+				r.Input["deleteDisks"] = selected
 			}
 			if a.Command == "vm guest-agent enable" {
 				if _, exists := r.Input["enableGuestAgent"]; exists {

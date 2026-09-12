@@ -195,6 +195,16 @@ func (p *Provider) DeleteCreationVolume(ctx context.Context, uri string, spec do
 type cleanupGraphVolume struct{ key, path, format, xml, pool, name string }
 
 func cleanupGraph(ctx context.Context, c *native.Connect, uri string, candidates []domain.CleanupCandidate, resources *[]string) (string, error) {
+	return cleanupGraphExceptOwner(ctx, c, uri, candidates, resources, "")
+}
+
+// Only the separately revalidated definition-removal adapter may omit its exact
+// owner. Existing creation cleanup uses the empty owner and retains all checks.
+// The omitted owner still must be inactive without saved or snapshot state.
+func cleanupGraphExceptOwner(ctx context.Context, c *native.Connect, uri string, candidates []domain.CleanupCandidate, resources *[]string, owner string) (string, error) {
+	if owner != "" && (!uuidPattern.MatchString(owner) || owner == "00000000-0000-0000-0000-000000000000") {
+		return "", domain.Fail("INVALID_INPUT", "exact owner UUID required for removal graph")
+	}
 	graph := map[string]any{}
 	selected := map[string]bool{}
 	for _, v := range candidates {
@@ -356,7 +366,9 @@ func cleanupGraph(ctx context.Context, c *native.Connect, uri string, candidates
 		if e != nil {
 			return "", e
 		}
-		*resources = append(*resources, domain.ResourceKey{ProviderID: "libvirt", ConnectionID: uri, Kind: "vm", UUID: id}.String())
+		if id != owner {
+			*resources = append(*resources, domain.ResourceKey{ProviderID: "libvirt", ConnectionID: uri, Kind: "vm", UUID: id}.String())
+		}
 		documents := []string{x}
 		save, e := d.HasManagedSaveImage(0)
 		if e != nil {
@@ -402,6 +414,12 @@ func cleanupGraph(ctx context.Context, c *native.Connect, uri string, candidates
 		}
 		for j := range checkpoints {
 			checkpoints[j].Free()
+		}
+		if id == owner {
+			if err := cleanupGraphOwnerState(save, len(snapshots), len(checkpoints)); err != nil {
+				return "", err
+			}
+			continue
 		}
 		sort.Strings(documents)
 		for j, x := range documents {
