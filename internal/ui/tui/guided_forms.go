@@ -30,12 +30,16 @@ type GuidedField struct {
 // GuidedForm only collects a preview request. The workspace owns service calls
 // and the separate immutable-plan approval flow.
 type GuidedForm struct {
-	Kind          string
-	VM            domain.VM
-	Fields        []GuidedField
-	Focus         int
-	Error         string
-	ToolsAdvanced bool
+	Kind                          string
+	VM                            domain.VM
+	Fields                        []GuidedField
+	Focus                         int
+	Error                         string
+	ToolsAdvanced                 bool
+	removalIssueOpen              bool
+	removalIssueText              string
+	removalIssueOffset            int
+	viewportWidth, viewportHeight int
 }
 
 var guidedUUID = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
@@ -48,6 +52,8 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		f.Fields = append(f.Fields, GuidedField{Name: name, Label: label, Hint: hint, Limit: limit})
 	}
 	switch kind {
+	case "remove-definition":
+		field("confirmation", "Type VM name", "Type the exact VM name above, then choose Preview.", 256)
 	case "autostart":
 		field("enabled", "Requested", "Choose whether this VM should start with its libvirt service.", 5)
 		f.Fields[0].Value, f.Fields[0].Toggle = strconv.FormatBool(vm.Autostart), true
@@ -84,7 +90,7 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
-	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" {
+	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" {
 		if vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "select an exact local VM before opening this form")
 		}
@@ -92,11 +98,21 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	if kind == "autostart" && strings.TrimSpace(vm.PersistentXML) == "" {
 		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Automatic startup requires a persistent VM. This VM has no saved definition.")
 	}
+	if kind == "remove-definition" {
+		if vm.State != "stopped" || strings.TrimSpace(vm.PersistentXML) == "" || vm.Autostart || vm.HasManagedSave {
+			return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Removal requires a stopped persistent VM with automatic startup off and no saved runtime state.")
+		}
+		if !guidedPrintable(vm.Name) || strings.TrimSpace(vm.Name) == "" || len(vm.Name) > 256 {
+			return GuidedForm{}, domain.Fail("INVALID_INPUT", "This VM's name cannot be confirmed safely in the removal form.")
+		}
+	}
 	return f, nil
 }
 
 func (f GuidedForm) Title() string {
 	switch f.Kind {
+	case "remove-definition":
+		return "Remove VM"
 	case "autostart":
 		return "Start automatically"
 	case "resources":
@@ -118,6 +134,8 @@ func (f GuidedForm) Title() string {
 
 func (f GuidedForm) note() string {
 	switch f.Kind {
+	case "remove-definition":
+		return "Remove the VM definition. Disks and backups are kept."
 	case "autostart":
 		if f.VM.Key.ConnectionID == "qemu:///session" {
 			return "Applies when your user libvirt service starts, not directly at host boot."
@@ -167,6 +185,9 @@ func guidedPrintable(s string) bool {
 
 func (f GuidedForm) Update(key tea.KeyMsg) (GuidedForm, bool, bool) {
 	f.Fields = slices.Clone(f.Fields)
+	if f.Kind == "remove-definition" {
+		return f.updateRemoval(key)
+	}
 	if key.Type == tea.KeyEsc {
 		return f, false, true
 	}
@@ -353,6 +374,12 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 	}
 	r := app.Request{Connection: connection, Input: map[string]any{}}
 	switch f.Kind {
+	case "remove-definition":
+		if f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 || values["confirmation"] != f.VM.Name {
+			return fail("confirmation", "Type the VM name exactly as shown before previewing removal.")
+		}
+		r.ID, r.Action = f.VM.Key.UUID, "remove"
+		return "vm.remove", r, -1, nil
 	case "autostart":
 		if !f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 || values["enabled"] != "true" && values["enabled"] != "false" {
 			return fail("enabled", "Choose On or Off using the requested startup toggle.")
@@ -522,6 +549,9 @@ func (f GuidedForm) View(width, height int) string {
 		lines := []string{clip("Resize to edit this form."), clip("Esc cancels; input is retained.")}
 		return strings.Join(lines[:min(height, len(lines))], "\n")
 	}
+	if f.Kind == "remove-definition" {
+		return f.removalView(width, height)
+	}
 	if f.Kind == "autostart" {
 		return f.autostartView(width, height)
 	}
@@ -599,6 +629,139 @@ func (f GuidedForm) View(width, height int) string {
 	}
 	lines = append(lines, footer...)
 	return strings.Join(lines[:min(height, len(lines))], "\n")
+}
+
+// SetViewport supplies input-time dimensions for the removal issue reader.
+// View stays pure; other guided forms do not use this state.
+func (f *GuidedForm) SetViewport(width, height int) {
+	f.viewportWidth, f.viewportHeight = width, height
+}
+
+func (f *GuidedForm) syncRemovalIssue() {
+	if f.removalIssueText != f.Error {
+		f.removalIssueText, f.removalIssueOffset, f.removalIssueOpen = f.Error, 0, false
+	}
+}
+
+func (f GuidedForm) updateRemoval(key tea.KeyMsg) (GuidedForm, bool, bool) {
+	f.syncRemovalIssue()
+	if f.removalIssueOpen {
+		width, height := f.viewportWidth, f.viewportHeight
+		if width <= 0 {
+			width = 80
+		}
+		if height <= 0 {
+			height = 17
+		}
+		page := max(1, height-4)
+		last := max(0, len(wrap(validation.SafeText(f.Error), width))-page)
+		f.removalIssueOffset = min(f.removalIssueOffset, last)
+		switch key.Type {
+		case tea.KeyEsc:
+			f.removalIssueOpen = false
+		case tea.KeyUp:
+			f.removalIssueOffset = max(0, f.removalIssueOffset-1)
+		case tea.KeyDown:
+			f.removalIssueOffset = min(last, f.removalIssueOffset+1)
+		case tea.KeyPgUp:
+			f.removalIssueOffset = max(0, f.removalIssueOffset-page)
+		case tea.KeyPgDown:
+			f.removalIssueOffset = min(last, f.removalIssueOffset+page)
+		case tea.KeyHome:
+			f.removalIssueOffset = 0
+		case tea.KeyEnd:
+			f.removalIssueOffset = last
+		}
+		return f, false, false
+	}
+	if key.Type == tea.KeyEsc {
+		return f, false, true
+	}
+	if key.Type == tea.KeyF1 && f.Error != "" {
+		f.removalIssueOpen, f.removalIssueOffset = true, 0
+		return f, false, false
+	}
+	if len(f.Fields) != 1 || f.Fields[0].Name != "confirmation" || f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 {
+		f.Error = "The removal form is incomplete; reopen it."
+		f.syncRemovalIssue()
+		return f, false, false
+	}
+	f.Focus = max(0, min(f.Focus, 1))
+	switch key.Type {
+	case tea.KeyTab, tea.KeyDown, tea.KeyShiftTab, tea.KeyUp:
+		f.Focus = 1 - f.Focus
+		return f, false, false
+	}
+	if f.Focus == 0 {
+		if key.Type == tea.KeyEnter {
+			f.Focus = 1
+			return f, false, false
+		}
+		// Reuse the bounded text editor without its Enter-to-preview behavior.
+		editor := GuidedForm{Fields: slices.Clone(f.Fields)}
+		if key.Type == tea.KeyCtrlU {
+			editor.Fields[0].Value, editor.Fields[0].Cursor = "", 0
+		} else {
+			editor, _, _ = editor.Update(key)
+		}
+		f.Fields, f.Error = editor.Fields, editor.Error
+		f.syncRemovalIssue()
+		return f, false, false
+	}
+	if key.Type == tea.KeyEnter || key.Type == tea.KeySpace {
+		if _, _, _, err := f.request(f.VM.Key.ConnectionID); err != nil {
+			f.Error, f.Focus = err.Error(), 0
+			f.syncRemovalIssue()
+			return f, false, false
+		}
+		f.Error = ""
+		f.syncRemovalIssue()
+		return f, true, false
+	}
+	return f, false, false
+}
+
+func (f GuidedForm) removalView(width, height int) string {
+	f.syncRemovalIssue()
+	if f.removalIssueOpen {
+		rows := wrap(validation.SafeText(f.Error), width)
+		count := max(1, height-4)
+		offset := min(f.removalIssueOffset, max(0, len(rows)-count))
+		end := min(len(rows), offset+count)
+		lines := append([]string{"Removal issue", ""}, rows[offset:end]...)
+		lines = append(lines, fmt.Sprintf("Lines %d–%d of %d", offset+1, end, len(rows)), "Up/Down Scroll   PgUp/PgDn Page   Esc Back to settings")
+		return strings.Join(pageLines(lines, width, height, 0), "\n")
+	}
+	lines := []string{f.Title()}
+	lines = append(lines, wrap("VM: "+validation.SafeText(f.VM.Name), width)...)
+	lines = append(lines, "UUID: "+f.VM.Key.UUID, "State: "+validation.SafeText(f.VM.State))
+	lines = append(lines, wrap(f.note(), width)...)
+	lines = append(lines, wrap("The saved VM configuration will be removed. Back up or export it first if needed.", width)...)
+	value := ""
+	if len(f.Fields) == 1 {
+		value = validation.SafeText(f.Fields[0].Value)
+		if f.Focus == 0 {
+			runes := []rune(value)
+			cursor := max(0, min(f.Fields[0].Cursor, len(runes)))
+			before := string(runes[:cursor])
+			room := max(3, width-19)
+			if cells := ansi.StringWidth(before); cells >= room {
+				before = "…" + ansi.Cut(before, cells-(room-2), cells)
+			}
+			value = before + "|" + string(runes[cursor:])
+		}
+	}
+	inputMark, previewMark := "> ", "  "
+	if f.Focus == 1 {
+		inputMark, previewMark = "  ", "> "
+	}
+	lines = append(lines, "", inputMark+"Type VM name: ["+ansi.Truncate(value, max(1, width-18), "…")+"]", previewMark+"[ Preview ]")
+	if f.Error != "" {
+		lines = append(lines, pageLines([]string{"Issue: " + validation.SafeText(f.Error)}, width, 2, 0)...)
+		lines = append(lines, "F1 Read full issue and recovery instructions")
+	}
+	lines = append(lines, "Tab Select  Enter Next/Preview  Ctrl-U Clear  Esc Back")
+	return strings.Join(pageLines(lines, width, height, 0), "\n")
 }
 
 func (f GuidedForm) updateAutostart(key tea.KeyMsg) (GuidedForm, bool, bool) {

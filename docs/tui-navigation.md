@@ -266,3 +266,7 @@ instructions and **Retry connection**, with optional sign-in setup under
 
 **VMs → More → Change VM automatic startup** shows a fresh current value and
 a requested toggle with a separate Preview button. See [automatic startup](vm-autostart.md).
+
+Remove a stopped VM with **More → Advanced tools → Remove VM, keep disks**.
+The exact-name confirmation and Preview explain retained files and recovery; see
+[VM removal](vm-removal.md).

@@ -81,7 +81,14 @@
         "internal/ui/tui/guided_forms.go",
         "docs/vm-autostart.md",
         "docs/adr/0049-guided-autostart-settings.md",
-        "docs/evidence/autostart-guided-run.md"
+        "docs/evidence/autostart-guided-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -105,7 +112,11 @@
         "internal/ui/tui/guided_autostart_test.go",
         "internal/ui/tui/workspace_autostart_test.go",
         "tests/fixtures/release/autostart_tui_probe.py",
-        "tests/fixtures/release/autostart_native_cycle.py"
+        "tests/fixtures/release/autostart_native_cycle.py",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -129,12 +140,15 @@
         "graceful-reboot-native-001",
         "autostart-guided-core-001",
         "autostart-guided-tui-native-001",
-        "autostart-guided-cycle-native-001"
+        "autostart-guided-cycle-native-001",
+        "removal-guided-core-001",
+        "removal-guided-outcome-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
-        "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native 1c54175 start/reboot passed for a new independent Kali disk copy with original disk and nine prior definitions preserved; cleanup required force-stop of the copy after graceful timeout. Full lifecycle/state/OS coverage, removal and guest readiness remain required."
+        "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native 1c54175 start/reboot passed for a new independent Kali disk copy with original disk and nine prior definitions preserved; cleanup required force-stop of the copy after graceful timeout. Full lifecycle/state/OS coverage, removal and guest readiness remain required.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -351,7 +365,14 @@
         "internal/ui/tui/guided_forms.go",
         "docs/vm-autostart.md",
         "docs/adr/0049-guided-autostart-settings.md",
-        "docs/evidence/autostart-guided-run.md"
+        "docs/evidence/autostart-guided-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-05",
@@ -371,7 +392,11 @@
         "internal/ui/tui/guided_autostart_test.go",
         "internal/ui/tui/workspace_autostart_test.go",
         "tests/fixtures/release/autostart_tui_probe.py",
-        "tests/fixtures/release/autostart_native_cycle.py"
+        "tests/fixtures/release/autostart_native_cycle.py",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -383,12 +408,14 @@
         "boot-media-native-stale-preservation-001",
         "boot-media-captured-001",
         "autostart-guided-core-001",
-        "autostart-guided-tui-native-001"
+        "autostart-guided-tui-native-001",
+        "removal-guided-core-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
-        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case."
+        "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3484,7 +3511,14 @@
         "internal/ui/tui/workspace_guest_agent.go",
         "internal/localbackup/receipts_linux.go",
         "internal/ui/tui/workspace_backup_recovery.go",
-        "docs/evidence/guest-integration-receipts-run.md"
+        "docs/evidence/guest-integration-receipts-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -3576,7 +3610,11 @@
         "internal/localbackup/receipts_linux_test.go",
         "internal/ui/tui/workspace_guest_agent_test.go",
         "internal/ui/tui/workspace_backup_recovery_test.go",
-        "internal/ui/cli/guest_agent_receipt_test.go"
+        "internal/ui/cli/guest_agent_receipt_test.go",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3661,7 +3699,8 @@
         "beta-recovery-native-002",
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
-        "guest-integration-receipts-core-003"
+        "guest-integration-receipts-core-003",
+        "removal-guided-core-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -3680,7 +3719,8 @@
         "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
         "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
-        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough."
+        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3712,7 +3752,14 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-03",
@@ -3731,7 +3778,11 @@
         "internal/helper/network_authorization_test.go",
         "tests/fixtures/network/network_packet_fixture.py",
         "tests/fixtures/network/test_packet_parsers.py",
-        "tests/fixtures/network_parent/create_native.py"
+        "tests/fixtures/network_parent/create_native.py",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3739,11 +3790,13 @@
         "cleanup-core-001",
         "nvram-recovery-integration-001",
         "nvram-binding-frozen-core-001",
-        "beta-ux-final-core-001"
+        "beta-ux-final-core-001",
+        "removal-guided-core-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
-        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open."
+        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3820,7 +3873,14 @@
         "internal/ui/tui/workspace_guest_agent.go",
         "internal/localbackup/receipts_linux.go",
         "internal/ui/tui/workspace_backup_recovery.go",
-        "docs/evidence/guest-integration-receipts-run.md"
+        "docs/evidence/guest-integration-receipts-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -3868,7 +3928,11 @@
         "internal/localbackup/receipts_linux_test.go",
         "internal/ui/tui/workspace_guest_agent_test.go",
         "internal/ui/tui/workspace_backup_recovery_test.go",
-        "internal/ui/cli/guest_agent_receipt_test.go"
+        "internal/ui/cli/guest_agent_receipt_test.go",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -3905,7 +3969,8 @@
         "nvram-binding-frozen-core-001",
         "guest-integration-receipts-core-001",
         "guest-integration-receipts-core-002",
-        "guest-integration-receipts-core-003"
+        "guest-integration-receipts-core-003",
+        "removal-guided-core-001"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -3916,7 +3981,8 @@
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
-        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough."
+        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4378,7 +4444,14 @@
         "internal/ui/tui/workspace_guest_agent.go",
         "internal/localbackup/receipts_linux.go",
         "internal/ui/tui/workspace_backup_recovery.go",
-        "docs/evidence/guest-integration-receipts-run.md"
+        "docs/evidence/guest-integration-receipts-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
@@ -4409,7 +4482,11 @@
         "internal/localbackup/receipts_linux_test.go",
         "internal/ui/tui/workspace_guest_agent_test.go",
         "internal/ui/tui/workspace_backup_recovery_test.go",
-        "internal/ui/cli/guest_agent_receipt_test.go"
+        "internal/ui/cli/guest_agent_receipt_test.go",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4442,7 +4519,8 @@
         "guest-integration-receipts-core-002",
         "guest-integration-receipts-core-003",
         "guest-integration-native-channel-001",
-        "guest-integration-final-native-channel-001"
+        "guest-integration-final-native-channel-001",
+        "removal-guided-core-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -4450,7 +4528,8 @@
         "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance.",
         "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
-        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough."
+        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4881,7 +4960,14 @@
         "internal/ui/tui/workspace_autostart.go",
         "docs/vm-autostart.md",
         "docs/adr/0049-guided-autostart-settings.md",
-        "docs/evidence/autostart-guided-run.md"
+        "docs/evidence/autostart-guided-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5050,7 +5136,11 @@
         "internal/ui/tui/guided_autostart_test.go",
         "internal/ui/tui/workspace_autostart_test.go",
         "tests/fixtures/release/autostart_tui_probe.py",
-        "tests/fixtures/release/autostart_native_cycle.py"
+        "tests/fixtures/release/autostart_native_cycle.py",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5245,7 +5335,9 @@
         "coordinator-recovery-tui-installed-001",
         "autostart-guided-core-001",
         "autostart-guided-tui-native-001",
-        "autostart-guided-cycle-native-001"
+        "autostart-guided-cycle-native-001",
+        "removal-guided-core-001",
+        "removal-guided-outcome-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5266,7 +5358,8 @@
         "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Private resumable choices and native edit/restart/resume/Start new now passed (wizard-drafts-tui-final-001). Complete scenario qualification remains open; draft checks do not certify guest boot or all 71 scenarios.",
         "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Fedora 44 guest-agent installation/repeat/native ping passed (guest-tools-fedora-live-002), followed by actual TUI repeat submission and Open VM (guest-tools-tui-native-002). Other guest profiles and the complete OS/accessibility/console matrix remain open.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
-        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough."
+        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false
@@ -5385,7 +5478,14 @@
         "internal/app/service.go",
         "docs/vm-autostart.md",
         "docs/adr/0049-guided-autostart-settings.md",
-        "docs/evidence/autostart-guided-run.md"
+        "docs/evidence/autostart-guided-run.md",
+        "internal/app/removal.go",
+        "internal/domain/removal.go",
+        "internal/backend/libvirt/removal_linux.go",
+        "internal/ui/tui/workspace_removal.go",
+        "docs/vm-removal.md",
+        "docs/adr/0050-retain-disks-definition-removal.md",
+        "docs/evidence/removal-guided-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5481,7 +5581,11 @@
         "internal/ui/tui/guided_autostart_test.go",
         "internal/ui/tui/workspace_autostart_test.go",
         "tests/fixtures/release/autostart_tui_probe.py",
-        "tests/fixtures/release/autostart_native_cycle.py"
+        "tests/fixtures/release/autostart_native_cycle.py",
+        "internal/app/removal_test.go",
+        "internal/backend/libvirt/removal_linux_test.go",
+        "internal/ui/tui/guided_removal_test.go",
+        "internal/ui/tui/workspace_removal_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5593,14 +5697,17 @@
         "coordinator-recovery-packages-001",
         "coordinator-recovery-tui-installed-001",
         "autostart-guided-core-001",
-        "autostart-guided-tui-native-001"
+        "autostart-guided-tui-native-001",
+        "removal-guided-core-001",
+        "removal-guided-outcome-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required.",
         "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Private resumable choices and native edit/restart/resume/Start new now passed (wizard-drafts-tui-final-001). Complete scenario qualification remains open; draft checks do not certify guest boot or all 71 scenarios.",
-        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Fedora 44 guest-agent installation/repeat/native ping passed (guest-tools-fedora-live-002), followed by actual TUI repeat submission and Open VM (guest-tools-tui-native-002). Other guest profiles and the complete OS/accessibility/console matrix remain open."
+        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Fedora 44 guest-agent installation/repeat/native ping passed (guest-tools-fedora-live-002), followed by actual TUI repeat submission and Open VM (guest-tools-tui-native-002). Other guest profiles and the complete OS/accessibility/console matrix remain open.",
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario."
       ],
       "hardwareVerified": false,
       "released": false

@@ -113,6 +113,14 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 			return fail(fmt.Errorf("Creation completion could not be verified. Inspect the job and its creation result."))
 		}
 		o.VMID = r.VMID
+	case "vm.remove-definition-v1":
+		if p.ConnectionID != o.Connection || p.Review["diskDeletion"] != false || p.Review["backupsDeleted"] != false || p.Review["configurationRemoved"] != true || p.Review["backupCreated"] != false {
+			return fail(fmt.Errorf("Removal result does not match the retained-storage plan. Inspect the job."))
+		}
+		o.Title = "VM removed; disks kept"
+		o.Summary = "The VM definition was removed. Its disks and backups were kept; no disk space was freed and no configuration backup was created. Use VMs to create or restore a definition when needed."
+		o.VMID = ""
+		return o
 	case "vm.start":
 		o.Title, o.Summary = "VM started", "Open the VM to use its console or set up guest tools. A running VM does not yet prove the guest is ready."
 	case "vm.stop", "vm.hard-stop":

@@ -14,6 +14,8 @@ import (
 func actionGroup(a ui.Action) (int, string) {
 	c := a.Command
 	switch {
+	case c == "vm remove":
+		return 70, "Remove VM"
 	case strings.HasPrefix(c, "vm creation "), strings.HasPrefix(c, "network creation "), c == "operation reconcile":
 		return 80, "Recovery and troubleshooting"
 	case c == "vm start" || c == "vm stop" || c == "vm reboot" || c == "vm pause" || c == "vm resume" || c == "vm save" || c == "vm restore-saved":

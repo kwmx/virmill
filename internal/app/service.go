@@ -54,6 +54,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	e.Handlers["vm.configure-hardware"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.configure-guest-agent"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.reboot"] = &rebootHandler{s: s}
+	e.Handlers["vm.remove-definition-v1"] = &removalHandler{s: s}
 	e.Handlers["network.create"] = &networkCreationHandler{s: s}
 	e.Handlers["network.creation.resume"] = &networkResumeHandler{networkCreationHandler{s: s}}
 	return s
@@ -137,6 +138,8 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			}
 		}
 		return vms, nil
+	case "vm.remove":
+		return s.planRemoval(ctx, uid, r)
 	case "inventory.get":
 		return s.GetVM(ctx, r.Connection, r.ID)
 	case "vm.recovery.inspect":

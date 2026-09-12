@@ -3,6 +3,7 @@ package tui
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
@@ -66,6 +67,8 @@ func PlanDetails(p domain.Plan, width int) []string {
 func planSummary(f *details, p domain.Plan) {
 	command := strings.ReplaceAll(p.Operation, ".", " ")
 	switch p.Operation {
+	case "vm.remove-definition-v1":
+		command = "vm remove"
 	case "vm.create.devices-v1":
 		command = "vm create"
 	case "vm.configure-guest-agent":
@@ -102,6 +105,11 @@ func planSummary(f *details, p domain.Plan) {
 	}
 	f.line("Nothing has been applied. Review the changes and warnings below.", 0)
 	f.line("", 0)
+	if p.Operation == "vm.remove-definition-v1" {
+		f.scalar("VM", fmt.Sprint(p.Review["vmName"]), 0)
+		f.line("Remove this VM definition from libvirt. Keep its disks and backups.", 0)
+		f.line("This frees no disk space and creates no configuration backup.", 0)
+	}
 	if p.Operation == "vm.autostart" {
 		before, beforeOK := p.Review["beforeAutostart"].(bool)
 		after, afterOK := p.Review["afterAutostart"].(bool)

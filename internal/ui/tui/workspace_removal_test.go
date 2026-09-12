@@ -1,0 +1,134 @@
+package tui
+
+import (
+	"context"
+	"strings"
+	"testing"
+
+	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/domain"
+	"virmill.local/core/internal/operations"
+	"virmill.local/core/internal/ui"
+)
+
+func removalWorkspace(t *testing.T) Workspace {
+	t.Helper()
+	m := fixtureWorkspace()
+	m.Section = 1
+	vm := m.selectedVM()
+	vm.Name = "Fresh removal target" // fresh name differs from the cached list
+	vm.Fingerprint = strings.Repeat("a", 64)
+	c := &workspaceClient{response: app.Response{Data: vm}}
+	m.Client = c
+	var action ui.Action
+	for _, a := range ui.Actions {
+		if a.Command == "vm remove" {
+			action = a
+		}
+	}
+	cmd := m.openAction(action)
+	if cmd == nil || m.Form != nil || m.RemovalTarget == nil {
+		t.Fatal("did not read before editing")
+	}
+	if !strings.Contains(m.View(), "Reading the selected VM") {
+		t.Fatal(m.View())
+	}
+	next, _ := m.Update(cmd())
+	m = next.(Workspace)
+	if m.Form == nil || m.Form.Kind != "remove-definition" || m.Form.Fields[0].Value != "" || m.RemovalTarget != nil || m.Busy {
+		t.Fatal("fresh defaults not loaded", m.Error)
+	}
+	if len(c.calls) != 1 || c.calls[0] != "inventory.get" || c.requests[0].ID != vm.Key.UUID || len(c.requests[0].Input) != 0 {
+		t.Fatal("read changed scope", c.requests)
+	}
+	return m
+}
+func TestRemovalWorkspaceFreshDefaultsPreviewBack(t *testing.T) {
+	m := removalWorkspace(t)
+	m, _ = wk(m, "Fresh removal target")
+	m, _ = wk(m, "tab")
+	p := testWorkspacePlan(t)
+	p.Operation = "vm.remove-definition-v1"
+	p.Review = map[string]any{"vmName": "Fresh removal target", "diskDeletion": false}
+	p.Digest, _ = operations.PlanDigest(p)
+	c := m.Client.(*workspaceClient)
+	c.response = app.Response{Data: p}
+	m, cmd := wk(m, "enter")
+	if cmd == nil {
+		t.Fatal("preview missing", m.Error, m.Form.Error)
+	}
+	next, _ := m.Update(cmd())
+	m = next.(Workspace)
+	r := c.requests[len(c.requests)-1]
+	if c.calls[len(c.calls)-1] != "vm.remove" || r.Action != "remove" || len(r.Input) != 0 {
+		t.Fatal(r)
+	}
+	if !strings.Contains(m.View(), "Keep its disks and backups.") {
+		t.Fatal(m.View())
+	}
+	m, _ = wk(m, "esc")
+	if m.Form == nil || m.Form.Fields[0].Value != "Fresh removal target" || m.Plan != nil {
+		t.Fatal("Back lost edits")
+	}
+	m, _ = wk(m, "esc")
+	if m.Form != nil || m.Pending["plan"] != 0 {
+		t.Fatal("cancel retained form/preview")
+	}
+	for _, call := range c.calls {
+		if call == "operation.apply" {
+			t.Fatal("preview applied")
+		}
+	}
+}
+func TestRemovalWorkspaceCanceledAndMismatchedLoads(t *testing.T) {
+	for _, mode := range []string{"cancel", "page", "wrong-vm", "error"} {
+		t.Run(mode, func(t *testing.T) {
+			m := fixtureWorkspace()
+			m.Section = 1
+			vm := m.selectedVM()
+			vm.Fingerprint = strings.Repeat("a", 64)
+			c := &workspaceClient{response: app.Response{Data: vm}}
+			m.Client = c
+			cmd := m.openRemoval()
+			switch mode {
+			case "cancel":
+				m, _ = wk(m, "esc")
+			case "page":
+				m.page(2)
+			case "wrong-vm":
+				vm.Key.UUID = "33345678-1234-4234-8234-123456789abc"
+				c.response.Data = vm
+			case "error":
+				c.err = domain.Fail("PERMISSION_DENIED", "access refused")
+			}
+			next, _ := m.Update(cmd())
+			m = next.(Workspace)
+			if m.Form != nil || m.RemovalTarget != nil || m.Busy {
+				t.Fatal("late or invalid observation opened edit", mode, m.Error)
+			}
+			if (mode == "error" || mode == "wrong-vm") && m.Error == "" {
+				t.Fatal("missing actionable load error")
+			}
+		})
+	}
+}
+func TestRemovalWorkspacePendingApplyCannotDiscardSubmission(t *testing.T) {
+	m := removalWorkspace(t)
+	m.Pending["apply"] = 999
+	m.Busy = true
+	next, cmd := wk(m, "esc")
+	if cmd != nil || !next.Busy || next.Form == nil || next.Pending["apply"] != 999 {
+		t.Fatal("Esc lost pending apply")
+	}
+}
+
+func TestRemovalOutcomeKeepsFilesWithoutOpeningMissingVM(t *testing.T) {
+	o, p, c := outcomeFixture(t, "vm.remove-definition-v1")
+	p.Review = map[string]any{"diskDeletion": false, "backupsDeleted": false, "configurationRemoved": true, "backupCreated": false}
+	sealOutcomePlan(t, &p)
+	c.plan = p
+	got := readJobOutcome(context.Background(), c, o)
+	if got.Error != "" || got.VMID != "" || got.Title != "VM removed; disks kept" || !strings.Contains(got.Summary, "no disk space was freed") {
+		t.Fatal(got)
+	}
+}
