@@ -183,7 +183,7 @@ without asking for its ID. Use PgUp/PgDn or arrow keys to read full messages;
 Tab selects **Refresh**, available **Older events**/**Newer events**, or **Back to
 job**. Active jobs refresh automatically until the current page is full or a read
 fails. A read failure explains the issue and retains loaded events; choose Refresh
-to retry. Esc returns to the same job. Detaching does not cancel a job.
+to retry. **Checked** shows the last successful read time in UTC. Esc returns to the same job. Detaching does not cancel a job.
 Use **Cancel job** when offered; cancellation may wait for a safe boundary.
 **Check recovery** observes uncertain effects rather than blindly retrying them.
 Review an existing saved plan through **Review saved plan** in Jobs.

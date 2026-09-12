@@ -113,8 +113,15 @@ def execute(stage):
             first = capture_activity(terminal, events, 'initial')
             runner.save('activity-initial.json', first)
             require('>[ Refresh ]' in terminal.screen.text(), 'Refresh button focus changed unexpectedly')
+            checked = re.search(r'Checked \d\d:\d\d:\d\d UTC', terminal.screen.text())
+            require(checked is not None, 'last successful activity check is not visible')
+            # A no-change refresh can finish within one render frame. Require a
+            # changed successful-read time, not transient loading output.
+            deadline = time.monotonic() + 1.1
+            while time.monotonic() < deadline: terminal.read(.05)
             wait('Refresh same activity', lambda s: 'Job activity' in s and 'Refreshing activity' not in s
-                 and 'Reading recorded' not in s and 'Could not read activity' not in s, b'\r')
+                 and 'Reading recorded' not in s and 'Could not read activity' not in s
+                 and 'Checked ' in s and checked.group(0) not in s, b'\r')
             refreshed = capture_activity(terminal, events, 'refreshed')
             require(first == refreshed, 'refresh duplicated, omitted or changed retained job activity')
             runner.save('activity-refreshed.json', refreshed)

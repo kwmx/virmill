@@ -27,8 +27,9 @@ guarded deletion with durable recovery. Native storage,
 guest qualification and other required creation sources remain in progress.
 
 The public executable is `virmill`, the user coordinator is `virmilld`, and bounded
-privileged work belongs to `virmill-host-helper`. No publication destination has
-been selected. Local module names make no repository or domain ownership claim.
+privileged work belongs to `virmill-host-helper`. The beta source repository is
+[kwmx/virmill](https://github.com/kwmx/virmill). Local module names remain build
+identifiers; example domains in the specification are not publication destinations.
 
 CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-configuration.md).
 Remove a stopped VM while retaining disks: [removal guide](docs/vm-removal.md).

@@ -12,7 +12,8 @@ UTC timestamps, phases and severities, with scrolling and labeled Refresh,
 Older events, Newer events and Back to job buttons. Active jobs refresh the
 current incomplete page every three seconds. Reading errors stop automatic
 refresh and appear at the top with a manual retry; earlier events remain visible.
-Page history changes only after a valid response. Global sequence gaps are valid.
+The header shows when the last successful read finished, making a refresh
+visible even when events are unchanged. Page history changes only after a valid response. Global sequence gaps are valid.
 
 The workspace binds each request to its connection, job, cursor and request token.
 It rejects mismatched or unordered responses and ignores replies after closing.

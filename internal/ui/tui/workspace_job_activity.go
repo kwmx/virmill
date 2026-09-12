@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"maps"
 	"slices"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"virmill.local/core/internal/app"
@@ -93,6 +94,7 @@ func (m *Workspace) receiveJobActivity(data any) {
 	}
 	a.After, a.History = r.After, slices.Clone(r.History)
 	a.Events, a.Loading, a.Error = events, false, ""
+	a.CheckedAt = time.Now().UTC()
 	m.Activity, m.ActivityReading = &a, nil
 }
 

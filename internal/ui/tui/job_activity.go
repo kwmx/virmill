@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/ansi"
@@ -19,6 +20,7 @@ type jobActivity struct {
 	After                   int64
 	History                 []int64
 	Loading                 bool
+	CheckedAt               time.Time
 	Error                   string
 	Offset, Focus           int
 	width, height           int
@@ -150,6 +152,9 @@ func (a jobActivity) layout(width, height int) (header, content, footer []string
 	header = []string{"Job activity"}
 	header = append(header, wrap("Job ID: "+jobActivityText(a.OperationID), width)...)
 	header = append(header, fmt.Sprintf("Recorded events · Page %d · %d events", len(a.History)+1, len(a.Events)))
+	if !a.CheckedAt.IsZero() {
+		header[len(header)-1] += " · Checked " + a.CheckedAt.UTC().Format("15:04:05 UTC")
+	}
 	content = a.content(width)
 	footer = a.buttonRows(width)
 	footer = append(footer, "Tab/←/→ Buttons · Enter Choose · ↑/↓ Scroll · Esc Back")

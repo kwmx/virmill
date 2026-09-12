@@ -20,3 +20,20 @@ Agents supplied presentation, independent regression tests and the native fixtur
 Root integrated the controller, shared service calls, documentation and release
 tracking, and owns all remote actions. No service/API/schema/dependency change.
 The separate network helper authorization remains pending and is not bypassed.
+
+`job-activity-packages-001` passed all three package/private-IPC tests.
+`job-activity-upgrade-native-001` and `job-activity-restart-native-001` installed
+and activated source 8ebcbfc while retaining all 32 jobs and recorded journal,
+guest and source-media observations.
+
+`job-activity-native-001` read and matched all four actual events, but its Refresh
+check failed: the unchanged result could finish within one render frame, leaving
+no screen update for the fixture to observe. Its original failure and preservation
+report are retained. The UI now shows the last successful check time in UTC;
+the corrected fixture requires that time to advance before comparing messages.
+This provides user-visible refresh feedback and verifies a completed read without
+requiring a transient loading frame. `job-activity-fixture-002` passed its three
+local decoder checks. Final runtime and native results follow below.
+
+`job-activity-ui-002` passed the full TUI and CLI race suites (7.200s and
+3.396s) after adding successful-read feedback.
