@@ -5,10 +5,10 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `11721e6`.
+**Current UI update:** installed CLI and coordinator use `828c4f6`.
 Completed local VM jobs now offer **Open VM** after checking the saved result.
 Guest tools checks runtime state first and offers reviewed start guidance for
-stopped guests. Prose wraps by words. See [job/setup evidence](evidence/guided-job-completion-run.md).
+stopped guests. Prose and review warnings wrap by words. See [job/setup evidence](evidence/guided-job-completion-run.md).
 CPU/RAM settings show live and next-boot values, prefill editable fields and review
 exact before/after changes. Unsupported layouts explain their limits; running
 guests receive shutdown guidance. The preceding native stopped-VM TUI edit and

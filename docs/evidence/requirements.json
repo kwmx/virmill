@@ -2949,7 +2949,8 @@
         "beta-owner-race-001",
         "general-sources-core-001",
         "general-sources-integration-001",
-        "guest-tools-tui-native-001"
+        "guest-tools-tui-native-001",
+        "guest-tools-tui-native-002"
       ],
       "outstanding": [
         "Guest recipe runs only in approved guest context; input hash, privilege, retries and completion evidence are recorded.",
@@ -3074,7 +3075,8 @@
         "guest-tools-fedora-live-002",
         "guided-job-core-001",
         "guided-job-ui-002",
-        "guest-tools-tui-native-001"
+        "guest-tools-tui-native-001",
+        "guest-tools-tui-native-002"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -5143,7 +5145,8 @@
         "spice-viewer-recheck-native-001",
         "guided-job-core-001",
         "guided-job-ui-002",
-        "guest-tools-tui-native-001"
+        "guest-tools-tui-native-001",
+        "guest-tools-tui-native-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5458,7 +5461,9 @@
         "spice-viewer-recheck-native-001",
         "guided-job-core-001",
         "guided-job-ui-002",
-        "guest-tools-tui-native-001"
+        "guest-tools-tui-native-001",
+        "guest-tools-tui-native-002",
+        "guided-review-ui-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

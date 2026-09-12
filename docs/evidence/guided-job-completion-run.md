@@ -65,3 +65,37 @@ prose improvement. The formatter now uses the same word-aware wrapping. `guided-
 passed the complete TUI race suite after this correction; vet passed. Tests cover
 actual guest recipe warnings across 80×24 review pages and full identity/digest
 retention. Native recheck of the packaged correction follows separately.
+
+## Final review-formatting build
+
+Installed source `828c4f6249149085b800b10c68efb99acea65f6c`, implementation-tree
+digest `d5c9e0e8b6b8c72bef544726f441f52145a84435d4f97805a054330d36e89669`.
+`guided-review-packages-001` passed all three package checks.
+`guided-review-upgrade-001` and `guided-review-restart-001` passed, preserving
+all 26 prior jobs, journal tables, existing guests and source-media records.
+Ordinary-user coordinator PID: 91143.
+
+Final installed SHA-256:
+
+- CLI: `667da431d21cba531062ae5068007ce76c6a0471a8824bf94cfaf11e63bf910e`
+- Coordinator: `b50ddc6b775694df417d992507e33afd5d53cc91384b32b9542324b6c5fff0a4`
+- Core RPM: `2e0038febcca3e1bfd0ef426f3743054b6199a92068e881b0221b19eea63b9d8`
+
+`guest-tools-tui-native-002` passed the same guarded real TUI workflow on this
+final build. Reviewed start `3f049f95-f6d6-4434-a95c-4879d8aca170`, TUI-submitted
+idempotent setup `92b987d4-a54c-459d-b324-c9cc06107f3f`, and graceful stop
+`1bf292b9-528f-4785-a4ef-fccb3441fc8d` all succeeded. Guest-agent ping, stopped
+state restoration and every preservation check passed again. No package
+installation was repeated. Existing historical recovery-required work was retained.
+
+Root inspected the final native 80×24 review capture: the native/not warning
+words remain whole and their continuation lines readable. Full plan pages and
+identities are covered by the presentation regression tests. Screen capture JSON
+SHA-256: `d8f572fa716b283affc4ce10c09f649511f75802ea659db24c8b4737f7cecb21`.
+The private captures stay in the ignored local build directory and authorized
+fixture directory; no source media or key contents were copied.
+
+This contribution does not qualify Windows/other Linux profiles, desktop-sharing
+features, other hardware or full v1 acceptance. Requirement statuses remain
+2 accepted, 57 in progress, 12 not implemented. The 71-scenario release remains
+unqualified and nothing has been published.
