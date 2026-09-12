@@ -266,3 +266,133 @@ func TestNetworkFormExposureAndAdapterLimitsAreExplicit(t *testing.T) {
 		t.Fatal("guest-only addressing requirement hidden")
 	}
 }
+
+func TestNetworkFormFullIssuePreservesRecoveryInstructionsAndSettings(t *testing.T) {
+	f := NewNetworkForm()
+	f.Name, f.DisplayName, f.CIDR = "keep-network", "Keep this label", "10.61.0.0/24"
+	f.SetViewport(80, 17)
+	uuid := "66345678-1234-4234-8234-123456789abc"
+	start := "managed network " + uuid + " has no exact observable or explicitly declared allocation; "
+	recovery := "recover its owning inventory and declare its UUID/CIDR in planned settings"
+	f.Error = start + strings.Repeat("Retain this network and inspect the owning record before recovery. ", 45) + recovery
+	before, _ := networkFormDocument(t, f)
+	short := strings.Join(f.View(80, 17), "\n")
+	if !strings.Contains(short, "Read full issue") || !strings.Contains(short, "complete details and recovery steps") {
+		t.Fatal("truncated summary did not offer complete recovery text", short)
+	}
+	f, action := networkFormActivate(t, f, "issue")
+	if action != "" || !f.issueOpen {
+		t.Fatal("full issue action did not open reader")
+	}
+	var text []string
+	for attempts := 0; attempts < 100; attempts++ {
+		lines := f.View(80, 17)
+		if len(lines) > 17 || !strings.Contains(strings.Join(lines, "\n"), "Esc Back to settings") {
+			t.Fatal("full issue exceeded 80x24 body or hid escape", lines)
+		}
+		for _, line := range lines {
+			if ansi.StringWidth(line) > 80 {
+				t.Fatal("full issue width overflow", line)
+			}
+		}
+		text = append(text, lines[2:len(lines)-2]...)
+		prior := f.issueOffset
+		f, action = f.Update(tea.KeyMsg{Type: tea.KeyPgDown})
+		if action != "" {
+			t.Fatal("issue reader emitted a mutation/action")
+		}
+		if f.issueOffset == prior {
+			break
+		}
+		if attempts == 99 {
+			t.Fatal("issue scrolling did not reach a bounded end")
+		}
+	}
+	complete := strings.Join(strings.Fields(strings.Join(text, " ")), " ")
+	for _, want := range []string{uuid, "has no exact observable or explicitly declared allocation", recovery} {
+		if !strings.Contains(complete, want) {
+			t.Fatal("full issue lost recovery content", want, complete)
+		}
+	}
+	end := f.issueOffset
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyUp})
+	if f.issueOffset != end-1 {
+		t.Fatal("Up did not move one visible line")
+	}
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyDown})
+	if f.issueOffset != end {
+		t.Fatal("Down did not return to final visible line")
+	}
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyPgUp})
+	if f.issueOffset != max(0, end-13) {
+		t.Fatal("PgUp did not use actual viewport height")
+	}
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyHome})
+	if f.issueOffset != 0 {
+		t.Fatal("Home did not return to first line")
+	}
+	f, action = f.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	if action != "" || f.issueOpen || f.Error == "" || f.controls()[f.Focus].id != "issue" {
+		t.Fatal("Esc canceled form instead of returning to controls")
+	}
+	after, _ := networkFormDocument(t, f)
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("reading issue changed network settings")
+	}
+}
+
+func TestNetworkFormIssueReaderResetsForNewErrorEditAndPreview(t *testing.T) {
+	f := NewNetworkForm()
+	f.Name = "test-network"
+	f.Advanced = true
+	f.Error = strings.Repeat("old refusal ", 300)
+	f.SetViewport(60, 15)
+	f, _ = networkFormActivate(t, f, "issue")
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyPgDown})
+	if f.issueOffset != 11 {
+		t.Fatal("reader ignored updated viewport")
+	}
+	beforeRender := f
+	f.View(60, 15)
+	if !reflect.DeepEqual(beforeRender, f) {
+		t.Fatal("render mutated model")
+	}
+	f.Error = "New refusal: recover the exact allocation before previewing again."
+	if strings.HasPrefix(strings.Join(f.View(80, 17), "\n"), "Network creation issue") {
+		t.Fatal("changed error retained old reader position")
+	}
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyTab})
+	if f.issueOpen || f.issueOffset != 0 || f.issueText != f.Error {
+		t.Fatal("new issue retained stale reader state")
+	}
+	f, _ = networkFormActivate(t, f, "issue")
+	f, action := f.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	if action != "" || !f.Advanced || f.issueOpen {
+		t.Fatal("issue Esc lost advanced options")
+	}
+	f = networkFormFocus(t, f, "display")
+	f, _ = f.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("Changed label")})
+	if f.Error != "" || f.issueText != "" || f.issueOffset != 0 || f.issueOpen {
+		t.Fatal("editing retained stale issue state")
+	}
+	for _, c := range f.controls() {
+		if c.id == "issue" {
+			t.Fatal("cleared issue still offered reader")
+		}
+	}
+	f, _ = networkFormActivate(t, f, "done")
+	f.Error = "Previous service refusal"
+	f, action = networkFormActivate(t, f, "preview")
+	if action != "preview" || f.Error != "" || f.issueText != "" || f.issueOpen {
+		t.Fatal("new valid preview kept previous issue")
+	}
+	f.Name = ""
+	f, action = networkFormActivate(t, f, "preview")
+	if action != "" || f.Error == "" || f.issueOffset != 0 {
+		t.Fatal("new validation failure did not become a readable issue")
+	}
+	f, _ = networkFormActivate(t, f, "issue")
+	if !strings.Contains(strings.Join(f.View(80, 17), "\n"), "Network name") {
+		t.Fatal("new validation failure missing from reader")
+	}
+}

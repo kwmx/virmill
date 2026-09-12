@@ -872,7 +872,7 @@ Plan a new NAT/lab network with explicit host access or a guest-only segment wit
 
 ```text
 Usage:
-  virmill network create PATH [flags]
+  virmill network create [PATH] [flags]
 
 Flags:
       --after int      Event cursor

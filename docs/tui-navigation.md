@@ -254,3 +254,8 @@ short access summary and choose **Preview network**. Back retains your choices;
 applying always uses the separate reviewed-plan confirmation. **Export settings**
 saves the declaration for reuse. **Advanced declaration file** remains available
 for an existing document. See [network creation](network-creation.md).
+
+When network preview reports an issue, **Read full issue** opens its complete
+message and recovery instructions. Use PgUp/PgDn or arrows to scroll; Esc
+returns to the same settings. An unresolved allocation must be reconciled from
+its original declaration; typing another subnet does not bypass that check.

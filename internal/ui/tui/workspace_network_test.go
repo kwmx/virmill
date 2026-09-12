@@ -19,6 +19,7 @@ func networkWorkspace() Workspace {
 	m := fixtureWorkspace()
 	m.Section = 2
 	m.openAction(ui.Action{Command: "network create"})
+	m.NetworkForm.SetViewport(m.Width, m.Height-7)
 	m.NetworkForm.Name = "friendly-lab"
 	m.NetworkForm.Focus = 4
 	return m

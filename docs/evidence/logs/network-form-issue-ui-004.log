@@ -1,0 +1,5 @@
+--- FAIL: TestNetworkWorkspacePreviewBackAndCanceledRead (0.00s)
+    workspace_network_test.go:45: Back lost choices
+FAIL
+FAIL	virmill.local/core/internal/ui/tui	5.117s
+FAIL

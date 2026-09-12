@@ -49,6 +49,7 @@ func (m Workspace) updateNetworkForm(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.Busy {
 		return m, nil
 	}
+	m.NetworkForm.SetViewport(m.Width, m.Height-7)
 	f, action := m.NetworkForm.Update(key)
 	m.NetworkForm = &f
 	switch action {

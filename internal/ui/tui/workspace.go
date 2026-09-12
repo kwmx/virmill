@@ -1401,6 +1401,9 @@ func (m Workspace) status() string {
 }
 func (m Workspace) hints() string {
 	if m.NetworkForm != nil && m.Plan == nil && m.ExportForm == nil && m.Picker == nil && m.ActionForm == nil {
+		if m.NetworkForm.issueOpen {
+			return "Up/Down Scroll   PgUp/PgDn Page   Esc Back"
+		}
 		return "Tab/Arrows Select   Enter Choose   Ctrl-U Clear   Esc Back"
 	}
 	if m.Resources != nil && m.Plan == nil && m.Resources.Details {

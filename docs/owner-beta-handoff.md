@@ -1,11 +1,18 @@
 # Owner beta handoff — updated 12 September 2026
 
-**Virmill 1.0.0-beta.1 is installed and running on the authorized Fedora 44 test
-VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
+**Virmill 1.0.0-beta.1 was installed and verified running on the authorized
+Fedora 44 test VM.** SSH is currently unreachable; its current runtime status
+has not been re-observed. This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `828c4f6`.
+**Current UI update:** last verified installed CLI and coordinator use `31f3034`.
+**Networks → Create network** now offers guided purpose, subnet and access
+options, with export and an advanced declaration-file path. The live preview
+correctly refused missing allocation facts for two retained test networks.
+Those facts were verified from prior evidence; their settings repair and final
+live check await restored SSH access. A complete error-reader fix is prepared
+locally. See [network form evidence](evidence/network-form-run.md).
 Completed local VM jobs now offer **Open VM** after checking the saved result.
 Guest tools checks runtime state first and offers reviewed start guidance for
 stopped guests. Prose and review warnings wrap by words. See [job/setup evidence](evidence/guided-job-completion-run.md).

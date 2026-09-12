@@ -26,6 +26,9 @@ type NetworkForm struct {
 	cursor                                    int
 	cursorField                               string
 	notice                                    string
+	issueOpen                                 bool
+	issueOffset, issueWidth, issueHeight      int
+	issueText                                 string
 }
 
 func NewNetworkForm() NetworkForm {
@@ -33,6 +36,14 @@ func NewNetworkForm() NetworkForm {
 }
 
 func (f NetworkForm) controls() []importControl {
+	controls := f.optionControls()
+	if f.Error != "" {
+		controls = append(controls, importButton("issue", "Read full issue", "Read the complete error and recovery instructions. Esc returns to these settings."))
+	}
+	return controls
+}
+
+func (f NetworkForm) optionControls() []importControl {
 	choice := func(id, label, help, value string, values ...string) importControl {
 		return importControl{id: id, label: label, help: help, kind: "choice", value: value, choices: values}
 	}
@@ -75,6 +86,31 @@ func (f NetworkForm) controls() []importControl {
 }
 
 func (f NetworkForm) Update(key tea.KeyMsg) (NetworkForm, string) {
+	f.syncIssue()
+	if f.issueOpen {
+		width, height := f.issueDimensions()
+		rows := wrap(validation.SafeText(f.Error), width)
+		page := max(1, height-4)
+		last := max(0, len(rows)-page)
+		f.issueOffset = min(f.issueOffset, last)
+		switch key.Type {
+		case tea.KeyEsc:
+			f.issueOpen = false
+		case tea.KeyUp:
+			f.issueOffset = max(0, f.issueOffset-1)
+		case tea.KeyDown:
+			f.issueOffset = min(last, f.issueOffset+1)
+		case tea.KeyPgUp:
+			f.issueOffset = max(0, f.issueOffset-page)
+		case tea.KeyPgDown:
+			f.issueOffset = min(last, f.issueOffset+page)
+		case tea.KeyHome:
+			f.issueOffset = 0
+		case tea.KeyEnd:
+			f.issueOffset = last
+		}
+		return f, ""
+	}
 	if key.Type == tea.KeyEsc {
 		if f.Advanced {
 			f.Advanced, f.Focus, f.cursorField = false, 3, ""
@@ -118,10 +154,13 @@ func (f NetworkForm) Update(key tea.KeyMsg) (NetworkForm, string) {
 			f.AdvertiseDefaultRoute = f.Type == "nat" && f.DHCP
 		}
 		f.Error, f.cursorField = "", ""
+		f.syncIssue()
 		return f, ""
 	}
 	if c.kind == "button" && activate {
 		switch c.id {
+		case "issue":
+			f.issueOpen, f.issueOffset = true, 0
 		case "advanced":
 			f.Advanced, f.Focus, f.cursorField = true, 0, ""
 		case "done":
@@ -129,9 +168,11 @@ func (f NetworkForm) Update(key tea.KeyMsg) (NetworkForm, string) {
 		case "preview", "export":
 			if _, err := f.Request(); err != nil {
 				f.Error = err.Error()
+				f.syncIssue()
 				return f, ""
 			}
 			f.Error = ""
+			f.syncIssue()
 			return f, c.id
 		case "back", "advanced-file":
 			return f, c.id
@@ -167,6 +208,7 @@ func (f NetworkForm) Update(key tea.KeyMsg) (NetworkForm, string) {
 			f.CIDR = value
 		}
 		f.Error, f.notice = "", ""
+		f.syncIssue()
 	}
 	return f, ""
 }
@@ -251,8 +293,12 @@ func (f NetworkForm) exposure() string {
 }
 
 func (f NetworkForm) View(width, height int) []string {
+	f.syncIssue()
 	if width <= 0 || height <= 0 {
 		return nil
+	}
+	if f.issueOpen {
+		return f.issueView(width, height)
 	}
 	clean := func(s string) string { return ansi.Truncate(validation.SafeText(s), width, "…") }
 	if width < 40 || height < 10 {
@@ -273,6 +319,7 @@ func (f NetworkForm) View(width, height int) []string {
 	footer := wrap(validation.SafeText(controls[focus].help), width)
 	if f.Error != "" {
 		footer = append(footer, pageLines([]string{"Issue: " + f.Error}, width, 2, 0)...)
+		footer = append(footer, clean("Choose Read full issue for complete details and recovery steps."))
 	} else if f.notice != "" {
 		footer = append(footer, clean(f.notice))
 	}
@@ -324,4 +371,37 @@ func (f NetworkForm) View(width, height int) []string {
 	}
 	lines = append(lines, footer...)
 	return lines[:min(height, len(lines))]
+}
+
+func (f *NetworkForm) syncIssue() {
+	if f.issueText != f.Error {
+		f.issueText, f.issueOffset, f.issueOpen = f.Error, 0, false
+	}
+}
+
+func (f NetworkForm) issueDimensions() (int, int) {
+	width, height := f.issueWidth, f.issueHeight
+	if width <= 0 {
+		width = 80
+	}
+	if height <= 0 {
+		height = 17
+	}
+	return width, height
+}
+
+// SetViewport is called before handling input; rendering remains read-only.
+func (f *NetworkForm) SetViewport(width, height int) {
+	f.issueWidth, f.issueHeight = width, height
+}
+
+func (f NetworkForm) issueView(width, height int) []string {
+	rows := wrap(validation.SafeText(f.Error), width)
+	count := max(1, height-4)
+	f.issueOffset = min(f.issueOffset, max(0, len(rows)-count))
+	end := min(len(rows), f.issueOffset+count)
+	lines := []string{"Network creation issue", ""}
+	lines = append(lines, rows[f.issueOffset:end]...)
+	lines = append(lines, fmt.Sprintf("Lines %d–%d of %d", f.issueOffset+1, end, len(rows)), "Up/Down Scroll   PgUp/PgDn Page   Esc Back to settings")
+	return pageLines(lines, width, height, 0)
 }
