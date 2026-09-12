@@ -11,7 +11,7 @@ import (
 )
 
 func TestPlanSummaryShowsCreationChoicesBeforeTechnicalDetails(t *testing.T) {
-	target := domain.CreationTarget{Spec: domain.CreationSpec{Name: "Learning Linux", VCPUs: 2, MemoryMiB: 4096}}
+	target := domain.CreationTarget{Spec: domain.CreationSpec{Name: "Learning Linux", VCPUs: 2, MemoryMiB: 4096, Graphics: "spice-unix"}}
 	p := domain.Plan{Operation: "vm.create.devices-v1", ID: "exact-plan", Digest: strings.Repeat("a", 64), ResourceIDs: []string{"exact-vm-resource"}, Review: map[string]any{"target": target, "guestBootVerified": false}, Risks: []string{"Selected network permits internet access."}, Estimates: domain.Estimates{AdditionalBytes: 3 << 30}}
 	// In-process and socket clients must see the same summary.
 	var decoded domain.Plan
@@ -28,7 +28,7 @@ func TestPlanSummaryShowsCreationChoicesBeforeTechnicalDetails(t *testing.T) {
 		if !ok {
 			t.Fatal(got)
 		}
-		for _, want := range []string{"Create VM from prepared source", "Nothing has been applied", "VM name: Learning Linux", "CPU cores: 2", "Memory (MiB): 4096", "exact-vm-resource", "3.0 GiB (3221225472 bytes)", "Selected network permits internet access."} {
+		for _, want := range []string{"Create VM from prepared source", "Nothing has been applied", "VM name: Learning Linux", "CPU cores: 2", "Memory (MiB): 4096", "Display: Local display (SPICE)", "exact-vm-resource", "3.0 GiB (3221225472 bytes)", "Selected network permits internet access."} {
 			if !strings.Contains(summary, want) {
 				t.Errorf("missing %q in summary:\n%s", want, summary)
 			}

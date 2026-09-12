@@ -144,7 +144,8 @@
         "graphics": {
           "enum": [
             "none",
-            "vnc-unix"
+            "vnc-unix",
+            "spice-unix"
           ]
         },
         "disks": {
@@ -315,7 +316,26 @@
           "type": "boolean",
           "description": "Explicit opt-in QEMU guest-agent channel. Guest software installation is separate."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "graphics": {
+                "const": "spice-unix"
+              }
+            },
+            "required": [
+              "graphics"
+            ]
+          },
+          "then": {
+            "required": [
+              "devicePolicy"
+            ]
+          }
+        }
+      ]
     },
     "provisioning": {
       "$ref": "nocloud-config.schema.json"

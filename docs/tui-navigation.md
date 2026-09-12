@@ -208,6 +208,10 @@ a plain SSH terminal needs a configured serial console. **Ctrl+]** leaves serial
 access. A serial port does not guarantee a guest login. Closing the console does
 not ask Virmill to stop the VM.
 
+New creation forms suggest **Local display (SPICE)** when the host supports it.
+The display choice and desktop requirement are shown before creation. Advanced
+hardware keeps the other observed display choices, and saved choices remain intact.
+
 The beta graphical adapter supports private SPICE with virt-viewer 11.0 installed
 by the administrator. Clipboard, sound, USB redirection and resizing stay off.
 Other viewer versions and VNC currently report an explicit unsupported reason.

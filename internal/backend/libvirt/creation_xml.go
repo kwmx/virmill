@@ -41,6 +41,9 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 	if s.GuestAgent && s.DevicePolicy == nil {
 		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "guest-agent channel requires an explicit automatic device-placement policy")
 	}
+	if s.Graphics == "spice-unix" && s.DevicePolicy == nil {
+		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "Private SPICE requires an explicit device policy with audio disabled")
+	}
 	if len(volumes) != len(s.Disks)+len(s.Media) {
 		return "", errors.New("complete volume set required")
 	}
@@ -154,6 +157,9 @@ func creationXML(t domain.CreationTarget, volumes []domain.CreatedVolume, bindin
 	}
 	if s.Graphics == "vnc-unix" {
 		b.WriteString(`<graphics type="vnc"><listen type="socket"/></graphics><video><model type="vga"/></video>`)
+	}
+	if s.Graphics == "spice-unix" {
+		b.WriteString(`<graphics type="spice"><listen type="socket"/><clipboard copypaste="no"/><filetransfer enable="no"/></graphics><video><model type="vga"/></video>`)
 	}
 	if s.DevicePolicy != nil {
 		b.WriteString(`<input type="mouse" bus="ps2"/><input type="keyboard" bus="ps2"/><audio id="1" type="none"/><serial type="pty"><target type="isa-serial" port="0"><model name="isa-serial"/></target></serial>`)
@@ -429,6 +435,9 @@ func matchesCreationPolicy(wanted, observed string, policy *domain.CreationDevic
 	if err != nil {
 		return err
 	}
+	if err = validateCreationSpiceReadback(w, g); err != nil {
+		return err
+	}
 	if err = memoryKiB(w); err != nil {
 		return err
 	}
@@ -468,6 +477,78 @@ func matchesCreationPolicy(wanted, observed string, policy *domain.CreationDevic
 		}
 	}
 	return nil
+}
+
+// The qualified inactive SPICE readback retains these exact security settings.
+// Do not extend generic matching defaults: old VNC/none recipes keep their
+// existing comparison, and any listener/feature normalization needs new evidence.
+func validateCreationSpiceReadback(wanted, observed *xmlNode) error {
+	wdev := child(wanted, "devices")
+	requested := false
+	if wdev != nil {
+		for _, n := range wdev.children {
+			if n.name == (xml.Name{Local: "graphics"}) && attr(n, "type") == "spice" {
+				requested = true
+			}
+		}
+	}
+	if !requested {
+		return nil
+	}
+	refuse := func() error {
+		return domain.Fail("RECOVERY_REQUIRED", "Private SPICE readback differs from its reviewed socket, clipboard or file-transfer policy")
+	}
+	for _, root := range []*xmlNode{wanted, observed} {
+		devices := child(root, "devices")
+		if devices == nil {
+			return refuse()
+		}
+		var graphics *xmlNode
+		for _, n := range devices.children {
+			if n.name.Local != "graphics" {
+				continue
+			}
+			if graphics != nil || n.name.Space != "" {
+				return refuse()
+			}
+			graphics = n
+		}
+		if !privateSpiceSocketGraphics(graphics) {
+			return refuse()
+		}
+	}
+	return nil
+}
+
+// privateSpiceSocketGraphics is shared with cold-capture classification. The
+// backend assigns the private socket at start; no endpoint, credentials or
+// desktop-sharing defaults may be inherited into this exact safe shape.
+func privateSpiceSocketGraphics(graphics *xmlNode) bool {
+	if graphics == nil || graphics.name != (xml.Name{Local: "graphics"}) || !creationFirmwareExactAttrs(graphics, map[string]string{"type": "spice"}) || strings.TrimSpace(graphics.text) != "" || len(graphics.children) != 3 {
+		return false
+	}
+	seen := map[string]bool{}
+	for _, n := range graphics.children {
+		if n == nil || seen[n.name.Local] || strings.TrimSpace(n.text) != "" || len(n.children) != 0 {
+			return false
+		}
+		seen[n.name.Local] = true
+		var attrs map[string]string
+		switch n.name.Local {
+		case "listen":
+			attrs = map[string]string{"type": "socket"}
+		case "clipboard":
+			attrs = map[string]string{"copypaste": "no"}
+		case "filetransfer":
+			attrs = map[string]string{"enable": "no"}
+		default:
+			return false
+		}
+		if !creationFirmwareExactAttrs(n, attrs) {
+			return false
+		}
+	}
+	return true
 }
 
 // Captured libvirt normalization adds EFI selection metadata to an already

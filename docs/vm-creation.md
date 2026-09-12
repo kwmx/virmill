@@ -48,15 +48,25 @@ The current adapter accepts explicit x86_64 KVM Q35/i440fx machine versions,
 virtio-scsi. NIC models are virtio, e1000e and rtl8139, subject to preflight.
 Driver compatibility inside the appliance remains the operator's mapping decision.
 CPU mode, memory, UTC/local time, BIOS/UEFI and display choice are explicit.
-`vnc-unix` requests a local socket listener; `none` requests no graphical console.
-Serial devices are included. Interactive viewer/serial attachment is still a
-separate required workflow. A device definition does not prove guest reachability.
+`spice-unix` requests a private SPICE display compatible with Virmill's console
+launcher and is suggested for new VMs when the host advertises support. It needs
+an explicit `hardware.devicePolicy`; clipboard and file transfer start disabled.
+`vnc-unix` retains the private VNC listener, but Virmill cannot currently launch
+that viewer safely. `none` requests no graphical display. Saved choices are never
+silently converted. Serial devices are included; guest serial login or SSH access
+still needs guest configuration. A device definition does not prove reachability.
+
+After creation, select the VM, review **Start**, then choose **Console** to open
+the installer or guest desktop. Use Virmill from the host's desktop with the
+supported virt-viewer 11.0 installed; a plain SSH terminal cannot show a graphical
+display. Once the guest OS and verified SSH access are ready, **Guest tools**
+offers supported Linux installation. See [console and guest setup](tui-navigation.md#open-a-guest-and-protect-it).
 
 `hardware.devicePolicy` makes chipset devices explicit. The examples select version
 1, the matching `q35` or `i440fx` chipset, `pciPlacement: libvirt-auto`,
 `usbController: none`, `memoryBalloon: none`, `watchdogAction: none`, `input: ps2`,
-`audio: none`, and `serial: isa-serial`. Omitting this object selects these values
-in the new plan; always review them. USB may instead be `qemu-xhci`, ballooning
+`audio: none`, and `serial: isa-serial`. Omitting this object for legacy VNC/none input selects these values
+in the new plan; SPICE input requires it explicitly. Always review them. USB may instead be `qemu-xhci`, ballooning
 `virtio`, and the Q35 watchdog action `reset`. A reset watchdog can forcefully
 restart a guest that has armed it. Controller selection alone does not attach or
 qualify physical USB. Automatic PCI placement permits only known bounded bridge

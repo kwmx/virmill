@@ -48,8 +48,11 @@ func validateCreationSpec(s domain.CreationSpec) error {
 	if s.Clock != "utc" && s.Clock != "localtime" {
 		return domain.Fail("INVALID_INPUT", "explicit utc or localtime clock required")
 	}
-	if s.Graphics != "none" && s.Graphics != "vnc-unix" {
-		return domain.Fail("INVALID_INPUT", "graphics must be none or vnc-unix")
+	if s.Graphics != "none" && s.Graphics != "vnc-unix" && s.Graphics != "spice-unix" {
+		return domain.Fail("INVALID_INPUT", "graphics must be none, vnc-unix or spice-unix")
+	}
+	if s.Graphics == "spice-unix" && s.DevicePolicy == nil {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "Private SPICE requires an explicit device policy with audio disabled")
 	}
 	f := s.Firmware
 	if f.Mode == "bios" {
@@ -251,6 +254,9 @@ func checkCaps(c domainCaps, s domain.CreationSpec) error {
 	}
 	if s.Graphics == "vnc-unix" && (c.Devices.Graphics.Supported != "yes" || !enumHas(c.Devices.Graphics.Enums, "type", "vnc")) {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "VNC graphics is unavailable")
+	}
+	if s.Graphics == "spice-unix" && (c.Devices.Graphics.Supported != "yes" || !enumHas(c.Devices.Graphics.Enums, "type", "spice")) {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "Private SPICE graphics is not advertised by this host")
 	}
 	if s.Firmware.Mode == "uefi" {
 		found := false

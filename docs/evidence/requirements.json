@@ -520,7 +520,10 @@
         "internal/ui/tui/workspace_jobs.go",
         "internal/ui/tui/workspace_boot.go",
         "internal/ui/tui/boot_form.go",
-        "docs/evidence/beta-ux-flow-run.md"
+        "docs/evidence/beta-ux-flow-run.md",
+        "docs/adr/0046-private-spice-creation.md",
+        "docs/evidence/spice-creation-run.md",
+        "schemas/vm-creation-input.schema.json"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -577,7 +580,13 @@
         "internal/ui/tui/workspace_boot_test.go",
         "internal/ui/tui/boot_form_test.go",
         "internal/ui/tui/creation_friendly_test.go",
-        "internal/ui/tui/plan_summary_test.go"
+        "internal/ui/tui/plan_summary_test.go",
+        "internal/backend/libvirt/creation_spice_test.go",
+        "internal/backend/libvirt/cold_spice_test.go",
+        "internal/creating/spice_compatibility_linux_test.go",
+        "internal/ui/tui/creation_display_test.go",
+        "tests/fixtures/release/spice_normalization_probe.py",
+        "tests/fixtures/release/spice_creation_probe.py"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -637,7 +646,10 @@
         "general-owner-sources-native-001",
         "guest-channel-native-001",
         "beta-ux-flow-core-001",
-        "beta-ux-workflow-native-001"
+        "beta-ux-workflow-native-001",
+        "spice-creation-core-001",
+        "spice-normalization-native-001",
+        "spice-fixture-unit-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -870,7 +882,12 @@
         "internal/importing/source_description_linux.go",
         "internal/ui/tui/source_summary.go",
         "docs/import-source-review.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/adr/0046-private-spice-creation.md",
+        "docs/evidence/spice-creation-run.md",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/ui/tui/creation_form.go",
+        "schemas/vm-creation-input.schema.json"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -893,7 +910,13 @@
         "internal/backend/image/describe_linux_test.go",
         "internal/importing/source_description_linux_test.go",
         "internal/ui/tui/source_summary_test.go",
-        "tests/fixtures/release/general_sources_probe.py"
+        "tests/fixtures/release/general_sources_probe.py",
+        "internal/backend/libvirt/creation_spice_test.go",
+        "internal/backend/libvirt/cold_spice_test.go",
+        "internal/creating/spice_compatibility_linux_test.go",
+        "internal/ui/tui/creation_display_test.go",
+        "tests/fixtures/release/spice_normalization_probe.py",
+        "tests/fixtures/release/spice_creation_probe.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -914,7 +937,8 @@
         "general-sources-qemu-native-001",
         "general-sources-integration-001",
         "general-sources-ui-native-001",
-        "general-sources-ui-native-002"
+        "general-sources-ui-native-002",
+        "spice-creation-core-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
@@ -1130,7 +1154,12 @@
         "docs/adr/0021-creation-nvram-declaration-binding.md",
         "docs/creation-nvram-binding.md",
         "docs/evidence/nvram-binding-run.md",
-        "docs/evidence/general-sources-run.md"
+        "docs/evidence/general-sources-run.md",
+        "docs/adr/0046-private-spice-creation.md",
+        "docs/evidence/spice-creation-run.md",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/ui/tui/creation_form.go",
+        "schemas/vm-creation-input.schema.json"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-07",
@@ -1178,7 +1207,13 @@
         "internal/creating/nvram_result_recovery_linux_test.go",
         "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-001.py",
         "tests/fixtures/protection/disposable-recorded-run/nvram-binding-native-002.py",
-        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py"
+        "tests/fixtures/protection/disposable-recorded-run/nvram-binding-tui-003.py",
+        "internal/backend/libvirt/creation_spice_test.go",
+        "internal/backend/libvirt/cold_spice_test.go",
+        "internal/creating/spice_compatibility_linux_test.go",
+        "internal/ui/tui/creation_display_test.go",
+        "tests/fixtures/release/spice_normalization_probe.py",
+        "tests/fixtures/release/spice_creation_probe.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -1246,7 +1281,8 @@
         "nvram-binding-native-002",
         "nvram-binding-tui-fixture-003",
         "nvram-binding-tui-003",
-        "guest-channel-native-001"
+        "guest-channel-native-001",
+        "spice-creation-core-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
@@ -2783,11 +2819,29 @@
       "owner": "core-integration",
       "gate": 5,
       "status": "not-implemented",
-      "implementationPaths": [],
+      "implementationPaths": [
+        "docs/adr/0046-private-spice-creation.md",
+        "docs/evidence/spice-creation-run.md",
+        "internal/backend/libvirt/creation_xml.go",
+        "internal/backend/libvirt/creation_options_linux.go",
+        "internal/ui/tui/creation_form.go",
+        "schemas/vm-creation-input.schema.json"
+      ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/integration/devices/DEV-04",
-      "tests": [],
-      "evidence": [],
+      "tests": [
+        "internal/backend/libvirt/creation_spice_test.go",
+        "internal/backend/libvirt/cold_spice_test.go",
+        "internal/creating/spice_compatibility_linux_test.go",
+        "internal/ui/tui/creation_display_test.go",
+        "tests/fixtures/release/spice_normalization_probe.py",
+        "tests/fixtures/release/spice_creation_probe.py"
+      ],
+      "evidence": [
+        "spice-creation-core-001",
+        "spice-normalization-native-001",
+        "spice-fixture-unit-001"
+      ],
       "outstanding": [
         "Serial/SSH/viewer access and supported shares/clipboard honor opt-in and endpoint exposure rules."
       ],
@@ -4715,7 +4769,10 @@
         "schemas/vm-resources-view.schema.json",
         "schemas/vm-resources-show-request.schema.json",
         "docs/adr/0045-observed-resource-settings.md",
-        "docs/evidence/observed-resources-run.md"
+        "docs/evidence/observed-resources-run.md",
+        "docs/adr/0046-private-spice-creation.md",
+        "docs/evidence/spice-creation-run.md",
+        "schemas/vm-creation-input.schema.json"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4863,7 +4920,13 @@
         "internal/app/resource_view_test.go",
         "internal/ui/cli/resource_view_test.go",
         "internal/ui/tui/workspace_resources_test.go",
-        "tests/fixtures/release/resource_settings_probe.py"
+        "tests/fixtures/release/resource_settings_probe.py",
+        "internal/backend/libvirt/creation_spice_test.go",
+        "internal/backend/libvirt/cold_spice_test.go",
+        "internal/creating/spice_compatibility_linux_test.go",
+        "internal/ui/tui/creation_display_test.go",
+        "tests/fixtures/release/spice_normalization_probe.py",
+        "tests/fixtures/release/spice_creation_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5040,7 +5103,8 @@
         "observed-resources-packages-001",
         "observed-resources-upgrade-001",
         "observed-resources-restart-001",
-        "observed-resources-native-001"
+        "observed-resources-native-001",
+        "spice-creation-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5161,7 +5225,11 @@
         "schemas/vm-resources-view.schema.json",
         "schemas/vm-resources-show-request.schema.json",
         "docs/adr/0045-observed-resource-settings.md",
-        "docs/evidence/observed-resources-run.md"
+        "docs/evidence/observed-resources-run.md",
+        "docs/adr/0046-private-spice-creation.md",
+        "docs/evidence/spice-creation-run.md",
+        "internal/backend/libvirt/creation_xml.go",
+        "schemas/vm-creation-input.schema.json"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5236,7 +5304,13 @@
         "internal/app/resource_view_test.go",
         "internal/ui/cli/resource_view_test.go",
         "internal/ui/tui/workspace_resources_test.go",
-        "tests/fixtures/release/resource_settings_probe.py"
+        "tests/fixtures/release/resource_settings_probe.py",
+        "internal/backend/libvirt/creation_spice_test.go",
+        "internal/backend/libvirt/cold_spice_test.go",
+        "internal/creating/spice_compatibility_linux_test.go",
+        "internal/ui/tui/creation_display_test.go",
+        "tests/fixtures/release/spice_normalization_probe.py",
+        "tests/fixtures/release/spice_creation_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5330,7 +5404,8 @@
         "observed-resources-packages-001",
         "observed-resources-upgrade-001",
         "observed-resources-restart-001",
-        "observed-resources-native-001"
+        "observed-resources-native-001",
+        "spice-creation-core-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

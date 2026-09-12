@@ -242,6 +242,9 @@ func creationOptionsFromCaps(caps domainCaps, machines []string, hostMemoryMiB u
 	if caps.Devices.Graphics.Supported == "yes" && enumHas(caps.Devices.Graphics.Enums, "type", "vnc") {
 		out.Graphics = append(out.Graphics, "vnc-unix")
 	}
+	if caps.Devices.Graphics.Supported == "yes" && enumHas(caps.Devices.Graphics.Enums, "type", "spice") {
+		out.Graphics = append(out.Graphics, "spice-unix")
+	}
 	if creationDefaultBIOSSupported(caps) {
 		out.Firmware = append(out.Firmware, domain.CreationFirmwareOption{Label: "BIOS", Firmware: domain.CreationFirmware{Mode: "bios"}})
 	}

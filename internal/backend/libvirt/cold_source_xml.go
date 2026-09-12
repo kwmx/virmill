@@ -661,6 +661,11 @@ func coldSourceEphemeralDevice(n *xmlNode) bool {
 	case "emulator":
 		return len(n.attrs) == 0 && len(n.children) == 0 && strings.TrimSpace(n.text) == "/usr/bin/qemu-system-x86_64"
 	case "graphics":
+		if attr(n, "type") == "spice" {
+			// Only the generated, configuration-only private socket profile has
+			// no host endpoint/credential to capture. Its full XML is retained.
+			return privateSpiceSocketGraphics(n)
+		}
 		if coldAttrs(n, []string{"type"}, nil) != nil || attr(n, "type") != "vnc" || strings.TrimSpace(n.text) != "" || len(n.children) != 1 {
 			return false
 		}

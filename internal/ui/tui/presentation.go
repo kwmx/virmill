@@ -128,6 +128,9 @@ func planSummary(f *details, p domain.Plan) {
 			f.value(field.label, v, 0)
 		}
 	}
+	if display, ok := planSummaryField(reflect.ValueOf(p.Review), []string{"target", "spec", "graphics"}); ok && display.Kind() == reflect.String {
+		f.scalar("Display", creationFriendlyValue("graphics", display.String()), 0)
+	}
 	f.value("Affected resources", reflect.ValueOf(p.ResourceIDs), 0)
 	if p.Estimates.AdditionalBytes > 0 {
 		f.scalar("Extra space estimate", planSpace(p.Estimates.AdditionalBytes), 0)

@@ -56,7 +56,7 @@ func probeCreationDevices(ctx context.Context, emulator string, s domain.Creatio
 		}
 		models[model] = true
 	}
-	if s.Graphics == "vnc-unix" {
+	if s.Graphics == "vnc-unix" || s.Graphics == "spice-unix" {
 		models["VGA"] = true
 	}
 	for _, d := range s.Disks {

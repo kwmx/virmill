@@ -65,7 +65,9 @@ func NewCreationForm(operationID string, source CreationSource, options domain.C
 	} else if len(options.CPUModes) > 0 {
 		f.Spec.CPU.Mode = options.CPUModes[0]
 	}
-	if slices.Contains(options.Graphics, "vnc-unix") {
+	if slices.Contains(options.Graphics, "spice-unix") {
+		f.Spec.Graphics = "spice-unix"
+	} else if slices.Contains(options.Graphics, "vnc-unix") {
 		f.Spec.Graphics = "vnc-unix"
 	} else if len(options.Graphics) > 0 {
 		f.Spec.Graphics = options.Graphics[0]
@@ -272,7 +274,7 @@ func (f CreationForm) controls() []importControl {
 		choice("firmware", "Firmware", "Match the guest's original BIOS/UEFI needs. No firmware is chosen automatically.", value, labels)
 		choice("clock", "Hardware clock", "UTC is suggested; some guests expect local time.", f.Spec.Clock, []string{"utc", "localtime"})
 		choice("guestAgent", "Guest agent channel", "Enable before installing QEMU guest tools. It allows host/guest communication.", strconv.FormatBool(f.Spec.GuestAgent), []string{"false", "true"})
-		choice("graphics", "Display", "A local VNC socket provides a console without exposing a TCP port.", f.Spec.Graphics, f.Options.Graphics)
+		choice("graphics", "Display", creationDisplayHelp(f.Spec.Graphics, f.Options.Graphics), f.Spec.Graphics, f.Options.Graphics)
 		if p := f.Spec.DevicePolicy; p != nil {
 			choice("usb", "USB controller", "Adding a controller does not attach host USB devices.", p.USBController, []string{"none", "qemu-xhci"})
 			choice("balloon", "Memory balloon", "Allows the host to adjust guest memory; requires a virtio driver in the guest.", p.MemoryBalloon, []string{"none", "virtio"})
@@ -680,6 +682,11 @@ func (f CreationForm) View(width, height int) string {
 	if page < 3 {
 		lines[3] = clean(fmt.Sprintf("Step %d of 3 · %s", page+1, titles[page]))
 	}
+	if page == 0 || page == 2 {
+		lines[4] = clean("Display: " + creationFriendlyValue("graphics", f.Spec.Graphics))
+		lines = append(lines, wrap(validation.SafeText(creationDisplayHelp(f.Spec.Graphics, f.Options.Graphics)), width)...)
+	}
+
 	controls := f.controls()
 	if len(controls) == 0 {
 		return strings.Join(lines, "\n")
@@ -869,7 +876,7 @@ func creationFriendlyValue(id, value string) string {
 	labels := map[string]map[string]string{
 		"guestAgent": {"false": "Disabled", "true": "Enabled"},
 		"link":       {"down": "Disconnected", "up": "Connected"},
-		"graphics":   {"none": "No display", "vnc-unix": "Local console (VNC)"},
+		"graphics":   {"none": "No display", "vnc-unix": "Local display (VNC)", "spice-unix": "Local display (SPICE)"},
 		"cpuMode":    {"host-model": "Host-compatible (host-model)", "host-passthrough": "Host CPU (host-passthrough)", "custom": "Choose a CPU model"},
 		"clock":      {"utc": "UTC", "localtime": "Local time"},
 		"usb":        {"none": "Disabled", "qemu-xhci": "USB 3 (qemu-xhci)"},
@@ -881,4 +888,22 @@ func creationFriendlyValue(id, value string) string {
 		return text
 	}
 	return value
+}
+
+// Display defaults apply only to a newly constructed form. Reloaded/resumed
+// declarations retain their explicit Graphics value and are reviewed unchanged.
+func creationDisplayHelp(graphics string, options []string) string {
+	switch graphics {
+	case "spice-unix":
+		return "Requires this host's desktop. A plain SSH terminal cannot show the display."
+	case "vnc-unix":
+		if slices.Contains(options, "spice-unix") {
+			return "VNC launch is unavailable. Choose SPICE in Advanced hardware for Console."
+		}
+		return "VNC launch is unavailable in Virmill. Check guest access before creating."
+	case "none":
+		return "No graphical display. Guest serial or SSH access must be configured separately."
+	default:
+		return "No supported display selected. Check Advanced hardware before creating."
+	}
 }
