@@ -99,6 +99,12 @@ generated UUID/MACs, pinned capabilities/firmware, space budget and risks. Clone
 identity does not change hostname, machine ID, SSH keys, passwords or application
 identity inside the copied disks. Guest adaptation is reported `not-run`.
 
+In the TUI's **Disks and boot** step, selecting a boot position moves that device
+and shifts the others into a complete order. **Attach only** excludes read-only
+media from booting while keeping it attached. The CLI declaration retains numeric
+`bootOrder`: disks use unique consecutive positions starting at 1; media may use
+0 for attach-only. The final review shows every requested position before changes.
+
 `plan apply PLAN_ID` requires `--digest`, `--idempotency-key` and every
 `--ack` listed by that exact plan. Creation always requires `host-mutation`,
 `copy-managed-volumes`, `new-vm-identity` and `creation-device-policy`; choosing

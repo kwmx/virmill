@@ -205,16 +205,20 @@ func (f CreationForm) controls() []importControl {
 				bus, boot = m.Bus, m.BootOrder
 				choices = slices.DeleteFunc(choices, func(v string) bool { return v == "virtio" })
 			}
-			choice("bus", "Controller bus", "Choose a bus supported by this guest; an image alone cannot prove drivers.", bus, choices)
-			orders := []string{}
-			first := 1
+			busHelp := "Choose a bus supported by this guest; an image alone cannot prove drivers."
+			if (f.Source.Kind == "PreparedInstallation" || f.Source.Kind == "installation-media") && slices.Contains(choices, "sata") {
+				busHelp = "Suggested: SATA for installation media. Choose another bus only if the guest supports it."
+			}
+			choice("bus", "Controller bus", busHelp, bus, choices)
+			bootHelp := "1 boots first; other devices shift to keep the order."
 			if index >= len(f.Spec.Disks) {
-				first = 0
+				bootHelp += " Attach only skips booting this medium."
 			}
-			for i := first; i <= total; i++ {
-				orders = append(orders, strconv.Itoa(i))
+			bootValue := strconv.Itoa(boot)
+			if boot < 0 || (boot == 0 && index < len(f.Spec.Disks)) {
+				bootValue = "Invalid: " + bootValue
 			}
-			choice("boot", "Boot priority", "1 boots first. Media may use 0 to attach without booting; priorities must be unique.", strconv.Itoa(boot), orders)
+			choice("boot", "Boot priority", bootHelp, bootValue, creationBootOrderChoices(f.Spec, index))
 		}
 		c = append(c, importButton("back", "Back", "Return to CPU, memory and storage."), importButton("next", "Continue to networks", "Choose network access for each adapter; cables start disconnected."))
 	case 2:
@@ -393,20 +397,27 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.Disk = (max(0, min(f.Disk, len(c.choices)-1)) + direction + len(c.choices)) % len(c.choices)
 		case "bus", "boot":
 			i := max(0, min(f.Disk, len(f.Spec.Disks)+len(f.Spec.Media)-1))
-			if i < len(f.Spec.Disks) {
-				d := &f.Spec.Disks[i]
-				if c.id == "bus" {
-					d.Bus = next(d.Bus)
+			if c.id == "boot" {
+				order := 0
+				if i < len(f.Spec.Disks) {
+					order = f.Spec.Disks[i].BootOrder
 				} else {
-					d.BootOrder, _ = strconv.Atoi(next(strconv.Itoa(d.BootOrder)))
+					order = f.Spec.Media[i-len(f.Spec.Disks)].BootOrder
 				}
+				requested, _ := strconv.Atoi(next(strconv.Itoa(order)))
+				var err error
+				f.Spec, err = creationMoveBootOrder(f.Spec, i, requested)
+				if err != nil {
+					f.Error = err.Error()
+					return f, none
+				}
+				break
+			}
+			if i < len(f.Spec.Disks) {
+				f.Spec.Disks[i].Bus = next(f.Spec.Disks[i].Bus)
 			} else {
 				m := &f.Spec.Media[i-len(f.Spec.Disks)]
-				if c.id == "bus" {
-					m.Bus = next(m.Bus)
-				} else {
-					m.BootOrder, _ = strconv.Atoi(next(strconv.Itoa(m.BootOrder)))
-				}
+				m.Bus = next(m.Bus)
 			}
 		case "nic":
 			f.NIC = (max(0, min(f.NIC, len(c.choices)-1)) + direction + len(c.choices)) % len(c.choices)
@@ -607,7 +618,7 @@ func (f CreationForm) Request(connection string) (app.Request, error) {
 			return fail("Media " + m.SourceID + ": choose SATA or SCSI supported by this machine.")
 		}
 		if m.BootOrder < 0 || m.BootOrder > bootCount || (m.BootOrder > 0 && orders[m.BootOrder]) {
-			return fail("Media " + m.SourceID + ": choose a unique boot priority, or 0 to skip booting.")
+			return fail("Media " + m.SourceID + ": choose a unique boot priority, or Attach only to skip booting.")
 		}
 		if m.BootOrder > 0 {
 			orders[m.BootOrder] = true
@@ -698,6 +709,9 @@ func (f CreationForm) View(width, height int) string {
 		lines[4] = clean("Display: " + creationFriendlyValue("graphics", f.Spec.Graphics))
 		lines = append(lines, wrap(validation.SafeText(creationDisplayHelp(f.Spec.Graphics, f.Options.Graphics)), width)...)
 	}
+	if page == 1 {
+		lines = append(lines[:4], wrap(creationBootOrderSummary(f.Spec), width)...)
+	}
 
 	controls := f.controls()
 	if len(controls) == 0 {
@@ -783,7 +797,7 @@ func creationSourceBus(source CreationSource, diskID string, options domain.Crea
 	if !slices.Contains(options.DiskBuses, "sata") {
 		return ""
 	}
-	if source.Kind == "installation-media" {
+	if source.Kind == "PreparedInstallation" || source.Kind == "installation-media" {
 		return "sata"
 	}
 	attachments := []importer.Item{}
@@ -886,6 +900,7 @@ func (f *CreationForm) FocusError(err error) {
 // changing the declaration sent to the shared service.
 func creationFriendlyValue(id, value string) string {
 	labels := map[string]map[string]string{
+		"boot":       {"0": "Attach only"},
 		"guestAgent": {"false": "Disabled", "true": "Enabled"},
 		"link":       {"down": "Disconnected", "up": "Connected"},
 		"graphics":   {"none": "No display", "vnc-unix": "Local display (VNC)", "spice-unix": "Local display (SPICE)"},

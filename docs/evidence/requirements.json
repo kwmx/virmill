@@ -594,7 +594,10 @@
         "docs/evidence/beta-ux-flow-run.md",
         "docs/adr/0046-private-spice-creation.md",
         "docs/evidence/spice-creation-run.md",
-        "schemas/vm-creation-input.schema.json"
+        "schemas/vm-creation-input.schema.json",
+        "internal/ui/tui/creation_boot_order.go",
+        "docs/adr/0052-creation-boot-order-controls.md",
+        "docs/evidence/creation-boot-order-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -657,7 +660,9 @@
         "internal/creating/spice_compatibility_linux_test.go",
         "internal/ui/tui/creation_display_test.go",
         "tests/fixtures/release/spice_normalization_probe.py",
-        "tests/fixtures/release/spice_creation_probe.py"
+        "tests/fixtures/release/spice_creation_probe.py",
+        "internal/ui/tui/creation_boot_order_test.go",
+        "tests/fixtures/release/boot_order_tui_probe.py"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -726,7 +731,8 @@
         "spice-creation-restart-001",
         "spice-creation-native-001",
         "spice-fixture-unit-002",
-        "spice-viewer-recheck-native-001"
+        "spice-viewer-recheck-native-001",
+        "creation-boot-order-ui-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -756,7 +762,10 @@
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
         "internal/backend/libvirt/creation_xml.go",
-        "docs/evidence/multidisk-crash-run.md"
+        "docs/evidence/multidisk-crash-run.md",
+        "internal/ui/tui/creation_boot_order.go",
+        "docs/adr/0052-creation-boot-order-controls.md",
+        "docs/evidence/creation-boot-order-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-02",
@@ -775,7 +784,9 @@
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-active-upload-crash.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-fresh-plan.py",
         "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-fresh-create.py",
-        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-start-capture.py"
+        "tests/fixtures/import/multidisk-probe/disposable-recorded-run/multidisk-start-capture.py",
+        "internal/ui/tui/creation_boot_order_test.go",
+        "tests/fixtures/release/boot_order_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -790,7 +801,8 @@
         "multidisk-native-fresh-plan-001",
         "multidisk-native-fresh-create-001",
         "multidisk-native-boot-001",
-        "cold-source-packaging-001"
+        "cold-source-packaging-001",
+        "creation-boot-order-ui-001"
       ],
       "outstanding": [
         "One generated two-disk split-VMDK OVA passed actual confined preparation, native define-last creation and a BIOS second-disk read probe under KVM. It has no OS or NICs. VMware-origin supported Linux, multiple NIC mappings, guest adaptation, routes and the complete source/profile matrix remain unqualified."
@@ -964,7 +976,10 @@
         "docs/evidence/spice-creation-run.md",
         "internal/backend/libvirt/creation_options_linux.go",
         "internal/ui/tui/creation_form.go",
-        "schemas/vm-creation-input.schema.json"
+        "schemas/vm-creation-input.schema.json",
+        "internal/ui/tui/creation_boot_order.go",
+        "docs/adr/0052-creation-boot-order-controls.md",
+        "docs/evidence/creation-boot-order-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-04",
@@ -993,7 +1008,9 @@
         "internal/creating/spice_compatibility_linux_test.go",
         "internal/ui/tui/creation_display_test.go",
         "tests/fixtures/release/spice_normalization_probe.py",
-        "tests/fixtures/release/spice_creation_probe.py"
+        "tests/fixtures/release/spice_creation_probe.py",
+        "internal/ui/tui/creation_boot_order_test.go",
+        "tests/fixtures/release/boot_order_tui_probe.py"
       ],
       "evidence": [
         "import-conversion-001",
@@ -1016,7 +1033,8 @@
         "general-sources-ui-native-001",
         "general-sources-ui-native-002",
         "spice-creation-core-001",
-        "spice-creation-native-001"
+        "spice-creation-native-001",
+        "creation-boot-order-ui-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
@@ -5063,7 +5081,10 @@
         "docs/evidence/removal-guided-run.md",
         "internal/ui/tui/workspace_creation_network.go",
         "docs/adr/0051-network-creation-within-vm-setup.md",
-        "docs/evidence/creation-network-handoff-run.md"
+        "docs/evidence/creation-network-handoff-run.md",
+        "internal/ui/tui/creation_boot_order.go",
+        "docs/adr/0052-creation-boot-order-controls.md",
+        "docs/evidence/creation-boot-order-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5241,7 +5262,9 @@
         "internal/ui/tui/workspace_creation_network_test.go",
         "internal/ui/tui/creation_network_actions_test.go",
         "tests/fixtures/release/creation_network_handoff_probe.py",
-        "internal/ui/tui/workspace_plan_issue_test.go"
+        "internal/ui/tui/workspace_plan_issue_test.go",
+        "internal/ui/tui/creation_boot_order_test.go",
+        "tests/fixtures/release/boot_order_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5449,7 +5472,9 @@
         "creation-network-handoff-fixture-003",
         "creation-network-refusal-native-001",
         "creation-network-handoff-fixture-004",
-        "creation-network-refusal-native-002"
+        "creation-network-refusal-native-002",
+        "creation-boot-order-ui-001",
+        "creation-boot-order-fixture-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5600,7 +5625,10 @@
         "docs/evidence/removal-guided-run.md",
         "internal/ui/tui/workspace_creation_network.go",
         "docs/adr/0051-network-creation-within-vm-setup.md",
-        "docs/evidence/creation-network-handoff-run.md"
+        "docs/evidence/creation-network-handoff-run.md",
+        "internal/ui/tui/creation_boot_order.go",
+        "docs/adr/0052-creation-boot-order-controls.md",
+        "docs/evidence/creation-boot-order-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5705,7 +5733,9 @@
         "internal/ui/tui/workspace_creation_network_test.go",
         "internal/ui/tui/creation_network_actions_test.go",
         "tests/fixtures/release/creation_network_handoff_probe.py",
-        "internal/ui/tui/workspace_plan_issue_test.go"
+        "internal/ui/tui/workspace_plan_issue_test.go",
+        "internal/ui/tui/creation_boot_order_test.go",
+        "tests/fixtures/release/boot_order_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5834,7 +5864,9 @@
         "creation-network-handoff-fixture-003",
         "creation-network-refusal-native-001",
         "creation-network-handoff-fixture-004",
-        "creation-network-refusal-native-002"
+        "creation-network-refusal-native-002",
+        "creation-boot-order-ui-001",
+        "creation-boot-order-fixture-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

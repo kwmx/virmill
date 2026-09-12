@@ -109,8 +109,12 @@ agent channel available without putting all those decisions on the first page.
 Changing the machine reloads its supported options; unsupported retained choices
 must be reviewed rather than silently replaced.
 
-**Continue to disks** reviews storage controllers and boot priority; priority 1
-boots first. **Continue to networks** configures each adapter separately. Original
+**Continue to disks** reviews storage controllers and boot order. Position 1
+boots first. Moving a device adjusts the other positions automatically; the
+summary shows the resulting order. For installer media, **Attach only** keeps it
+available to the guest but excludes it from booting. Select a numbered position
+to boot from it again. These choices appear in the final review.
+**Continue to networks** configures each adapter separately. Original
 adapters remain represented. Choose a network and a compatible adapter model;
 **Disconnected** keeps the cable down on first boot. Connecting multiple networks
 can bypass isolation through the guest. No network exposure is enabled silently.
