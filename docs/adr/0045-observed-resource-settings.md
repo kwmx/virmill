@@ -1,6 +1,7 @@
 # 0045 — Read current resources before offering edits
 
-Status: implemented; integration and native terminal verification pending.
+Status: implemented; package integration and native stopped-VM TUI edit/readback passed.
+See [scoped evidence](../evidence/observed-resources-run.md); full acceptance remains open.
 
 The resource editor previously opened blank CPU/RAM fields, requiring users to
 remember values and discover unsupported layouts during preview. The TUI

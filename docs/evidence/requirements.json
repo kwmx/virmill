@@ -223,7 +223,11 @@
         "guest-integration-native-channel-001",
         "guest-integration-final-native-channel-001",
         "observed-resources-core-001",
-        "observed-resources-ui-001"
+        "observed-resources-ui-001",
+        "observed-resources-packages-001",
+        "observed-resources-upgrade-001",
+        "observed-resources-restart-001",
+        "observed-resources-native-001"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
@@ -5032,7 +5036,11 @@
         "wizard-drafts-restart-final-001",
         "wizard-drafts-tui-final-001",
         "observed-resources-core-001",
-        "observed-resources-ui-001"
+        "observed-resources-ui-001",
+        "observed-resources-packages-001",
+        "observed-resources-upgrade-001",
+        "observed-resources-restart-001",
+        "observed-resources-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5318,7 +5326,11 @@
         "wizard-drafts-restart-final-001",
         "wizard-drafts-tui-final-001",
         "observed-resources-core-001",
-        "observed-resources-ui-001"
+        "observed-resources-ui-001",
+        "observed-resources-packages-001",
+        "observed-resources-upgrade-001",
+        "observed-resources-restart-001",
+        "observed-resources-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

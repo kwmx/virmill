@@ -5,16 +5,19 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `e8965ca`.
-Import and creation now save choices across restart, including advanced settings,
-with clear Resume/Start new controls. The unified OVA/ISO/disk import, hardware
-controls, guided guest-agent connection setup and saved backup receipts remain
-available. A real Fedora 44 guest passed missing-agent installation, verification,
-native agent ping and a second run that skipped installation. The installed
-80×24 TUI passed basic draft edit/restart/resume/Start new checks. Existing guests,
-jobs and source media were preserved. See [current evidence](evidence/wizard-drafts-tools-run.md)
-for hashes and limits. TUI guest-tools submission, other guest profiles/desktop
-integration and complete release qualification remain open. Exit any open TUI
+**Current UI update:** installed CLI and coordinator use `3b74fc7`.
+CPU/RAM settings now show live and next-boot values, prefill editable fields, and
+review exact before/after changes. Unsupported layouts explain their limits;
+running guests receive shutdown guidance. An actual 80×24 TUI edit on a fresh
+stopped guest passed native XML, CLI and reopened-TUI readback, with unrelated
+configuration, guests, jobs and source media preserved. See
+[current resource-settings evidence](evidence/observed-resources-run.md).
+
+Import and creation retain resumable choices, source inspection and advanced
+hardware controls. The earlier real Fedora 44 guest-tools install/repeat/ping
+qualification remains in [guest-tools evidence](evidence/wizard-drafts-tools-run.md).
+Graphical creation-to-console integration, full TUI guest-tools submission, other
+guest profiles and complete release qualification remain open. Exit any open TUI
 and run `virmill` again.
 
 One historical fixture job remains recovery-required because the previous build
