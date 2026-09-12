@@ -566,6 +566,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			text := validation.SafeText(err.Error())
 			m.Errors[v.Kind] = text
+			if v.Kind == "apply" {
+				m.Offset = 0
+			}
 			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "boot-load" || v.Kind == "console-load" || v.Kind == "protection-pools" || v.Kind == "guest-agent-load" || v.Kind == "backup-receipts" || v.Kind == "backup-receipt-read" || v.Kind == "import-inspect" {
 				m.Error = text
 				m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
@@ -1690,7 +1693,16 @@ func (m Workspace) content(width, height int) []string {
 		if m.Reviewing {
 			return m.confirmationLines(width, height)
 		}
-		return pageLines(PlanDetails(*m.Plan, width), width, height, m.Offset)
+		lines := []string{}
+		if m.Error != "" {
+			lines = append(lines, "Submission needs attention", "", validation.SafeText(m.Error), "")
+			if strings.Contains(m.Error, "helper-key.pem") {
+				lines = append(lines, "A host administrator must finish helper setup before this action can run.", "See the installed network-helper.md and managed-volume-access.md guides.")
+			}
+			lines = append(lines, "Your settings and reviewed plan are kept. Check Jobs before trying again; an accepted job may still be running.", "PgUp/PgDn reads the complete issue and plan. Esc returns to your settings.", "")
+		}
+		lines = append(lines, PlanDetails(*m.Plan, width)...)
+		return pageLines(lines, width, height, m.Offset)
 	}
 	if m.Detail != nil {
 		if m.Section == 8 && field(m.Detail, "state") != "" && !m.Raw {

@@ -422,7 +422,10 @@
         "removal-corrected-packages-001",
         "removal-corrected-upgrade-native-001",
         "removal-corrected-restart-native-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "creation-network-handoff-packages-001",
+        "creation-network-handoff-upgrade-native-001",
+        "creation-network-handoff-restart-native-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -1492,7 +1495,8 @@
         "protected-network-native-002",
         "network-form-core-001",
         "network-form-tui-native-002",
-        "creation-network-handoff-ui-001"
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-native-001"
       ],
       "outstanding": [
         "Allowed-host NAT/lab definition, authenticated IPv6 filters and activation now execute through shared CLI/TUI. Native namespace DHCP, peer/host IPv4, NAT DNS/TCP and lab no-default-route checks passed in native005; its overall result failed a strict active-zone comparison while existing ens19 DHCP repeatedly failed. Full required profiles and real guest/host preservation qualification remain open."
@@ -1642,7 +1646,8 @@
         "protected-network-native-003",
         "network-form-core-001",
         "network-form-tui-native-002",
-        "creation-network-handoff-ui-001"
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-native-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1719,7 +1724,8 @@
         "protected-network-native-003",
         "network-form-core-001",
         "network-form-tui-native-002",
-        "creation-network-handoff-ui-001"
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-native-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1903,7 +1909,8 @@
         "automatic-allocation-native-001",
         "network-form-core-001",
         "network-form-tui-native-002",
-        "creation-network-handoff-ui-001"
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-native-001"
       ],
       "outstanding": [
         "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic.",
@@ -3847,7 +3854,10 @@
         "removal-guided-restart-native-001",
         "removal-corrected-restart-native-001",
         "removal-guided-cycle-native-002",
-        "creation-network-handoff-ui-001"
+        "creation-network-handoff-ui-001",
+        "creation-network-handoff-restart-native-001",
+        "creation-network-handoff-native-001",
+        "creation-network-issue-ui-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -4589,7 +4599,10 @@
         "removal-corrected-packages-001",
         "removal-corrected-upgrade-native-001",
         "removal-corrected-restart-native-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "creation-network-handoff-packages-001",
+        "creation-network-handoff-upgrade-native-001",
+        "creation-network-handoff-restart-native-001"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -5216,7 +5229,8 @@
         "tests/fixtures/release/removal_native_cycle.py",
         "internal/ui/tui/workspace_creation_network_test.go",
         "internal/ui/tui/creation_network_actions_test.go",
-        "tests/fixtures/release/creation_network_handoff_probe.py"
+        "tests/fixtures/release/creation_network_handoff_probe.py",
+        "internal/ui/tui/workspace_plan_issue_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5417,7 +5431,10 @@
         "removal-guided-cycle-native-001",
         "removal-guided-cycle-native-002",
         "creation-network-handoff-ui-001",
-        "creation-network-handoff-fixture-001"
+        "creation-network-handoff-fixture-001",
+        "creation-network-handoff-native-001",
+        "creation-network-issue-ui-001",
+        "creation-network-handoff-fixture-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5672,7 +5689,8 @@
         "tests/fixtures/release/removal_native_cycle.py",
         "internal/ui/tui/workspace_creation_network_test.go",
         "internal/ui/tui/creation_network_actions_test.go",
-        "tests/fixtures/release/creation_network_handoff_probe.py"
+        "tests/fixtures/release/creation_network_handoff_probe.py",
+        "internal/ui/tui/workspace_plan_issue_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5792,7 +5810,11 @@
         "removal-corrected-packages-001",
         "removal-guided-cycle-native-002",
         "creation-network-handoff-ui-001",
-        "creation-network-handoff-fixture-001"
+        "creation-network-handoff-fixture-001",
+        "creation-network-handoff-packages-001",
+        "creation-network-handoff-native-001",
+        "creation-network-issue-ui-001",
+        "creation-network-handoff-fixture-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

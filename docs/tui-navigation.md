@@ -148,6 +148,11 @@ boot configurations remain unchanged with an explanation.
 
 ## Review, progress and recovery
 
+If submission fails, the review starts with the complete issue and next steps.
+Use **PgUp/PgDn** to read it; your exact plan and settings remain available.
+Check Jobs before trying again because an accepted operation may still run.
+Missing helper setup explains that an administrator must configure it first.
+
 **CPU / RAM** reads the selected VM again, compares **Live** and **Next boot**
 values, and fills the requested settings for you. Only changed fields enter the
 review. Running guests offer a separate graceful-shutdown preview; unsupported

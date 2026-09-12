@@ -8,6 +8,11 @@ with explicitly reviewed host access Allow. The network remains on success or
 failure. Never retries Apply, cleans up, edits existing networks, or changes media.
 Draft snapshots prove unfinished NIC choices that Export correctly cannot accept.
 This proves native workflow/preservation only, not guest routing or isolation.
+All profiles require the authenticated helper, including this allowed-host lab.
+Optional --await-helper-approval pauses for at most 120s at the exact preview.
+The parent writes helper-approval.json only after separately installing its exact
+version1 networks policy grant. The marker grants no authority itself. Setup and
+job observation each have a 180s PTY bound; approval waiting is bounded separately.
 """
 import argparse
 import copy
@@ -86,7 +91,31 @@ def normalize_allow_plan(plan, doc):
     return validate_and_normalize(p, doc)
 
 
-def execute(stage):
+def approval_request(plan):
+    d = plan['review']['definition']
+    require(plan['operation'] == 'network.create' and plan['actorUID'] == 1000 and plan['connectionID'] == URI
+            and d['type'] == 'lab' and d['hostAccess'] == 'allow', 'helper approval scope differs')
+    return {'apiVersion': 'virmill/v1', 'planID': plan['planID'], 'planDigest': plan['planDigest'],
+            'actorUID': 1000, 'connectionID': URI, 'networkUUID': d['uuid'],
+            'helperOperation': 'network.ipv6-filter', 'policyVersion': 1, 'policyArray': 'networks'}
+
+
+def validate_approval(value, request):
+    require(value == dict(request, approved=True) and value.get('approved') is True,
+            'helper approval marker does not match this exact reviewed plan')
+
+
+def submission_issue(screen):
+    # Root renders full wrapped issues in the plan body; old versions still
+    # provide the status Error line. A warning or required grant is not refusal.
+    lines = screen.splitlines()
+    for i, line in enumerate(lines):
+        if re.match(r'^\s*(?:Working\.\.\.\s*)?Error:\s*\S', line): return '\n'.join(lines[i:]).strip()
+        if re.match(r'^\s*Issue(?:\s*$|:\s*\S)', line): return '\n'.join(lines[i:]).strip()
+    return ''
+
+
+def execute(stage, await_helper_approval=False):
     require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
@@ -229,6 +258,30 @@ def execute(stage):
         identity = plan['review']['definition']['uuid']; require(identity not in prior_networks, 'network is not new')
         report.update(networkID=identity, tuiPlanID=plan['planID'], cliPlanID=cli_plan['planID'], planParity=True)
         require_same_setup(baseline_draft, snapshot('setup-at-network-review'))
+        if await_helper_approval:
+            request = approval_request(plan)
+            runner.save('helper-approval-request.json', request)
+            report['waitingForExactHelperApproval'] = True; runner.save('report.json', report)
+            approval = out / 'helper-approval.json'
+            started = time.monotonic(); original_start = terminal.started
+            terminal.started = started  # Explicit separate bounded approval phase.
+            try:
+                deadline = started + 120
+                while time.monotonic() < deadline:
+                    terminal.read(.2)
+                    if approval.exists():
+                        st = approval.lstat()
+                        require(stat.S_ISREG(st.st_mode) and st.st_uid in (0, 1000) and st.st_nlink == 1
+                                and stat.S_IMODE(st.st_mode) == 0o600 and st.st_size <= 4096,
+                                'approval marker must be private ordinary bounded file')
+                        validate_approval(strict_json(approval.read_bytes()), request)
+                        break
+                else:
+                    raise RuntimeError('exact helper approval not received within120s; no apply attempted')
+            finally:
+                terminal.started = original_start + time.monotonic() - started
+            report.update(waitingForExactHelperApproval=False, exactHelperApprovalReceived=True)
+            runner.save('report.json', report)
         wait('Confirm reviewed network changes', lambda s: 'Confirm reviewed changes' in s and plan['planID'] in s, b'\r')
         for ack in plan['acknowledgements']:
             require(re.search(r'>\s*\[ \]', terminal.screen.text()), 'unchecked acknowledgement not focused')
@@ -236,15 +289,31 @@ def execute(stage):
             old = terminal.screen.text(); wait('Next acknowledgement', lambda s: s != old, b'\t')
         focus('Apply reviewed plan')
         report['applyAttempted'] = True; runner.save('report.json', report)
+        terminal.started = time.monotonic()  # Separate bounded native job phase.
         terminal.send(b'\r')  # Exactly once. Never replay after a timeout/error.
-        deadline = time.monotonic() + 60; job = None
+        deadline = time.monotonic() + 175; job = None; next_poll = 0
         while time.monotonic() < deadline:
-            terminal.read(.2)
+            terminal.read(.1)
+            if time.monotonic() < next_poll: continue
             found = [j for j in runner.cli('operation', 'list') if j['planID'] == plan['planID']]
+            next_poll = time.monotonic() + 1
             require(len(found) <= 1, 'more than one job accepted for this network plan')
             if found:
                 job = found[0]; allowed_job = job['operationID']
                 if job['state'] in TERMINAL_STATES: break
+            elif terminal.screen.complete() and submission_issue(terminal.screen.text()):
+                failure = {'planID': plan['planID'], 'planDigest': plan['planDigest'], 'matchingJobObserved': False,
+                           'screen80x24': terminal.screen.text()}
+                runner.save('submission-issue.json', failure); runner.save('network-job.json', None)
+                report.update(submissionIssueObserved=True, noMatchingJobAtIssue=True)
+                runner.save('report.json', report)
+                # Capture a diagnostic width as well as the actual80x24 failure
+                # so older one-line error renderers do not hide recovery text.
+                update = terminal.resize(512, 32)
+                terminal.wait('Full submission issue (diagnostic512x32)', lambda s: bool(submission_issue(s)), update)
+                failure['diagnostic512x32'] = terminal.screen.text()
+                runner.save('submission-issue.json', failure)
+                raise RuntimeError('TUI reported a submission issue before any matching job was observed; see submission-issue.json; apply was not retried')
         runner.save('network-job.json', job)
         require(job is not None and job['state'] == 'succeeded', 'network job not durably successful; fixture retained')
         wait('Network completion returns to VM setup', vm_networks)
@@ -286,6 +355,25 @@ def execute(stage):
 
 
 class Tests(unittest.TestCase):
+    def test_exact_helper_marker_refuses_other_plan_or_profile(self):
+        plan = {'operation': 'network.create', 'actorUID': 1000, 'connectionID': URI, 'planID': str(uuid.uuid4()),
+                'planDigest': 'a' * 64, 'review': {'definition': {'type': 'lab', 'hostAccess': 'allow', 'uuid': str(uuid.uuid4())}}}
+        request = approval_request(plan); validate_approval(dict(request, approved=True), request)
+        for key, value in [('planID', str(uuid.uuid4())), ('planDigest', 'b' * 64), ('actorUID', 0),
+                           ('networkUUID', str(uuid.uuid4())), ('policyArray', 'protectedNetworks'), ('approved', False)]:
+            marker = dict(request, approved=True); marker[key] = value
+            with self.assertRaises(RuntimeError): validate_approval(marker, request)
+        plan['review']['definition']['hostAccess'] = 'services-only'
+        with self.assertRaises(RuntimeError): approval_request(plan)
+
+    def test_submission_issue_detection_not_review_warning(self):
+        for text in ('Confirm reviewed changes\nError: PERMISSION_DENIED: key unavailable',
+                     'Issue\nPERMISSION_DENIED: helper key\nAsk an administrator to prepare it.'):
+            self.assertTrue(submission_issue(text))
+        for text in ('Required grants\nnetwork.ipv6-filter\nConfirm reviewed changes', 'Working... Creating network',
+                     'Warning: packet verification not run'):
+            self.assertFalse(submission_issue(text))
+
     def test_allowed_host_v1_marker_and_plan_normalization(self):
         from network_form_tui_probe import Tests as SharedTests
         def sample(identity):
@@ -330,9 +418,10 @@ class Tests(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path); parser.add_argument('--execute-disposable', action='store_true'); parser.add_argument('--self-test', action='store_true')
+    parser.add_argument('--await-helper-approval', action='store_true', help='Wait up to120s for an exact helper-approval.json marker after parent-managed policy setup')
     args = parser.parse_args()
     if args.self_test:
         unittest.main(argv=[__file__], exit=False).result.wasSuccessful() or exit(1)
     else:
         require(args.execute_disposable and args.root is not None, '--execute-disposable and --root required')
-        raise SystemExit(execute(args.root))
+        raise SystemExit(execute(args.root, args.await_helper_approval))
