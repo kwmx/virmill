@@ -23,6 +23,7 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	AutostartTarget      *domain.VM
 	coordinator          coordinatorConnection
 	NetworkForm          *NetworkForm
 	JobOutcome           *jobOutcome
@@ -165,6 +166,7 @@ func (m *Workspace) refresh() tea.Cmd {
 	return m.request(kind, workspaceMethods[kind], app.Request{})
 }
 func (m *Workspace) page(section int) tea.Cmd {
+	m.resetAutostartLoad()
 	m.resetNetworkForm()
 	m.resetJobOutcome()
 	m.resetBackupRecovery()
@@ -405,6 +407,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 			m.Advanced = false
 			return m.preview(a.Mutation)
 		}
+	case "vm autostart":
+		return m.openAutostart()
 	case "vm console show":
 		return m.openConsole()
 	case "backup restore", "backup receipts":
@@ -563,6 +567,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.draftChoice = 0
 				m.Error = "Could not check the saved preparation: " + importError(err) + ". Choose Continue prepared setup to retry."
 				m.Notice = "Saved choices were kept. No operation was repeated."
+			}
+			if v.Kind == "autostart-load" {
+				m.resetAutostartLoad()
+				m.Busy, m.Notice, m.Error = false, "", text
 			}
 			if v.Kind == "resources-load" {
 				m.Busy = false
@@ -725,7 +733,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 			if job.State == "succeeded" {
-				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
+				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.AutostartTarget == nil && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
 					return m, m.loadCreation(job.ID, "")
 				}
 				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
@@ -774,6 +782,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.receiveConsole(v.Response.Data)
 		case "protection-pools":
 			m.receiveProtectionPools(v.Response.Data)
+		case "autostart-load":
+			m.receiveAutostart(v.Response.Data)
 		case "boot-load":
 			m.receiveBoot(v.Response.Data)
 		case "job-outcome":
@@ -884,6 +894,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.resetBackupRecovery()
 				m.resetGuestAgent()
 				m.resetResources()
+				m.resetAutostartLoad()
 				m.resetNetworkForm()
 				m.Form = nil
 				m.ActionForm = nil
@@ -906,6 +917,13 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Help {
 			if v.String() == "?" || v.Type == tea.KeyEsc {
 				m.Help = false
+			}
+			return m, nil
+		}
+		if m.AutostartTarget != nil {
+			if v.Type == tea.KeyEsc {
+				m.resetAutostartLoad()
+				m.Busy, m.Notice = false, ""
 			}
 			return m, nil
 		}
@@ -1056,6 +1074,14 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		if m.Form != nil {
+			if m.Pending["apply"] != 0 {
+				m.Busy = true
+				m.Notice = "Submission is pending. Check Jobs before trying again."
+				return m, nil
+			}
+			if m.Busy && v.Type != tea.KeyEsc {
+				return m, nil
+			}
 			f, submit, cancel := m.Form.Update(v)
 			m.Form = &f
 			if cancel {
@@ -1408,6 +1434,12 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.AutostartTarget != nil {
+		return "Esc Back"
+	}
+	if m.Form != nil && m.Form.Kind == "autostart" {
+		return "Space Toggle   Tab Next   Enter Choose   Esc Back"
+	}
 	if m.NetworkForm != nil && m.Plan == nil && m.ExportForm == nil && m.Picker == nil && m.ActionForm == nil {
 		if m.NetworkForm.issueOpen {
 			return "Up/Down Scroll   PgUp/PgDn Page   Esc Back"
@@ -1525,6 +1557,9 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.AutostartTarget != nil {
+		return pageLines([]string{"Automatic startup", "Reading the VM's current setting...", "", "Esc Back"}, width, height, 0)
+	}
 	if m.NetworkForm != nil && m.Plan == nil && m.ExportForm == nil && m.Picker == nil && m.ActionForm == nil {
 		return m.NetworkForm.View(width, height)
 	}
@@ -1581,7 +1616,7 @@ func (m Workspace) content(width, height int) []string {
 	}
 	if m.Form != nil {
 		target := []string{}
-		if m.Form.VM.Key.UUID != "" {
+		if m.Form.VM.Key.UUID != "" && m.Form.Kind != "autostart" {
 			target = pageLines([]string{"VM: " + m.Form.VM.Name, ""}, width, height, 0)
 		}
 		return append(target, strings.Split(m.Form.View(width, max(6, height-len(target))), "\n")...)
@@ -1603,7 +1638,7 @@ func (m Workspace) content(width, height int) []string {
 			if vm.Autostart {
 				autostart = "On"
 			}
-			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Start with the action buttons below. More opens additional tasks.", "", "Start with host: "+autostart)
+			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Start with the action buttons below. More opens additional tasks.", "", "Automatic startup: "+autostart)
 			lines = append(lines, "")
 			lines = append(lines, m.resourceSummaryLines(vm)...)
 			if vm.HasManagedSave {
@@ -1732,10 +1767,13 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.NetworkForm != nil || m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
+	importModal := (m.AutostartTarget != nil || m.Form != nil && m.Form.Kind == "autostart" || m.NetworkForm != nil || m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
+		if m.AutostartTarget != nil || m.Form != nil && m.Form.Kind == "autostart" {
+			title = "Automatic startup"
+		}
 		if m.NetworkForm != nil {
 			title = "Create network"
 		}
@@ -1877,7 +1915,7 @@ func (m Workspace) footerButtons() string {
 	if m.draftModal != "" {
 		return m.hints()
 	}
-	if m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

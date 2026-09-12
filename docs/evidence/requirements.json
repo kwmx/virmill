@@ -76,7 +76,12 @@
         "internal/backend/libvirt/reboot_linux.go",
         "docs/vm-reboot.md",
         "tests/fixtures/lifecycle/reboot_native.py",
-        "docs/evidence/lifecycle-policy-search-run.md"
+        "docs/evidence/lifecycle-policy-search-run.md",
+        "internal/ui/tui/workspace_autostart.go",
+        "internal/ui/tui/guided_forms.go",
+        "docs/vm-autostart.md",
+        "docs/adr/0049-guided-autostart-settings.md",
+        "docs/evidence/autostart-guided-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -95,7 +100,12 @@
         "internal/app/reboot_test.go",
         "internal/backend/libvirt/reboot_linux_test.go",
         "internal/ui/cli/reboot_test.go",
-        "internal/ui/tui/reboot_test.go"
+        "internal/ui/tui/reboot_test.go",
+        "internal/app/autostart_contract_test.go",
+        "internal/ui/tui/guided_autostart_test.go",
+        "internal/ui/tui/workspace_autostart_test.go",
+        "tests/fixtures/release/autostart_tui_probe.py",
+        "tests/fixtures/release/autostart_native_cycle.py"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -116,7 +126,8 @@
         "cold-probe-4m-second-boot-001",
         "lifecycle-policy-search-core-001",
         "lifecycle-policy-search-core-002",
-        "graceful-reboot-native-001"
+        "graceful-reboot-native-001",
+        "autostart-guided-core-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -333,7 +344,12 @@
         "internal/backend/xmlpatch/tree.go",
         "schemas/vm-hardware-edit-input.schema.json",
         "docs/adr/0014-boot-order-and-retained-media-edits.md",
-        "docs/evidence/boot-media-run.md"
+        "docs/evidence/boot-media-run.md",
+        "internal/ui/tui/workspace_autostart.go",
+        "internal/ui/tui/guided_forms.go",
+        "docs/vm-autostart.md",
+        "docs/adr/0049-guided-autostart-settings.md",
+        "docs/evidence/autostart-guided-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-05",
@@ -348,7 +364,12 @@
         "internal/app/hardware_edit_test.go",
         "internal/backend/xmlpatch/boot_test.go",
         "internal/backend/libvirt/boot_linux_test.go",
-        "internal/backend/xmlpatch/boot_captured_test.go"
+        "internal/backend/xmlpatch/boot_captured_test.go",
+        "internal/app/autostart_contract_test.go",
+        "internal/ui/tui/guided_autostart_test.go",
+        "internal/ui/tui/workspace_autostart_test.go",
+        "tests/fixtures/release/autostart_tui_probe.py",
+        "tests/fixtures/release/autostart_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -358,7 +379,8 @@
         "boot-media-core-001",
         "boot-media-native-live-refusal-001",
         "boot-media-native-stale-preservation-001",
-        "boot-media-captured-001"
+        "boot-media-captured-001",
+        "autostart-guided-core-001"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -4852,7 +4874,11 @@
         "docs/adr/0048-guided-network-declarations.md",
         "docs/evidence/network-form-run.md",
         "internal/ui/tui/workspace_connection.go",
-        "docs/coordinator-startup.md"
+        "docs/coordinator-startup.md",
+        "internal/ui/tui/workspace_autostart.go",
+        "docs/vm-autostart.md",
+        "docs/adr/0049-guided-autostart-settings.md",
+        "docs/evidence/autostart-guided-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5016,7 +5042,12 @@
         "internal/ui/tui/workspace_network_test.go",
         "tests/fixtures/release/network_form_tui_probe.py",
         "internal/ui/tui/workspace_connection_test.go",
-        "tests/fixtures/release/coordinator_recovery_tui_probe.py"
+        "tests/fixtures/release/coordinator_recovery_tui_probe.py",
+        "internal/app/autostart_contract_test.go",
+        "internal/ui/tui/guided_autostart_test.go",
+        "internal/ui/tui/workspace_autostart_test.go",
+        "tests/fixtures/release/autostart_tui_probe.py",
+        "tests/fixtures/release/autostart_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5208,7 +5239,8 @@
         "network-form-tui-native-002",
         "coordinator-recovery-ui-001",
         "coordinator-recovery-packages-001",
-        "coordinator-recovery-tui-installed-001"
+        "coordinator-recovery-tui-installed-001",
+        "autostart-guided-core-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5343,7 +5375,12 @@
         "docs/adr/0048-guided-network-declarations.md",
         "docs/evidence/network-form-run.md",
         "internal/ui/tui/workspace_connection.go",
-        "docs/coordinator-startup.md"
+        "docs/coordinator-startup.md",
+        "internal/ui/tui/workspace_autostart.go",
+        "internal/app/service.go",
+        "docs/vm-autostart.md",
+        "docs/adr/0049-guided-autostart-settings.md",
+        "docs/evidence/autostart-guided-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5434,7 +5471,12 @@
         "internal/ui/tui/workspace_network_test.go",
         "tests/fixtures/release/network_form_tui_probe.py",
         "internal/ui/tui/workspace_connection_test.go",
-        "tests/fixtures/release/coordinator_recovery_tui_probe.py"
+        "tests/fixtures/release/coordinator_recovery_tui_probe.py",
+        "internal/app/autostart_contract_test.go",
+        "internal/ui/tui/guided_autostart_test.go",
+        "internal/ui/tui/workspace_autostart_test.go",
+        "tests/fixtures/release/autostart_tui_probe.py",
+        "tests/fixtures/release/autostart_native_cycle.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5544,7 +5586,8 @@
         "network-form-tui-native-002",
         "coordinator-recovery-ui-001",
         "coordinator-recovery-packages-001",
-        "coordinator-recovery-tui-installed-001"
+        "coordinator-recovery-tui-installed-001",
+        "autostart-guided-core-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

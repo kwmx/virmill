@@ -1,0 +1,34 @@
+ok  	virmill.local/core/internal/app	5.740s
+ok  	virmill.local/core/internal/ui	1.048s
+ok  	virmill.local/core/internal/ui/cli	3.612s
+--- FAIL: TestTaskMenuGroupsAndSearchByPlainLanguage (0.00s)
+    action_menu_test.go:18: missing Advanced tools...:
+         Virmill  / VMs   qemu:///system   beta
+        --------------------------------------------------------------------------------
+        VMs / More tasks
+        Selected VM: Build guest (stopped)
+        Power
+         >  Start VM
+        Configure and guest setup
+            Change VM automatic startup
+            Edit VM hardware
+            Edit boot order and installer
+            Guest tools
+            Open console
+        Create and import
+            Create VM from prepared source
+        
+        Review starting the selected virtual machine.
+        A Advanced tools
+        1 of 8
+        
+        1 Overview  2 VMs  3 Networks  4 Storage  7 Protection  9 Jobs
+        Jobs: 0 active / 0 need attention | Tab Buttons  / Search  : All tools  ? Help
+        --------------------------------------------------------------------------------
+        [ Enter Select ]   [ / Find action ]   [ Esc Back ]
+--- FAIL: TestCommonTasksKeepAllAdvancedActionsReachable (0.00s)
+    workspace_picker_test.go:108: common menu too long
+FAIL
+FAIL	virmill.local/core/internal/ui/tui	5.563s
+ok  	virmill.local/core/internal/operations	1.195s
+FAIL

@@ -366,9 +366,17 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 			return empty, domain.Fail("INVALID_INPUT", "configuration input must match its bundled schema; rejected values are withheld")
 		}
 	}
+	if r.Action == "autostart" {
+		if _, ok := r.Input["enabled"].(bool); !ok || len(r.Input) != 1 {
+			return empty, domain.Fail("INVALID_INPUT", "autostart requires exactly one enabled boolean")
+		}
+	}
 	v, e := s.GetVM(ctx, r.Connection, r.ID)
 	if e != nil {
 		return empty, e
+	}
+	if r.Action == "autostart" && v.PersistentXML == "" {
+		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "Automatic startup requires a persistent VM; transient guests have no saved startup definition")
 	}
 	input := map[string]any{}
 	for field, value := range r.Input {
@@ -482,6 +490,18 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		}
 	}
 	review := map[string]any{"action": h.action, "vmID": input["vmID"], "requested": requested, "connection": p.ConnectionID, "persistentEdit": h.action == "set", "requiresShutdown": h.action == "set", "diskDeletion": false}
+	if h.action == "autostart" {
+		id, _ := input["vmID"].(string)
+		v, err := h.s.GetVM(ctx, p.ConnectionID, id)
+		if err != nil {
+			return nil, err
+		}
+		if v.Fingerprint != p.Before[v.Key.String()] {
+			return nil, domain.Fail("STALE_PLAN", "VM changed during automatic startup review; refresh settings")
+		}
+		review["beforeAutostart"], review["afterAutostart"] = v.Autostart, input["enabled"]
+		review["vmName"], review["persistentEdit"], review["immediatePowerChange"] = v.Name, true, false
+	}
 	if h.action == "set" && input["editVersion"] == float64(1) {
 		id, _ := input["vmID"].(string)
 		v, err := h.s.GetVM(ctx, p.ConnectionID, id)
@@ -552,6 +572,14 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 	}
 	if p.Before[v.Key.String()] != v.Fingerprint {
 		return domain.Fail("STALE_PLAN", "domain changed since the preview")
+	}
+	if h.action == "autostart" {
+		if _, ok := input["enabled"].(bool); !ok {
+			return domain.Fail("INVALID_INPUT", "autostart enabled must be boolean")
+		}
+		if v.PersistentXML == "" {
+			return domain.Fail("UNSUPPORTED_CAPABILITY", "Automatic startup requires a persistent VM")
+		}
 	}
 	if h.action == "set" {
 		if !configurationVersion(p.Operation, input) || input["editBeforeFingerprint"] != v.Fingerprint {

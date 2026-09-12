@@ -58,6 +58,8 @@ func (m Workspace) commonAction(a ui.Action) bool {
 		return a.Command == "import prepare" || a.Command == "import prepare-install" || a.Command == "import prepare-disks"
 	}
 	switch a.Command {
+	case "vm create":
+		return m.selectedVM().Key.UUID == ""
 	case "vm start":
 		return m.selectedVM().State != "running" && m.selectedVM().State != "paused"
 	case "guest tools install":
@@ -66,7 +68,7 @@ func (m Workspace) commonAction(a ui.Action) bool {
 		return m.selectedVM().State == "running" || m.selectedVM().Key.UUID == ""
 	case "vm resume":
 		return m.selectedVM().State == "paused"
-	case "vm console show", "vm set", "vm boot set", "vm create", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup restore", "backup receipts", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
+	case "vm console show", "vm set", "vm boot set", "vm autostart", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup restore", "backup receipts", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
 		return true
 	}
 	return false

@@ -263,3 +263,6 @@ its original declaration; typing another subnet does not bypass that check.
 If the background service cannot be reached, Overview and Settings show startup
 instructions and **Retry connection**, with optional sign-in setup under
 **More help**. See [coordinator startup](coordinator-startup.md).
+
+**VMs → More → Change VM automatic startup** shows a fresh current value and
+a requested toggle with a separate Preview button. See [automatic startup](vm-autostart.md).

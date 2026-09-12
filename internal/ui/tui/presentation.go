@@ -102,6 +102,20 @@ func planSummary(f *details, p domain.Plan) {
 	}
 	f.line("Nothing has been applied. Review the changes and warnings below.", 0)
 	f.line("", 0)
+	if p.Operation == "vm.autostart" {
+		before, beforeOK := p.Review["beforeAutostart"].(bool)
+		after, afterOK := p.Review["afterAutostart"].(bool)
+		if beforeOK && afterOK {
+			state := func(on bool) string {
+				if on {
+					return "On"
+				}
+				return "Off"
+			}
+			f.scalar("Automatic startup", state(before)+" → "+state(after), 0)
+			f.line("Changes future automatic startup only. This does not start or stop the VM now.", 0)
+		}
+	}
 	resourceChanges := resourcePlanChanges(f, p)
 	for _, field := range []struct {
 		label string

@@ -48,6 +48,9 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		f.Fields = append(f.Fields, GuidedField{Name: name, Label: label, Hint: hint, Limit: limit})
 	}
 	switch kind {
+	case "autostart":
+		field("enabled", "Requested", "Choose whether this VM should start with its libvirt service.", 5)
+		f.Fields[0].Value, f.Fields[0].Toggle = strconv.FormatBool(vm.Autostart), true
 	case "resources":
 		field("vcpus", "CPU count", "1–512 CPUs. Leave blank to keep the current value.", 3)
 		field("memoryMiB", "Memory (MiB)", "1–1048576 MiB. Leave blank to keep the current value.", 7)
@@ -81,16 +84,21 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
-	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" {
+	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" {
 		if vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "select an exact local VM before opening this form")
 		}
+	}
+	if kind == "autostart" && strings.TrimSpace(vm.PersistentXML) == "" {
+		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Automatic startup requires a persistent VM. This VM has no saved definition.")
 	}
 	return f, nil
 }
 
 func (f GuidedForm) Title() string {
 	switch f.Kind {
+	case "autostart":
+		return "Start automatically"
 	case "resources":
 		return "Edit CPU and memory for next boot"
 	case "capture":
@@ -110,6 +118,11 @@ func (f GuidedForm) Title() string {
 
 func (f GuidedForm) note() string {
 	switch f.Kind {
+	case "autostart":
+		if f.VM.Key.ConnectionID == "qemu:///session" {
+			return "Applies when your user libvirt service starts, not directly at host boot."
+		}
+		return "Applies when the system libvirt service starts, usually during host startup."
 	case "resources":
 		return "VM must be stopped and persistent. Changes apply next boot."
 	case "capture":
@@ -160,6 +173,9 @@ func (f GuidedForm) Update(key tea.KeyMsg) (GuidedForm, bool, bool) {
 	if len(f.Fields) == 0 {
 		f.Error = "Choose a supported form."
 		return f, false, false
+	}
+	if f.Kind == "autostart" {
+		return f.updateAutostart(key)
 	}
 	if f.Kind == "guest-tools" && len(f.Fields) == 7 {
 		if f.Focus == 1 || f.Focus == 6 {
@@ -337,6 +353,16 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 	}
 	r := app.Request{Connection: connection, Input: map[string]any{}}
 	switch f.Kind {
+	case "autostart":
+		if !f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 || values["enabled"] != "true" && values["enabled"] != "false" {
+			return fail("enabled", "Choose On or Off using the requested startup toggle.")
+		}
+		enabled := values["enabled"] == "true"
+		if enabled == f.VM.Autostart {
+			return fail("enabled", "No change selected. Toggle the requested setting or go back.")
+		}
+		r.ID, r.Action, r.Input["enabled"] = f.VM.Key.UUID, "autostart", enabled
+		return "vm.plan", r, -1, nil
 	case "resources":
 		for _, field := range []struct {
 			name, label string
@@ -496,6 +522,9 @@ func (f GuidedForm) View(width, height int) string {
 		lines := []string{clip("Resize to edit this form."), clip("Esc cancels; input is retained.")}
 		return strings.Join(lines[:min(height, len(lines))], "\n")
 	}
+	if f.Kind == "autostart" {
+		return f.autostartView(width, height)
+	}
 	if f.Kind == "guest-tools" && len(f.Fields) > 0 && f.Fields[0].Value == "windows" {
 		lines := []string{clip(f.Title()), clip("> Guest system: < Windows (manual) >"), "",
 			clip("Install inside Windows using trusted VirtIO driver media."),
@@ -570,6 +599,63 @@ func (f GuidedForm) View(width, height int) string {
 	}
 	lines = append(lines, footer...)
 	return strings.Join(lines[:min(height, len(lines))], "\n")
+}
+
+func (f GuidedForm) updateAutostart(key tea.KeyMsg) (GuidedForm, bool, bool) {
+	f.Focus = max(0, min(f.Focus, 1))
+	switch key.Type {
+	case tea.KeyTab, tea.KeyDown, tea.KeyShiftTab, tea.KeyUp:
+		f.Focus = 1 - f.Focus
+		return f, false, false
+	}
+	if len(f.Fields) != 1 || f.Fields[0].Name != "enabled" || !f.Fields[0].Toggle || len(f.Fields[0].Choices) != 0 {
+		f.Error = "The startup form is incomplete; reopen it."
+		return f, false, false
+	}
+	if f.Focus == 0 {
+		if key.Type == tea.KeyEnter || key.Type == tea.KeySpace || key.Type == tea.KeyLeft || key.Type == tea.KeyRight {
+			f.Fields[0].Value = strconv.FormatBool(f.Fields[0].Value != "true")
+			f.Error = ""
+		}
+		return f, false, false
+	}
+	if key.Type == tea.KeyEnter || key.Type == tea.KeySpace {
+		if _, _, _, err := f.request(f.VM.Key.ConnectionID); err != nil {
+			f.Error, f.Focus = err.Error(), 0
+			return f, false, false
+		}
+		f.Error = ""
+		return f, true, false
+	}
+	return f, false, false
+}
+
+func (f GuidedForm) autostartView(width, height int) string {
+	current, requested := "Off", "Unavailable"
+	if f.VM.Autostart {
+		current = "On"
+	}
+	if len(f.Fields) == 1 {
+		switch f.Fields[0].Value {
+		case "true":
+			requested = "On"
+		case "false":
+			requested = "Off"
+		}
+	}
+	lines := []string{f.Title(), "VM: " + validation.SafeText(f.VM.Name)}
+	lines = append(lines, wrap(f.note(), width)...)
+	lines = append(lines, "Changes startup policy only; does not start or stop the VM now.", "", "Current: "+current)
+	toggleMark, previewMark := "> ", "  "
+	if f.Focus == 1 {
+		toggleMark, previewMark = "  ", "> "
+	}
+	lines = append(lines, toggleMark+"Requested: < "+requested+" >", previewMark+"[ Preview ]", "")
+	if f.Error != "" {
+		lines = append(lines, wrap("Issue: "+validation.SafeText(f.Error), width)...)
+	}
+	lines = append(lines, "Tab/Arrows Select   Enter/Space Choose   Esc Back")
+	return strings.Join(pageLines(lines, width, height, 0), "\n")
 }
 
 // Wire field indexes remain stable for the workspace's file picker.
