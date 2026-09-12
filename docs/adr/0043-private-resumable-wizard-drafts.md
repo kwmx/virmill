@@ -1,7 +1,8 @@
 # 0043 — Private resumable wizard drafts
 
-Status: implemented; integration and native terminal verification must pass
-before the installed beta claims restart recovery.
+Status: implemented; race tests and installed 80×24 basic edit/restart/resume/
+Start new verification passed. Advanced-settings preservation has unit coverage;
+the terminal probe does not claim every hardware combination was exercised.
 
 The TUI specification requires creation/import choices to survive client exit.
 Memory-only Back handling and durable backend jobs solve different problems.

@@ -1,6 +1,7 @@
 # 0044 — Bind guest tools to configuration while allowing agent connection
 
-Status: implemented; native corrected-install verification pending.
+Status: implemented; corrected absent-to-installed native Fedora verification,
+idempotent repeat and independent native agent ping passed on source f371fa8.
 
 The first Fedora 44 installation fixture installed and started the agent, then
 stopped at verification with `SOURCE_CHANGED`. Replacing only the observed live

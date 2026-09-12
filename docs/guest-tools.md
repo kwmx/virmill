@@ -96,3 +96,10 @@ and no replay. Fixture transports do not validate actual package installation,
 service startup, guest channels or desktop behavior. Those support claims need
 separate real-guest evidence for GUEST-01, GUEST-02 and GUEST-03; the CLI/TUI flow
 also contributes to UX-01 and UX-02.
+
+The native Fedora 44 fixture now verifies a real absent-to-installed agent,
+service startup, independent libvirt agent ping and an idempotent second run.
+Its installation was submitted through the CLI; the installed 80×24 TUI form
+was opened but did not submit that job. Debian/Ubuntu installation, desktop
+integration and complete TUI submission need their own evidence. See the
+[recorded run](evidence/wizard-drafts-tools-run.md) for exact versions and limits.

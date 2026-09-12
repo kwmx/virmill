@@ -1,6 +1,8 @@
 # Native Linux guest-tools qualification plan
 
-Status: **independent Fedora copy and offline inspection complete; bootstrap and live installation checks outstanding; no native guest-tools pass**.
+Status: **Fedora 44 CLI installation, idempotent repeat and native agent ping
+passed in guest-tools-fedora-live-002; full cross-profile/desktop/TUI submission
+qualification remains open**. See [observed results](wizard-drafts-tools-run.md).
 Scope: GUEST-03 package installation and fixed host-to-agent handshake, UX-01
 CLI/TUI flow; GUEST-01 only where the actual supported first-boot profile runs.
 The root agent alone may run SSH or mutate the owner-authorized disposable host.

@@ -1775,6 +1775,9 @@ func (m Workspace) buttons() []workspaceButton {
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
+	if m.draftModal != "" {
+		return m.hints()
+	}
 	if m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
