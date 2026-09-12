@@ -1368,6 +1368,9 @@ func (m Workspace) hints() string {
 		return "[ Enter Select ]   [ / Find action ]   [ Esc Back ]"
 	}
 	if m.Form != nil {
+		if m.Form.Kind == "guest-tools" {
+			return "Tab/Arrows Select   Enter Next/Choose   Ctrl+O Browse   Esc Back"
+		}
 		return m.formHints()
 	}
 	if m.Plan != nil {
@@ -1457,9 +1460,21 @@ func (m Workspace) content(width, height int) []string {
 			return pageLines(m.jobDetails(width), width, height, m.Offset)
 		}
 		lines := []string{m.DetailTitle, ""}
-		if m.Section == 1 && m.DetailTitle == "VM details" {
+		if m.Section == 1 && m.DetailTitle == "VM details" && !m.Raw {
 			vm := m.selectedVM()
-			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Use the buttons below to manage this VM. More groups the remaining tasks.", "")
+			autostart := "Off"
+			if vm.Autostart {
+				autostart = "On"
+			}
+			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Start with the action buttons below. More opens additional tasks.", "", "Start with host: "+autostart)
+			if vm.HasManagedSave {
+				lines = append(lines, "Saved session: available; starting resumes the saved runtime")
+			}
+			if len(vm.Tags) > 0 {
+				lines = append(lines, "Tags: "+validation.SafeText(strings.Join(vm.Tags, ", ")))
+			}
+			lines = append(lines, "", "Press x for full technical details; press it again to return.")
+			return pageLines(lines, width, height, m.Offset)
 		}
 		if m.Raw {
 			b, _ := json.MarshalIndent(m.Detail, "", "  ")

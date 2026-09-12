@@ -1,0 +1,20 @@
+--- FAIL: TestGuestToolsSimpleDefaultAndOptionalAdvanced (0.00s)
+    guest_tools_form_test.go:264: missing initial guidance "must already have a guest-agent channel": Install guest tools
+        Adds QEMU guest agent for VM status and graceful shutdown.
+        Needs guest SSH, passwordless sudo and package repository access.
+        Guest tools run inside this VM; no host software is installed.
+        
+        > Guest system: < Detect Linux (recommended) >
+          Guest IP address: [192.0.2.25]
+          Guest SSH user: [operator]
+          SSH key: [/private/keys/owner key]
+          Verified host keys: [/private/keys/known hosts]
+          [ Advanced: desktop tools and SSH port ]
+          [ Preview installation ]
+        Left/Right chooses a system. Automatic detection supports Debian, Ubuntu and Fed
+        ora only.
+        Tab/Arrows Select   Enter Next/Choose   Ctrl+O Browse   Esc Back
+FAIL
+FAIL	virmill.local/core/internal/ui/tui	4.519s
+ok  	virmill.local/core/internal/ui/cli	3.244s
+FAIL

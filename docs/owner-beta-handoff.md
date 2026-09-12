@@ -1,18 +1,18 @@
-# Owner beta handoff — updated 11 September 2026
+# Owner beta handoff — updated 12 September 2026
 
 **Virmill 1.0.0-beta.1 is installed and running on the authorized Fedora 44 test
 VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** the installed CLI and coordinator use `2c6091f`.
-The unified OVA/ISO/disk import and hardware controls remain available. This update
-adds Console from VM details, guided selected-capture backup/restore forms and a
-simpler guest-tools setup with optional advanced fields. Live CLI/TUI serial
-attachment and a real private SPICE viewer connection passed; closing either
-kept the guest running. See [console/protection evidence](evidence/console-protection-run.md)
-for exact hashes, retained failures and support limits. VNC launch and live guest
-package installation remain unqualified. Exit any open TUI and run `virmill` again.
+**Current UI update:** installed CLI and coordinator use `96532cb`.
+The unified OVA/ISO/disk import and hardware controls remain available. Guest tools
+now checks the VM's connection and offers a guided, reviewed setup action when it
+is missing. Backup recovery uses saved receipts instead of manually entered hashes.
+The real channel edit and before/after 80×24 TUI guidance passed on a fresh fixture;
+existing guests, jobs and media were preserved. See [current evidence](evidence/guest-integration-receipts-run.md)
+for hashes and limits. Actual Linux guest-tools installation and complete release
+qualification remain open. Exit any open TUI and run `virmill` again.
 
 ## Start testing now
 

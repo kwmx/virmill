@@ -591,7 +591,7 @@ func (f GuidedForm) guestToolsView(width, height int) string {
 	} else {
 		lines = append(lines, "Needs guest SSH, passwordless sudo and package repository access.")
 	}
-	lines = append(lines, "The VM must already have a guest-agent channel.", "")
+	lines = append(lines, "Guest tools run inside this VM; no host software is installed.", "")
 	footer := []string{}
 	if f.Error != "" {
 		footer = append(footer, wrap("Issue: "+validation.SafeText(f.Error), width)...)

@@ -259,7 +259,7 @@ func TestGuestToolsSimpleDefaultAndOptionalAdvanced(t *testing.T) {
 	f := guestToolsFormFixture(t)
 	f.Focus = 0
 	view := f.View(80, 24)
-	for _, want := range []string{"Detect Linux (recommended)", "Needs guest SSH, passwordless sudo", "package repository access", "must already have a guest-agent channel", "Preview installation"} {
+	for _, want := range []string{"Detect Linux (recommended)", "Needs guest SSH, passwordless sudo", "package repository access", "Guest tools run inside this VM", "Preview installation"} {
 		if !strings.Contains(view, want) {
 			t.Fatalf("missing initial guidance %q: %s", want, view)
 		}
