@@ -259,3 +259,7 @@ When network preview reports an issue, **Read full issue** opens its complete
 message and recovery instructions. Use PgUp/PgDn or arrows to scroll; Esc
 returns to the same settings. An unresolved allocation must be reconciled from
 its original declaration; typing another subnet does not bypass that check.
+
+If the background service cannot be reached, Overview and Settings show startup
+instructions and **Retry connection**, with optional sign-in setup under
+**More help**. See [coordinator startup](coordinator-startup.md).

@@ -1,0 +1,2 @@
+{"apiVersion":"virmill/v1","data":null,"warnings":[],"error":{"code":"COORDINATOR_UNAVAILABLE","message":"start virmilld as your user: dial unix /run/user/1000/virmill/control.sock: connect: no such file or directory","resource":"","operationID":"","retryable":false,"safeNextActions":[]}}
+COORDINATOR_UNAVAILABLE: start virmilld as your user: dial unix /run/user/1000/virmill/control.sock: connect: no such file or directory

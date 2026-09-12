@@ -23,6 +23,7 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	coordinator          coordinatorConnection
 	NetworkForm          *NetworkForm
 	JobOutcome           *jobOutcome
 	Resources            *resourceSetup
@@ -541,6 +542,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.Pending = maps.Clone(m.Pending)
 		delete(m.Pending, v.Kind)
+		m.observeCoordinatorConnection(v)
 		err := v.Err
 		if err == nil && v.Response.Error != nil {
 			err = v.Response.Error
@@ -1228,6 +1230,12 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		switch key {
+		case "connection-help":
+			if m.connectionRecoveryVisible() {
+				m.coordinator.Expanded = !m.coordinator.Expanded
+				m.Offset = 0
+			}
+			return m, nil
 		case "job-open-vm":
 			return m, m.openJobVM()
 		case "job-refresh-result":
@@ -1615,6 +1623,9 @@ func (m Workspace) content(width, height int) []string {
 		}
 		return pageLines(lines, width, height, m.Offset)
 	}
+	if m.connectionRecoveryVisible() {
+		return m.connectionRecoveryView(width, height)
+	}
 	lines := []string{}
 	kind := workspaceKinds[m.Section]
 	if m.Section == 0 {
@@ -1825,6 +1836,9 @@ func (m Workspace) View() string {
 type workspaceButton struct{ label, key string }
 
 func (m Workspace) buttons() []workspaceButton {
+	if m.connectionRecoveryVisible() {
+		return m.connectionRecoveryButtons()
+	}
 	if m.Section == 8 && m.Detail != nil && field(m.Detail, "state") != "" {
 		return m.jobButtons()
 	}
@@ -1870,7 +1884,7 @@ func (m Workspace) footerButtons() string {
 	labels := make([]string, len(buttons))
 	for i, b := range buttons {
 		key := b.key
-		if strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") {
+		if strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") || strings.HasPrefix(key, "connection-") {
 			key = ""
 		} else if key == "enter" {
 			key = "Enter"

@@ -1419,7 +1419,8 @@
         "protected-network-race-001",
         "protected-network-native-001",
         "protected-network-native-002",
-        "network-form-core-001"
+        "network-form-core-001",
+        "network-form-tui-native-002"
       ],
       "outstanding": [
         "Allowed-host NAT/lab definition, authenticated IPv6 filters and activation now execute through shared CLI/TUI. Native namespace DHCP, peer/host IPv4, NAT DNS/TCP and lab no-default-route checks passed in native005; its overall result failed a strict active-zone comparison while existing ens19 DHCP repeatedly failed. Full required profiles and real guest/host preservation qualification remain open."
@@ -1561,7 +1562,8 @@
         "protected-network-native-001",
         "protected-network-packet-parsers-003",
         "protected-network-native-003",
-        "network-form-core-001"
+        "network-form-core-001",
+        "network-form-tui-native-002"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1630,7 +1632,8 @@
         "protected-network-native-002",
         "protected-network-packet-parsers-003",
         "protected-network-native-003",
-        "network-form-core-001"
+        "network-form-core-001",
+        "network-form-tui-native-002"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1806,7 +1809,8 @@
         "automatic-allocation-race-001",
         "automatic-allocation-static-001",
         "automatic-allocation-native-001",
-        "network-form-core-001"
+        "network-form-core-001",
+        "network-form-tui-native-002"
       ],
       "outstanding": [
         "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic.",
@@ -4846,7 +4850,9 @@
         "internal/ui/tui/network_form.go",
         "internal/ui/tui/workspace_network.go",
         "docs/adr/0048-guided-network-declarations.md",
-        "docs/evidence/network-form-run.md"
+        "docs/evidence/network-form-run.md",
+        "internal/ui/tui/workspace_connection.go",
+        "docs/coordinator-startup.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5008,7 +5014,8 @@
         "internal/ui/cli/network_inline_test.go",
         "internal/ui/tui/network_form_test.go",
         "internal/ui/tui/workspace_network_test.go",
-        "tests/fixtures/release/network_form_tui_probe.py"
+        "tests/fixtures/release/network_form_tui_probe.py",
+        "internal/ui/tui/workspace_connection_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5196,7 +5203,8 @@
         "guided-job-ui-002",
         "guest-tools-tui-native-001",
         "guest-tools-tui-native-002",
-        "network-form-core-001"
+        "network-form-core-001",
+        "network-form-tui-native-002"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5329,7 +5337,9 @@
         "internal/ui/tui/network_form.go",
         "internal/ui/tui/workspace_network.go",
         "docs/adr/0048-guided-network-declarations.md",
-        "docs/evidence/network-form-run.md"
+        "docs/evidence/network-form-run.md",
+        "internal/ui/tui/workspace_connection.go",
+        "docs/coordinator-startup.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5418,7 +5428,8 @@
         "internal/ui/cli/network_inline_test.go",
         "internal/ui/tui/network_form_test.go",
         "internal/ui/tui/workspace_network_test.go",
-        "tests/fixtures/release/network_form_tui_probe.py"
+        "tests/fixtures/release/network_form_tui_probe.py",
+        "internal/ui/tui/workspace_connection_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -5524,7 +5535,8 @@
         "guest-tools-tui-native-001",
         "guest-tools-tui-native-002",
         "guided-review-ui-001",
-        "network-form-core-001"
+        "network-form-core-001",
+        "network-form-tui-native-002"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

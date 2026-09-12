@@ -77,3 +77,51 @@ Before retrying, inspect that exact fixture's report and configuration presence.
 The original failed evidence is retained. The three-profile native preview/parity
 check remains incomplete until the same authorized VM is reachable and the
 allocation facts are safely restored.
+
+## Restored access and installed preview verification
+
+The VM became reachable after reboot. `fixture-allocation-facts-native-002`
+refused before any settings write because the coordinator socket was absent;
+its preservation flag means the initial inventory could not be captured, not
+that a mutation occurred. The first service start/read check raced readiness and
+the user manager then stopped after the short SSH login ended. A held test login
+kept the service available; `network-coordinator-post-reboot-002` passed readiness
+and read all 29 retained jobs. No guest was started.
+
+`network-issue-packages-001` passed all three package/private-service checks.
+`network-issue-upgrade-001` and `network-issue-restart-001` installed and activated
+source `4d5fe54a809fcd5eff0d022f4dde91b89fb11803`, preserving the prior jobs,
+journal tables, VM inventory and source-media metadata. Coordinator PID: 1944.
+
+- CLI SHA-256: `85763d43ee642bf08421381b2d6d66bb0efe7eb6bdaab8d4a0a46debbe6ba257`
+- Coordinator: `225b110248788cff2f615e0a2fd528a403f1942b76fad7942b8ad06ad3151c42`
+- Core RPM: `a6b548bc869c5ba37aa3407994153238b7e6fd0ca97888a2a327e5e30b54a9e1`
+- Built implementation digest: `c02c3675e0c01b5c18c229b34e13b959be9e2a360c9861862d7cd506208e7c9a`
+
+`fixture-allocation-facts-native-003` passed both exact native-intent matches,
+created only the previously absent user allocation settings, and verified their
+normal readback. VM/network/job inventories were unchanged. Configuration digest:
+`2916a1bb382bfefbb14b5985d00f83ecee95caa9e4eb2f2a45dcb68714959162`.
+
+`network-form-tui-native-002` passed actual 80×24 NAT, lab and guest-only previews,
+CLI/TUI semantic parity, Back retention, cancellation, unsupported-session refusal
+and preservation of guests, networks, jobs and source metadata. Zero plans were
+applied. Six preview plans remain as durable review records. This verifies the
+installed form and shared planning, not network activation or packet isolation.
+Its ledger source digest includes concurrent unbuilt startup-help edits; tested
+binaries are explicitly bound above and in the native report to frozen 4d5fe54.
+
+`beta-user-service-signin-001` enabled the ordinary-user coordinator for future
+sign-ins on the disposable VM and verified enabled/active status. No helper,
+guest autostart or login lingering was enabled. Remote reports and screens are
+retained under `~/virmill-tests/network-issue-4d5fe54`.
+
+## Startup recovery guidance
+
+A dependency-ready agent added an offline Overview/Settings recovery card for
+accepted typed COORDINATOR_UNAVAILABLE replies. It explains that VM state is
+unknown, shows the ordinary-user service-start command, and offers Retry
+connection and optional startup help. Retry uses existing observation requests;
+no UI service mutation was added. Root reviewed the integration and static
+analysis passed. `coordinator-recovery-ui-001` records the full TUI race suite,
+including stale replies, existing workflow preservation and retry behavior.
