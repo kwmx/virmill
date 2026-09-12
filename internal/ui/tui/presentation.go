@@ -10,7 +10,6 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/charmbracelet/x/ansi"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/validation"
 	"virmill.local/core/internal/wire"
@@ -214,7 +213,7 @@ func (f *details) omit() {
 		return
 	}
 	f.stopped = true
-	f.lines = append(f.lines, strings.Split(ansi.Hardwrap(detailOmission, f.width, true), "\n")...)
+	f.lines = append(f.lines, wrap(detailOmission, f.width)...)
 }
 
 func (f *details) line(text string, depth int) {
@@ -230,7 +229,7 @@ func (f *details) line(text string, depth int) {
 	// no untrusted escape, bidi or other formatting controls reach the terminal.
 	text = strings.ReplaceAll(validation.SafeText(text), "\t", "    ")
 	indent := strings.Repeat(" ", min(depth*2, f.width-2))
-	wrapped := strings.Split(ansi.Hardwrap(text, f.width-len(indent), true), "\n")
+	wrapped := wrap(text, f.width-len(indent))
 	if len(wrapped) > detailRows-len(f.lines) {
 		f.omit()
 		return

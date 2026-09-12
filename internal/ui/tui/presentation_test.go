@@ -149,3 +149,70 @@ func TestHumanDetailsPathologicalDataHasExplicitBoundedNotice(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestPlanDetailsWarningsKeepWordsAcross80ColumnPages(t *testing.T) {
+	// These are the actual guest recipe planner's warnings, including the
+	// native/not words split mid-word in the previous 80-column review.
+	warnings := []string{
+		"The reviewer binds the supplied address and known-hosts key to this VM; native IP identity is unavailable.",
+		"Reviewed recipe scripts and arguments persist in private journal input. Do not embed credentials.",
+		"A remote script may change guest state before an interrupted SSH response; reconciliation never reruns it.",
+		"This built-in uses passwordless sudo inside the guest to install packages from its configured repositories and start qemu-guest-agent. Dependencies may change; there is no automatic rollback or reboot.",
+		"The guest needs the org.qemu.guest_agent.0 virtio channel. Desktop package installation does not prove clipboard or display integration works.",
+	}
+	resource := "libvirt|qemu:///system|vm|12345678-1234-4234-8234-123456789abc"
+	p := domain.Plan{APIVersion: domain.APIVersion, ID: "22345678-1234-4234-8234-123456789abc", Digest: strings.Repeat("a1", 32), InputDigest: strings.Repeat("b2", 32), Operation: "guest.recipe.run", ConnectionID: "qemu:///system", ResourceIDs: []string{resource}, Risks: warnings, Before: map[string]string{resource: strings.Repeat("c3", 32)}}
+	lines := PlanDetails(p, 80)
+	readable := strings.Join(strings.Fields(strings.Join(lines, "\n")), " ")
+	for _, warning := range warnings {
+		if !strings.Contains(readable, warning) {
+			t.Fatalf("review split words or omitted a warning: %q\n%s", warning, strings.Join(lines, "\n"))
+		}
+	}
+	seen := map[string]bool{}
+	m := NewWorkspace(nil, p.ConnectionID)
+	m.NoColor, m.Plan = true, &p
+	m.Width, m.Height = 80, 24
+	// Read every rendered viewport, including the final clamped page. This
+	// checks actual review routing as well as the standalone detail formatter.
+	for offset := 0; offset < len(lines); offset += 17 {
+		m.Offset = offset
+		view := strings.Split(m.View(), "\n")
+		if len(view) > 24 {
+			t.Fatalf("review exceeds 24 rows: %d", len(view))
+		}
+		for _, row := range view {
+			if ansi.StringWidth(row) > 80 {
+				t.Fatalf("review exceeds 80 columns: %q", row)
+			}
+			seen[strings.TrimRight(row, " ")] = true
+		}
+	}
+	var exact strings.Builder
+	for _, line := range lines {
+		if !seen[line] {
+			t.Fatalf("review line is inaccessible across pages: %q", line)
+		}
+		exact.WriteString(strings.TrimLeft(line, " "))
+	}
+	for _, value := range []string{p.ID, p.Digest, p.InputDigest, resource, p.Before[resource]} {
+		if !strings.Contains(exact.String(), value) {
+			t.Fatalf("review lost exact identity %q", value)
+		}
+	}
+}
+
+func TestHumanDetailsWrappingPreservesIndentAndStructuredRows(t *testing.T) {
+	for _, text := range []string{"Name            State       CPU", "<disk type=\"file\" device=\"disk\">", "\"message\": \"retain original spacing\"", "first\tsecond\tthird"} {
+		f := newDetails(24)
+		f.line(text, 2)
+		expanded := strings.ReplaceAll(text, "\t", "    ")
+		want := strings.Split(ansi.Hardwrap(expanded, 20, true), "\n")
+		for i := range want {
+			want[i] = "    " + want[i]
+		}
+		if !reflect.DeepEqual(f.lines, want) {
+			t.Fatalf("structured row or indentation changed: %#v; want %#v", f.lines, want)
+		}
+	}
+}

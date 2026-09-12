@@ -5,7 +5,10 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `a1d6cb6`.
+**Current UI update:** installed CLI and coordinator use `11721e6`.
+Completed local VM jobs now offer **Open VM** after checking the saved result.
+Guest tools checks runtime state first and offers reviewed start guidance for
+stopped guests. Prose wraps by words. See [job/setup evidence](evidence/guided-job-completion-run.md).
 CPU/RAM settings show live and next-boot values, prefill editable fields and review
 exact before/after changes. Unsupported layouts explain their limits; running
 guests receive shutdown guidance. The preceding native stopped-VM TUI edit and
@@ -22,9 +25,10 @@ viewer-process test observation and the retained original failure.
 
 Import/creation retain resumable choices and advanced hardware controls. The
 previous real Fedora 44 guest-tools install/repeat/ping evidence remains in
-[guest-tools results](evidence/wizard-drafts-tools-run.md). Full TUI guest-tools
-submission, other guest profiles, desktop-sharing opt-ins and complete release
-qualification remain open. Graphical viewing needs a desktop session; a plain SSH
+[guest-tools results](evidence/wizard-drafts-tools-run.md). Actual Fedora TUI submission, idempotent verification, native ping and opening
+the resulting VM now passed; see [current TUI evidence](evidence/guided-job-completion-run.md).
+Other guest profiles, desktop-sharing opt-ins and complete release qualification
+remain open. Graphical viewing needs a desktop session; a plain SSH
 terminal can use configured serial access. Exit any open TUI and run `virmill`
 again to load the update.
 
