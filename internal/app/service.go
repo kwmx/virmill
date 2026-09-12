@@ -52,6 +52,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	// preservation contract through their legacy vm.set handler.
 	e.Handlers["vm.configure-resources"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.configure-hardware"] = &vmHandler{s: s, action: "set"}
+	e.Handlers["vm.configure-guest-agent"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.reboot"] = &rebootHandler{s: s}
 	e.Handlers["network.create"] = &networkCreationHandler{s: s}
 	e.Handlers["network.creation.resume"] = &networkResumeHandler{networkCreationHandler{s: s}}
@@ -178,6 +179,19 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "console discovery is unavailable for this provider")
 		}
 		return observer.InspectConsole(ctx, r.Connection, r.ID)
+	case "vm.guest-agent.show":
+		if r.ID == "" || r.Path != "" || r.Action != "" || len(r.Input) != 0 || r.After != 0 || r.Apply != nil {
+			return nil, domain.Fail("INVALID_INPUT", "Guest-agent inspection requires only a stable VM UUID")
+		}
+		v, err := s.GetVM(ctx, r.Connection, r.ID)
+		if err != nil {
+			return nil, err
+		}
+		view, err := xmlpatch.InspectGuestAgent(v.PersistentXML)
+		if err != nil {
+			return nil, err
+		}
+		return GuestAgentConnection{GuestAgentChannelView: view, State: v.State, HasManagedSave: v.HasManagedSave}, nil
 	case "vm.boot.get":
 		if r.ID == "" {
 			return nil, domain.Fail("INVALID_INPUT", "stable VM UUID required for boot inspection")
@@ -343,6 +357,9 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 		if hardwareRequest(r.Input) {
 			schema = "vm-hardware-edit-input"
 		}
+		if guestAgentRequest(r.Input) {
+			schema = "vm-guest-agent-edit-input"
+		}
 		if err != nil || validation.Schema(schema, b) != nil {
 			return empty, domain.Fail("INVALID_INPUT", "configuration input must match its bundled schema; rejected values are withheld")
 		}
@@ -353,7 +370,7 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 	}
 	input := map[string]any{}
 	for field, value := range r.Input {
-		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB" || field == "applyMode" || field == "bootOrder" || field == "ejectMedia")) || (r.Action == "autostart" && field == "enabled")
+		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB" || field == "applyMode" || field == "bootOrder" || field == "ejectMedia" || field == "enableGuestAgent")) || (r.Action == "autostart" && field == "enabled")
 		if !allowed {
 			return empty, domain.Fail("INVALID_INPUT", "unknown parameter for this operation: "+field)
 		}
@@ -373,7 +390,26 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 		if e = editableVM(v); e != nil {
 			return empty, e
 		}
-		if hardwareRequest(input) {
+		if guestAgentRequest(input) {
+			view, err := xmlpatch.InspectGuestAgent(v.PersistentXML)
+			if err != nil {
+				return empty, err
+			}
+			if view.Present {
+				return empty, domain.Fail("ALREADY_CONFIGURED", "The guest-agent channel is already enabled. Start the VM and install guest tools inside it.")
+			}
+			if !view.CanEnable {
+				return empty, domain.Fail("UNSUPPORTED_CAPABILITY", view.Reason)
+			}
+			input["editVersion"], input["agentController"], input["agentPort"], input["agentAddsController"] = float64(3), float64(view.ControllerIndex), float64(view.Port), view.AddsController
+			digest, err := configurationPreviewDigest(v.PersistentXML, input)
+			if err != nil {
+				return empty, err
+			}
+			input["xmlSHA256"] = digest
+			acks = append(acks, "guest-agent-host-access")
+			risks = append(risks, "Enables a high-trust channel between the host and this guest on next boot. This does not install guest tools; install the QEMU guest agent inside the VM separately.")
+		} else if hardwareRequest(input) {
 			edit, err := xmlpatch.ParseHardwareInput(input)
 			if err != nil {
 				return empty, err
@@ -419,6 +455,9 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 		if hardwareRequest(input) {
 			operation = "vm.configure-hardware"
 		}
+		if guestAgentRequest(input) {
+			operation = "vm.configure-guest-agent"
+		}
 	}
 	step := domain.Step{ID: "effect", Action: operation, Preconditions: []string{"unchanged domain fingerprint", "current capability and actor checks"}, Idempotency: "reconcile-before-retry", Compensation: "Preserve domain and disks; create a reviewed recovery plan", Reconciliation: "Read stable UUID and expected backend state without replay", CompletionPredicate: "Native backend reports requested state"}
 	return s.Engine.Plan(ctx, uid, r.Connection, operation, []string{key}, map[string]string{key: v.Fingerprint}, input, []domain.Step{step}, acks, risks)
@@ -435,7 +474,7 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		return nil, err
 	}
 	requested := map[string]any{}
-	for _, key := range []string{"vcpus", "memoryMiB", "enabled", "applyMode", "bootOrder", "ejectMedia"} {
+	for _, key := range []string{"vcpus", "memoryMiB", "enabled", "applyMode", "bootOrder", "ejectMedia", "enableGuestAgent"} {
 		if value, ok := input[key]; ok {
 			requested[key] = value
 		}

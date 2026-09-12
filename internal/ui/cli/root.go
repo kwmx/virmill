@@ -191,6 +191,12 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			if r.Input == nil {
 				r.Input = map[string]any{}
 			}
+			if a.Command == "vm guest-agent enable" {
+				if _, exists := r.Input["enableGuestAgent"]; exists {
+					return domain.Fail("INVALID_INPUT", "enableGuestAgent is supplied by this command")
+				}
+				r.Input["enableGuestAgent"] = true
+			}
 			for key, value := range pluginFlags {
 				if *value != "" {
 					if _, exists := r.Input[key]; exists {
@@ -300,6 +306,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			return domain.Fail("INVALID_INPUT", "unknown shell")
 		}
 	}}
+	add("backup receipt export", backupReceiptExportCommand(client, o))
 	root.AddCommand(completion)
 	ref := &cobra.Command{Use: "reference", Hidden: true, RunE: func(c *cobra.Command, args []string) error { return Reference(root, out) }}
 	root.AddCommand(ref)

@@ -69,6 +69,8 @@ func planSummary(f *details, p domain.Plan) {
 	switch p.Operation {
 	case "vm.create.devices-v1":
 		command = "vm create"
+	case "vm.configure-guest-agent":
+		command = "vm guest-agent enable"
 	case "vm.configure-resources", "vm.configure-hardware":
 		command = "vm set"
 	case "vm.create.resume":

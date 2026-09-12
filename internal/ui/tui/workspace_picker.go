@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"virmill.local/core/internal/app"
 )
 
 func actionBrowseKind(f ActionForm, name string) string {
@@ -26,10 +27,18 @@ func (m *Workspace) browseField() tea.Cmd {
 		return nil
 	}
 	m.PickerProtection = false
+	m.PickerBackupRecovery = false
+	m.PickerBackupReceipt = false
 	var fields []GuidedField
 	focus := 0
 	kind := ""
-	if m.Protection != nil {
+	if m.BackupRecovery != nil {
+		fields, focus = m.BackupRecovery.Fields, m.BackupRecovery.Focus
+		m.PickerBackupRecovery = true
+		if focus >= 0 && focus < len(fields) {
+			kind = guidedBrowseKind(fields[focus].Name)
+		}
+	} else if m.Protection != nil {
 		fields, focus = m.Protection.Fields, m.Protection.Focus
 		m.PickerProtection = true
 		if focus >= 0 && focus < len(fields) {
@@ -78,6 +87,8 @@ func (m Workspace) updatePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 	p, cmd, result := m.Picker.Update(msg)
 	m.Picker = &p
 	if result.Cancel {
+		m.PickerBackupRecovery = false
+		m.PickerBackupReceipt = false
 		m.ImportPickerTarget = ""
 		m.Picker = nil
 		return m, cmd
@@ -91,6 +102,34 @@ func (m Workspace) updatePicker(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if source && m.Import != nil && m.Import.Error == "" {
 			return m, m.describeImport()
 		}
+		return m, nil
+	}
+	if m.PickerBackupReceipt {
+		m.PickerBackupReceipt = false
+		m.Picker = nil
+		if m.BackupRecovery == nil {
+			return m, nil
+		}
+		m.Busy = true
+		m.Notice = "Reading saved backup receipt..."
+		return m, m.request("backup-receipt-read", "backup.receipt.read", app.Request{Path: result.Path})
+	}
+	if m.PickerBackupRecovery && m.BackupRecovery != nil {
+		f := *m.BackupRecovery
+		f.Fields = slices.Clone(f.Fields)
+		if m.PickerField >= 1 && m.PickerField < len(f.Fields) {
+			field := &f.Fields[m.PickerField]
+			if guidedPath(result.Path) && len(result.Path) <= field.Limit {
+				field.Value = result.Path
+				field.Cursor = utf8.RuneCountInString(result.Path)
+				f.Error = ""
+			} else {
+				f.Error = "Choose a valid local path."
+			}
+		}
+		m.BackupRecovery = &f
+		m.Picker = nil
+		m.PickerBackupRecovery = false
 		return m, nil
 	}
 	if m.PickerProtection && m.Protection != nil {

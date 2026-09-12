@@ -29,7 +29,7 @@ func (p *Provider) CheckConfiguration(ctx context.Context, uri, id string, input
 	return checkConfiguration(c, d, uri, input)
 }
 func checkConfiguration(c *native.Connect, d *native.Domain, uri string, input map[string]any) error {
-	if (input["editVersion"] != float64(1) && input["editVersion"] != float64(2)) || input["applyMode"] != "next-boot" {
+	if (input["editVersion"] != float64(1) && input["editVersion"] != float64(2) && input["editVersion"] != float64(3)) || input["applyMode"] != "next-boot" {
 		return domain.Fail("STALE_PLAN", "fresh preservation-aware next-boot edit preview required")
 	}
 	v, err := observe(d, uri)
@@ -148,7 +148,7 @@ func (p *Provider) ObserveConfiguration(ctx context.Context, uri, id string, inp
 }
 func observeConfiguration(d *native.Domain, uri string, input map[string]any) (bool, error) {
 	expected, ok := input["xmlSHA256"].(string)
-	if !ok || len(expected) != 64 || (input["editVersion"] != float64(1) && input["editVersion"] != float64(2)) {
+	if !ok || len(expected) != 64 || (input["editVersion"] != float64(1) && input["editVersion"] != float64(2) && input["editVersion"] != float64(3)) {
 		return false, domain.Fail("RECOVERY_REQUIRED", "legacy configuration uncertainty requires explicit disposition; do not replay")
 	}
 	v, err := observe(d, uri)
@@ -173,6 +173,32 @@ func observeConfiguration(d *native.Domain, uri string, input map[string]any) (b
 }
 
 func configurationXML(data string, input map[string]any) (xmlpatch.ResourceEdit, string, error) {
+	if input["editVersion"] == float64(3) {
+		var resources xmlpatch.ResourceEdit
+		reviewed, err := xmlpatch.ParseGuestAgentInput(input)
+		if err != nil {
+			return resources, "", err
+		}
+		observed, err := xmlpatch.InspectGuestAgent(data)
+		if err != nil {
+			return resources, "", err
+		}
+		if observed.Present || !observed.CanEnable || observed.ControllerIndex != reviewed.ControllerIndex || observed.Port != reviewed.Port || observed.AddsController != reviewed.AddsController {
+			return resources, "", domain.Fail("STALE_PLAN", "guest-agent channel allocation changed since the reviewed preview")
+		}
+		expected, err := xmlpatch.EnableGuestAgent(data)
+		if err != nil {
+			return resources, "", err
+		}
+		match, err := configurationMatches(expected, input)
+		if err != nil {
+			return resources, "", err
+		}
+		if !match {
+			return resources, "", domain.Fail("STALE_PLAN", "guest-agent edit differs from the reviewed preservation fingerprint")
+		}
+		return resources, expected, nil
+	}
 	if input["editVersion"] == float64(2) {
 		edit, err := xmlpatch.ParseHardwareInput(input)
 		if err != nil {
@@ -217,6 +243,17 @@ func configurationXML(data string, input map[string]any) (xmlpatch.ResourceEdit,
 }
 
 func configurationMatches(data string, input map[string]any) (bool, error) {
+	if input["editVersion"] == float64(3) {
+		reviewed, err := xmlpatch.ParseGuestAgentInput(input)
+		if err != nil {
+			return false, err
+		}
+		digest, err := xmlpatch.GuestAgentDigest(data, reviewed.ControllerIndex, reviewed.Port, reviewed.AddsController)
+		if err != nil {
+			return false, err
+		}
+		return digest == input["xmlSHA256"], nil
+	}
 	if input["editVersion"] == float64(2) {
 		digest, err := xmlpatch.HardwareDigest(data)
 		if err != nil {

@@ -1,0 +1,8 @@
+test_apply_requires_exact_scope_and_acknowledgements (__main__.EditProbeTests.test_apply_requires_exact_scope_and_acknowledgements) ... ok
+test_capability_machine_is_observed_not_guessed (__main__.EditProbeTests.test_capability_machine_is_observed_not_guessed) ... ok
+test_native_normalization_and_unknown_metadata_preservation (__main__.EditProbeTests.test_native_normalization_and_unknown_metadata_preservation) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK

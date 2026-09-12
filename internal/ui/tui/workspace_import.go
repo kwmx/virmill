@@ -77,7 +77,7 @@ func (m *Workspace) openImport(kind string) tea.Cmd {
 	return m.browseImport("source", 0)
 }
 func (m *Workspace) browseImport(target string, index int) tea.Cmd {
-	if m.Busy || (m.Import == nil && !(m.Creation != nil && target == "export-parent")) {
+	if m.Busy || (m.Import == nil && !((m.Creation != nil || m.BackupRecovery != nil) && target == "export-parent")) {
 		return nil
 	}
 	kind, start := "file", ""
@@ -287,7 +287,7 @@ func (m Workspace) updateImportExport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	m.Pending = maps.Clone(m.Pending)
 	m.Pending["import-export"] = token
 	m.Busy = true
-	m.Notice = "Exporting settings..."
+	m.Notice = "Saving file..."
 	return m, func() tea.Msg {
 		return importExportReply{Token: token, Path: path, Err: exportImportSettings(path, r.Input)}
 	}
@@ -296,9 +296,15 @@ func (m Workspace) importExportView(width, height int) []string {
 	view := strings.Split(m.ExportForm.View(width, height), "\n")
 	if len(view) > 0 {
 		view[0] = "Export settings"
+		if m.BackupRecovery != nil {
+			view[0] = "Save recovery receipt"
+		}
 	}
 	if len(view) > 1 {
 		view[1] = "Save these options for reuse. Existing files are kept."
+		if m.BackupRecovery != nil {
+			view[1] = "Keep this with your backups. Store the password separately."
+		}
 	}
 	if len(view) > 0 {
 		view[len(view)-1] = "Ctrl+O Choose folder   Enter Export   Esc Back"
@@ -339,6 +345,24 @@ func (m *Workspace) openSettingsExport(name string) {
 	m.ExportForm = &e
 }
 func (m Workspace) settingsExportRequest() (app.Request, error) {
+	if m.BackupRecovery != nil {
+		f := m.BackupRecovery
+		if f.Selected < 0 || f.Selected >= len(f.Receipts) {
+			return app.Request{}, fmt.Errorf("Choose a verified backup receipt first.")
+		}
+		b, err := json.Marshal(f.Receipts[f.Selected])
+		if err != nil {
+			return app.Request{}, err
+		}
+		if err = validation.Schema("backup-receipt", b); err != nil {
+			return app.Request{}, err
+		}
+		var input map[string]any
+		if err = json.Unmarshal(b, &input); err != nil {
+			return app.Request{}, err
+		}
+		return app.Request{Input: input}, nil
+	}
 	if m.Creation != nil {
 		return m.Creation.Request(m.Connection)
 	}

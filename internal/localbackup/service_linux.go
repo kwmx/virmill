@@ -117,6 +117,9 @@ func (s *Service) Register(a *app.Service) {
 		a.Extensions[pair.method] = h.Plan
 	}
 	a.Extensions["backup.result"] = s.Result
+	a.Extensions["backup.receipts.list"] = s.Receipts
+	a.Extensions["backup.receipt.show"] = s.Receipt
+	a.Extensions["backup.receipt.read"] = s.ReadReceipt
 }
 func input(r app.Request, keys ...string) (map[string]string, error) {
 	if len(r.Input) != len(keys) {

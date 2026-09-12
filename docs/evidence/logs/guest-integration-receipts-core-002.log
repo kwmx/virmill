@@ -1,0 +1,70 @@
+?   	virmill.local/core/cmd/virmill	[no test files]
+?   	virmill.local/core/cmd/virmill-dev	[no test files]
+?   	virmill.local/core/cmd/virmill-host-helper	[no test files]
+?   	virmill.local/core/cmd/virmilld	[no test files]
+?   	virmill.local/core/contracts	[no test files]
+ok  	virmill.local/core/internal/app	6.263s
+ok  	virmill.local/core/internal/app/devices	(cached)
+ok  	virmill.local/core/internal/app/importer	1.123s
+?   	virmill.local/core/internal/app/lab	[no test files]
+ok  	virmill.local/core/internal/app/network	1.568s
+ok  	virmill.local/core/internal/app/protection	6.975s
+ok  	virmill.local/core/internal/app/provision	1.227s
+ok  	virmill.local/core/internal/app/storage	(cached)
+ok  	virmill.local/core/internal/auxiliary	1.169s
+ok  	virmill.local/core/internal/backend/coldfiles	1.035s
+ok  	virmill.local/core/internal/backend/fileaccess	1.035s
+ok  	virmill.local/core/internal/backend/fileidentity	1.022s
+ok  	virmill.local/core/internal/backend/guestssh	2.259s
+ok  	virmill.local/core/internal/backend/image	1.018s
+ok  	virmill.local/core/internal/backend/libvirt	(cached)
+ok  	virmill.local/core/internal/backend/networkxml	1.204s
+ok  	virmill.local/core/internal/backend/restic	2.336s
+ok  	virmill.local/core/internal/backend/seed	1.036s
+ok  	virmill.local/core/internal/backend/xmlpatch	(cached)
+?   	virmill.local/core/internal/buildinfo	[no test files]
+ok  	virmill.local/core/internal/coldcapture	4.878s
+ok  	virmill.local/core/internal/coldstore	3.062s
+ok  	virmill.local/core/internal/creating	16.644s
+ok  	virmill.local/core/internal/domain	1.012s
+ok  	virmill.local/core/internal/guestsetup	5.147s
+ok  	virmill.local/core/internal/helper	6.321s
+ok  	virmill.local/core/internal/importing	2.352s
+ok  	virmill.local/core/internal/localbackup	3.974s
+?   	virmill.local/core/internal/networkfirewall	[no test files]
+ok  	virmill.local/core/internal/networksettings	1.040s
+ok  	virmill.local/core/internal/operations	1.335s
+ok  	virmill.local/core/internal/platform/linux	1.115s
+ok  	virmill.local/core/internal/plugins	7.464s
+ok  	virmill.local/core/internal/storageaccess	1.300s
+ok  	virmill.local/core/internal/store	1.045s
+--- FAIL: TestHeavyImportDisconnectCancelsAndRefusesOverlappingScans (0.00s)
+    cancellation_linux_test.go:56: listen unix /tmp/virmill-rpc-30736723/control.sock: setsockopt: operation not permitted
+--- FAIL: TestDisconnectMonitorDoesNotConsumePipelinedFrames (0.00s)
+    cancellation_linux_test.go:114: listen unix /tmp/virmill-rpc-2492108595/control.sock: setsockopt: operation not permitted
+--- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline (0.00s)
+    --- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline/import.inspect (0.00s)
+        cancellation_linux_test.go:161: listen unix /tmp/virmill-timeout-1865268392/rpc.sock: setsockopt: operation not permitted
+    --- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline/import.prepare (0.00s)
+        cancellation_linux_test.go:161: listen unix /tmp/virmill-timeout-3534344130/rpc.sock: setsockopt: operation not permitted
+    --- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline/import.prepare-install (0.00s)
+        cancellation_linux_test.go:161: listen unix /tmp/virmill-timeout-496237696/rpc.sock: setsockopt: operation not permitted
+    --- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline/import.prepare-disks (0.00s)
+        cancellation_linux_test.go:161: listen unix /tmp/virmill-timeout-1961231313/rpc.sock: setsockopt: operation not permitted
+    --- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline/operation.apply (0.00s)
+        cancellation_linux_test.go:161: listen unix /tmp/virmill-timeout-33063636/rpc.sock: setsockopt: operation not permitted
+    --- FAIL: TestSocketTimeoutMessagesAndExplicitDeadline/version (0.00s)
+        cancellation_linux_test.go:161: listen unix /tmp/virmill-timeout-1606860710/rpc.sock: setsockopt: operation not permitted
+--- FAIL: TestAcceptedJobSurvivesClientContextCancellation (0.00s)
+    cancellation_linux_test.go:213: listen unix /tmp/virmill-rpc-2054447064/control.sock: setsockopt: operation not permitted
+--- FAIL: TestApplyWaitTimeoutPreservesCoordinatorAcceptanceContext (0.00s)
+    cancellation_linux_test.go:267: listen unix /tmp/virmill-rpc-1497111539/control.sock: setsockopt: operation not permitted
+FAIL
+FAIL	virmill.local/core/internal/transport/local	0.061s
+ok  	virmill.local/core/internal/ui	(cached)
+ok  	virmill.local/core/internal/ui/cli	4.273s
+ok  	virmill.local/core/internal/ui/tui	6.847s
+ok  	virmill.local/core/internal/validation	1.364s
+ok  	virmill.local/core/internal/wire	(cached)
+?   	virmill.local/core/schemas	[no test files]
+FAIL

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-guest-agent-edit-input.schema.json",
+  "title": "Explicit next-boot guest-agent channel enablement",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "enableGuestAgent"
+  ],
+  "properties": {
+    "enableGuestAgent": {
+      "const": true
+    },
+    "applyMode": {
+      "const": "next-boot"
+    }
+  }
+}

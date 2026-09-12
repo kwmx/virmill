@@ -23,32 +23,37 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
-	Protection         *ProtectionForm
-	PickerProtection   bool
-	Console            *domain.ConsoleInfo
-	ConsoleIndex       int
-	ConsoleLoading     bool
-	ConsoleVM          domain.VM
-	Boot               *BootForm
-	BootVM             domain.VM
-	BootLoading        bool
-	Creation           *CreationForm
-	SavedCreation      *CreationForm
-	SavedForm          *GuidedForm
-	PreparedBasics     map[string]ImportDraft
-	SavedImport        *ImportForm
-	CreationPicking    bool
-	CreationChoices    []creationChoice
-	CreationIndex      int
-	PendingPreparation string
-	Import             *ImportForm
-	ExportForm         *GuidedForm
-	ImportPickerTarget string
-	ImportCancel       context.CancelFunc
-	ImportStarted      time.Time
-	ImportElapsed      time.Duration
-	ButtonFocus        bool
-	ButtonIndex        int
+	BackupRecovery        *BackupRecoveryForm
+	BackupRecoveryLoading bool
+	PickerBackupRecovery  bool
+	PickerBackupReceipt   bool
+	GuestAgent            *guestAgentSetup
+	Protection            *ProtectionForm
+	PickerProtection      bool
+	Console               *domain.ConsoleInfo
+	ConsoleIndex          int
+	ConsoleLoading        bool
+	ConsoleVM             domain.VM
+	Boot                  *BootForm
+	BootVM                domain.VM
+	BootLoading           bool
+	Creation              *CreationForm
+	SavedCreation         *CreationForm
+	SavedForm             *GuidedForm
+	PreparedBasics        map[string]ImportDraft
+	SavedImport           *ImportForm
+	CreationPicking       bool
+	CreationChoices       []creationChoice
+	CreationIndex         int
+	PendingPreparation    string
+	Import                *ImportForm
+	ExportForm            *GuidedForm
+	ImportPickerTarget    string
+	ImportCancel          context.CancelFunc
+	ImportStarted         time.Time
+	ImportElapsed         time.Duration
+	ButtonFocus           bool
+	ButtonIndex           int
 
 	CatalogSection, CatalogIndex int
 	CatalogSearch                string
@@ -145,6 +150,8 @@ func (m *Workspace) refresh() tea.Cmd {
 	return m.request(kind, workspaceMethods[kind], app.Request{})
 }
 func (m *Workspace) page(section int) tea.Cmd {
+	m.resetBackupRecovery()
+	m.resetGuestAgent()
 	m.Pending = maps.Clone(m.Pending)
 	delete(m.Pending, "detail")
 	delete(m.Pending, "boot-load")
@@ -378,6 +385,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		}
 	case "vm console show":
 		return m.openConsole()
+	case "backup restore", "backup receipts":
+		return m.openBackupRecovery()
 	case "snapshot restore", "backup create":
 		return m.openProtection(a.Command)
 	case "vm boot set":
@@ -394,14 +403,8 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 			m.Advanced = false
 			return nil
 		}
-	case "guest tools install":
-		if vm.Key.UUID != "" {
-			m.guided("guest-tools")
-			m.Advanced = false
-			return nil
-		}
-		m.Error = "Choose a VM first, then open Guest tools."
-		return nil
+	case "guest tools install", "vm guest-agent enable", "vm guest-agent show":
+		return m.openGuestTools()
 	case "guest recipe run":
 		if vm.Key.UUID != "" {
 			m.guided("guest-recipe")
@@ -492,6 +495,9 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.ExportForm = nil
 		m.Notice = "Settings exported: " + validation.SafeText(v.Path)
+		if m.BackupRecovery != nil {
+			m.Notice = "Recovery receipt saved: " + validation.SafeText(v.Path)
+		}
 		return m, nil
 	case tea.WindowSizeMsg:
 		m.Width = v.Width
@@ -526,10 +532,21 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			text := validation.SafeText(err.Error())
 			m.Errors[v.Kind] = text
-			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "boot-load" || v.Kind == "console-load" || v.Kind == "protection-pools" || v.Kind == "import-inspect" {
+			if v.Kind == "plan" || v.Kind == "apply" || v.Kind == "detail" || v.Kind == "boot-load" || v.Kind == "console-load" || v.Kind == "protection-pools" || v.Kind == "guest-agent-load" || v.Kind == "backup-receipts" || v.Kind == "backup-receipt-read" || v.Kind == "import-inspect" {
 				m.Error = text
 				m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
 				m.Notice = ""
+			}
+			if v.Kind == "guest-agent-load" {
+				m.failGuestAgent(text)
+			}
+			if v.Kind == "backup-receipts" || v.Kind == "backup-receipt-read" || v.Kind == "plan" && m.BackupRecovery != nil {
+				m.Busy = false
+				m.BackupRecoveryLoading = false
+				if m.BackupRecovery != nil {
+					m.BackupRecovery.Error = text
+					m.Error = ""
+				}
 			}
 			if v.Kind == "console-load" {
 				m.ConsoleLoading = false
@@ -665,6 +682,12 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Form = nil
 			m.ActionForm = nil
 			m.Advanced = false
+		case "guest-agent-load":
+			m.receiveGuestAgent(v.Response.Data)
+		case "backup-receipts":
+			m.receiveBackupReceipts(v.Response.Data)
+		case "backup-receipt-read":
+			m.receiveBackupReceipt(v.Response.Data)
 		case "console-load":
 			m.receiveConsole(v.Response.Data)
 		case "protection-pools":
@@ -676,6 +699,8 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 		case "apply":
+			m.resetBackupRecovery()
+			m.resetGuestAgent()
 			m.Protection = nil
 			m.Boot = nil
 			m.SavedForm, m.SavedActionForm = nil, nil
@@ -765,6 +790,8 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.ImportCancel()
 					m.ImportCancel = nil
 				}
+				m.resetBackupRecovery()
+				m.resetGuestAgent()
 				m.Form = nil
 				m.ActionForm = nil
 				m.Import = nil
@@ -791,6 +818,12 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if (m.Console != nil || m.ConsoleLoading) && m.Plan == nil {
 			return m.updateConsole(v)
+		}
+		if m.BackupRecovery != nil && m.Plan == nil && m.ExportForm == nil {
+			return m.updateBackupRecovery(v)
+		}
+		if m.GuestAgent != nil && m.Plan == nil && m.Picker == nil {
+			return m.updateGuestAgent(v)
 		}
 		if m.Protection != nil && m.Plan == nil {
 			return m.updateProtection(v)
@@ -1195,7 +1228,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "g":
 			if !m.Busy && (m.Section == 0 || m.Section == 1) {
-				m.guided("guest-tools")
+				return m, m.openGuestTools()
 			}
 		case "n":
 			if !m.Busy && m.Section == 6 {
@@ -1262,6 +1295,12 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.Picker == nil && m.Plan == nil && m.BackupRecovery != nil && m.ExportForm == nil {
+		return "Tab Next   Enter Choose   Ctrl+O Browse   Esc Back"
+	}
+	if m.Picker == nil && m.Plan == nil && m.GuestAgent != nil {
+		return "Tab/Arrows Select   Enter Choose   Esc Back"
+	}
 	if m.Picker == nil && m.Plan == nil && (m.Console != nil || m.ConsoleLoading) {
 		return "Up/Down Select   Enter Open   Esc Back"
 	}
@@ -1355,6 +1394,12 @@ func (m Workspace) hints() string {
 	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
 }
 func (m Workspace) content(width, height int) []string {
+	if m.BackupRecovery != nil && m.Plan == nil && m.Picker == nil && m.ExportForm == nil {
+		return m.backupRecoveryView(width, height)
+	}
+	if m.GuestAgent != nil && m.Plan == nil && m.Picker == nil {
+		return m.guestAgentView(width, height)
+	}
 	if m.Console != nil || m.ConsoleLoading {
 		return m.consoleView(width, height)
 	}
@@ -1530,15 +1575,18 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
+	importModal := (m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
 		if m.Creation != nil || m.CreationPicking {
 			title = "Create VM"
 		}
-		if m.Protection != nil {
+		if m.Protection != nil || m.BackupRecovery != nil {
 			title = "Protection"
+		}
+		if m.GuestAgent != nil {
+			title = "Guest tools"
 		}
 		if m.Console != nil || m.ConsoleLoading {
 			title = "Console"
@@ -1657,7 +1705,7 @@ func (m Workspace) buttons() []workspaceButton {
 	return append(primary[m.Section], workspaceButton{"More", "a"})
 }
 func (m Workspace) footerButtons() string {
-	if m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

@@ -12,7 +12,7 @@ func Register(a *app.Service, data, cache string) {
 	if a.Extensions == nil {
 		a.Extensions = map[string]func(context.Context, uint32, app.Request) (any, error){}
 	}
-	for _, method := range []string{"backup.repository.init", "backup.repository.check", "backup.create", "backup.restore", "backup.result"} {
+	for _, method := range []string{"backup.repository.init", "backup.repository.check", "backup.create", "backup.restore", "backup.result", "backup.receipts.list", "backup.receipt.show", "backup.receipt.read"} {
 		a.Extensions[method] = func(context.Context, uint32, app.Request) (any, error) {
 			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "local backup operations require Linux amd64")
 		}

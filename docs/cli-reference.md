@@ -115,6 +115,94 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill backup receipt export`
+
+Save a portable backup recovery receipt without credentials
+
+```text
+Usage:
+  virmill backup receipt export OPERATION_ID PATH [flags]
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup receipt read`
+
+Read a saved recovery receipt; repository contents are verified during recovery
+
+```text
+Usage:
+  virmill backup receipt read PATH [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup receipt show`
+
+Read a portable recovery receipt for a verified backup operation
+
+```text
+Usage:
+  virmill backup receipt show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill backup receipts`
+
+List recent verified backups available for recovery
+
+```text
+Usage:
+  virmill backup receipts [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill backup repository check`
 
 Plan a full local repository data-integrity check with durable evidence
@@ -1968,6 +2056,53 @@ Flags:
       --after int      Event cursor
       --input string   JSON parameters; secrets must be references (default "{}")
       --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm guest-agent enable`
+
+Review enabling the guest-agent channel on a stopped VM; tools install separately
+
+```text
+Usage:
+  virmill vm guest-agent enable ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill vm guest-agent show`
+
+Check whether guest-agent integration is configured
+
+```text
+Usage:
+  virmill vm guest-agent show ID [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)

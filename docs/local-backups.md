@@ -31,16 +31,54 @@ virmill backup repository check /absolute/private/new-repository \
 ```
 
 Create the input capture first using [cold capture](cold-capture-and-restore.md).
-`backup result` contains the exact repository snapshot ID, capture UUID and
-manifest SHA-256. Preserve these non-secret recovery coordinates separately from
-the coordinator database. Repository checks read all stored data and honor
-restic's locks. No command prunes, forgets, unlocks or repairs data automatically.
+In the TUI, choose a capture in **Protection**, select **Back up**, and browse for
+the repository and its private password file. Review the plan before applying.
+Repository checks read all stored data and honor restic's locks. No command
+prunes, forgets, unlocks or repairs data automatically.
+
+## Save a recovery receipt
+
+After a backup succeeds, open **Protection → More → Recover capture from backup**.
+Choose its entry with Left/Right, then **Save recovery receipt**. Browse to a
+folder and choose a new filename. Existing files are never replaced. Keep this
+file with your recovery records, separately from the repository password.
+
+The CLI provides the same receipt:
+
+```sh
+virmill backup receipts
+virmill backup receipt show BACKUP_OPERATION_UUID
+virmill backup receipt export BACKUP_OPERATION_UUID /absolute/private/recovery.json
+```
+
+Only completed backups with a full restore-and-verify proof have receipts. The
+recent list searches the latest 1,000 jobs for the current user and connection;
+it is not an archive catalog. For an older backup, use its operation UUID with
+`backup receipt show` or `export`, even if it no longer appears in the recent
+list. Those commands still need the original operation history.
+
+A saved `virmill/v1` `BackupReceipt` contains the repository path, exact snapshot
+ID, capture UUID, manifest hash, operation ID and verification date. It contains
+no password or private key. These are recovery selectors, not proof that a
+repository still exists or that its current contents are valid.
 
 ## Recover without the original database
 
 Use a fresh ordinary-user XDG profile or a capture catalog where the selected
-capture UUID is absent. Preserve the original catalog. Recover using the saved
-coordinates and independently retained credential:
+capture UUID is absent. Preserve the original catalog.
+
+In **Protection → More → Recover capture from backup**, press **Ctrl+O** on
+**Saved backup** to browse for your receipt. If no recent backup is available,
+**Enter** opens that browser. Choose the encrypted **Backup folder** and its
+separate **Password file**, then **Preview recovery**. Update the folder if the
+repository has moved to another mount path. The saved receipt works without the
+original Virmill database; the encrypted repository and its password are still
+required. After recovery succeeds, select the capture in **Protection** and
+choose **Restore** to review a new VM name and destination storage pool.
+
+For CLI inspection, `virmill backup receipt read /absolute/private/recovery.json`
+validates the saved document without writing to the repository. CLI recovery
+uses its selectors and your independently retained credential:
 
 ```sh
 virmill backup restore FULL_RESTIC_SNAPSHOT_SHA256 \
@@ -58,9 +96,12 @@ The separate `snapshot restore` plan creates independent volumes and a new
 disconnected VM within that adapter's supported profiles. Starting it requires
 a separate lifecycle plan.
 
-TUI forms accept `{"path":"...","input":{...}}` for repository actions and
-`{"id":"...","input":{...}}` for backup create/restore. Result takes the
-operation UUID. All interfaces retain the same review and failure behavior.
+Loading or saving a receipt never authorizes recovery. Recovery repeats the
+repository checks and verifies the recovered data before reporting success.
+Malformed, incomplete, changed or unsafe receipt files are refused with an issue;
+choose a valid saved receipt rather than copying IDs from an error message.
+`backup result` takes an operation UUID and reports that operation's proof.
+All interfaces retain the same review and failure behavior.
 
 ## Interrupted operations
 

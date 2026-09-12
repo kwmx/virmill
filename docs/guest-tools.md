@@ -19,12 +19,12 @@ readable local files accepted by the SSH transport.
 
 The VM needs the `org.qemu.guest_agent.0` virtio channel before installation.
 For a new VM, turn on **Guest agent channel** in Advanced hardware during VM
-creation, then install guest tools after boot. For an existing VM, the channel
-must already be configured: the current existing-VM editor cannot add it. If it
-is missing, shut down the guest and configure it through your established
-libvirt management workflow before starting the guest again. A missing channel
-is reported before package changes. Installing guest software does not change
-VM devices.
+creation. For an existing VM, open **Guest tools**: Virmill checks the connection
+and offers a reviewed enable action when it is missing. Shut down first, enable
+the connection, then start the VM before installing the software. See the
+[guest integration guide](guest-agent-setup.md). Configuration and installation
+are separate actions; neither alone proves that the agent responds.
+
 
 Review the plan and approve **guest-admin-package-install**. This authorizes
 package installation and service startup as an administrator **inside the

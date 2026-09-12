@@ -1,0 +1,47 @@
+?   	virmill.local/core/cmd/virmill	[no test files]
+?   	virmill.local/core/cmd/virmill-dev	[no test files]
+?   	virmill.local/core/cmd/virmill-host-helper	[no test files]
+?   	virmill.local/core/cmd/virmilld	[no test files]
+?   	virmill.local/core/contracts	[no test files]
+ok  	virmill.local/core/internal/app	(cached)
+ok  	virmill.local/core/internal/app/devices	(cached)
+ok  	virmill.local/core/internal/app/importer	(cached)
+?   	virmill.local/core/internal/app/lab	[no test files]
+ok  	virmill.local/core/internal/app/network	(cached)
+ok  	virmill.local/core/internal/app/protection	(cached)
+ok  	virmill.local/core/internal/app/provision	(cached)
+ok  	virmill.local/core/internal/app/storage	(cached)
+ok  	virmill.local/core/internal/auxiliary	(cached)
+ok  	virmill.local/core/internal/backend/coldfiles	(cached)
+ok  	virmill.local/core/internal/backend/fileaccess	(cached)
+ok  	virmill.local/core/internal/backend/fileidentity	(cached)
+ok  	virmill.local/core/internal/backend/guestssh	(cached)
+ok  	virmill.local/core/internal/backend/image	(cached)
+ok  	virmill.local/core/internal/backend/libvirt	(cached)
+ok  	virmill.local/core/internal/backend/networkxml	(cached)
+ok  	virmill.local/core/internal/backend/restic	2.191s
+ok  	virmill.local/core/internal/backend/seed	(cached)
+ok  	virmill.local/core/internal/backend/xmlpatch	(cached)
+?   	virmill.local/core/internal/buildinfo	[no test files]
+ok  	virmill.local/core/internal/coldcapture	(cached)
+ok  	virmill.local/core/internal/coldstore	(cached)
+ok  	virmill.local/core/internal/creating	(cached)
+ok  	virmill.local/core/internal/domain	(cached)
+ok  	virmill.local/core/internal/guestsetup	(cached)
+ok  	virmill.local/core/internal/helper	(cached)
+ok  	virmill.local/core/internal/importing	(cached)
+ok  	virmill.local/core/internal/localbackup	(cached)
+?   	virmill.local/core/internal/networkfirewall	[no test files]
+ok  	virmill.local/core/internal/networksettings	(cached)
+ok  	virmill.local/core/internal/operations	(cached)
+ok  	virmill.local/core/internal/platform/linux	(cached)
+ok  	virmill.local/core/internal/plugins	(cached)
+ok  	virmill.local/core/internal/storageaccess	(cached)
+ok  	virmill.local/core/internal/store	(cached)
+ok  	virmill.local/core/internal/transport/local	1.703s
+ok  	virmill.local/core/internal/ui	(cached)
+ok  	virmill.local/core/internal/ui/cli	(cached)
+ok  	virmill.local/core/internal/ui/tui	(cached)
+ok  	virmill.local/core/internal/validation	(cached)
+ok  	virmill.local/core/internal/wire	(cached)
+?   	virmill.local/core/schemas	[no test files]

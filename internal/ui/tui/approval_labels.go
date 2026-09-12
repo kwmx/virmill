@@ -6,20 +6,22 @@ import "strings"
 // Keep the stable ID alongside the explanation for unfamiliar and plugin scopes.
 func acknowledgementLabel(id string) string {
 	text := map[string]string{
-		"host-mutation":               "Allow the reviewed changes on this host",
-		"copy-managed-volumes":        "Create independent managed copies of the disks",
-		"new-vm-identity":             "Give the new VM its own identity",
-		"network-attachment":          "Connect the VM to the reviewed networks",
-		"new-firmware-state":          "Create new firmware state; existing guest keys are not restored",
-		"creation-device-policy":      "Use the reviewed controllers and device settings",
-		"guest-agent-channel":         "Allow the reviewed guest-agent management channel",
-		"guest-admin-package-install": "Allow administrator package installation inside this guest",
-		"offline-sources":             "The source images are not being used or changed",
-		"source-preservation":         "Keep the original source images untouched",
-		"next-boot-only":              "Apply these settings at the next boot",
-		"watchdog-reset":              "Allow the configured watchdog to reset the guest",
-		"start-selected-vm":           "Start this selected VM",
-		"review-network-exposure":     "Accept the reviewed network access",
+		"guest-agent-host-access":        "Allow a high-trust management channel between this host and guest",
+		"exclusive-configuration-writer": "No other administrator is changing this VM configuration",
+		"host-mutation":                  "Allow the reviewed changes on this host",
+		"copy-managed-volumes":           "Create independent managed copies of the disks",
+		"new-vm-identity":                "Give the new VM its own identity",
+		"network-attachment":             "Connect the VM to the reviewed networks",
+		"new-firmware-state":             "Create new firmware state; existing guest keys are not restored",
+		"creation-device-policy":         "Use the reviewed controllers and device settings",
+		"guest-agent-channel":            "Allow the reviewed guest-agent management channel",
+		"guest-admin-package-install":    "Allow administrator package installation inside this guest",
+		"offline-sources":                "The source images are not being used or changed",
+		"source-preservation":            "Keep the original source images untouched",
+		"next-boot-only":                 "Apply these settings at the next boot",
+		"watchdog-reset":                 "Allow the configured watchdog to reset the guest",
+		"start-selected-vm":              "Start this selected VM",
+		"review-network-exposure":        "Accept the reviewed network access",
 	}[id]
 	if text == "" {
 		text = strings.ReplaceAll(id, "-", " ")

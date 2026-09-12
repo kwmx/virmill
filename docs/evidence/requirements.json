@@ -152,7 +152,12 @@
         "internal/operations/engine.go",
         "docs/adr/0015-operation-downtime-estimates.md",
         "docs/evidence/downtime-estimates-run.md",
-        "docs/evidence/beta-ux-flow-run.md"
+        "docs/evidence/beta-ux-flow-run.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
@@ -169,7 +174,13 @@
         "internal/backend/libvirt/boot_linux_test.go",
         "internal/backend/xmlpatch/boot_captured_test.go",
         "internal/app/estimates_test.go",
-        "internal/operations/estimates_test.go"
+        "internal/operations/estimates_test.go",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -190,13 +201,17 @@
         "downtime-core-001",
         "downtime-native-preview-001",
         "beta-ux-workflow-native-001",
-        "beta-ux-final-core-001"
+        "beta-ux-final-core-001",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
         "Fixed powered-off next-boot CPU/RAM edits preserve spans and units, reject dependent topology/balloon/NUMA/backing/managed-save layouts and require secure readback. Live/both/advanced layouts and actual host sizing and guest verification remain incomplete or unqualified.",
         "Stopped persistent boot ordering and retained read-only CD-ROM ejection use a versioned shared configuration operation, optionally combining CPU/RAM. Synthetic failure/recovery and native in-memory tests exist; one real Q35/BIOS boot/eject/resource path now passed, but full installation, live/advanced configurations and the complete matrix still need qualification.",
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
-        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required."
+        "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2879,7 +2894,13 @@
         "internal/ui/console_linux.go",
         "internal/ui/tui/workspace_console.go",
         "internal/ui/cli/console.go",
-        "docs/evidence/console-protection-run.md"
+        "docs/evidence/console-protection-run.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-03",
@@ -2899,7 +2920,13 @@
         "internal/ui/cli/console_test.go",
         "internal/ui/tui/workspace_access_test.go",
         "tests/fixtures/release/console_access_probe.py",
-        "tests/fixtures/release/graphical_access_probe.py"
+        "tests/fixtures/release/graphical_access_probe.py",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "cold-recovery-integrated-race-001",
@@ -2922,13 +2949,17 @@
         "console-graphical-native-001",
         "console-graphical-native-002",
         "console-graphical-native-003",
-        "console-viewer-version-001"
+        "console-viewer-version-001",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
         "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
         "Reviewed non-root SSH recipe stages are implemented with durable intents and receipt-only no-replay recovery. Native transport passed against the authorized VM host, not a nested guest. Actual guest provisioning/recipe and OS acceptance matrix remain open.",
-        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open."
+        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3252,7 +3283,12 @@
         "internal/localbackup/execute_linux.go",
         "internal/backend/restic/tool_linux.go",
         "internal/coldstore/store_linux.go",
-        "docs/local-backups.md"
+        "docs/local-backups.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -3338,7 +3374,13 @@
         "internal/backend/restic/native_linux_test.go",
         "internal/coldstore/restored_linux_test.go",
         "internal/ui/cli/local_backup_test.go",
-        "internal/ui/tui/local_backup_test.go"
+        "internal/ui/tui/local_backup_test.go",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -3420,7 +3462,10 @@
         "cold-recovery-native-002",
         "beta-recovery-race-001",
         "beta-recovery-native-001",
-        "beta-recovery-native-002"
+        "beta-recovery-native-002",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -3437,7 +3482,8 @@
         "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
         "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification.",
         "Recorded two-disk BIOS capture/new disconnected restore and actual second-disk boot marker on the authorized VM; original disk hashes, ACLs and all prior guest XML preserved. This does not qualify firmware/TPM restore, encrypted repository recovery, physical hardware or the complete acceptance scenario.",
-        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario."
+        "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3570,7 +3616,13 @@
         "docs/adr/0026-owned-network-creation-and-recovery.md",
         "docs/network-creation.md",
         "docs/network-helper.md",
-        "docs/evidence/owned-network-run.md"
+        "docs/evidence/owned-network-run.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-04",
@@ -3612,7 +3664,13 @@
         "internal/helper/network_authorization_test.go",
         "tests/fixtures/network/network_packet_fixture.py",
         "tests/fixtures/network/test_packet_parsers.py",
-        "tests/fixtures/network_parent/create_native.py"
+        "tests/fixtures/network_parent/create_native.py",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -3646,7 +3704,10 @@
         "helper-access-native-tui-revoke-resume-001",
         "helper-access-native-tui-grant-cli-revoke-001",
         "nvram-recovery-integration-001",
-        "nvram-binding-frozen-core-001"
+        "nvram-binding-frozen-core-001",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
         "Preparation pins source files and holds OFD guards; preparation and cleanup share path locks, and older delete plans need fresh review. Generated QEMU writer fixtures and synthetic coordinator contention pass; actual concurrent native/external writer matrix remains.",
@@ -3655,7 +3716,8 @@
         "Cleanup result reads use the same active-state distinction and validate present proof/disposition bindings. Complete cleanup requires recorded confirmation; native active-cleanup progress remains unqualified.",
         "Separate reviewed BIOS chipset acceptance preserves the original partial recipe and requires guarded retained-byte verification, exact XML and complete inherited locks. Deterministic recovery/native in-memory checks and one actual native acceptance are recorded separately. Full recovery/ownership/permission qualification remains open; native acceptance used a temporary single-file ACL that was restored exactly.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open."
+        "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3853,7 +3915,13 @@
         "internal/backend/xmlpatch/resources.go",
         "internal/backend/libvirt/configuration_linux.go",
         "schemas/vm-resource-edit-input.schema.json",
-        "docs/vm-configuration.md"
+        "docs/vm-configuration.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-02",
@@ -3866,7 +3934,13 @@
         "internal/backend/libvirt/configuration_linux_test.go",
         "internal/ui/cli/root_test.go",
         "internal/ui/tui/model_test.go",
-        "tests/integration/artifacts_test.py"
+        "tests/integration/artifacts_test.py",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "nocloud-core-001",
@@ -3874,10 +3948,14 @@
         "nocloud-key-fuzz-001",
         "configuration-native-simulated-001",
         "configuration-core-001",
-        "configuration-artifacts-001"
+        "configuration-artifacts-001",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
-        "NoCloud credential refusals withhold rejected values. New resource-edit plans persist hashes instead of opaque XML; secure XML differences fail closed, and returned native definition errors withhold XML values. Full secret store, inventory/guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required."
+        "NoCloud credential refusals withhold rejected values. New resource-edit plans persist hashes instead of opaque XML; secure XML differences fail closed, and returned native definition errors withhold XML values. Full secret store, inventory/guest-sensitive artifacts and diagnostic/log/telemetry matrix remain required.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4090,7 +4168,13 @@
         "docs/evidence/environments/specification-source-20260908.json",
         "docs/adr/0023-bundled-schema-format-assertions.md",
         "docs/reviews/specification-validator-parity.md",
-        "docs/evidence/schema-and-package-qualification-run.md"
+        "docs/evidence/schema-and-package-qualification-run.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/app/hardware_edit.go",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-05",
@@ -4115,7 +4199,13 @@
         "internal/helper/sealed_linux_test.go",
         "internal/backend/coldfiles/source_linux_test.go",
         "internal/backend/coldfiles/source_qemu_linux_test.go",
-        "internal/validation/specification_parity_test.go"
+        "internal/validation/specification_parity_test.go",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4143,13 +4233,17 @@
         "bundled-schema-formats-before-001",
         "bundled-schema-formats-after-001",
         "schema-format-integrated-core-001",
-        "schema-format-integrated-vet-001"
+        "schema-format-integrated-vet-001",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Python process fault regressions found and fixed terminal session reuse and Close blocked behind active Call. Full heartbeat/coalescing, graceful cancellation, process/job recovery and supported OS/MAC matrix remain required; scoped confined probes do not complete security acceptance.",
-        "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required."
+        "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4544,7 +4638,12 @@
         "internal/ui/cli/console.go",
         "internal/ui/tui/protection_form.go",
         "internal/ui/tui/workspace_protection.go",
-        "docs/evidence/console-protection-run.md"
+        "docs/evidence/console-protection-run.md",
+        "docs/adr/0042-guided-guest-integration-and-recovery-receipts.md",
+        "internal/backend/xmlpatch/guest_agent.go",
+        "internal/ui/tui/workspace_guest_agent.go",
+        "internal/localbackup/receipts_linux.go",
+        "internal/ui/tui/workspace_backup_recovery.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -4677,7 +4776,13 @@
         "internal/ui/tui/protection_form_test.go",
         "internal/ui/tui/workspace_access_test.go",
         "tests/fixtures/release/console_access_probe.py",
-        "tests/fixtures/release/graphical_access_probe.py"
+        "tests/fixtures/release/graphical_access_probe.py",
+        "internal/app/guest_agent_edit_test.go",
+        "internal/backend/libvirt/guest_agent_edit_linux_test.go",
+        "internal/localbackup/receipts_linux_test.go",
+        "internal/ui/tui/workspace_guest_agent_test.go",
+        "internal/ui/tui/workspace_backup_recovery_test.go",
+        "internal/ui/cli/guest_agent_receipt_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -4823,7 +4928,10 @@
         "console-protection-upgrade-native-001",
         "console-protection-upgrade-native-002",
         "console-protection-restart-native-001",
-        "console-protection-restart-native-002"
+        "console-protection-restart-native-002",
+        "guest-integration-receipts-core-001",
+        "guest-integration-receipts-core-002",
+        "guest-integration-receipts-core-003"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -4842,7 +4950,8 @@
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Automatic private IPv4 selection now uses ordered configurable ranges, complete bounded occupancy observations, exact foreign-profile/UUID-CIDR reconciliation, immutable selection and durable existing creation/recovery. Frozen 66c2d1f passed 810 race-test records with no failures/skips and whole-module vet. Earlier explicit-CIDR-only restriction is superseded; full native VPN/concurrent-writer/lab and complete acceptance qualification remain required.",
         "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Incomplete draft auto-persistence across TUI restart and complete scenario qualification remain open; this slice does not certify guest boot or all 71 scenarios.",
-        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open."
+        "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Guest-tools forms are simpler, but live guest package installation and the complete OS/accessibility/console matrix remain open.",
+        "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion."
       ],
       "hardwareVerified": false,
       "released": false

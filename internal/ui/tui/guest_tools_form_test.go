@@ -192,8 +192,16 @@ func TestGuestToolsFormWorkspacePlanCancelRestoresEdits(t *testing.T) {
 	m := fixtureWorkspace()
 	f := guestToolsFormFixture(t)
 	m.Detail = generic(f.VM)
-	if cmd := m.openAction(ui.Action{Command: "guest tools install", Mutation: "install"}); cmd != nil || m.Form == nil || m.Form.Kind != "guest-tools" || m.Advanced {
-		t.Fatal("action did not open native guest-tools form")
+	client := m.Client.(*workspaceClient)
+	client.response = app.Response{Data: guestAgentChannelReport{Present: true, State: "running"}}
+	load := m.openAction(ui.Action{Command: "guest tools install", Mutation: "install"})
+	if load == nil || m.GuestAgent == nil || m.Form != nil || m.Advanced {
+		t.Fatal("action did not check the guest-agent connection first")
+	}
+	loaded, _ := m.Update(load())
+	m = loaded.(Workspace)
+	if m.GuestAgent != nil || m.Form == nil || m.Form.Kind != "guest-tools" || len(client.calls) != 1 || client.calls[0] != "vm.guest-agent.show" {
+		t.Fatal("configured connection did not open native guest-tools form", m.Error)
 	}
 	f = guestToolsFocus(t, f, "profile")
 	f, _, _ = f.Update(tea.KeyMsg{Type: tea.KeyRight})
@@ -210,7 +218,6 @@ func TestGuestToolsFormWorkspacePlanCancelRestoresEdits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	client := m.Client.(*workspaceClient)
 	client.response = app.Response{Data: p}
 	m, cmd := wk(m, "enter")
 	if cmd == nil || !m.Busy || m.Plan != nil {
@@ -218,11 +225,11 @@ func TestGuestToolsFormWorkspacePlanCancelRestoresEdits(t *testing.T) {
 	}
 	next, follow := m.Update(cmd())
 	m = next.(Workspace)
-	if follow != nil || m.Plan == nil || m.Form != nil || m.SavedForm == nil || m.Busy || m.Reviewing || len(client.calls) != 1 || client.calls[0] != "guest.tools.install" || client.requests[0].Apply != nil {
+	if follow != nil || m.Plan == nil || m.Form != nil || m.SavedForm == nil || m.Busy || m.Reviewing || len(client.calls) != 2 || client.calls[1] != "guest.tools.install" || client.requests[1].Apply != nil {
 		t.Fatal("preview failed or approved installation implicitly", m.Error)
 	}
 	m, cmd = wk(m, "esc")
-	if cmd != nil || m.Plan != nil || m.SavedForm != nil || m.Form == nil || !reflect.DeepEqual(*m.Form, f) || len(client.calls) != 1 {
+	if cmd != nil || m.Plan != nil || m.SavedForm != nil || m.Form == nil || !reflect.DeepEqual(*m.Form, f) || len(client.calls) != 2 {
 		t.Fatal("cancel lost edited guest-tools form or executed guest work")
 	}
 }

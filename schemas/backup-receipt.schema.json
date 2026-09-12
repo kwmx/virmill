@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/backup-receipt.schema.json",
+  "title": "Saved backup recovery selectors without credentials",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "operationID",
+    "connection",
+    "repository",
+    "captureID",
+    "snapshotID",
+    "manifestSHA256",
+    "verifiedAt"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "virmill/v1"
+    },
+    "kind": {
+      "const": "BackupReceipt"
+    },
+    "connection": {
+      "enum": [
+        "qemu:///system",
+        "qemu:///session"
+      ]
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "verifiedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "operationID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "captureID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "snapshotID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "manifestSHA256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
