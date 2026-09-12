@@ -201,7 +201,7 @@ func (m Workspace) creationNetworkJobMatches() bool {
 	return h != nil && h.Connection == m.Connection && h.JobID != "" && h.JobID == resourceID(m.Detail) && h.PlanID == field(m.Detail, "planID") && m.Section == 8
 }
 func (m Workspace) canAutoReturnCreationNetwork() bool {
-	return m.creationNetworkJobMatches() && !m.Busy && m.Pending["apply"] == 0 &&
+	return m.creationNetworkJobMatches() && m.Activity == nil && !m.Busy && m.Pending["apply"] == 0 &&
 		m.Plan == nil && !m.Reviewing && !m.Advanced && !m.Help && m.draftModal == "" &&
 		m.ActionForm == nil && m.Form == nil && m.Picker == nil && m.ExportForm == nil &&
 		m.NetworkForm == nil && m.Creation == nil && m.Import == nil && !m.CreationPicking &&

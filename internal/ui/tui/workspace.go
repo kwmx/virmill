@@ -23,6 +23,8 @@ import (
 // Workspace presents observed resources and guided workflows. The command
 // browser is retained as an explicit advanced tool, not the default product UI.
 type Workspace struct {
+	Activity               *jobActivity
+	ActivityReading        *jobActivityRead
 	AutostartTarget        *domain.VM
 	RemovalTarget          *domain.VM
 	coordinator            coordinatorConnection
@@ -169,6 +171,7 @@ func (m *Workspace) refresh() tea.Cmd {
 	return m.request(kind, workspaceMethods[kind], app.Request{})
 }
 func (m *Workspace) page(section int) tea.Cmd {
+	m.closeJobActivity()
 	m.resetAutostartLoad()
 	m.resetRemovalLoad()
 	m.resetNetworkForm()
@@ -566,6 +569,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			text := validation.SafeText(err.Error())
 			m.Errors[v.Kind] = text
+			if v.Kind == "job-activity" {
+				m.failJobActivity("Could not read job activity: " + text)
+			}
 			if v.Kind == "apply" {
 				m.Offset = 0
 			}
@@ -683,6 +689,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		delete(m.Errors, v.Kind)
 		data := generic(v.Response.Data)
 		switch v.Kind {
+		case "job-activity":
+			m.receiveJobActivity(v.Response.Data)
 		case "draft-preparation-job":
 			return m, m.resumePreparedJob(v.Response.Data)
 		case "creation-sources":
@@ -765,7 +773,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Detail = data
 			}
 			if job.State == "succeeded" {
-				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Plan == nil && !m.Busy && m.AutostartTarget == nil && m.RemovalTarget == nil && m.CreationNetwork == nil && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
+				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Activity == nil && m.Plan == nil && !m.Busy && m.AutostartTarget == nil && m.RemovalTarget == nil && m.CreationNetwork == nil && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
 					return m, m.loadCreation(job.ID, "")
 				}
 				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
@@ -964,6 +972,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Help = false
 			}
 			return m, nil
+		}
+		if m.Activity != nil {
+			return m.updateJobActivity(v)
 		}
 		if m.RemovalTarget != nil {
 			if v.Type == tea.KeyEsc {
@@ -1318,6 +1329,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "job-open-vm":
 			return m, m.openJobVM()
+		case "job-activity":
+			return m, m.openJobActivity()
 		case "creation-network-return":
 			return m, m.returnCreationNetwork(true)
 		case "job-refresh-result":
@@ -1490,6 +1503,12 @@ func (m Workspace) status() string {
 	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
 }
 func (m Workspace) hints() string {
+	if m.Help && m.Activity != nil {
+		return "? or Esc Close help"
+	}
+	if m.Activity != nil {
+		return "PgUp/PgDn Read   Tab Actions   Enter Choose   Esc Back to job"
+	}
 	if m.RemovalTarget != nil {
 		return "Esc Back"
 	}
@@ -1660,6 +1679,9 @@ func (m Workspace) content(width, height int) []string {
 	}
 	if m.Help {
 		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest tools.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
+	}
+	if m.Activity != nil {
+		return m.Activity.View(width, height)
 	}
 	if m.ExportForm != nil {
 		return m.importExportView(width, height)
@@ -1844,10 +1866,13 @@ func (m Workspace) View() string {
 	if m.ASCII {
 		rule = "-"
 	}
-	importModal := (m.RemovalTarget != nil || m.Form != nil && m.Form.Kind == "remove-definition" || m.AutostartTarget != nil || m.Form != nil && m.Form.Kind == "autostart" || m.NetworkForm != nil || m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
+	importModal := (m.Activity != nil || m.RemovalTarget != nil || m.Form != nil && m.Form.Kind == "remove-definition" || m.AutostartTarget != nil || m.Form != nil && m.Form.Kind == "autostart" || m.NetworkForm != nil || m.Resources != nil || m.draftModal != "" || m.Import != nil || m.Creation != nil || m.CreationPicking || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Console != nil || m.ConsoleLoading) && m.Plan == nil
 	title := sections[m.Section]
 	if importModal {
 		title = "Import"
+		if m.Activity != nil {
+			title = "Job activity"
+		}
 		if m.RemovalTarget != nil || m.Form != nil && m.Form.Kind == "remove-definition" {
 			title = "Remove VM"
 		}
@@ -1988,7 +2013,7 @@ func (m Workspace) buttons() []workspaceButton {
 		5:  {{"Validate lab", "action:lab validate"}},
 		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"Back up", "action:backup create"}, {"New repository", "n"}},
 		7:  {{"USB devices", "action:device usb list"}, {"PCI devices", "action:host pci list"}},
-		8:  {{"Details", "enter"}, {"Create VM", "action:vm create"}, {"Events", "action:operation watch"}, {"Refresh", "r"}},
+		8:  {{"Details", "enter"}, {"Create VM", "action:vm create"}, {"Activity", "job-activity"}, {"Refresh", "r"}},
 		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
 		10: {{"Host capabilities", "action:host capabilities"}, {"All tools", ":"}},
 	}
@@ -1998,7 +2023,7 @@ func (m Workspace) footerButtons() string {
 	if m.draftModal != "" {
 		return m.hints()
 	}
-	if m.RemovalTarget != nil || m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
+	if m.Activity != nil || m.RemovalTarget != nil || m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
 		return m.hints()
 	}
 	buttons := m.buttons()

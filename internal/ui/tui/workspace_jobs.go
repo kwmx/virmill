@@ -18,6 +18,9 @@ func (m *Workspace) refreshJobs() tea.Cmd {
 		return nil
 	}
 	cmds := []tea.Cmd{jobRefreshTick()}
+	if m.activityMatches() && len(m.Activity.Events) < 1000 && !domain.Terminal(field(m.Detail, "state")) && m.Activity.Error == "" {
+		cmds = append(cmds, m.refreshJobActivity())
+	}
 	if m.Pending["jobs"] == 0 {
 		cmds = append(cmds, m.request("jobs", "operation.list", app.Request{}))
 	}
@@ -39,7 +42,7 @@ func (m Workspace) jobButtons() []workspaceButton {
 			out = append(out, workspaceButton{"Open VM", "job-open-vm"})
 		}
 	}
-	out = append(out, workspaceButton{"Events", "action:operation watch"})
+	out = append(out, workspaceButton{"Activity", "job-activity"})
 	if !domain.Terminal(state) && state != "interrupted" && state != "reconciling" {
 		out = append(out, workspaceButton{"Cancel job", "action:operation cancel"})
 	}
@@ -112,7 +115,7 @@ func (m Workspace) jobDetails(width int) []string {
 	if m.Errors["job-update"] != "" {
 		lines = append(lines, "", "Could not refresh this job. Showing its last known state.", m.Errors["job-update"])
 	} else {
-		lines = append(lines, "", "Updates automatically. Events shows the recorded activity.")
+		lines = append(lines, "", "Updates automatically. Activity shows recorded progress and errors.")
 	}
 	lines = append(lines, "Press x for complete technical details.")
 	out := []string{}

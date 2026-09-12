@@ -306,7 +306,7 @@ func TestJobOutcomeAsyncResultKeepsEventsFocused(t *testing.T) {
 				t.Fatal("missing asynchronous outcome read")
 			}
 			m.ButtonFocus, m.ButtonIndex = true, 0
-			if m.jobButtons()[m.ButtonIndex].key != "action:operation watch" {
+			if m.jobButtons()[m.ButtonIndex].key != "job-activity" {
 				t.Fatal("fixture did not focus Events")
 			}
 			if failed {
@@ -319,7 +319,7 @@ func TestJobOutcomeAsyncResultKeepsEventsFocused(t *testing.T) {
 				wantFirst = "job-refresh-result"
 			}
 			buttons := m.jobButtons()
-			if buttons[0].key != wantFirst || !m.ButtonFocus || m.ButtonIndex != 1 || buttons[m.ButtonIndex].key != "action:operation watch" {
+			if buttons[0].key != wantFirst || !m.ButtonFocus || m.ButtonIndex != 1 || buttons[m.ButtonIndex].key != "job-activity" {
 				t.Fatal("new result action stole Events focus", buttons, m.ButtonFocus, m.ButtonIndex)
 			}
 		})
@@ -342,7 +342,7 @@ func TestJobOutcomeRefreshClearsFocusWhenResultButtonDisappears(t *testing.T) {
 	if cmd == nil || m.JobOutcome == nil || !m.JobOutcome.Loading {
 		t.Fatal("explicit refresh did not begin")
 	}
-	if m.ButtonFocus || m.ButtonIndex != 0 || m.jobButtons()[0].key != "action:operation watch" {
+	if m.ButtonFocus || m.ButtonIndex != 0 || m.jobButtons()[0].key != "job-activity" {
 		t.Fatal("disappearing Refresh result moved Enter focus onto Events")
 	}
 	next, _ := m.Update(cmd())

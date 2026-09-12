@@ -3593,7 +3593,11 @@
         "internal/ui/tui/workspace_removal.go",
         "docs/vm-removal.md",
         "docs/adr/0050-retain-disks-definition-removal.md",
-        "docs/evidence/removal-guided-run.md"
+        "docs/evidence/removal-guided-run.md",
+        "internal/ui/tui/job_activity.go",
+        "internal/ui/tui/workspace_job_activity.go",
+        "docs/adr/0053-direct-job-activity.md",
+        "docs/evidence/job-activity-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-02",
@@ -3690,7 +3694,9 @@
         "internal/backend/libvirt/removal_linux_test.go",
         "internal/ui/tui/guided_removal_test.go",
         "internal/ui/tui/workspace_removal_test.go",
-        "tests/fixtures/release/removal_native_cycle.py"
+        "tests/fixtures/release/removal_native_cycle.py",
+        "internal/ui/tui/workspace_job_activity_test.go",
+        "tests/fixtures/release/job_activity_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3778,7 +3784,9 @@
         "guest-integration-receipts-core-003",
         "removal-guided-core-001",
         "removal-guided-cycle-native-001",
-        "removal-guided-cycle-native-002"
+        "removal-guided-cycle-native-002",
+        "job-activity-ui-001",
+        "job-activity-fixture-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -3840,7 +3848,11 @@
         "docs/evidence/removal-guided-run.md",
         "internal/ui/tui/workspace_creation_network.go",
         "docs/adr/0051-network-creation-within-vm-setup.md",
-        "docs/evidence/creation-network-handoff-run.md"
+        "docs/evidence/creation-network-handoff-run.md",
+        "internal/ui/tui/job_activity.go",
+        "internal/ui/tui/workspace_job_activity.go",
+        "docs/adr/0053-direct-job-activity.md",
+        "docs/evidence/job-activity-run.md"
       ],
       "plannedImplementation": "internal/operations",
       "plannedTest": "tests/integration/recovery/JOB-03",
@@ -3867,7 +3879,9 @@
         "tests/fixtures/release/removal_native_cycle.py",
         "internal/ui/tui/workspace_creation_network_test.go",
         "internal/ui/tui/creation_network_actions_test.go",
-        "tests/fixtures/release/creation_network_handoff_probe.py"
+        "tests/fixtures/release/creation_network_handoff_probe.py",
+        "internal/ui/tui/workspace_job_activity_test.go",
+        "tests/fixtures/release/job_activity_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -3888,7 +3902,9 @@
         "creation-network-corrected-restart-native-001",
         "creation-network-refusal-native-001",
         "creation-network-refusal-native-002",
-        "creation-boot-order-restart-native-001"
+        "creation-boot-order-restart-native-001",
+        "job-activity-ui-001",
+        "job-activity-fixture-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -5094,7 +5110,11 @@
         "docs/evidence/creation-network-handoff-run.md",
         "internal/ui/tui/creation_boot_order.go",
         "docs/adr/0052-creation-boot-order-controls.md",
-        "docs/evidence/creation-boot-order-run.md"
+        "docs/evidence/creation-boot-order-run.md",
+        "internal/ui/tui/job_activity.go",
+        "internal/ui/tui/workspace_job_activity.go",
+        "docs/adr/0053-direct-job-activity.md",
+        "docs/evidence/job-activity-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5274,7 +5294,9 @@
         "tests/fixtures/release/creation_network_handoff_probe.py",
         "internal/ui/tui/workspace_plan_issue_test.go",
         "internal/ui/tui/creation_boot_order_test.go",
-        "tests/fixtures/release/boot_order_tui_probe.py"
+        "tests/fixtures/release/boot_order_tui_probe.py",
+        "internal/ui/tui/workspace_job_activity_test.go",
+        "tests/fixtures/release/job_activity_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5485,7 +5507,9 @@
         "creation-network-refusal-native-002",
         "creation-boot-order-ui-001",
         "creation-boot-order-fixture-001",
-        "creation-boot-order-native-001"
+        "creation-boot-order-native-001",
+        "job-activity-ui-001",
+        "job-activity-fixture-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5639,7 +5663,11 @@
         "docs/evidence/creation-network-handoff-run.md",
         "internal/ui/tui/creation_boot_order.go",
         "docs/adr/0052-creation-boot-order-controls.md",
-        "docs/evidence/creation-boot-order-run.md"
+        "docs/evidence/creation-boot-order-run.md",
+        "internal/ui/tui/job_activity.go",
+        "internal/ui/tui/workspace_job_activity.go",
+        "docs/adr/0053-direct-job-activity.md",
+        "docs/evidence/job-activity-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-02",
@@ -5746,7 +5774,9 @@
         "tests/fixtures/release/creation_network_handoff_probe.py",
         "internal/ui/tui/workspace_plan_issue_test.go",
         "internal/ui/tui/creation_boot_order_test.go",
-        "tests/fixtures/release/boot_order_tui_probe.py"
+        "tests/fixtures/release/boot_order_tui_probe.py",
+        "internal/ui/tui/workspace_job_activity_test.go",
+        "tests/fixtures/release/job_activity_tui_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -5879,7 +5909,9 @@
         "creation-boot-order-ui-001",
         "creation-boot-order-fixture-001",
         "creation-boot-order-packages-001",
-        "creation-boot-order-native-001"
+        "creation-boot-order-native-001",
+        "job-activity-ui-001",
+        "job-activity-fixture-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

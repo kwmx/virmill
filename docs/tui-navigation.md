@@ -178,7 +178,12 @@ terminal cannot submit changes.
 
 Accepted operations open Job details. Jobs refresh automatically every three
 seconds and show the current status, failure explanation and available next
-actions. **Events** opens recorded activity. Detaching does not cancel a job.
+actions. **Activity** opens the selected job's recorded progress and errors
+without asking for its ID. Use PgUp/PgDn or arrow keys to read full messages;
+Tab selects **Refresh**, available **Older events**/**Newer events**, or **Back to
+job**. Active jobs refresh automatically until the current page is full or a read
+fails. A read failure explains the issue and retains loaded events; choose Refresh
+to retry. Esc returns to the same job. Detaching does not cancel a job.
 Use **Cancel job** when offered; cancellation may wait for a safe boundary.
 **Check recovery** observes uncertain effects rather than blindly retrying them.
 Review an existing saved plan through **Review saved plan** in Jobs.
@@ -254,7 +259,7 @@ Review the plan before applying. Back from review preserves your choices.
 After a VM job completes, **Open VM** takes you to fresh VM details. Creation
 checks its saved receipt first; the completed copy/definition is separate from
 booting and configuring the guest. If the result cannot be verified, **Refresh
-result** retries the observation and leaves the job unchanged. Events and advanced
+result** retries the observation and leaves the job unchanged. Activity and advanced
 job tools remain available.
 
 **Guest tools** checks the selected guest before asking for SSH settings. A
