@@ -5,14 +5,23 @@ VM.** This is the owner-test beta requested within one day. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `e53f2e2`.
-The unified OVA/ISO/disk import and hardware controls remain available. Guest tools
-now checks the VM's connection and offers a guided, reviewed setup action when it
-is missing. Backup recovery uses saved receipts instead of manually entered hashes.
-The real channel edit and before/after 80×24 TUI guidance passed on a fresh fixture;
-existing guests, jobs and media were preserved. See [current evidence](evidence/guest-integration-receipts-run.md)
-for hashes and limits. Actual Linux guest-tools installation and complete release
-qualification remain open. Exit any open TUI and run `virmill` again.
+**Current UI update:** installed CLI and coordinator use `e8965ca`.
+Import and creation now save choices across restart, including advanced settings,
+with clear Resume/Start new controls. The unified OVA/ISO/disk import, hardware
+controls, guided guest-agent connection setup and saved backup receipts remain
+available. A real Fedora 44 guest passed missing-agent installation, verification,
+native agent ping and a second run that skipped installation. The installed
+80×24 TUI passed basic draft edit/restart/resume/Start new checks. Existing guests,
+jobs and source media were preserved. See [current evidence](evidence/wizard-drafts-tools-run.md)
+for hashes and limits. TUI guest-tools submission, other guest profiles/desktop
+integration and complete release qualification remain open. Exit any open TUI
+and run `virmill` again.
+
+One historical fixture job remains recovery-required because the previous build
+rejected its own agent connection change after installing packages. Its owned
+guest `virmill-tools-f9c6c7b4` is retained running for investigation. The corrected
+fresh test guest `virmill-tools-71001e0c` is stopped. Preserve these test records;
+the old job is not evidence of a new failed installation in the current build.
 
 ## Start testing now
 

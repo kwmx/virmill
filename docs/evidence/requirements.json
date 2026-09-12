@@ -4995,7 +4995,12 @@
         "wizard-drafts-tools-restart-001",
         "wizard-drafts-tools-focused-001",
         "wizard-drafts-tui-native-001",
-        "guest-tools-fedora-live-002"
+        "guest-tools-fedora-live-002",
+        "wizard-drafts-ui-final-001",
+        "wizard-drafts-packages-final-001",
+        "wizard-drafts-upgrade-final-001",
+        "wizard-drafts-restart-final-001",
+        "wizard-drafts-tui-final-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5260,7 +5265,12 @@
         "wizard-drafts-tools-upgrade-001",
         "wizard-drafts-tools-restart-001",
         "wizard-drafts-tools-focused-001",
-        "wizard-drafts-tui-native-001"
+        "wizard-drafts-tui-native-001",
+        "wizard-drafts-ui-final-001",
+        "wizard-drafts-packages-final-001",
+        "wizard-drafts-upgrade-final-001",
+        "wizard-drafts-restart-final-001",
+        "wizard-drafts-tui-final-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

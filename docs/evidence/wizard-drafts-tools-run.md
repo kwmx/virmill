@@ -64,5 +64,30 @@ the owner's drafts untouched. No source parsing, plan, job or guest mutation ran
 Actual frames exposed a misleading overview footer under the resume modal; a
 small follow-up displays the modal's Enter/Tab/Esc controls instead.
 
+## Final beta delivery
+
+Final installed source is `e8965ca87080fae9e27ecb73e0fa488f55545767`.
+`wizard-drafts-tui-final-001` passed the installed edit/restart/resume/Start new
+sequence again, including explicit Enter/Tab/Esc footer assertions and unchanged
+guest/job/media observations. The captured final resume screen was reviewed.
+The only runtime code change since the passing native installation is the
+resume-dialog footer. The TUI race suite and all three package checks passed
+again. Upgrade/restart checks preserved all 16 journal jobs, existing guests and
+media; the ordinary-user coordinator PID is 86305.
+
+Final CLI SHA-256:
+`115be5b5a2d94858ed4826cce64688ae3d38a8a35e1e37eccc611ee2e7cce13b`.
+Final coordinator SHA-256:
+`8e5394025ae58c202ba91a14f7f66f81f0d0e386e9d075f61ecc8e6d5dd5d183`.
+Final core RPM SHA-256:
+`22bb586d26d31bbb253e16e2bcf922c4ccc7bcee55076abc7f18307e29bad1a2`.
+The implementation-tree digest is
+`9c2de51d4a5e0fbe671c289b2ec2a23b9706c7056e674443021fa0a5377d6125`.
+
+Tracked-file audit found no private host state, build outputs, packages, guest
+media, credential keys or journals. Generated artifacts remain ignored; source,
+fixture recipes, documentation and intentional evidence logs are tracked. No
+publication or push occurred.
+
 All 71 acceptance scenarios remain required. This slice does not promote an
 acceptance status or imply full release readiness.
