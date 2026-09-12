@@ -5,7 +5,14 @@ Fedora 44 test VM.** SSH access and coordinator readiness are verified after reb
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `e318527`.
+**Current UI update:** installed CLI and coordinator use `7efd7c1`.
+**Disks and boot** now maintains a complete order when you move a device.
+**Attach only** excludes installer media from booting and closes the numbering gap;
+re-enabling it inserts it back into the order. Prepared ISO sources receive the
+host-supported SATA suggestion; saved controller choices remain unchanged.
+The real 80×24 wizard edit/continue/draft-preservation test passed with existing
+guests, jobs, networks and media unchanged. See [boot-order evidence](evidence/creation-boot-order-run.md).
+
 VM setup's Networks step now offers **Create network** and **Refresh networks**
 while preserving CPU/RAM, disks and adapter choices. Native cancel/refresh and
 CLI/TUI plan comparison passed. Network submission exposed missing helper setup;
@@ -84,8 +91,8 @@ virmill
 ```
 
 Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
-`build/creation-network-corrected-delivery/`. The full installed build revision is
-`e318527fb0d97b45d4d8859f45f11583eb427186`.
+`build/boot-order-delivery/`. The full installed build revision is
+`7efd7c14cf830abcde4ce04fe446f4012f5cf61a`.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use
