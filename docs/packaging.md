@@ -11,8 +11,9 @@ SHA-256 metadata. Version is `1.0.0-beta.3` for owner testing; the artifacts are
 not release-qualified. DEBs are checked with dpkg and lintian by installing, running
 and purging them in Debian 13 and Ubuntu 24.04 containers
 (`tests/fixtures/release/deb_container_check.sh`); that is not a host install
-matrix. The binaries keep their symbols, so lintian still reports
-`unstripped-binary-or-object`. No package is uploaded, signed or installed by the build.
+matrix. Binaries are built with `-s -w`: no symbol table or DWARF debug
+information, though Go's own function table still names functions in panic
+stack traces. No package is uploaded, signed or installed by the build.
 
 Package assembly relocates Markdown links to the actual installed examples,
 schemas, SDK and documents. The language-neutral plugin protocol ships with the

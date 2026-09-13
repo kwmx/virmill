@@ -12,7 +12,7 @@ epoch=${SOURCE_DATE_EPOCH:-0}
 mkdir -p build/bin
 printf 'module virmill.local/build-artifacts\n\ngo 1.27.1\n' > build/go.mod
 for command in virmill virmilld virmill-host-helper; do
-  ./scripts/go build -mod=vendor -buildvcs=false -trimpath -tags libvirt_dlopen -ldflags "-buildid= -X virmill.local/core/internal/buildinfo.Revision=$revision -X virmill.local/core/internal/buildinfo.BuildTime=$epoch" -o "build/bin/$command" "./cmd/$command"
+  ./scripts/go build -mod=vendor -buildvcs=false -trimpath -tags libvirt_dlopen -ldflags "-s -w -buildid= -X virmill.local/core/internal/buildinfo.Revision=$revision -X virmill.local/core/internal/buildinfo.BuildTime=$epoch" -o "build/bin/$command" "./cmd/$command"
 done
 build/bin/virmill reference > docs/cli-reference.md
 mkdir -p packaging/completions
