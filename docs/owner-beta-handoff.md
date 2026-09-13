@@ -1,19 +1,27 @@
 # Owner beta handoff — updated 13 September 2026
 
-**Virmill 1.0.0-beta.1 was installed and verified running on the authorized
-Fedora 44 test VM.** SSH access and coordinator readiness are verified after reboot. This is an owner-test beta. Complete 1.0 remains
-unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
-57 in progress and 12 not yet implemented in the full release tracker.
+**Virmill 1.0.0-beta.2 is installed and verified on the authorized Fedora 44
+test VM.** This is an owner-test pre-release, not a certified 1.0. All 71
+acceptance scenarios remain mandatory, with 2 accepted, 57 in progress and 12 not
+yet implemented in the full release tracker.
 
-**Current beta:** installed CLI and coordinator use `7005898`.
-**Remove VM** now offers unchecked disk choices, exact-name confirmation and a
+**Current beta:** `1.0.0-beta.2`, build revision `b327d7b`. It is the `7005898`
+implementation with its own version number; earlier builds all reported beta.1.
+The in-place upgrade from beta.1, CLI and 80×24 TUI smoke test, network forms,
+Jobs → Activity, TUI workspace and source detection walkthroughs, and a generated
+ISO → create → start → console → SPICE viewer run passed. Two clean builds were
+byte-identical. The run's generated fixture `virmill-spice-e79f41dbb545` is
+retained stopped and contains only a boot marker. See
+[beta.2 verification](evidence/beta2-release-run.md), including the failed probe
+runs and their corrections.
+
+**Remove VM** offers unchecked disk choices, exact-name confirmation and a
 separate review. The CLI supports `--delete-disk vda` (repeat or use a comma list).
 Native CLI one-disk deletion and actual 80×24 TUI two-disk deletion passed on
 generated BIOS fixtures. Shared-disk refusal, cancellation, CLI/TUI plan parity,
 exact native absence and source preservation passed. Existing system guests and
 all historical jobs were preserved. See [selected-disk evidence](evidence/disk-removal-run.md)
-and [removal instructions](vm-removal.md). Unsigned RPM/DEB packages are retained
-in `build/disk-removal-handoff-delivery/dist/`.
+and [removal instructions](vm-removal.md).
 
 The previous **Jobs → Activity** update remains included.
 **Jobs → Activity** opens the selected job directly with full scrollable messages,
@@ -106,20 +114,22 @@ virmill version --output json
 virmill
 ```
 
-Current unsigned RPM/DEB packages and their SHA-256 manifest are retained in
-`build/disk-removal-handoff-delivery/dist/`. The full installed build revision is
-`70058986dad108a03f27d3ced9ec67458e9430e8`, confirmed by `virmill version` on the
-test VM on 13 September 2026. The earlier `build/job-activity-final-delivery/`
-(`dc45ee3`) packages are superseded.
+Current unsigned RPM/DEB packages, the source archive and `SHA256SUMS` are
+retained in `build/beta2-delivery/dist/`. The installed build revision is
+`b327d7bdef5e3c159fcfea1df1cc346e603837d9`, and `virmill version` reports
+`1.0.0-beta.2`. The `7005898` packages in `build/disk-removal-handoff-delivery/`
+are superseded.
 
 | Current artifact | SHA-256 |
 | --- | --- |
-| `virmill-1.0.0-0.beta.1.x86_64.rpm` | `c029db4057543745cb0058ef37d336afbd6a4d605f0bf72a1126ddfe654a36b6` |
-| `virmill-host-helper-1.0.0-0.beta.1.x86_64.rpm` | `f2d56339e9c075291d4565f94d81d181f16568013bd25193f32e81999659b0f7` |
-| `virmill_1.0.0~beta.1_amd64.deb` | `6318f5da2b502bdca793bebc808e3064af7fb77dde16cf5927c3d325c8eefede` |
-| `virmill-host-helper_1.0.0~beta.1_amd64.deb` | `88c4ad20098f67c9ca34b0a1a87f4c95b1fe8900640b0758d26ee1cdfa664ab1` |
-| installed `/usr/bin/virmill` | `6e9e7ee181ffeba910bcaba37a61faa9471eedd8b209865bc2a4f8f407beca28` |
-| installed `/usr/bin/virmilld` | `84d6eaaccf700956a4a34faf9f9590f84d722fd55f7c39064381502f2002b7bb` |
+| `virmill-1.0.0-0.beta.2.x86_64.rpm` | `752dd92f7967e17e45a780516713d4de4cb859b0e86e1e9b655e4c36ab84b7ae` |
+| `virmill-host-helper-1.0.0-0.beta.2.x86_64.rpm` | `d549501656ed422a4d3e453f059fe6dbc728fdfbf4100db25c5108acd1c2f030` |
+| `virmill_1.0.0~beta.2_amd64.deb` | `e898a5603d4b7bdbc7459b5ebd7e90648ff789ea1085c830182cf139ddaeffbf` |
+| `virmill-host-helper_1.0.0~beta.2_amd64.deb` | `439afc1d9e03ff9efddbe8efda205d2a1dd0d9427901ded01d1c25d05f03b1e5` |
+| `virmill-1.0.0-beta.2-source.tar.gz` | `a5d774303ab07539ca5c64a58dc969398dc098d78eb21a4848a6c5c82a46a55c` |
+| installed `/usr/bin/virmill` | `8e3cfa951f3a9ec6f7ba26ec40cd856916096c5aa459a823133a0144e9a5512b` |
+| installed `/usr/bin/virmilld` | `a61db5bf894070c0e63eb0787b6d25878f1974f783edc5d066697d42f0e1ad3a` |
+| installed `/usr/libexec/virmill-host-helper` | `331ca26ba7e0329d644c0da8e96756b3aa422c479dcef7fc1d5fdfe1a4f36c70` |
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use

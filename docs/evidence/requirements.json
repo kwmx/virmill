@@ -778,7 +778,12 @@
         "spice-fixture-unit-002",
         "spice-viewer-recheck-native-001",
         "creation-boot-order-ui-001",
-        "creation-boot-order-native-001"
+        "creation-boot-order-native-001",
+        "beta2-general-sources-native-001",
+        "beta2-spice-creation-native-001",
+        "beta2-general-sources-native-002",
+        "beta2-general-sources-native-003",
+        "beta2-general-sources-native-004"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -1082,7 +1087,12 @@
         "spice-creation-core-001",
         "spice-creation-native-001",
         "creation-boot-order-ui-001",
-        "creation-boot-order-native-001"
+        "creation-boot-order-native-001",
+        "beta2-general-sources-native-001",
+        "beta2-spice-creation-native-001",
+        "beta2-general-sources-native-002",
+        "beta2-general-sources-native-003",
+        "beta2-general-sources-native-004"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
@@ -1428,7 +1438,8 @@
         "guest-channel-native-001",
         "spice-creation-core-001",
         "spice-creation-native-001",
-        "spice-viewer-recheck-native-001"
+        "spice-viewer-recheck-native-001",
+        "beta2-spice-creation-native-001"
       ],
       "outstanding": [
         "Result separates verified volumes/definition from guest boot/setup/connectivity, all guest flags remain false. One native registration passed; automated guest readiness and the remaining source/profile matrix still require evidence.",
@@ -1565,7 +1576,8 @@
         "network-form-core-001",
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
-        "creation-network-handoff-native-001"
+        "creation-network-handoff-native-001",
+        "beta2-network-form-native-001"
       ],
       "outstanding": [
         "Allowed-host NAT/lab definition, authenticated IPv6 filters and activation now execute through shared CLI/TUI. Native namespace DHCP, peer/host IPv4, NAT DNS/TCP and lab no-default-route checks passed in native005; its overall result failed a strict active-zone comparison while existing ens19 DHCP repeatedly failed. Full required profiles and real guest/host preservation qualification remain open."
@@ -1716,7 +1728,8 @@
         "network-form-core-001",
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
-        "creation-network-handoff-native-001"
+        "creation-network-handoff-native-001",
+        "beta2-network-form-native-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1794,7 +1807,8 @@
         "network-form-core-001",
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
-        "creation-network-handoff-native-001"
+        "creation-network-handoff-native-001",
+        "beta2-network-form-native-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1979,7 +1993,8 @@
         "network-form-core-001",
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
-        "creation-network-handoff-native-001"
+        "creation-network-handoff-native-001",
+        "beta2-network-form-native-001"
       ],
       "outstanding": [
         "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic.",
@@ -3092,7 +3107,8 @@
         "spice-creation-restart-001",
         "spice-creation-native-001",
         "spice-fixture-unit-002",
-        "spice-viewer-recheck-native-001"
+        "spice-viewer-recheck-native-001",
+        "beta2-spice-creation-native-001"
       ],
       "outstanding": [
         "Serial/SSH/viewer access and supported shares/clipboard honor opt-in and endpoint exposure rules."
@@ -3313,7 +3329,11 @@
         "guided-job-core-001",
         "guided-job-ui-002",
         "guest-tools-tui-native-001",
-        "guest-tools-tui-native-002"
+        "guest-tools-tui-native-002",
+        "beta2-general-sources-native-001",
+        "beta2-general-sources-native-002",
+        "beta2-general-sources-native-003",
+        "beta2-general-sources-native-004"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -3880,7 +3900,8 @@
         "disk-removal-restart-native-003",
         "disk-removal-native-003",
         "disk-removal-restart-native-004",
-        "disk-removal-native-004"
+        "disk-removal-native-004",
+        "beta2-job-activity-native-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -4003,7 +4024,8 @@
         "job-activity-native-001",
         "job-activity-ui-002",
         "job-activity-fixture-002",
-        "job-activity-native-002"
+        "job-activity-native-002",
+        "beta2-job-activity-native-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -5665,7 +5687,19 @@
         "disk-removal-native-003",
         "disk-removal-confirmation-004",
         "disk-removal-confirmation-005",
-        "disk-removal-native-004"
+        "disk-removal-native-004",
+        "beta2-network-form-native-001",
+        "beta2-job-activity-native-001",
+        "beta2-general-sources-native-001",
+        "beta2-tui-workspace-native-001",
+        "beta2-spice-creation-native-001",
+        "beta2-tui-workspace-native-002",
+        "beta2-general-sources-native-002",
+        "beta2-tui-workspace-native-003",
+        "beta2-general-sources-native-003",
+        "beta2-tui-workspace-native-004",
+        "beta2-tui-workspace-native-005",
+        "beta2-general-sources-native-004"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -6117,7 +6151,19 @@
         "disk-removal-packages-004",
         "disk-removal-upgrade-native-004",
         "disk-removal-restart-native-004",
-        "disk-removal-native-004"
+        "disk-removal-native-004",
+        "beta2-network-form-native-001",
+        "beta2-job-activity-native-001",
+        "beta2-general-sources-native-001",
+        "beta2-tui-workspace-native-001",
+        "beta2-spice-creation-native-001",
+        "beta2-tui-workspace-native-002",
+        "beta2-general-sources-native-002",
+        "beta2-tui-workspace-native-003",
+        "beta2-general-sources-native-003",
+        "beta2-tui-workspace-native-004",
+        "beta2-tui-workspace-native-005",
+        "beta2-general-sources-native-004"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
@@ -6334,7 +6380,12 @@
         "tui-workspace-native-002",
         "tui-workspace-race-001",
         "tui-workspace-frozen-race-001",
-        "tui-workspace-installed-native-001"
+        "tui-workspace-installed-native-001",
+        "beta2-tui-workspace-native-001",
+        "beta2-tui-workspace-native-002",
+        "beta2-tui-workspace-native-003",
+        "beta2-tui-workspace-native-004",
+        "beta2-tui-workspace-native-005"
       ],
       "outstanding": [
         "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",
@@ -6525,13 +6576,16 @@
         "tui-workspace-artifacts-001",
         "tui-workspace-artifacts-002",
         "tui-workspace-upgrade-native-001",
-        "import-options-coordinator-003"
+        "import-options-coordinator-003",
+        "beta2-install-native-001",
+        "beta2-reproducibility-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Package source selection requires indexed regular files and exact generated binaries; symlinks, stale-output attribution and missing packages are refused. Twenty generated fixture tests, two identical offline native RPM/DEB builds, actual package/private coordinator checks and one disposable Fedora RPM upgrade passed on frozen dc2ab1a. Full distribution installation matrix, independent-environment reproducibility and installed documentation links still require release evidence.",
-        "Frozen 66c2d1f produced two identical offline native builds of three binaries/four packages; 62 package-input/staged-document checks and all three package/private-coordinator tests passed. The initial document check ran before staging and failed; the first artifact run skipped the IPC opt-in, with corrected evidence retained separately. Signing/publication and the full installation/distribution/release matrix remain required."
+        "Frozen 66c2d1f produced two identical offline native builds of three binaries/four packages; 62 package-input/staged-document checks and all three package/private-coordinator tests passed. The initial document check ran before staging and failed; the first artifact run skipped the IPC opt-in, with corrected evidence retained separately. Signing/publication and the full installation/distribution/release matrix remain required.",
+        "1.0.0-beta.2 (b327d7b) upgraded both beta.1 RPMs in place on the authorized Fedora 44 VM with guests, networks, source media and the inactive helper policy preserved (beta2-install-native-001). Two clean builds were byte-identical and match the delivered unsigned packages (beta2-reproducibility-001). Clean-host install, uninstall, migration, Debian/Ubuntu installation and signing remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -7117,11 +7171,13 @@
         "beta-recovery-fix-artifacts-001",
         "beta-owner-artifacts-001",
         "beta-owner-install-native-001",
-        "beta-owner-install-native-002"
+        "beta-owner-install-native-002",
+        "beta2-install-native-001"
       ],
       "outstanding": [
         "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open.",
-        "The recorder now rejects unknown or duplicate acceptance IDs against the preserved 71-ID contract before executing commands or writing evidence. Ten generated-file tests passed; this does not qualify incomplete workflows."
+        "The recorder now rejects unknown or duplicate acceptance IDs against the preserved 71-ID contract before executing commands or writing evidence. Ten generated-file tests passed; this does not qualify incomplete workflows.",
+        "1.0.0-beta.2 native release checks, failed fixture runs and an owner-state correction are recorded in docs/evidence/beta2-release-run.md. The release gate still blocks 1.0."
       ],
       "hardwareVerified": false,
       "released": false
