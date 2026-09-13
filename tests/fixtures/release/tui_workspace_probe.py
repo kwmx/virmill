@@ -458,17 +458,19 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       terminal.send(b'\r'))
         terminal.wait('filtered native UUID details', lambda text: detail_page(text) and selected in text, terminal.send(b'\r'))
         terminal.wait('CPU and memory opens a labeled form for selected VM', lambda text:
-                      'Edit CPU and memory for next boot' in text and 'CPU count' in text and vms[selected]['name'] in text,
+                      'CPU and RAM' in text and 'Requested CPU cores' in text and 'Next boot' in text and vms[selected]['name'] in text,
                       terminal.send(b'e'))
         terminal.wait('Esc cancels labeled form without submitting', lambda text: detail_page(text) and selected in text,
                       terminal.send(b'\x1b'))
+        # The review opens at its summary; exact plan identities follow below it.
         terminal.wait('Start creates only a review plan for the selected VM', lambda text:
-                      'Plan ID' in text and 'Plan digest' in text and selected in text,
+                      'Nothing has been applied' in text and 'Enter Review & apply' in text and selected in text,
                       terminal.send(b's'))
         terminal.wait('Enter opens explicit confirmation without applying', lambda text:
-                      'Confirm reviewed changes' in text and 'Digest:' in text,
+                      'Confirm reviewed changes' in text,
                       terminal.send(b'\r'))
-        terminal.wait('Esc returns to the complete review', lambda text: 'Plan ID' in text and 'Plan digest' in text,
+        terminal.wait('Esc returns to the complete review', lambda text:
+                      'Enter Review & apply' in text and 'Confirm reviewed changes' not in text,
                       terminal.send(b'\x1b'))
         terminal.wait('Esc dismisses the unapplied plan', lambda text: detail_page(text) and selected in text,
                       terminal.send(b'\x1b'))
@@ -518,9 +520,6 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       f'1 of {len(vms)} selected' in text, terminal.send(b'\x1b'))
         source_menu = lambda text: 'Import / Choose a source' in text and all(
             choice in text for choice in ('OVA appliance', 'ISO installer', 'Existing disk images'))
-        terminal.wait('Import starts with exactly three understandable source choices', lambda text:
-                      source_menu(text) and 'of 3' in text and 'Inspect' not in text,
-                      terminal.send(b'i'))
         picker = lambda text: re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is not None and 'Esc' in text
         def choose_browser_entry(name, description):
             terminal.wait(description + ' filter focus', lambda text:
@@ -533,9 +532,18 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                           picker(text) and 'Enter open/select' in text and 'Enter done' not in text,
                           terminal.send(b'\r'))
 
-        terminal.wait('Empty source field opens browser at home, not fixture media', lambda text:
-                      picker(text) and str(media_root.parent) in text and str(media_root) not in text,
-                      terminal.send(b'\r'))
+        import_form = lambda text: re.search(r'Virmill\s+/ Import', text) is not None and not picker(text)
+        # Import opens the file browser directly. A saved setup is offered first;
+        # Start new never resumes or submits it.
+        opened = terminal.wait('Import opens browser at home, or offers saved setup', lambda text:
+                               'Continue your saved setup?' in text or
+                               (picker(text) and str(media_root.parent) in text and str(media_root) not in text),
+                               terminal.send(b'i'))
+        if 'Continue your saved setup?' in opened:
+            terminal.wait('Start new setup focused', lambda text: '> [ Start new setup ]' in text, terminal.send(b'\t'))
+            terminal.wait('Start new setup opens browser at home, not fixture media', lambda text:
+                          picker(text) and str(media_root.parent) in text and str(media_root) not in text,
+                          terminal.send(b'\r'))
         choose_browser_entry(media_root.name, 'Choose test media folder explicitly')
         terminal.wait('Explicitly enter existing test media folder', lambda text:
                       picker(text) and str(media_root) in text, terminal.send(b'\r'))
@@ -561,29 +569,11 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         terminal.wait('Backspace returns to observed parent directory', lambda text:
                       picker(text) and str(traversal_parent) in text and str(traversal_path) not in text,
                       terminal.send(b'\x7f'))
-        terminal.wait('Esc cancels browser and returns to import form', lambda text:
-                      re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is None and 'OVA appliance' in text and
-                      ('Browse' in text or 'browse' in text), terminal.send(b'\x1b'))
-        terminal.wait('Ctrl+O reopens browser from OVA file field', lambda text:
-                      picker(text) and str(media_root.parent) in text and str(media_root) not in text,
-                      terminal.send(b'\x0f'))
-        choose_browser_entry(media_root.name, 'Choose test media folder again')
-        terminal.wait('Explicitly reopen test media folder', lambda text:
-                      picker(text) and str(media_root) in text, terminal.send(b'\r'))
-
-
-        if selected_file.parent != media_root:
-            choose_browser_entry(folder, 'Reopen source folder')
-            terminal.wait('Return to observed folder to choose existing file', lambda text:
-                          picker(text) and str(selected_file.parent) in text,
-                          terminal.send(b'\r'))
-        choose_browser_entry(selected_file.name, 'Choose existing source file')
-        terminal.wait('Selected file fills OVA field without submitting import', lambda text:
-                      re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is None and 'OVA appliance' in text and 'OVA file' in text and
-                      selected_file.name[-24:] in text,
-                      terminal.send(b'\r'))
-        terminal.wait('Esc cancels populated import form back to source choices', source_menu,
-                      terminal.send(b'\x1b'))
+        # Choosing a file starts a read-only source description; general_sources_probe covers it.
+        terminal.wait('Esc cancels browser and returns to import form', import_form, terminal.send(b'\x1b'))
+        terminal.wait('Ctrl+O reopens browser from source field', picker, terminal.send(b'\x0f'))
+        terminal.wait('Esc closes reopened browser without choosing a file', import_form, terminal.send(b'\x1b'))
+        terminal.wait('Esc returns from import form to source choices', source_menu, terminal.send(b'\x1b'))
         terminal.wait('Esc closes source choices back to VM workspace', vm_table,
                       terminal.send(b'\x1b'))
         terminal.wait('Jobs workspace has loaded observations', lambda text: page(text, 'Jobs') and

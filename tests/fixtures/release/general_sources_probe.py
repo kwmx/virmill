@@ -114,7 +114,12 @@ def picker(text):
 
 
 def select_source(c, path):
-    c.wait('Import opens directly in mixed source browser', picker, b'i')
+    # A saved setup is offered before the browser; Start new never resumes it.
+    text = c.wait('Import opens mixed source browser or offers saved setup',
+                  lambda text: picker(text) or 'Continue your saved setup?' in text, b'i')
+    if not picker(text):
+        c.wait('Start new setup focused', lambda text: '> [ Start new setup ]' in text, b'\t')
+        c.wait('Start new setup opens mixed source browser', picker, b'\r')
     c.wait('Browser location input', lambda text: picker(text) and 'Path:' in text, b'\x0c')
     c.t.send(b'\x15')
     while c.t.read(.1) and not c.t.screen.complete(): pass
