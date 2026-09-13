@@ -37,6 +37,15 @@ func TestRemovalVolumeFormatRejectsHiddenStorageProfiles(t *testing.T) {
 	if format, e := removalVolumeFormat(base, "disk.qcow2", "/pool/disk.qcow2"); e != nil || format != "qcow2" {
 		t.Fatal(format, e)
 	}
+	observed := strings.Replace(base, "</target>", "<clusterSize unit='B'>65536</clusterSize></target>", 1)
+	if format, e := removalVolumeFormat(observed, "disk.qcow2", "/pool/disk.qcow2"); e != nil || format != "qcow2" {
+		t.Fatal(format, e)
+	}
+	for _, value := range []string{"<clusterSize unit='B'>0</clusterSize>", "<clusterSize unit='invalid'>65536</clusterSize>", "<clusterSize unit='B'>-1</clusterSize>", "<clusterSize unit='B'><unknown/></clusterSize>"} {
+		if _, e := removalVolumeFormat(strings.Replace(base, "</target>", value+"</target>", 1), "disk.qcow2", "/pool/disk.qcow2"); e == nil {
+			t.Fatal("invalid cluster size accepted", value)
+		}
+	}
 	for _, raw := range []string{strings.Replace(base, "type=\"file\"", "type=\"block\"", 1), strings.Replace(base, "qcow2\"/>", "vmdk\"/>", 1), strings.Replace(base, "</target>", "<encryption/></target>", 1), strings.Replace(base, "</volume>", "<unrecognized/></volume>", 1), strings.Replace(base, "<name>", "<name attr='x'>", 1)} {
 		if _, e := removalVolumeFormat(raw, "disk.qcow2", "/pool/disk.qcow2"); e == nil {
 			t.Fatal("unsupported volume accepted", raw)

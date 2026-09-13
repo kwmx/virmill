@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	native "libvirt.org/go/libvirt"
@@ -256,8 +257,19 @@ func removalVolumeFormat(raw, name, path string) (string, error) {
 		if _, err := coldChild(target, n.name.Local, false); err != nil {
 			return "", err
 		}
-		if !coldEnum(n.name.Local, "path", "format", "permissions", "timestamps", "compat", "features") {
+		if !coldEnum(n.name.Local, "path", "format", "permissions", "timestamps", "compat", "features", "clusterSize") {
 			return "", domain.Fail("UNSUPPORTED_CAPABILITY", "unknown or encrypted volume target requires retention")
+		}
+	}
+	if cluster, e := coldChild(target, "clusterSize", false); e != nil {
+		return "", e
+	} else if cluster != nil {
+		if e = coldAttrs(cluster, nil, []string{"unit"}); e != nil {
+			return "", e
+		}
+		size, parseErr := strconv.ParseUint(strings.TrimSpace(cluster.text), 10, 64)
+		if len(cluster.children) != 0 || parseErr != nil || size == 0 || !coldEnum(attr(cluster, "unit"), "", "B", "bytes") {
+			return "", domain.Fail("UNSUPPORTED_CAPABILITY", "invalid native volume cluster size requires retention")
 		}
 	}
 	return attr(format, "type"), nil
