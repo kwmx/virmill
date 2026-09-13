@@ -1,15 +1,17 @@
 #!/bin/sh
 # Install-test built DEBs in throwaway Debian 13 and Ubuntu 24.04 containers.
 #
-# Usage: deb_container_check.sh DIST_DIRECTORY
+# Usage: deb_container_check.sh CORE_DEB HELPER_DEB
 #
 # Needs rootless podman and network access for images and apt. Each distro gets
-# a read-only copy of the two DEBs. It checks them with dpkg-deb and lintian,
+# a read-only copy of exactly these two DEBs. It checks them with dpkg-deb and lintian,
 # installs them with apt, verifies files and systemd units, runs the CLI as an
 # ordinary user, then removes and purges them. Images this script pulls are
 # removed again. Containers are not a host install matrix.
 set -eu
-dist=$(cd "$1" && pwd)
+[ "$#" = 2 ] && [ -f "$1" ] && [ -f "$2" ] || { echo "usage: $0 CORE_DEB HELPER_DEB" >&2; exit 2; }
+core=$(cd "$(dirname "$1")" && pwd)/$(basename "$1")
+helper=$(cd "$(dirname "$2")" && pwd)/$(basename "$2")
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
@@ -17,7 +19,8 @@ cat > "$work/inner.sh" <<'EOS'
 set -u
 export DEBIAN_FRONTEND=noninteractive
 cd /pkgs
-core=$(ls virmill_*_amd64.deb); helper=$(ls virmill-host-helper_*_amd64.deb)
+set -- virmill_*_amd64.deb; [ "$#" = 1 ] || { echo "FAIL: expected one core DEB, found: $*"; exit 1; }; core=$1
+set -- virmill-host-helper_*_amd64.deb; [ "$#" = 1 ] || { echo "FAIL: expected one helper DEB, found: $*"; exit 1; }; helper=$1
 failed=0
 fail() { echo "FAIL: $*"; failed=1; }
 . /etc/os-release; echo "== $PRETTY_NAME"
@@ -54,7 +57,7 @@ status=0
 for image in docker.io/library/debian:13 docker.io/library/ubuntu:24.04; do
   dir="$work/$(printf '%s' "$image" | tr -c 'a-z0-9' '_')"
   mkdir "$dir"
-  cp "$dist"/virmill_*_amd64.deb "$dist"/virmill-host-helper_*_amd64.deb "$work/inner.sh" "$dir/"
+  cp "$core" "$helper" "$work/inner.sh" "$dir/"
   pulled=no
   podman image exists "$image" || pulled=yes
   echo "######## $image"
