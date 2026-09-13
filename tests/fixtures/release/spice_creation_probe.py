@@ -344,7 +344,7 @@ def execute(stage):
             wait('Overview', lambda s: 'Virtual machines' in s)
             wait('VM table', lambda s: 'NAME' in s and 'STATE' in s, b'2')
             wait('Filter focus', lambda s: 'Enter Keep filter' in s, b'/')
-            wait('Owned fixture selected', lambda s: name in s and '1 of 1 selected' in s, name.encode())
+            wait('Owned fixture selected', lambda s: name in s and re.search(r'row 1 of 1\b', s), name.encode())
             wait('Filter kept', lambda s: 'Enter Keep filter' not in s, b'\r')
             wait('VM details', lambda s: 'VM details' in s and name in s, b'\r')
             wait('VM action buttons focused', lambda screen: '>[' in screen, b'\t')

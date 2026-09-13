@@ -121,7 +121,7 @@ def execute(root):
             wait('Overview', lambda s: 'Virtual machines' in s)
             wait('VM table', lambda s: 'NAME' in s and 'STATE' in s, b'2')
             wait('Filter VM', lambda s: 'Enter Keep filter' in s, b'/')
-            wait('Exact retained VM selected', lambda s: NAME in s and '1 of 1 selected' in s, NAME.encode())
+            wait('Exact retained VM selected', lambda s: NAME in s and re.search(r'row 1 of 1\b', s), NAME.encode())
             wait('Keep exact selection', lambda s: 'Enter Keep filter' not in s, b'\r')
             wait('Exact VM details', lambda s: 'VM details' in s and NAME in s and IDENTITY in s, b'\r')
             wait('More VM tasks', lambda s: 'VMs / More tasks' in s and NAME in s, b'a')

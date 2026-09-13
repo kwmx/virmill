@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The TUI frame is simpler. The header shows the page, running or failed jobs
+  and the connection; one line lists the keys for the current page; buttons
+  wrap onto a second row instead of hiding behind `>`. Empty lists say what
+  belongs there and how to add it, lists show "2 VMs · row 1 of 2", and
+  details pages offer More and Back instead of list buttons. Unfinished
+  sections are labeled: Templates (not ready), Labs (validate only), Devices
+  (discovery only) and Plugins (preview).
 - `virmill doctor` prints a readable report: what is ready, what is missing and
   why, and the exact `dnf` or `apt` command to install it. It now checks that
   libvirt is installed and running and that you can open `/dev/kvm`, checks

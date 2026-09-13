@@ -1486,9 +1486,22 @@ func sizeText(v any) string {
 	return "unknown"
 }
 func (m Workspace) status() string {
-	jobs := array(m.Data["jobs"])
+	if _, ok := m.Data["jobs"]; !ok {
+		return "Loading jobs..."
+	}
+	if badge := m.jobBadge(); badge != "" {
+		return strings.ToUpper(badge[:1]) + badge[1:]
+	}
+	return "No jobs running"
+}
+
+// jobBadge summarizes jobs for the header; empty when nothing is running or failing.
+func (m Workspace) jobBadge() string {
+	if m.Errors["jobs"] != "" {
+		return "jobs unavailable"
+	}
 	active, attention := 0, 0
-	for _, j := range jobs {
+	for _, j := range array(m.Data["jobs"]) {
 		state := rowState(j)
 		if state == "failed" || state == "partial" || state == "recovery-required" || state == "interrupted" {
 			attention++
@@ -1496,16 +1509,139 @@ func (m Workspace) status() string {
 			active++
 		}
 	}
-	if m.Errors["jobs"] != "" {
-		return "Jobs unavailable - r refreshes observations"
+	parts := []string{}
+	if active > 0 {
+		parts = append(parts, countLabel(active, "job running", "jobs running"))
 	}
-	if _, ok := m.Data["jobs"]; !ok {
-		return "Jobs: loading"
+	if attention > 0 {
+		parts = append(parts, countLabel(attention, "job needs attention", "jobs need attention"))
 	}
-	return fmt.Sprintf("Jobs: %d active / %d need attention", active, attention)
+	return strings.Join(parts, ", ")
 }
+
+// header puts the page title on the left and jobs plus the connection on the right.
+func (m Workspace) header(title string, width int, modal bool) string {
+	left := m.color(" Virmill ", "1;35") + m.color(" / "+title, "1")
+	connection := validation.SafeText(m.Connection)
+	right := connection
+	if badge := m.jobBadge(); badge != "" && !modal {
+		right = badge + "   " + connection
+	}
+	gap := width - ansi.StringWidth(left) - ansi.StringWidth(right) - 1
+	if gap < 3 && right != connection {
+		right = connection
+		gap = width - ansi.StringWidth(left) - ansi.StringWidth(right) - 1
+	}
+	return ansi.Truncate(left+strings.Repeat(" ", max(3, gap))+right, width, "")
+}
+
+// navLine lists the main sections in narrow terminals; the sidebar and Help list all.
+func (m Workspace) navLine() string {
+	parts := []string{}
+	for _, i := range []int{0, 1, 2, 3, 6, 8, 10} {
+		key := fmt.Sprint(i + 1)
+		if i == 10 {
+			key = ","
+		}
+		item := key + " " + sections[i]
+		if i == m.Section {
+			item = m.color(item, "1;35")
+		}
+		parts = append(parts, item)
+	}
+	return strings.Join(parts, "  ")
+}
+
+// screenHints lists the keys that matter on the current list or details page.
+func (m Workspace) screenHints() string {
+	switch {
+	case m.Detail != nil:
+		return "x Technical details   PgUp/PgDn Scroll   Esc Back   ? Help"
+	case m.Section == 10:
+		return "PgUp/PgDn Scroll   : All tools   ? Help"
+	case workspaceKinds[m.Section] == "" || len(m.rows()) == 0:
+		return ": All tools   ? Help"
+	}
+	arrows := "↑/↓"
+	if m.ASCII {
+		arrows = "Up/Down"
+	}
+	return arrows + " Select   Enter Open   / Search   : All tools   ? Help"
+}
+
+func (m Workspace) separator() string {
+	if m.ASCII {
+		return " - "
+	}
+	return " · "
+}
+
+func countLabel(n int, one, many string) string {
+	if n == 1 {
+		return "1 " + one
+	}
+	return fmt.Sprintf("%d %s", n, many)
+}
+
+var rowNouns = map[int][2]string{0: {"VM", "VMs"}, 1: {"VM", "VMs"}, 2: {"network", "networks"}, 3: {"storage pool", "storage pools"},
+	6: {"recovery point", "recovery points"}, 7: {"USB device", "USB devices"}, 8: {"job", "jobs"}, 9: {"plugin", "plugins"}}
+
+func (m Workspace) rowCounter(selected, total int) string {
+	noun := rowNouns[m.Section]
+	count := countLabel(total, noun[0], noun[1])
+	if m.Search != "" {
+		count = countLabel(total, "match", "matches")
+	}
+	return count + m.separator() + fmt.Sprintf("row %d of %d", selected+1, total)
+}
+
+// sectionMarks flag sections whose workflows are incomplete in this beta.
+var sectionMarks = map[int]string{4: "not ready", 5: "validate only", 7: "discovery only", 9: "preview"}
+
+var sectionPlaceholders = map[int][]string{
+	4: {"Templates aren't available in this beta yet.", "", "Planned: turn a stopped VM into a reusable template and create clones from it."},
+	5: {"Only checking is available for labs so far.", "", "Validate lab checks a lab file for mistakes without creating anything.",
+		"Creating a lab's VMs and networks isn't available yet."},
+}
+
+// emptyState explains an empty list and the step that fills it.
+func emptyState(section int) []string {
+	switch section {
+	case 0, 1:
+		return []string{"No VMs yet.", "", "Create VM builds one from an installer ISO or prepared disks.", "Import brings in an existing disk image or appliance (OVA)."}
+	case 2:
+		return []string{"No networks yet.", "", "Create network sets up a private or NAT network for your VMs."}
+	case 3:
+		return []string{"No storage pools found.", "", "VM disks live in libvirt storage pools. Create one with your distribution's",
+			"virtualization tools (for example virt-manager), then press r."}
+	case 6:
+		return []string{"No recovery points yet.", "", "Open a stopped VM and choose Capture to save one."}
+	case 7:
+		return []string{"No USB devices found.", "", "Plug a device in and press r. Attaching devices to VMs isn't available yet."}
+	case 8:
+		return []string{"No jobs yet.", "", "Changes you apply show up here while they run and after they finish."}
+	case 9:
+		return []string{"No plugins installed.", "", "Install plugin adds a signed plugin package."}
+	}
+	return []string{"Nothing to show here yet."}
+}
+
+// withoutEmptyDetails drops Details when an empty list has nothing to open.
+func (m Workspace) withoutEmptyDetails(buttons []workspaceButton) []workspaceButton {
+	if m.Detail != nil || len(m.rows()) > 0 {
+		return buttons
+	}
+	out := []workspaceButton{}
+	for _, b := range buttons {
+		if b.key != "enter" {
+			out = append(out, b)
+		}
+	}
+	return out
+}
+
 func (m Workspace) hints() string {
-	if m.Help && m.Activity != nil {
+	if m.Help {
 		return "? or Esc Close help"
 	}
 	if m.Activity != nil {
@@ -1560,7 +1696,8 @@ func (m Workspace) hints() string {
 		if m.Picker.mode == "mkdir" {
 			return "Enter Create folder   Esc Cancel"
 		}
-		return "Enter Open / choose   Ctrl+N New folder   Backspace Up   Esc Back"
+		// The file browser lists its own keys.
+		return ""
 	}
 	if (m.Creation != nil || m.CreationPicking) && m.Plan == nil && m.ExportForm == nil {
 		if m.Busy {
@@ -1634,13 +1771,7 @@ func (m Workspace) hints() string {
 	if m.Searching {
 		return "Type a name, state or ID   Enter Keep filter   Esc Clear"
 	}
-	if m.Section == 0 || m.Section == 1 {
-		return "[ Enter Details ]  [ a More ]  [ e Edit ]  [ / Search ]  [ : All tools ]"
-	}
-	if m.Section == 6 {
-		return "[ Enter Details ]  [ n New repository ]  [ v Verify ]  [ a More ]"
-	}
-	return "[ Enter Details ]   [ a More ]   [ / Search ]   [ r Refresh ]"
+	return m.screenHints()
 }
 func (m Workspace) content(width, height int) []string {
 	if m.RemovalTarget != nil {
@@ -1739,7 +1870,7 @@ func (m Workspace) content(width, height int) []string {
 			if vm.Autostart {
 				autostart = "On"
 			}
-			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Start with the action buttons below. More opens additional tasks.", "", "Automatic startup: "+autostart)
+			lines = append(lines, "Name: "+validation.SafeText(vm.Name), "State: "+validation.SafeText(vm.State), "UUID: "+vm.Key.UUID, "", "Automatic startup: "+autostart)
 			lines = append(lines, "")
 			lines = append(lines, m.resourceSummaryLines(vm)...)
 			if vm.HasManagedSave {
@@ -1748,7 +1879,6 @@ func (m Workspace) content(width, height int) []string {
 			if len(vm.Tags) > 0 {
 				lines = append(lines, "Tags: "+validation.SafeText(strings.Join(vm.Tags, ", ")))
 			}
-			lines = append(lines, "", "Press x for full technical details; press it again to return.")
 			return pageLines(lines, width, height, m.Offset)
 		}
 		if m.Raw {
@@ -1803,7 +1933,7 @@ func (m Workspace) content(width, height int) []string {
 		lines = append(lines, m.color(sections[m.Section], "1"))
 	}
 	if kind == "" {
-		return append(lines, "", "Use More for the available tasks in this section.", "The complete workflow is still under development.")
+		return append(append(lines, ""), sectionPlaceholders[m.Section]...)
 	}
 	if err := m.Errors[kind]; err != "" {
 		return append(lines, "", "Could not load "+sections[m.Section]+":", err, "", "Press r to retry. The existing selection is retained.")
@@ -1822,7 +1952,7 @@ func (m Workspace) content(width, height int) []string {
 		if m.Search != "" {
 			return append(lines, "", "No resources match this search. Esc clears it.")
 		}
-		return append(lines, "", "No resources to display.", "Use the buttons below to create or import a resource.")
+		return append(append(lines, ""), emptyState(m.Section)...)
 	}
 	left := max(20, width-26)
 	lines = append(lines, m.color("  "+padCell("NAME", left)+"  "+padCell("STATE", 18), "2"))
@@ -1843,7 +1973,7 @@ func (m Workspace) content(width, height int) []string {
 	if m.Selected < 0 {
 		lines = append(lines, "", "No resource selected. Use arrows to choose.")
 	} else {
-		lines = append(lines, "", fmt.Sprintf("%d of %d selected  |  Enter opens complete details", selected+1, len(rows)))
+		lines = append(lines, "", m.rowCounter(selected, len(rows)))
 	}
 	return lines
 }
@@ -1900,17 +2030,18 @@ func (m Workspace) View() string {
 			title = "Console"
 		}
 	}
-	header := m.color(" Virmill ", "1;35") + m.color(" / "+title, "1") + "   " + validation.SafeText(m.Connection) + "   beta"
+	header := m.header(title, width, importModal)
 	lines := []string{ansi.Truncate(header, width, ""), m.color(strings.Repeat(rule, width), "2")}
 	sidebar := 0
 	if width >= 105 && !importModal {
-		sidebar = 20
+		sidebar = 30
 	}
 	bodyWidth := width - sidebar
 	if sidebar > 0 {
 		bodyWidth--
 	}
-	bodyHeight := height - 7
+	footer := m.footerButtons()
+	bodyHeight := height - 6 - len(footer)
 	content := m.content(bodyWidth, bodyHeight)
 	for i := 0; i < bodyHeight; i++ {
 		row := ""
@@ -1928,12 +2059,20 @@ func (m Workspace) View() string {
 				if i == 10 {
 					shortcut = ","
 				}
-				label = " " + shortcut + "  " + sections[i]
+				plain := " " + shortcut + "  " + sections[i]
+				mark := sectionMarks[i]
+				if mark != "" {
+					plain = fmt.Sprintf(" %s  %-10s %s", shortcut, sections[i], mark)
+				}
+				label = plain
+				if mark != "" {
+					label = strings.TrimSuffix(plain, mark) + m.color(mark, "2")
+				}
 				if i == m.Section {
-					label = m.color(padCell(label, sidebar), "1;35")
+					label = m.color(padCell(plain, sidebar), "1;35")
 				}
 				if m.NavFocus && i == m.NavIndex {
-					label = m.color(padCell(">"+strings.TrimPrefix(label, " "), sidebar), "1;30;46")
+					label = m.color(padCell(">"+strings.TrimPrefix(plain, " "), sidebar), "1;30;46")
 				}
 			}
 			divider := "│"
@@ -1945,14 +2084,18 @@ func (m Workspace) View() string {
 		lines = append(lines, row)
 	}
 	if sidebar == 0 {
-		nav := "1 Overview  2 VMs  3 Networks  4 Storage  7 Protection  9 Jobs"
+		nav := m.navLine()
+		if m.Help {
+			// The keyboard guide lists every section.
+			nav = ""
+		}
 		if m.NavFocus {
 			nav = "Section: " + sections[m.NavIndex] + "   Up/Down to choose, Enter opens"
 		}
 		if importModal {
 			nav = ""
 		}
-		lines = append(lines, clipCell(nav, width))
+		lines = append(lines, ansi.Truncate(nav, width, ""))
 	} else {
 		lines = append(lines, "")
 	}
@@ -1966,15 +2109,17 @@ func (m Workspace) View() string {
 	if m.Busy {
 		message = "Working... " + message
 	}
-	if message == "" {
-		if !importModal {
-			message = m.status() + " | Tab Buttons  / Search  : All tools  ? Help"
-		}
+	// Menus, forms and Help list their own keys in the footer.
+	if message == "" && !m.overlay() {
+		message = m.screenHints()
 	}
 	if importModal && m.Pending["import-inspect"] != 0 {
 		message = ""
 	}
-	lines = append(lines, clipCell(message, width), m.color(strings.Repeat(rule, width), "2"), ansi.Truncate(m.footerButtons(), width, ""))
+	lines = append(lines, clipCell(message, width), m.color(strings.Repeat(rule, width), "2"))
+	for _, row := range footer {
+		lines = append(lines, ansi.Truncate(row, width, ""))
+	}
 	return strings.Join(lines[:min(height, len(lines))], "\n")
 }
 
@@ -2006,7 +2151,15 @@ func (m Workspace) buttons() []workspaceButton {
 		if m.Detail != nil {
 			return append(out[1:], workspaceButton{"Console", "action:vm console show"}, workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
-		return append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"})
+		return m.withoutEmptyDetails(append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"}))
+	}
+	// Details pages offer actions on the open resource, not the list.
+	if m.Detail != nil {
+		out := []workspaceButton{}
+		if m.Section == 6 {
+			out = append(out, workspaceButton{"Restore", "action:snapshot restore"}, workspaceButton{"Back up", "action:backup create"})
+		}
+		return append(out, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 	}
 	primary := map[int][]workspaceButton{
 		2:  {{"Details", "enter"}, {"Create network", "action:network create"}},
@@ -2019,28 +2172,61 @@ func (m Workspace) buttons() []workspaceButton {
 		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
 		10: {{"Host capabilities", "action:host capabilities"}, {"All tools", ":"}},
 	}
-	return append(primary[m.Section], workspaceButton{"More", "a"})
+	return m.withoutEmptyDetails(append(primary[m.Section], workspaceButton{"More", "a"}))
 }
-func (m Workspace) footerButtons() string {
-	if m.draftModal != "" {
-		return m.hints()
-	}
-	if m.Activity != nil || m.RemovalTarget != nil || m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help {
-		return m.hints()
+
+// overlay reports a menu, form or modal that shows its own keys instead of buttons.
+func (m Workspace) overlay() bool {
+	return m.draftModal != "" || m.Activity != nil || m.RemovalTarget != nil || m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help
+}
+
+func (m Workspace) footerButtons() []string {
+	if m.overlay() {
+		return []string{m.hints()}
 	}
 	buttons := m.buttons()
 	labels := make([]string, len(buttons))
 	for i, b := range buttons {
 		key := b.key
-		if strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") || strings.HasPrefix(key, "connection-") {
+		switch {
+		case strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") || strings.HasPrefix(key, "connection-"):
 			key = ""
-		} else if key == "enter" {
+		case key == "enter":
 			key = "Enter"
+		case key == "esc":
+			key = "Esc"
 		}
 		labels[i] = "[ " + strings.TrimSpace(key+" "+b.label) + " ]"
 	}
-	// Keep every focused button visible, including in narrow terminals.
 	selected := min(m.ButtonIndex, len(buttons)-1)
+	render := func(i int) string {
+		if m.ButtonFocus && i == selected {
+			return m.color(">"+labels[i], "1;30;46")
+		}
+		return m.color(labels[i], "36")
+	}
+	// Wrap onto a second row rather than hiding buttons off screen.
+	rows, used := [][]int{{}}, 0
+	for i, label := range labels {
+		width := ansi.StringWidth(label) + 2
+		if len(rows[len(rows)-1]) > 0 && used+width > m.Width {
+			rows, used = append(rows, []int{}), 0
+		}
+		rows[len(rows)-1] = append(rows[len(rows)-1], i)
+		used += width
+	}
+	if len(rows) <= 2 {
+		out := make([]string, len(rows))
+		for r, row := range rows {
+			parts := make([]string, len(row))
+			for j, i := range row {
+				parts[j] = render(i)
+			}
+			out[r] = strings.Join(parts, " ")
+		}
+		return out
+	}
+	// Very narrow terminals keep one scrolling row with the focused button visible.
 	start := 0
 	if m.ButtonFocus {
 		for start < selected && ansi.StringWidth(strings.Join(labels[start:selected+1], " "))+4 > m.Width {
@@ -2052,20 +2238,11 @@ func (m Workspace) footerButtons() string {
 		out = "< "
 	}
 	for i := start; i < len(labels); i++ {
-		label := labels[i]
-		if m.ButtonFocus && i == selected {
-			label = ">" + label
-		}
-		if ansi.StringWidth(out)+ansi.StringWidth(label)+3 > m.Width {
+		if ansi.StringWidth(out)+ansi.StringWidth(labels[i])+4 > m.Width {
 			out += " >"
 			break
 		}
-		if m.ButtonFocus && i == selected {
-			label = m.color(label, "1;30;46")
-		} else {
-			label = m.color(label, "36")
-		}
-		out += label + " "
+		out += render(i) + " "
 	}
-	return strings.TrimSpace(out)
+	return []string{strings.TrimSpace(out)}
 }

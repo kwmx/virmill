@@ -5,8 +5,12 @@ Explicit subcommands remain available for scripts. Redirected stdin prints help
 instead of drawing a terminal UI.
 
 Overview shows VM inventory, running/stopped counts, storage and durable jobs.
-The connection remains visible. Terminals at least 105 columns wide show the
-section sidebar; narrower terminals use a single content pane.
+The header shows the connection and any running or failed jobs; the line above
+the buttons lists the keys for the current page. Terminals at least 105 columns
+wide show every section in a sidebar and mark the unfinished ones: Templates
+(not ready), Labs (validate only), Devices (discovery only) and Plugins
+(preview). Narrower terminals list the main sections at the bottom, and **?**
+lists them all. Buttons wrap onto a second row when they do not fit.
 
 ## Find an action
 

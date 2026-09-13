@@ -447,9 +447,9 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         # Separate writes model distinct operator keys; coalesced ESC sequences
         # and '/' + query must not accidentally become a different key event.
         require(len(vms) >= 2, 'two actual native VMs required to prove arrow selection movement')
-        terminal.wait('Down selects second observed row', lambda text: vm_table(text) and f'2 of {len(vms)} selected' in text,
+        terminal.wait('Down selects second observed row', lambda text: vm_table(text) and re.search(rf'row 2 of {len(vms)}\b', text),
                       terminal.send(b'\x1b[B'))
-        terminal.wait('Up restores first observed row', lambda text: vm_table(text) and f'1 of {len(vms)} selected' in text,
+        terminal.wait('Up restores first observed row', lambda text: vm_table(text) and re.search(rf'row 1 of {len(vms)}\b', text),
                       terminal.send(b'\x1b[A'))
         detail = terminal.wait('selected full native UUID', lambda text: detail_page(text) and any(identity in text for identity in vms), terminal.send(b'\r'))
         observed = [identity for identity in vms if identity in detail]
@@ -460,11 +460,11 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       'Enter Keep filter' in text,
                       terminal.send(b'/'))
         terminal.wait('name filter displays only selected native row', lambda text: vm_table(text) and
-                      ('Search: ' + query) in text and vms[selected]['name'][:16] in text and '1 of 1 selected' in text,
+                      ('Search: ' + query) in text and vms[selected]['name'][:16] in text and re.search(r'row 1 of 1\b', text),
                       terminal.send(query.encode('ascii')))
         # A visible focus change must occur before Enter can request details.
         terminal.wait('Enter keeps filter and returns row focus', lambda text: vm_table(text) and
-                      '1 of 1 selected' in text and 'Enter Details' in text and 'Enter Keep filter' not in text,
+                      re.search(r'row 1 of 1\b', text) and 'Enter Details' in text and 'Enter Keep filter' not in text,
                       terminal.send(b'\r'))
         terminal.wait('filtered native UUID details', lambda text: detail_page(text) and selected in text, terminal.send(b'\r'))
         terminal.wait('CPU and memory opens a labeled form for selected VM', lambda text:
@@ -524,10 +524,10 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       'VMs / Advanced tools' not in text,
                       terminal.send(b'\x1b'))
         terminal.wait('Second Esc closes More and restores selected row', lambda text:
-                      vm_table(text) and vms[selected]['name'][:16] in text and '1 of 1 selected' in text,
+                      vm_table(text) and vms[selected]['name'][:16] in text and re.search(r'row 1 of 1\b', text),
                       terminal.send(b'\x1b'))
         terminal.wait('Esc clears filter and restores observed rows', lambda text: vm_table(text) and 'Search:' not in text and
-                      f'1 of {len(vms)} selected' in text, terminal.send(b'\x1b'))
+                      re.search(rf'row 1 of {len(vms)}\b', text), terminal.send(b'\x1b'))
         picker = lambda text: re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is not None and 'Esc' in text
         def choose_browser_entry(name, description):
             terminal.wait(description + ' filter focus', lambda text:
@@ -585,7 +585,7 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         terminal.wait('Esc returns from import form to VM workspace', lambda text:
                       vm_table(text) and 'VMs / More tasks' not in text, terminal.send(b'\x1b'))
         terminal.wait('Jobs workspace has loaded observations', lambda text: page(text, 'Jobs') and
-                      ('NAME' in text and 'STATE' in text or 'No resources to display.' in text) and
+                      ('NAME' in text and 'STATE' in text or 'No jobs yet.' in text) and
                       'Could not load' not in text, terminal.send(b'9'))
         terminal.wait('Overview after Jobs', overview, terminal.send(b'1'))
         new_size = (120, 36) if columns == 80 else (80, 24)

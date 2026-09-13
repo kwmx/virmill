@@ -161,7 +161,7 @@ def tui_preview(runner, vm, disk):
         wait('Overview', lambda s: 'Virtual machines' in s)
         wait('VM table', lambda s: 'NAME' in s and 'STATE' in s, b'2')
         wait('Filter focus', lambda s: 'Enter Keep filter' in s, b'/')
-        wait('Exact new fixture selected', lambda s: name in s and '1 of 1 selected' in s, name.encode())
+        wait('Exact new fixture selected', lambda s: name in s and re.search(r'row 1 of 1\b', s), name.encode())
         wait('Keep exact fixture selection', lambda s: 'Enter Keep filter' not in s, b'\r')
         wait('Exact fixture details', lambda s: 'VM details' in s and name in s and identity in s, b'\r')
         wait('More VM tasks', lambda s: 'VMs / More tasks' in s and name in s, b'a')

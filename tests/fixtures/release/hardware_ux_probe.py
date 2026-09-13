@@ -208,7 +208,7 @@ try:
     wait('VM list after creation',lambda screen:'NAME' in screen,b'2')
     wait('Find only new fixture VM',lambda screen:'Search:' in screen and 'Enter Keep filter' in screen,b'/')
     wait('New fixture UUID filter',lambda screen:vmid in screen,vmid.encode())
-    wait('Finish new VM filter',lambda screen:name[:16] in screen and '1 of 1 selected' in screen and 'Enter Keep filter' not in screen,b'\r')
+    wait('Finish new VM filter',lambda screen:name[:16] in screen and re.search(r'row 1 of 1\b', screen) and 'Enter Keep filter' not in screen,b'\r')
     wait('New VM details',lambda screen:name in screen and vmid in screen and 'Boot / installer' in screen,b'\r')
     wait('Detail buttons',lambda screen:'>[' in screen,b'\t')
     for i in range(12):

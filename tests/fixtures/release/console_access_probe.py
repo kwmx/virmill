@@ -275,9 +275,9 @@ def tui_roundtrip(runner, identity, name, marker):
         wait('Initial native Overview', lambda screen: 'Virtual machines' in screen)
         wait('VM table', lambda screen: 'NAME' in screen and 'STATE' in screen, b'2')
         wait('Find fixture VM', lambda screen: 'Search:' in screen and 'Enter Keep filter' in screen, b'/')
-        wait('Only newly created fixture selected', lambda screen: name in screen and '1 of 1 selected' in screen,
+        wait('Only newly created fixture selected', lambda screen: name in screen and re.search(r'row 1 of 1\b', screen),
              name.encode())
-        wait('Keep fixture filter', lambda screen: '1 of 1 selected' in screen and 'Enter Keep filter' not in screen,
+        wait('Keep fixture filter', lambda screen: re.search(r'row 1 of 1\b', screen) and 'Enter Keep filter' not in screen,
              b'\r')
         wait('Fixture VM details', lambda screen: identity in screen and 'VM details' in screen and 'Console' in screen,
              b'\r')

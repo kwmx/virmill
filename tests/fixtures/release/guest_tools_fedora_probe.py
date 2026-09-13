@@ -382,7 +382,7 @@ def execute(stage):
             wait('Overview', lambda s: 'Virtual machines' in s)
             wait('VM table', lambda s: 'NAME' in s and 'STATE' in s, b'2')
             wait('Filter focus', lambda s: 'Enter Keep filter' in s, b'/')
-            wait('Owned VM selected', lambda s: report['name'] in s and '1 of 1 selected' in s, report['name'].encode())
+            wait('Owned VM selected', lambda s: report['name'] in s and re.search(r'row 1 of 1\b', s), report['name'].encode())
             wait('Filter kept', lambda s: 'Enter Keep filter' not in s, b'\r')
             wait('VM details', lambda s: 'VM details' in s and report['name'] in s, b'\r')
             wait('Guest tools form', lambda s: 'Install guest tools' in s and 'Preview installation' in s, b'g')

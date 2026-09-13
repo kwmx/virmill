@@ -56,7 +56,7 @@ def select_owned_vm(terminal):
     wait('Overview', lambda screen: 'Virtual machines' in screen)
     wait('VM table', lambda screen: 'NAME' in screen and 'STATE' in screen, b'2')
     wait('VM filter focus', lambda screen: 'Enter Keep filter' in screen, b'/')
-    wait('Owned Fedora selected', lambda screen: NAME in screen and '1 of 1 selected' in screen, NAME.encode())
+    wait('Owned Fedora selected', lambda screen: NAME in screen and re.search(r'row 1 of 1\b', screen), NAME.encode())
     wait('Keep filter', lambda screen: 'Enter Keep filter' not in screen, b'\r')
     wait('Owned Fedora details', lambda screen: 'VM details' in screen and NAME in screen and IDENTITY in screen, b'\r')
 

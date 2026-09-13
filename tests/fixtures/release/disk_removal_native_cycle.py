@@ -89,7 +89,7 @@ def tui_delete(runner, vm, paths, reference_plan, before_apply, accepted):
         wait('Overview', lambda s: 'Virtual machines' in s)
         wait('VM inventory', lambda s: 'NAME' in s and 'STATE' in s, b'2')
         wait('Filter', lambda s: 'Enter Keep filter' in s, b'/')
-        wait('Exact generated VM', lambda s: name in s and '1 of 1 selected' in s, name.encode())
+        wait('Exact generated VM', lambda s: name in s and re.search(r'row 1 of 1\b', s), name.encode())
         wait('Keep filter', lambda s: 'Enter Keep filter' not in s, b'\r')
         wait('Details', lambda s: 'VM details' in s and identity in s, b'\r')
         def open_form():

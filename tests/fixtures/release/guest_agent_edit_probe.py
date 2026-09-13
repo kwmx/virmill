@@ -188,8 +188,8 @@ def tui_inspection(runner, identity, name, configured):
         wait('Overview', lambda screen: 'Virtual machines' in screen)
         wait('VM table', lambda screen: 'NAME' in screen and 'STATE' in screen, b'2')
         wait('VM filter focus', lambda screen: 'Enter Keep filter' in screen, b'/')
-        wait('Only owned fixture selected', lambda screen: name in screen and '1 of 1 selected' in screen, name.encode())
-        wait('Keep fixture filter', lambda screen: '1 of 1 selected' in screen and 'Enter Keep filter' not in screen, b'\r')
+        wait('Only owned fixture selected', lambda screen: name in screen and re.search(r'row 1 of 1\b', screen), name.encode())
+        wait('Keep fixture filter', lambda screen: re.search(r'row 1 of 1\b', screen) and 'Enter Keep filter' not in screen, b'\r')
         wait('Owned VM details', lambda screen: identity in screen and 'VM details' in screen, b'\r')
         if configured:
             wait('Configured connection opens installation options', lambda screen: 'Install guest tools' in screen and

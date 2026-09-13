@@ -4,6 +4,7 @@ import "runtime"
 
 // Version is the product version source used by the binaries and package builder.
 const Version = "1.0.0-beta.3"
+
 var Revision = "uncommitted"
 var BuildTime = "unknown"
 
