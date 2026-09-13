@@ -3,7 +3,7 @@
 
 Requires --execute-disposable --root PRIVATE_STAGE containing binaries.json,
 and adjacent tui_workspace_probe.py. Runs only as UID1000 on the authorized
-virmill-test host. Uses the installed frontend in a real 80x24 PTY with a fresh
+<test-vm-login> host. Uses the installed frontend in a real 80x24 PTY with a fresh
 private XDG_RUNTIME_DIR and XDG_STATE_HOME. No daemon is started/stopped, no
 configuration is changed, and no host/guest operation is submitted. The missing
 socket is intentional. This proves recovery guidance, not native virtualization
@@ -23,6 +23,16 @@ import time
 import unittest
 
 from tui_workspace_probe import Runner, Terminal, canonical_path, require, strict_json
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 
 URI = 'qemu:///system'
 START = 'systemctl --user start virmilld.service'
@@ -58,7 +68,7 @@ def select_button(terminal, label):
 
 
 def execute(root):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and
+    require(authorized_test_host() and
             os.getuid() == 1000 and os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(root.absolute()))
     require(stage.is_relative_to(Path.home() / 'virmill-tests') and

@@ -1,8 +1,8 @@
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001/run.py", line 156, in <module>
+  File "<test-vm-home>/virmill-tests/cold-recovery-8f22ab1-001/run.py", line 156, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001/run.py", line 28, in main
-    assert socket.gethostname()=='virmill-test' and os.getuid()==1000
+  File "<test-vm-home>/virmill-tests/cold-recovery-8f22ab1-001/run.py", line 28, in main
+    assert socket.gethostname()=='<test-vm-login>' and os.getuid()==1000
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError

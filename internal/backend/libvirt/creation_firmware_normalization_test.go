@@ -36,7 +36,8 @@ func creationFirmwareReplay(t testing.TB) (domain.CreationTarget, []domain.Creat
 		return data
 	}
 	observed := read("observed.xml", "36a51eefeb3f4b48f46f1308668b1e4c3cef3b19c03ba8b9fd7da6b70c61c500")
-	planJSON := read("reviewed-plan.json", "bb0bd8d8d4c3a82cf4f292500152cbd4bda153d110a481c5c2a0b09de542b8aa")
+	// Re-pinned after private-values-redaction-001 replaced the private source directory.
+	planJSON := read("reviewed-plan.json", "5590ab87a96b96e660240eb48cc4bfd1dcadbaa424cfc63aa3f87b912c7d7723")
 	var plan struct {
 		PlanID      string `json:"planID"`
 		InputDigest string `json:"inputDigest"`

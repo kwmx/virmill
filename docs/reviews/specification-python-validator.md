@@ -49,14 +49,14 @@ The following available Python installations were inspected without installation
 | Bundled Codex dependency Python | 3.12.14, Clang 22.1.3 | PyYAML/jsonschema/referencing absent |
 
 The bundled runtime was located through the workspace dependency locator, at
-`/home/faisal/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`.
+`<dev-home>/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3`.
 The inspected pip wheel cache had no suitable validator dependency wheels.
 `/usr/share/python-wheels/pip-26.0.1-py3-none-any.whl` was available for local venv
 bootstrap; its SHA256 is
 `e216ea059aa2d576d2c3535cba6257ee71f3657c19aa704e031073884ec691ed`.
 
 The isolated environment is
-`/home/faisal/project/virmill/build/spec-qa/venv`, created with
+`<dev-home>/project/virmill/build/spec-qa/venv`, created with
 `/usr/bin/python3 -B -m venv build/spec-qa/venv`. Its `pyvenv.cfg` records
 `include-system-site-packages = false`; it does not inherit the system PyYAML.
 Installation used only wheels and never built a source distribution. The final
@@ -113,7 +113,7 @@ commands explicitly disable cache and version checking and produce no stderr.
 
 The recorder saves each exact argv, cwd, UTC start/end, exit code and separate
 stdout/stderr files with SHA256. The cwd for every recorded command is
-`/home/faisal/project/virmill`. Commands had a 240-second subprocess deadline and
+`<dev-home>/project/virmill`. Commands had a 240-second subprocess deadline and
 retained output stayed below the recorder's 16 MiB check.
 
 | Retained command prefix | Actual action | Result |

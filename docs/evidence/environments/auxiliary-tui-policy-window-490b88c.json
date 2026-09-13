@@ -35,7 +35,7 @@
     },
     "helperPID": "31125",
     "pid": "30897",
-    "unit": "virmill-test-490b88c.service"
+    "unit": "<test-vm-login>-490b88c.service"
   },
   "sourceDigest": "26e4f8410395a37606d577073d0bdff424610ae04b83df678e61d618ae38eb06",
   "sourceInventorySHA256": "f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576",

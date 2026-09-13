@@ -1,3 +1,3 @@
 enabled
 active
-Created symlink '/home/virmill-test/.config/systemd/user/default.target.wants/virmilld.service' → '/usr/lib/systemd/user/virmilld.service'.
+Created symlink '<test-vm-home>/.config/systemd/user/default.target.wants/virmilld.service' → '/usr/lib/systemd/user/virmilld.service'.

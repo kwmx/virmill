@@ -1,0 +1,3 @@
+#!/bin/sh
+# Refuse commits that add private test-environment values or credentials.
+exec python3 scripts/check-private.py --staged

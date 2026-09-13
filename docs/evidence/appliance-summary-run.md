@@ -34,7 +34,7 @@ media metadata were unchanged. Package/staged installer/private IPC checks
 passed (`appliance-summary-packages-001`, three tests).
 
 `appliance-summary-native-001` read the owner's actual 36,551,735,808-byte
-DFIR-Win11 OVA in 0.114 seconds, showing its summary in 0.269 seconds.
+<owner-media-1> OVA in 0.114 seconds, showing its summary in 0.269 seconds.
 CPU 2, RAM 8192 MiB, Windows 11, UEFI and USB/audio declarations were returned
 without hashing payloads. The walkthrough failed because Advanced Back left
 the summary scrolled below the edited basics; values remained present. This

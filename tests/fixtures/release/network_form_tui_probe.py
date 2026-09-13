@@ -28,6 +28,16 @@ import xml.etree.ElementTree as ET
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require, strict_json
 from guest_tools_fedora_probe import network_snapshot
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 ACKS = {'host-mutation', 'network-host-access', 'network-firewall', 'exclusive-network-writer'}
 PURPOSES = {'nat': 'NAT internet', 'lab': 'Isolated lab', 'guest-only': 'Guest-only'}
@@ -88,7 +98,7 @@ def validate_and_normalize(plan, doc):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000
             and stat.S_IMODE(stage.stat().st_mode) == 0o700, 'private staged root required')

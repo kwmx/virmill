@@ -15,6 +15,16 @@ import time
 import uuid
 
 
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--execute-disposable', action='store_true', required=True)
@@ -24,7 +34,7 @@ def main():
     p.add_argument('--pool', required=True)
     p.add_argument('--recover-from', type=Path, help='Retained successful backup proof; skip init, backup and check')
     a = p.parse_args()
-    assert socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == 1000
+    assert authorized_test_host() and os.getuid() == 1000
     root = a.root.resolve(strict=True)
     assert root.is_relative_to(Path.home()/'virmill-tests')
     assert a.source_data.resolve(strict=True).is_relative_to(Path.home()/'virmill-tests')

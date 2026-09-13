@@ -11,8 +11,18 @@ from pathlib import Path
 from autostart_tui_probe import IDENTITY, NAME, URI, TERMINAL_STATES, normalize
 from tui_workspace_probe import Runner, canonical_path, require, strict_json, media_listing
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 p=argparse.ArgumentParser();p.add_argument('--root',required=True,type=Path);p.add_argument('--execute-disposable',required=True,action='store_true');a=p.parse_args()
-require(socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==os.geteuid()==1000,'wrong authorized host/actor')
+require(authorized_test_host() and os.getuid()==os.geteuid()==1000,'wrong authorized host/actor')
 stage=canonical_path(str(a.root.absolute()));require(stage.parent==Path.home()/'virmill-tests' and stage.stat().st_uid==1000 and stat.S_IMODE(stage.stat().st_mode)==0o700,'private stage required')
 os.umask(0o077);out=stage/'autostart-cycle';out.mkdir(mode=0o700)
 expected=strict_json((stage/'binaries.json').read_bytes())

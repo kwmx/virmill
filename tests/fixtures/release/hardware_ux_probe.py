@@ -10,6 +10,29 @@ from pathlib import Path
 from tui_workspace_probe import Runner, Terminal, inventory, generation, require
 from import_options_probe import selected_label
 
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 p=argparse.ArgumentParser()
 p.add_argument('--execute-disposable',action='store_true',required=True)
 p.add_argument('--binary',default='/usr/bin/virmill')
@@ -17,7 +40,7 @@ p.add_argument('--binary-sha256',required=True)
 p.add_argument('--connection',default='qemu:///system')
 p.add_argument('--output',type=Path,required=True)
 a=p.parse_args()
-require(socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000,'wrong test host/actor')
+require(authorized_test_host() and os.getuid()==1000,'wrong test host/actor')
 require(a.connection=='qemu:///system' and a.binary=='/usr/bin/virmill','explicit installed system connection required')
 root=a.output.absolute(); require(root.parent.resolve().is_relative_to(Path.home()/'virmill-tests') and not root.exists(),'new test output required')
 root.mkdir(mode=0o700)
@@ -136,9 +159,9 @@ try:
     edit('VM name',name);edit('CPU cores','3');edit('Memory (MiB)','1024')
     focus('Storage pool')
     for i in range(12):
-        if re.search(r'Storage pool:.*< virmill-test >',t.screen.text()):break
+        if re.search(r'Storage pool:.*< ' + re.escape(TEST_POOL) + ' >',t.screen.text()):break
         old=t.screen.text();wait('Choose test storage '+str(i),lambda s:s!=old,b'\x1b[C')
-    require(re.search(r'Storage pool:.*< virmill-test >',t.screen.text()),'test pool not selected')
+    require(re.search(r'Storage pool:.*< ' + re.escape(TEST_POOL) + ' >',t.screen.text()),'test pool not selected')
     focus('Firmware')
     for i in range(len(choices['firmware'])+1):
         if ('< '+firmware['label']+' >') in t.screen.text():break

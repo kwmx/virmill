@@ -1248,10 +1248,10 @@
   "existingFirewallPreserved": false
 }
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/protected-network-native-002/create_native.py", line 147, in <module>
+  File "<test-vm-home>/virmill-tests/protected-network-native-002/create_native.py", line 147, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/protected-network-native-002/create_native.py", line 144, in main
+  File "<test-vm-home>/virmill-tests/protected-network-native-002/create_native.py", line 144, in main
     if report['status']!='passed-native-creation':raise RuntimeError('one or more packet profiles failed qualification')
                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RuntimeError: one or more packet profiles failed qualification

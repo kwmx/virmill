@@ -11,7 +11,7 @@ The installed product stays at the parent's reviewed
 `dc2ab1a7af8c023c1485d36d0e858a65264ace3e` deployment; this is a test-tool correction.
 
 This single-use fixture is authored for the parent to review and execute on the
-already authorized disposable host as its ordinary `virmill-test` user. Authoring
+already authorized disposable host as its ordinary `<test-vm-login>` user. Authoring
 and the synthetic self-tests do not constitute an installed/native run.
 
 The fixture requires successful completion of `nvram-binding-native-002.py`,
@@ -28,7 +28,7 @@ python3 nvram-binding-tui-002.py --revision FULL_40_HEX_REVISION --deployment-sh
 ```
 
 Both values must be lowercase hexadecimal with exact lengths. The run root is
-fixed to `/home/virmill-test/virmill-tests/run-65930c6-20260907`; this fixture does
+fixed to `<test-vm-home>/virmill-tests/run-65930c6-20260907`; this fixture does
 not discover or authorize another host. It validates the bundle's
 `packages/<revision-prefix>/deployment.json`, installed `/usr/bin/virmill` and
 `/usr/bin/virmilld` hashes, the active private coordinator's unit/root/PID and

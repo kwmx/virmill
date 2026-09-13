@@ -1,15 +1,15 @@
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/job-activity-8ebcbfc/job_activity_tui_probe.py", line 244, in <module>
+  File "<test-vm-home>/virmill-tests/job-activity-8ebcbfc/job_activity_tui_probe.py", line 244, in <module>
     execute(args.root)
     ~~~~~~~^^^^^^^^^^^
-  File "/home/virmill-test/virmill-tests/job-activity-8ebcbfc/job_activity_tui_probe.py", line 116, in execute
+  File "<test-vm-home>/virmill-tests/job-activity-8ebcbfc/job_activity_tui_probe.py", line 116, in execute
     wait('Refresh same activity', lambda s: 'Job activity' in s and 'Refreshing activity' not in s
     ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          and 'Reading recorded' not in s and 'Could not read activity' not in s, b'\r')
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/virmill-test/virmill-tests/job-activity-8ebcbfc/job_activity_tui_probe.py", line 95, in wait
+  File "<test-vm-home>/virmill-tests/job-activity-8ebcbfc/job_activity_tui_probe.py", line 95, in wait
     return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
            ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/virmill-test/virmill-tests/job-activity-8ebcbfc/tui_workspace_probe.py", line 401, in wait
+  File "<test-vm-home>/virmill-tests/job-activity-8ebcbfc/tui_workspace_probe.py", line 401, in wait
     raise RuntimeError('current screen did not satisfy ' + label)
 RuntimeError: current screen did not satisfy Refresh same activity

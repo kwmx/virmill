@@ -9,7 +9,7 @@
     "virmilld": "ab0c5879d044cf3a418a18c2257692c23b4df21fceb8d88fbc63d5685a55c578"
   },
   "scope": "installed 80x24 TUI missing-socket guidance, retry, help and Settings; no service or virtualization action",
-  "isolatedSocket": "/home/virmill-test/virmill-tests/coordinator-recovery-4950971/coordinator-recovery/r/virmill/control.sock",
+  "isolatedSocket": "<test-vm-home>/virmill-tests/coordinator-recovery-4950971/coordinator-recovery/r/virmill/control.sock",
   "overviewOffline": true,
   "retryRemainsOffline": true,
   "helpCommands": [

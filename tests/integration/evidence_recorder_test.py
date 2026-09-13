@@ -29,6 +29,7 @@ class EvidenceRecorderRequirements(unittest.TestCase):
         (self.root / 'scripts').mkdir()
         self.script = self.root / 'scripts/record-evidence.py'
         shutil.copyfile(RECORDER, self.script)
+        shutil.copyfile(RECORDER.with_name('private_values.py'), self.root / 'scripts/private_values.py')
         self.evidence = self.root / 'docs/evidence'
         self.evidence.mkdir(parents=True)
         self.ledger = self.evidence / 'ledger.jsonl'

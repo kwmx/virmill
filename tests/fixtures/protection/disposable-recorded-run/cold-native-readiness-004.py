@@ -11,7 +11,7 @@ for p in sorted(pathlib.Path('/usr/share/qemu/firmware').glob('*.json')):
     d=json.loads(p.read_text())
     if 'uefi' in d.get('interface-types',[]) and 'secure-boot' not in d.get('features',[]):
         report['firmware'].append({'descriptor':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'content':d})
-report['coordinator']=subprocess.run(['systemctl','--user','show','virmill-test-def0b10.service','-p','ActiveState','-p','SubState','-p','ExecMainStatus'],capture_output=True,text=True).stdout
+report['coordinator']=subprocess.run(['systemctl','--user','show','<test-vm-login>-def0b10.service','-p','ActiveState','-p','SubState','-p','ExecMainStatus'],capture_output=True,text=True).stdout
 report['helper']=subprocess.run(['systemctl','is-active','virmill-host-helper.socket','virmill-host-helper.service'],capture_output=True,text=True).stdout
 with sqlite3.connect((root/'state/virmill/journal.db').as_uri()+'?mode=ro',uri=True) as db:
     report['jobs']=[{'operationID':row[0], 'state':json.loads(row[1])['state']} for row in db.execute('SELECT id,body FROM jobs')]

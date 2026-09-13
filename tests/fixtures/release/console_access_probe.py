@@ -44,6 +44,16 @@ import xml.etree.ElementTree as ET
 from tui_workspace_probe import (Runner, Terminal, canonical_path, inventory,
                                  media_listing, require, strict_json)
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 CONNECTION = 'qemu:///system'
 BINARY = '/usr/bin/virmill'
 VIRSH = '/usr/bin/virsh'
@@ -323,7 +333,7 @@ def main():
             raise SystemExit(1)
         return
     require(args.execute_disposable and args.root is not None, 'explicit disposable execution and root required')
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == 1000,
+    require(authorized_test_host() and os.getuid() == 1000,
             'wrong authorized test host/actor')
     root = canonical_path(str(args.root.absolute()))
     require(root.is_relative_to(Path.home() / 'virmill-tests') and stat.S_ISDIR(root.lstat().st_mode) and

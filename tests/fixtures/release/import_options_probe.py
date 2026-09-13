@@ -28,6 +28,16 @@ from tui_workspace_probe import (OUTPUT_ROOT, Runner, Terminal, canonical_path,
                                  strict_json)
 
 
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
+
 def workspace_page(text, section):
     return re.search(r'\bVirmill\s*/\s*' + re.escape(section) + r'\b', text.split('\n')[0]) is not None
 
@@ -299,7 +309,7 @@ def main():
         return 0 if unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(ProbeTests)).wasSuccessful() else 1
     require(args.execute_disposable and args.binary and args.output and args.iso and
             re.fullmatch('[0-9a-f]{64}', args.binary_sha256 or ''), 'explicit host execution, paths and SHA-256 pin required')
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and
+    require(authorized_test_host() and
             os.getuid() == os.geteuid() == 1000, 'only the authorized ordinary-user disposable host may execute')
     binary, output, iso = map(canonical_path, (args.binary, args.output, args.iso))
     require(output.is_relative_to(OUTPUT_ROOT) and output != OUTPUT_ROOT, 'new approved output child required')

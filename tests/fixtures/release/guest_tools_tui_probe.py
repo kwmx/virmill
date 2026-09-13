@@ -29,6 +29,16 @@ import unittest
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require, strict_json
 from guest_tools_fedora_probe import URI, NETWORK, SOURCE, COPY, SOURCE_SHA, inspect_owned_domain, network_snapshot
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 IDENTITY = '71001e0c-e99d-4e26-a886-0553533c5fa0'
 NAME = 'virmill-tools-71001e0c'
 MAC = '52:54:00:9d:fd:2f'
@@ -91,7 +101,7 @@ def check_result(result, plan_id=None):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000

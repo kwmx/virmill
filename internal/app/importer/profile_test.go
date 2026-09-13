@@ -95,19 +95,19 @@ func TestOVFProfileFirmwareRequiresExactUnambiguousDeclaration(t *testing.T) {
 }
 
 func TestOVFProfileVirtualBoxOSConflictDevicesAndFileReferences(t *testing.T) {
-	data := []byte(`<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vbox="http://www.virtualbox.org/ovf/machine" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"><References><File ovf:id="file2" ovf:href="DFIR-Win11.nvram"/></References><VirtualSystem ovf:id="guest"><OperatingSystemSection ovf:id="120"><Description>Windows10_64</Description><vbox:OSType>Windows11_64</vbox:OSType></OperatingSystemSection><VirtualHardwareSection><System><vssd:VirtualSystemIdentifier>DFIR-Win11</vssd:VirtualSystemIdentifier></System><Item><rasd:ResourceType>32768</rasd:ResourceType><rasd:HostResource>ovf:/file/file2</rasd:HostResource></Item></VirtualHardwareSection><vbox:Machine name="DFIR-Win11" OSType="Windows11_64"><Hardware><Firmware type="EFI"/><USB><Controllers><Controller name="OHCI" type="OHCI"/><Controller name="EHCI" type="EHCI" enabled="false"/></Controllers></USB><AudioAdapter controller="HDA" enabled="true" enabledOut="true"/></Hardware></vbox:Machine></VirtualSystem></Envelope>`)
+	data := []byte(`<Envelope xmlns="http://schemas.dmtf.org/ovf/envelope/1" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1" xmlns:vbox="http://www.virtualbox.org/ovf/machine" xmlns:vssd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_VirtualSystemSettingData" xmlns:rasd="http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"><References><File ovf:id="file2" ovf:href="Sample-Win11.nvram"/></References><VirtualSystem ovf:id="guest"><OperatingSystemSection ovf:id="120"><Description>Windows10_64</Description><vbox:OSType>Windows11_64</vbox:OSType></OperatingSystemSection><VirtualHardwareSection><System><vssd:VirtualSystemIdentifier>Sample-Win11</vssd:VirtualSystemIdentifier></System><Item><rasd:ResourceType>32768</rasd:ResourceType><rasd:HostResource>ovf:/file/file2</rasd:HostResource></Item></VirtualHardwareSection><vbox:Machine name="Sample-Win11" OSType="Windows11_64"><Hardware><Firmware type="EFI"/><USB><Controllers><Controller name="OHCI" type="OHCI"/><Controller name="EHCI" type="EHCI" enabled="false"/></Controllers></USB><AudioAdapter controller="HDA" enabled="true" enabledOut="true"/></Hardware></vbox:Machine></VirtualSystem></Envelope>`)
 	var report Report
 	if err := parseOVF(data, "appliance.ovf", &report); err != nil {
 		t.Fatal(err)
 	}
 	s := report.Systems[0]
-	if s.Name != "DFIR-Win11" || s.OS != "Windows11_64" || s.OSSource != "virtualbox" || s.OVFOS != "Windows10_64" || s.Firmware != "uefi" {
+	if s.Name != "Sample-Win11" || s.OS != "Windows11_64" || s.OSSource != "virtualbox" || s.OVFOS != "Windows10_64" || s.Firmware != "uefi" {
 		t.Fatalf("owner metadata mislabeled: %+v", s)
 	}
 	if len(report.Warnings) != 1 || report.Warnings[0] != "GUEST_OS_METADATA_CONFLICT" {
 		t.Fatal("conflicting standard OS silently discarded", report.Warnings)
 	}
-	if report.FileReferences["file2"] != "DFIR-Win11.nvram" || s.Items[0].HostResources[0] != "ovf:/file/file2" {
+	if report.FileReferences["file2"] != "Sample-Win11.nvram" || s.Items[0].HostResources[0] != "ovf:/file/file2" {
 		t.Fatal("exact NVRAM reference lost")
 	}
 	if len(s.Devices) != 3 {
@@ -130,7 +130,7 @@ func TestOVFProfileVirtualBoxOSConflictDevicesAndFileReferences(t *testing.T) {
 	if err := json.Unmarshal(encoded, &decoded); err != nil {
 		t.Fatal(err)
 	}
-	if decoded.Systems[0].OVFOS != s.OVFOS || decoded.FileReferences["file2"] != "DFIR-Win11.nvram" || decoded.Systems[0].Devices[2].Enabled == nil || *decoded.Systems[0].Devices[2].Enabled {
+	if decoded.Systems[0].OVFOS != s.OVFOS || decoded.FileReferences["file2"] != "Sample-Win11.nvram" || decoded.Systems[0].Devices[2].Enabled == nil || *decoded.Systems[0].Devices[2].Enabled {
 		t.Fatal("profile report JSON lost hints or false boolean")
 	}
 }

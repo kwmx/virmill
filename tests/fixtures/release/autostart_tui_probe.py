@@ -24,6 +24,16 @@ import time
 
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require, strict_json
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 # Verified from .virmill-local/test-host.json verifiedGuestToolsFixture.vmID.
 IDENTITY = '71001e0c-e99d-4e26-a886-0553533c5fa0'
@@ -50,7 +60,7 @@ def normalize(plan, old):
 
 
 def execute(root):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and
+    require(authorized_test_host() and
             os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(root.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stat.S_ISDIR(stage.lstat().st_mode) and

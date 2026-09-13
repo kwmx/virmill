@@ -8,8 +8,18 @@ network, guest or source-media mutation is performed here.
 """
 import argparse,hashlib,json,os,socket,subprocess
 from pathlib import Path
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 p=argparse.ArgumentParser();p.add_argument('--execute-disposable',action='store_true',required=True);p.add_argument('--root',type=Path,required=True);p.add_argument('--revision',required=True);a=p.parse_args()
-assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000
+assert authorized_test_host() and os.getuid()==1000
 root=a.root.resolve(strict=True);assert root.is_relative_to(Path.home()/'virmill-tests')
 results=root/'upgrade';results.mkdir(mode=0o700)
 log=[];report={'status':'failed','revision':a.revision,'scope':'compatible core RPM replacement on idle coordinator; no guest actions'}

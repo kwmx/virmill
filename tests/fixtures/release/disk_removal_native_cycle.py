@@ -28,6 +28,16 @@ import xml.etree.ElementTree as ET
 from tui_workspace_probe import Runner, Terminal, require, media_listing, strict_json
 from guest_agent_edit_probe import select_machine
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///session'
 ACKS = {'host-mutation', 'remove-vm-definition', 'data-loss-delete-disks', 'exclusive-lifecycle-writer', 'exclusive-storage-writer'}
 NS = 'urn:virmill:disk-removal-fixture:v1'
@@ -210,7 +220,7 @@ def finish_tui_report(path, current_jobs):
 
 
 def execute(stage, resume_from=None, finish_tui_from=None):
-    require(socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==os.geteuid()==1000,'wrong authorized host/actor')
+    require(authorized_test_host() and os.getuid()==os.geteuid()==1000,'wrong authorized host/actor')
     stage=stage.absolute();require(stage.resolve()==stage and stage.parent==Path.home()/'virmill-tests'
         and stage.stat().st_uid==1000 and stat.S_IMODE(stage.stat().st_mode)==0o700,'private stage required')
     os.umask(0o077)

@@ -6,4 +6,4 @@ for unit in ('virmill-host-helper.service','virmill-host-helper.socket'):
  result[unit]={'enabledState':state,'activeState':a.stdout.strip()}
 r=subprocess.run(['systemctl','--user','is-enabled','virmilld.service'],capture_output=True,text=True);assert r.stdout.strip()=='disabled',r.stdout
 result['virmilld.service']={'enabledState':r.stdout.strip()}
-print(json.dumps({'observedServices':result,'transientTestCoordinator':subprocess.check_output(['systemctl','--user','show','virmill-test-8a092b4.service','--property=MainPID,ActiveState'],text=True)}),flush=True)
+print(json.dumps({'observedServices':result,'transientTestCoordinator':subprocess.check_output(['systemctl','--user','show','<test-vm-login>-8a092b4.service','--property=MainPID,ActiveState'],text=True)}),flush=True)

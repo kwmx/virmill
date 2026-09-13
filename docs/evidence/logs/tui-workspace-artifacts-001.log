@@ -6,13 +6,13 @@ test_staged_install_and_uninstall_preserve_user_artifacts (__main__.Artifacts.te
 FAIL: test_private_daemon_cli_and_lab_validation (__main__.Artifacts.test_private_daemon_cli_and_lab_validation)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 80, in test_private_daemon_cli_and_lab_validation
+  File "<dev-home>/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 80, in test_private_daemon_cli_and_lab_validation
     self.check_tui_search(root, env)
     ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
-  File "/home/faisal/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 151, in check_tui_search
+  File "<dev-home>/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 151, in check_tui_search
     os.write(master,b'\x1b');receive('Overview')
                              ~~~~~~~^^^^^^^^^^^^
-  File "/home/faisal/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 141, in receive
+  File "<dev-home>/project/virmill/build/tui-workspace-release/tests/integration/artifacts_test.py", line 141, in receive
     self.fail('TUI keyboard observation missing: '+expected)
     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: TUI keyboard observation missing: Overview

@@ -67,7 +67,7 @@ was outside all mutation targets. The prior separate guest's XML remained
 and the unrelated guest's XML remained
 `bbe62f376a3943d795cdac4fd67ff56087efa43024b27cacf0578217a1a44408`.
 
-The current coordinator is transient user unit `virmill-test-12d7bba.service`,
+The current coordinator is transient user unit `<test-vm-login>-12d7bba.service`,
 with a two-hour runtime bound and the private run environment from the first
 disposable-host run. No persistent Virmill service or release publication was
 enabled. Next required work includes bounded managed-storage access, native

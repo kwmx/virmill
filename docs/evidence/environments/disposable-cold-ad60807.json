@@ -11,7 +11,7 @@
     "restic-0.19.1-1.fc44.x86_64"
   ],
   "SELinux": "Enforcing",
-  "privateCoordinatorUnit": "virmill-test-ad60807.service",
+  "privateCoordinatorUnit": "<test-vm-login>-ad60807.service",
   "privilegedHelper": "inactive",
   "limitations": [
     "One owner-authorized disposable Fedora 44 nested-KVM host; no full firmware/TPM capture, restore, USB or network qualification."

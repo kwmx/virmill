@@ -1,6 +1,6 @@
 # Disposable auxiliary inventory RPM upgrade 001
 
-This is a prepared, single-use recipe for parent-only execution on the already authorized disposable VM as ordinary `virmill-test`. It has not been executed on that VM by its author. Authoring and `--self-test` do not qualify installation, helper authentication or any native workflow. The only permitted run root is `/home/virmill-test/virmill-tests/run-65930c6-20260907`.
+This is a prepared, single-use recipe for parent-only execution on the already authorized disposable VM as ordinary `<test-vm-login>`. It has not been executed on that VM by its author. Authoring and `--self-test` do not qualify installation, helper authentication or any native workflow. The only permitted run root is `<test-vm-home>/virmill-tests/run-65930c6-20260907`.
 
 The recipe installs exactly two development RPMs and replaces this run's ordinary coordinator. It does not start or change a guest, invoke auxiliary inspection, edit helper policy, start the helper, reconcile a job, read private key bytes or open TPM/NVRAM payload bytes. Acceptance contributions are REL-01 upgrade-preservation, REL-03 installed help/reference and SEC-01 inactive-helper/authority-preservation prerequisites only. All release, capture and independent recovery flags remain false.
 
@@ -26,7 +26,7 @@ The previous deployment is exactly `dc2ab1a7af8c023c1485d36d0e858a65264ace3e`. I
 | `virmilld` | `75c1390cc0cf259cf2243ac81ebd52b8e276a7e3611105e7d2ecfa577d00e25b` |
 | `virmill-host-helper` | `f6d7eef0cb186b3b18356604d577b39810b0e879942ea4c4d6b4a4f4f828990a` |
 
-The old coordinator must still be `virmill-test-dc2ab1a.service`, active/running with PID `27851`, the exact working directory, ordinary owner, `/usr/bin/virmilld` command line and old executable SHA256 through `/proc/27851/exe`. Its PID/start-time identity is rechecked immediately before stopping. An expired or replaced old unit refuses preflight; this recipe never revives it or chooses another coordinator. `rpm -V` and installed CLI version must also match before installation.
+The old coordinator must still be `<test-vm-login>-dc2ab1a.service`, active/running with PID `27851`, the exact working directory, ordinary owner, `/usr/bin/virmilld` command line and old executable SHA256 through `/proc/27851/exe`. Its PID/start-time identity is rechecked immediately before stopping. An expired or replaced old unit refuses preflight; this recipe never revives it or chooses another coordinator. `rpm -V` and installed CLI version must also match before installation.
 
 ## Preservation baseline
 
@@ -44,7 +44,7 @@ Exactly these seven guest UUIDs are required; their inactive XML hashes are pinn
 
 Read-only virsh calls observe each guest stopped on both sides of its inactive XML read. Extra, missing, active or changed definitions refuse the recipe. Only disk/CD-ROM source declarations are resolved for metadata observation, including read-only `vol-path`; TPM and NVRAM paths are not used as byte inputs.
 
-A fixed read-only `sudo python3` observation records device/inode/mode/owner/link-count/size/mtime/ctime for `ROOT/sources`, `ROOT/prepared`, the owner-supplied `/home/virmill-test/images` tree, and declared disk/media files within this run or `/var/lib/libvirt/images`. It recursively checks bounded source/prepared/supplied-media trees, refusing symlinks or special files. These are metadata preservation checks; source/guest disk content is not rehashed. It observes `ROOT/config/virmill/helper-key.pem` with O_PATH/stat only, never a readable open or hash.
+A fixed read-only `sudo python3` observation records device/inode/mode/owner/link-count/size/mtime/ctime for `ROOT/sources`, `ROOT/prepared`, the owner-supplied `<test-vm-home>/images` tree, and declared disk/media files within this run or `/var/lib/libvirt/images`. It recursively checks bounded source/prepared/supplied-media trees, refusing symlinks or special files. These are metadata preservation checks; source/guest disk content is not rehashed. It observes `ROOT/config/virmill/helper-key.pem` with O_PATH/stat only, never a readable open or hash.
 
 The same observer hashes the public `/etc/virmill/helper-policy.json` and the known disposable socket drop-in, plus bounded UUID-named JSON/completion records directly inside `/var/lib/virmill-host-helper`. Other helper journal entries are refused before their content is opened. Journal and policy hashes are retained privately without exposing their content. No helper key or native firmware/TPM payload is eligible for those hash reads. Helper service and socket must stay inactive. No system daemon-reload, socket activation, ACL, policy, device or VM command is issued.
 
@@ -62,9 +62,9 @@ The new private output directory is `ROOT/auxiliary-inventory-upgrade-001/`. Its
 
 The only runtime/package mutations are, in order:
 
-1. Stop exactly `virmill-test-dc2ab1a.service` after rechecking its observed identity; require inactive/PID 0 and unchanged journal rows.
+1. Stop exactly `<test-vm-login>-dc2ab1a.service` after rechecking its observed identity; require inactive/PID 0 and unchanged journal rows.
 2. Recheck the two RPM inputs and run `sudo -n /usr/bin/rpm -Uvh --replacepkgs` with exactly their two fixed paths. Verify RPM ownership/integrity and all three new executable hashes, including the inactive helper.
-3. Create exactly `virmill-test-490b88c.service` with `systemd-run --user`, `RuntimeMaxSec=7200`, `Restart=no`, this run's working directory and the five verified private XDG directory values. The unit must not already exist.
+3. Create exactly `<test-vm-login>-490b88c.service` with `systemd-run --user`, `RuntimeMaxSec=7200`, `Restart=no`, this run's working directory and the five verified private XDG directory values. The unit must not already exist.
 
 Private XDG values apply only to Virmill and the explicit new-unit environment. `systemctl --user`, systemd-run and virsh retain the ordinary host environment. The actual new PID, start time, owner/cwd/command and `/proc/<pid>/exe` SHA256 are verified, plus installed CLI revision, generated command help and the installed `/usr/share/doc/virmill/cli-reference.md` entry for `virmill vm recovery auxiliary inspect`. The metadata command itself is not invoked. The old unit stays inactive and the new unit is left running within its two-hour cap after success.
 

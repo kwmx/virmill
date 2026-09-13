@@ -20,6 +20,16 @@ import unittest
 
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 JOB_ID = '992fb03c-5056-4c0e-99cf-25140d364b4f'
 TERMINAL = {'succeeded', 'failed', 'partial', 'canceled', 'recovery-required'}
@@ -58,7 +68,7 @@ def checked_events(events):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000

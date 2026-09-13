@@ -1,7 +1,7 @@
-{"preservedFile": "/home/virmill-test/images/kali-linux-2026.2-installer-amd64.iso", "sha256": "6dbefacc95e3b556c19c48e8bae39b8b505e2d3a1aba0bfb7ab62b036c3d2ba3"}
+{"preservedFile": "<test-vm-home>/images/<owner-media-4>.iso", "sha256": "6dbefacc95e3b556c19c48e8bae39b8b505e2d3a1aba0bfb7ab62b036c3d2ba3"}
 {"preservedFile": "/var/lib/libvirt/images/virmill-policy-c7f8b76/virmill-boot-media-fixture.iso", "sha256": "6dbefacc95e3b556c19c48e8bae39b8b505e2d3a1aba0bfb7ab62b036c3d2ba3"}
-{"preservedFile": "/home/virmill-test/images/kali-linux-2026.2-qemu-amd64.7z", "sha256": "c7c35588d05277c482c908bf7a136d348f76ffa68700b04ff53c0b217e6bd071"}
-{"preservedFile": "/home/virmill-test/virmill-tests/run-65930c6-20260907/sources/kali-qemu/kali-linux-2026.2-qemu-amd64.qcow2", "sha256": "4e24751faa18753ad5f854053c523481d1bc5efa9a45c3828071b7475d825104"}
+{"preservedFile": "<test-vm-home>/images/<owner-media-5>.7z", "sha256": "c7c35588d05277c482c908bf7a136d348f76ffa68700b04ff53c0b217e6bd071"}
+{"preservedFile": "<test-vm-home>/virmill-tests/run-65930c6-20260907/sources/kali-qemu/<owner-media-5>.qcow2", "sha256": "4e24751faa18753ad5f854053c523481d1bc5efa9a45c3828071b7475d825104"}
 {"preservedFile": "/var/lib/libvirt/images/virmill-qualification-65930c6/virmill-ae630461-91d3-4f07-ad88-e6842c3dc3ea-disk-000.qcow2", "sha256": "8eb9be4a9592ad8242fa4e99fbac2dd2eef474bb93e99f3699d17617c7d93c70"}
 {"allThreeGuestsStopped": true, "allNewJobsSucceeded": true, "legacyUncertainOperation": "b5983e68-bfcc-42f0-bf4e-3877029b756b", "legacyLocksRetained": 3, "newJobLocks": 0, "sourceMediaAndUnrelatedGuestPreserved": true, "retainedEmptyCDROM": "sda", "vcpus": 3, "memoryMiB": 3072, "helperServiceEnabled": false, "fullReleaseQualified": false}
    1B-blocks        Avail

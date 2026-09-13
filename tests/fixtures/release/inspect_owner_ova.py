@@ -1,8 +1,19 @@
+import sys
 import hashlib,json,os,socket,subprocess,time
 from pathlib import Path
-assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000
-root=Path('/home/virmill-test/virmill-tests/import-flow-4945d75')
-source=Path('/home/virmill-test/images/DFIR-Win11.ova')
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+assert authorized_test_host() and os.getuid()==1000
+# Private locations are arguments: RUN_DIRECTORY OWNER_OVA
+root,source=map(Path,sys.argv[1:3])
 out=root/'owner-ova-inspection';out.mkdir(mode=0o700)
 def meta():
  s=source.stat();return [s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns]

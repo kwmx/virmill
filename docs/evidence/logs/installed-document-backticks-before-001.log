@@ -3,7 +3,7 @@ FF
 FAIL: test_unequal_backtick_runs_do_not_hide_dependencies (__main__.ParserTests.test_unequal_backtick_runs_do_not_hide_dependencies) (text='`[bad](missing.md)``')
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/installed_documents_test.py", line 81, in test_unequal_backtick_runs_do_not_hide_dependencies
+  File "<dev-home>/project/virmill/tests/integration/installed_documents_test.py", line 81, in test_unequal_backtick_runs_do_not_hide_dependencies
     self.assertEqual(destinations(text), ['missing.md'])
     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: Lists differ: [] != ['missing.md']
@@ -19,7 +19,7 @@ First extra element 0:
 FAIL: test_unequal_backtick_runs_do_not_hide_dependencies (__main__.ParserTests.test_unequal_backtick_runs_do_not_hide_dependencies) (text='` [bad](missing.md) ``')
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/installed_documents_test.py", line 81, in test_unequal_backtick_runs_do_not_hide_dependencies
+  File "<dev-home>/project/virmill/tests/integration/installed_documents_test.py", line 81, in test_unequal_backtick_runs_do_not_hide_dependencies
     self.assertEqual(destinations(text), ['missing.md'])
     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: Lists differ: [] != ['missing.md']

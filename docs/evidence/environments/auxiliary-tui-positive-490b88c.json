@@ -14,7 +14,7 @@
   "guestBootVerified": false,
   "guestsPreserved": true,
   "historicalMediaHashes": {
-    "/home/virmill-test/virmill-tests/run-65930c6-20260907/sources/uefi-tpm-probe-v1/probe-fat.img": "1945000ea87359d92f6fcb3413549fe477884012d631c66a058c71a1dda9e483",
+    "<test-vm-home>/virmill-tests/run-65930c6-20260907/sources/uefi-tpm-probe-v1/probe-fat.img": "1945000ea87359d92f6fcb3413549fe477884012d631c66a058c71a1dda9e483",
     "/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-666c692d-da0e-4119-9554-727c4af3c751-disk-000.qcow2": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51",
     "/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-d4c95f21-28bc-428d-9e5f-ceda025d279e-disk-000.qcow2": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51",
     "/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-f78674f3-bf3a-43e5-81f9-4283e2472024-disk-000.qcow2": "f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51"
@@ -71,7 +71,7 @@
     "helperPID": "31125",
     "helperStartMonotonic": "51386551107",
     "pid": "30897",
-    "unit": "virmill-test-490b88c.service"
+    "unit": "<test-vm-login>-490b88c.service"
   },
   "sourceDigest": "26e4f8410395a37606d577073d0bdff424610ae04b83df678e61d618ae38eb06",
   "sourceInventorySHA256": "f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576",

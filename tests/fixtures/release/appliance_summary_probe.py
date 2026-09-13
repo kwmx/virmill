@@ -4,12 +4,22 @@ import argparse, hashlib, json, os, re, socket, time
 from pathlib import Path
 from tui_workspace_probe import Runner, Terminal, inventory, generation, require
 from import_options_probe import selected_label
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 p=argparse.ArgumentParser()
 p.add_argument('--execute-disposable',action='store_true',required=True)
 p.add_argument('--binary',default='/usr/bin/virmill');p.add_argument('--binary-sha256',required=True)
 p.add_argument('--connection',default='qemu:///system');p.add_argument('--source',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True);a=p.parse_args()
-require(socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000,'wrong host/actor')
+require(authorized_test_host() and os.getuid()==1000,'wrong host/actor')
 require(a.binary=='/usr/bin/virmill' and a.connection=='qemu:///system','installed native CLI required')
 source=a.source.resolve(strict=True);require(source.is_relative_to(Path.home()/'images') and source.is_file(),'explicit owner media required')
 root=a.output.absolute();require(root.parent.resolve().is_relative_to(Path.home()/'virmill-tests') and not root.exists(),'new private output required');root.mkdir(mode=0o700)

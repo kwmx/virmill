@@ -12,7 +12,7 @@ offline builds of three executables and four DEB/RPM packages. These artifacts
 still report `0.0.0-dev`; the subsequent beta label change is separate.
 
 `cold-recovery-native-001` failed its fixture hostname assertion before any guest
-or media mutation. The observed hostname was `virmill-test.home`; the recipe was
+or media mutation. The observed hostname was `<test-vm-host>`; the recipe was
 corrected to accept this exact authorized hostname as well as its short form.
 The second source digest also includes generated Bash completions from the build.
 Executable hashes remained exactly those from the reproducibility run.
@@ -35,7 +35,7 @@ checks do not read screenshot text; this separate visual observation supplies
 that evidence. [Captured display](images/cold-recovery-second-disk.png).
 
 The new guest, volumes, capture, durable jobs and private logs remain on the test
-VM under `/home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001` and the
+VM under `<test-vm-home>/virmill-tests/cold-recovery-8f22ab1-001` and the
 existing disposable test pool. This is a synthetic BIOS guest boot, not an OS,
 firmware/TPM restore, independent encrypted repository recovery or full 1.0
 acceptance. Those support claims remain open.

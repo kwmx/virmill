@@ -1,4 +1,4 @@
-3cc3babc6e6dc389e498dc368ebcbbc7c290e6b33ba247e565c827e9c8b58150  /home/virmill-test/virmill-tests/cold-recovery-8f22ab1-001/restic-native.test
+3cc3babc6e6dc389e498dc368ebcbbc7c290e6b33ba247e565c827e9c8b58150  <test-vm-home>/virmill-tests/cold-recovery-8f22ab1-001/restic-native.test
 === RUN   TestResticGeneratedRepository
     native_linux_test.go:27: restic identity: {Path:/usr/bin/restic SHA256:b49f2d88cb0407b782081b14ec7393f9e83a9e43be73e4560fe0bd4c1a4f2bad Version:restic 0.19.1 compiled with go1.26.5-X:nodwarf5 on linux/amd64}
     native_linux_test.go:55: restored private mode differs for /tmp/TestResticGeneratedRepository359288226/001/native-new-restore: &{native-new-restore 60 2147484096 {593675104 63924454593 0x806440} {49 1806 2 16832 1000 1000 0 0 60 4096 0 {1788857793 599675230} {1788857793 593675104} {1788857793 593675104} [0 0 0]}} <nil>

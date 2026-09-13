@@ -1,2 +1,2 @@
 Connection timed out during banner exchange
-Connection to 192.168.100.252 port 22 timed out
+Connection to <test-vm-address> port 22 timed out

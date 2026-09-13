@@ -11,7 +11,7 @@ import pathlib
 import sys
 import types
 
-ROOT = pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+ROOT = pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 NAME = 'auxiliary-helper-deactivation-001'
 WRAPPER_SHA = 'f7994d0e8b67a3a5327d3ea0ba4fee9c8e8b59df70c32ca910885f1c6be01833'
 WINDOW_REPORT_SHA = '6797ebef8cece52582d4b170c1b6d67c1e4c8a64e6d244959a9ecf136a37b599'
@@ -27,7 +27,7 @@ def main():
     p.add_argument('--recipe-sha256', required=True)
     p.add_argument('--execute-reviewed', action='store_true', required=True)
     args = p.parse_args()
-    require(os.getuid() == 1000 and pathlib.Path.home() == pathlib.Path('/home/virmill-test')
+    require(os.getuid() == 1000 and pathlib.Path.home() == pathlib.Path('<test-vm-home>')
             and ROOT.is_dir() and ROOT.resolve() == ROOT, 'designated ordinary actor/root required')
     require(hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest() == args.recipe_sha256,
             'reviewed recipe hash differs')

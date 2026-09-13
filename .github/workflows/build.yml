@@ -17,6 +17,9 @@ jobs:
       GOSUMDB: off
     steps:
       - uses: actions/checkout@v5
+      # The private value list exists only locally; CI refuses credentials.
+      - name: Check for committed credentials
+        run: python3 scripts/check-private.py
       # .tools/ is not tracked; fetch the pinned Go archive and verify its
       # locked SHA-256 before extraction.
       - name: Bootstrap pinned Go toolchain

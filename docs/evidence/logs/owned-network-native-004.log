@@ -379,10 +379,10 @@
   "existingFirewallPreserved": true
 }
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/network-native-004/create_native.py", line 119, in <module>
+  File "<test-vm-home>/virmill-tests/network-native-004/create_native.py", line 119, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/network-native-004/create_native.py", line 91, in main
+  File "<test-vm-home>/virmill-tests/network-native-004/create_native.py", line 91, in main
     assert packet.returncode==0,item['packetReport']
            ^^^^^^^^^^^^^^^^^^^^
 AssertionError: {'cleanup': {'DHCPLeasesRetained': True, 'errors': [], 'networkRemoved': False, 'status': 'verified'}, 'error': 'Refusal: command failed; see commands.jsonl sequence 39', 'fullNetworkAcceptance': False, 'guestOrHardwareQualification': False, 'networkId': '2d0253cd-95b4-4d11-a921-3ebb15aa6166', 'networkXMLSHA256': 'f407dea63b037cf94cd88a21b40cbc2ef806386ea2335186349f5bc9829a03b3', 'observations': None, 'recipeSHA256': '5b503b1f135d21a3e18e8028712545b50dc7a64f9da805eabdb5c7b8f8ef454a', 'runId': 'aad8707f-8306-429b-86bd-3c57d38de820', 'status': 'failed_or_policy_discrepancy'}

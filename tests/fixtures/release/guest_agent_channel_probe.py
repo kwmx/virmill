@@ -22,6 +22,29 @@ import xml.etree.ElementTree as ET
 from tui_workspace_probe import (Runner, canonical_path, generation, inventory,
                                  media_listing, require, canonical_uuid)
 
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 AGENT = 'org.qemu.guest_agent.0'
 TERMINAL = {'succeeded', 'failed', 'partial', 'canceled', 'recovery-required', 'interrupted'}
 
@@ -67,11 +90,11 @@ def apply_arguments(plan, key):
 
 def execute(args):
     require(args.execute_disposable, 'explicit disposable execution required')
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == 1000,
+    require(authorized_test_host() and os.getuid() == 1000,
             'wrong test host or actor')
     require(args.connection == 'qemu:///system' and args.binary == '/usr/bin/virmill',
             'installed binary and explicit local system connection required')
-    require(args.pool == 'virmill-test', 'only the existing dedicated virmill-test storage pool is authorized')
+    require(args.pool == TEST_POOL, 'only the existing designated test storage pool is authorized')
     root = canonical_path(str(args.output))
     require(root.parent.resolve().is_relative_to(Path.home() / 'virmill-tests') and not root.exists(),
             'choose a new output directory under the authorized test root')
@@ -259,7 +282,7 @@ def main():
     parser.add_argument('--binary', default='/usr/bin/virmill')
     parser.add_argument('--binary-sha256')
     parser.add_argument('--connection', default='qemu:///system')
-    parser.add_argument('--pool', default='virmill-test')
+    parser.add_argument('--pool', default=TEST_POOL)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     if args.self_test:

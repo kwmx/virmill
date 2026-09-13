@@ -56,7 +56,7 @@ A transient result-query UX defect was also observed: during initial validation,
 `vm creation result` incorrectly suggests recovery while `operation show` correctly
 reports a running job. That correction remains tracked separately.
 
-The installed coordinator is transient user unit `virmill-test-c7f8b76.service`,
+The installed coordinator is transient user unit `<test-vm-login>-c7f8b76.service`,
 with a two-hour runtime bound and the private XDG environment documented in the
 first run. Use the normal login runtime/bus for systemctl. All three test-host
 VMs are stopped after this run; source media, both created volumes and journals

@@ -31,10 +31,33 @@ import uuid
 import xml.etree.ElementTree as ET
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require, strict_json
 
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 SOURCE_VM = '2ec994ce-2950-498c-8b19-d2f7dbb53a78'
-SOURCE = Path('/var/lib/libvirt/images/virmill-test/nested-fedora.qcow2')
-COPY = Path('/home/virmill-test/virmill-tests/guest-tools-fedora-copy-001/fedora-copy.qcow2')
+SOURCE = Path('/var/lib/libvirt/images') / TEST_POOL / 'nested-fedora.qcow2'
+COPY = Path.home() / 'virmill-tests/guest-tools-fedora-copy-001/fedora-copy.qcow2'
 SOURCE_SHA = '3a6b44a4db1299ec7bef95e2921b83fdaa17dc5b74449b588e66fc81d63fae59'
 NETWORK = 'e4aa7897-db51-45de-a0dc-a13554eba163'
 NS = 'urn:virmill:guest-tools-fixture:v1'
@@ -216,7 +239,7 @@ def validate_plan(plan, identity, label, address=None):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host or actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000

@@ -22,15 +22,15 @@ for vm in ('2ec994ce-2950-498c-8b19-d2f7dbb53a78','ae630461-91d3-4f07-ad88-e6842
  assert subprocess.check_output(['virsh','--readonly','-c','qemu:///system','domstate',vm],text=True).strip()=='shut off'
  xml[vm]=hashlib.sha256(subprocess.check_output(['virsh','--readonly','-c','qemu:///system','dumpxml','--inactive',vm])).hexdigest()
 assert cli('version')['revision'].startswith('def0b10')
-loaded=subprocess.check_output(['systemctl','--user','show','virmill-test-def0b10.service','-p','LoadState','--value'],text=True).strip()
-if loaded!='not-found':assert subprocess.check_output(['systemctl','--user','show','virmill-test-def0b10.service','-p','WorkingDirectory','--value'],text=True).strip()==str(root)
+loaded=subprocess.check_output(['systemctl','--user','show','<test-vm-login>-def0b10.service','-p','LoadState','--value'],text=True).strip()
+if loaded!='not-found':assert subprocess.check_output(['systemctl','--user','show','<test-vm-login>-def0b10.service','-p','WorkingDirectory','--value'],text=True).strip()==str(root)
 subprocess.run(['rpm','-V','virmill','virmill-host-helper'],check=True)
-if loaded!='not-found':subprocess.run(['systemctl','--user','stop','virmill-test-def0b10.service'],check=True)
+if loaded!='not-found':subprocess.run(['systemctl','--user','stop','<test-vm-login>-def0b10.service'],check=True)
 subprocess.run(['sudo','-n','rpm','-Uvh','--replacepkgs',*[str(root/'packages/44a46b6'/name) for name in packages]],check=True)
 subprocess.run(['rpm','-V','virmill','virmill-host-helper'],check=True)
 for path,sha in {'/usr/bin/virmill':'dc1aded072ae761798a2a8ee89fb14a19a8552da77a7c7b24ed6522b758cc217','/usr/bin/virmilld':'08b9d71a4b68c343a4c34fa56e2fdf549c544aeadbd155e9710e4e17bbc35e3e','/usr/libexec/virmill-host-helper':'56692aa05abbf3f3aaf1c1aa3146fcb6cb3135196be9fdd24a46e553c57d095a'}.items():
  assert hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()==sha
-args=['systemd-run','--user','--unit=virmill-test-44a46b6','--property=RuntimeMaxSec=7200','--property=Restart=no','--property=WorkingDirectory='+str(root)]
+args=['systemd-run','--user','--unit=<test-vm-login>-44a46b6','--property=RuntimeMaxSec=7200','--property=Restart=no','--property=WorkingDirectory='+str(root)]
 for key in ('XDG_STATE_HOME','XDG_RUNTIME_DIR','XDG_CACHE_HOME','XDG_DATA_HOME','XDG_CONFIG_HOME'):args.append('--setenv='+key+'='+env[key])
 subprocess.run([*args,'/usr/bin/virmilld'],check=True)
 for _ in range(100):
@@ -44,6 +44,6 @@ for vm,sha in xml.items():
  assert hashlib.sha256(subprocess.check_output(['virsh','--readonly','-c','qemu:///system','dumpxml','--inactive',vm])).hexdigest()==sha
 assert subprocess.run(['systemctl','is-active','--quiet','virmill-host-helper.service']).returncode!=0
 assert subprocess.run(['systemctl','is-active','--quiet','virmill-host-helper.socket']).returncode!=0
-report={'upgrade':'passed','newUnit':'virmill-test-44a46b6.service','existingJobsPreserved':len(before_jobs),'resourceLocks':0,'allFourStoppedVMXMLSHA256':xml,'noGuestStartOrDefinition':True,'SELinux':subprocess.check_output(['getenforce'],text=True).strip()}
+report={'upgrade':'passed','newUnit':'<test-vm-login>-44a46b6.service','existingJobsPreserved':len(before_jobs),'resourceLocks':0,'allFourStoppedVMXMLSHA256':xml,'noGuestStartOrDefinition':True,'SELinux':subprocess.check_output(['getenforce'],text=True).strip()}
 with (root/'cold-source-upgrade-44a46b6.json').open('x') as f:json.dump(report,f,indent=2)
 print(json.dumps(report),flush=True)

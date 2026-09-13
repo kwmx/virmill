@@ -11,7 +11,7 @@ def xml():return call(['virsh','--readonly','--connect','qemu:///system','dumpxm
 before_job=job();assert before_job['state']=='recovery-required'
 before_locks=locks();assert len(before_locks)==3
 before_xml=xml();before_stat=call(['stat','--format=%d:%i:%s:%Y:%Z',volume]).stdout
-pid=int(call(['systemctl','--user','show','virmill-test-c9aa310.service','--property=MainPID','--value']).stdout)
+pid=int(call(['systemctl','--user','show','<test-vm-login>-c9aa310.service','--property=MainPID','--value']).stdout)
 assert pid>1
 pidfd=os.pidfd_open(pid)
 try:
@@ -23,7 +23,7 @@ for _ in range(100):
  if not pathlib.Path('/proc/'+str(pid)).exists():break
  time.sleep(0.05)
 assert not pathlib.Path('/proc/'+str(pid)).exists()
-call(['systemctl','--user','restart','virmill-test-c9aa310.service'])
+call(['systemctl','--user','restart','<test-vm-login>-c9aa310.service'])
 for _ in range(100):
  r=call(['virmill','operation','show',jobid,'--output','json','--non-interactive'],check=False)
  if r.returncode==0:break

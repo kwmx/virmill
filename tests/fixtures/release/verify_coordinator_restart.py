@@ -19,6 +19,16 @@ import sys
 import time
 
 
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
+
 TERMINAL_STATES = {"succeeded", "failed", "partial", "canceled", "recovery-required"}
 JOURNAL_TABLES = ("jobs", "locks", "events", "plans")
 
@@ -260,8 +270,8 @@ def main():
     args = parser.parse_args()
     if args.self_test:
         return self_test()
-    if not args.execute_disposable or socket.gethostname() not in {"virmill-test", "virmill-test.home"} or os.getuid() != 1000:
-        parser.error("requires explicit disposable execution on the authorized virmill-test host as UID 1000")
+    if not args.execute_disposable or not authorized_test_host() or os.getuid() != 1000:
+        parser.error("requires explicit disposable execution on a designated test host as UID 1000")
     if args.root is None or not re.fullmatch(r"[a-f0-9]{64}", args.expected_daemon_sha256 or ""):
         parser.error("a root directory and exact daemon SHA256 are required")
     if len(args.allowed_new_plan_id) != len(set(args.allowed_new_plan_id)) or any(

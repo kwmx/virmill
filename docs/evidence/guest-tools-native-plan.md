@@ -18,7 +18,7 @@ historical pool observations include `nested-fedora.qcow2` and
 Fedora version, cloud-init support, credentials, or permission to modify that VM.
 The root agent subsequently confirmed UUID
 `2ec994ce-2950-498c-8b19-d2f7dbb53a78`, stopped with no managed-save state, and
-disk `/var/lib/libvirt/images/virmill-test/nested-fedora.qcow2` plus read-only
+disk `/var/lib/libvirt/images/<test-vm-login>/nested-fedora.qcow2` plus read-only
 `nested-fedora-seed.iso`. The full observation is retained in ignored
 `build/guest-tools-preflight-inventory.json`. Recheck that exact identity before
 copying. Never start the original guest, change

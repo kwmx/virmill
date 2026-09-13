@@ -34,15 +34,15 @@ retain independent lifetime. CLI overrides remain explicit.
   The generic updater's historical scope label says UI-only; this run also
   updates transport/parser behavior, activated by the separately guarded restart.
 - `import-flow-native-001`: installed ISO options/export/actual unapplied preview
-  passed at 80×24 and 120×36. The actual owner DFIR-Win11.ova was selected through
+  passed at 80×24 and 120×36. The actual owner <owner-media-1>.ova was selected through
   the browser; Continue showed checking and Cancel, Escape canceled, and a new
   ISO draft remained usable without a stale error during three seconds of native
   observation. That case makes no complete-inspection claim. Guests, job state,
   executable and both source files' metadata were preserved.
 - `import-flow-owner-ova-001`: complete read-only inspection of the owner's
-  36551735808-byte DFIR-Win11.ova passed in **118.480 seconds**, confirming why the
+  36551735808-byte <owner-media-1>.ova passed in **118.480 seconds**, confirming why the
   previous 30-second client wait failed. The archive has four members and one
-  system, DFIR-Win11, with attached disk vmdisk1. Its supplied checksums verified;
+  system, <owner-media-1>, with attached disk vmdisk1. Its supplied checksums verified;
   publisher authentication remains unverified. Full source SHA-256 was
   `dadaa2344caf0d9b170207d497e2ab3958d5fd5971b36dcd7b030dabe573efe7`.
   Source metadata, guest inventory and jobs remained unchanged. This proves

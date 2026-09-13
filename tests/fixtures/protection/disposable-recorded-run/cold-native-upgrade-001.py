@@ -40,14 +40,14 @@ def preserve_guests():
  disk='/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-'+vm+'-disk-000.qcow2'
  assert subprocess.check_output(['sudo','-n','sha256sum','--',disk],text=True).split()[0]=='f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51'
 preserve_guests()
-old='virmill-test-ad60807.service'
+old='<test-vm-login>-ad60807.service'
 assert subprocess.check_output(['systemctl','--user','show',old,'-p','WorkingDirectory','--value'],text=True).strip()==str(root)
 subprocess.run(['systemctl','--user','stop',old],check=True)
 subprocess.run(['sudo','-n','rpm','-Uvh','--replacepkgs',*[str(bundle/name) for name in packages]],check=True)
 subprocess.run(['rpm','-V','virmill','virmill-host-helper'],check=True)
 for command,path in {'virmill':'/usr/bin/virmill','virmilld':'/usr/bin/virmilld','virmill-host-helper':'/usr/libexec/virmill-host-helper'}.items():
  assert hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()==manifest['artifacts']['build/bin/'+command]
-unit='virmill-test-'+revision[:7]
+unit='<test-vm-login>-'+revision[:7]
 args=['systemd-run','--user','--unit='+unit,'--property=RuntimeMaxSec=7200','--property=Restart=no','--property=WorkingDirectory='+str(root)]
 for key in ('XDG_STATE_HOME','XDG_RUNTIME_DIR','XDG_CACHE_HOME','XDG_DATA_HOME','XDG_CONFIG_HOME'):args.append('--setenv='+key+'='+env[key])
 subprocess.run([*args,'/usr/bin/virmilld'],check=True)

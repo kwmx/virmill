@@ -39,17 +39,17 @@ test_url_decoding_and_parentheses_are_canonicalized (__main__.PackageDocuments.t
 ERROR: test_escaped_first_backtick_can_leave_shorter_opening_run (__main__.PackageDocuments.test_escaped_first_backtick_can_leave_shorter_opening_run) (closing_backticks=1)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/package_docs_test.py", line 201, in test_escaped_first_backtick_can_leave_shorter_opening_run
+  File "<dev-home>/project/virmill/tests/integration/package_docs_test.py", line 201, in test_escaped_first_backtick_can_leave_shorter_opening_run
     self.assertEqual(self.rewrite(original), original)
                      ~~~~~~~~~~~~^^^^^^^^^^
-  File "/home/faisal/project/virmill/tests/integration/package_docs_test.py", line 34, in rewrite
+  File "<dev-home>/project/virmill/tests/integration/package_docs_test.py", line 34, in rewrite
     return package_docs.rewrite_markdown(source, self.mapping[source], data,
            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                          self.mapping, self.tracked).decode()
                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/faisal/project/virmill/scripts/package_docs.py", line 263, in rewrite_markdown
+  File "<dev-home>/project/virmill/scripts/package_docs.py", line 263, in rewrite_markdown
     resolved = _resolve(destination, source_path, known, mapping)
-  File "/home/faisal/project/virmill/scripts/package_docs.py", line 202, in _resolve
+  File "<dev-home>/project/virmill/scripts/package_docs.py", line 202, in _resolve
     raise ValueError('Unresolved documentation destination: ' + target)
 ValueError: Unresolved documentation destination: docs/missing.md
 
@@ -57,7 +57,7 @@ ValueError: Unresolved documentation destination: docs/missing.md
 FAIL: test_escaped_first_backtick_can_leave_shorter_opening_run (__main__.PackageDocuments.test_escaped_first_backtick_can_leave_shorter_opening_run) (closing_backticks=2)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/package_docs_test.py", line 202, in test_escaped_first_backtick_can_leave_shorter_opening_run
+  File "<dev-home>/project/virmill/tests/integration/package_docs_test.py", line 202, in test_escaped_first_backtick_can_leave_shorter_opening_run
     with self.subTest(closing_backticks=2), self.assertRaises(ValueError):
                                             ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
 AssertionError: ValueError not raised
@@ -66,7 +66,7 @@ AssertionError: ValueError not raised
 FAIL: test_escaped_opening_backtick_leaves_visible_dependency (__main__.PackageDocuments.test_escaped_opening_backtick_leaves_visible_dependency) (backslashes=1)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/package_docs_test.py", line 181, in test_escaped_opening_backtick_leaves_visible_dependency
+  File "<dev-home>/project/virmill/tests/integration/package_docs_test.py", line 181, in test_escaped_opening_backtick_leaves_visible_dependency
     with self.subTest(backslashes=count), self.assertRaises(ValueError):
                                           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
 AssertionError: ValueError not raised
@@ -75,7 +75,7 @@ AssertionError: ValueError not raised
 FAIL: test_escaped_opening_backtick_leaves_visible_dependency (__main__.PackageDocuments.test_escaped_opening_backtick_leaves_visible_dependency) (backslashes=3)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/package_docs_test.py", line 181, in test_escaped_opening_backtick_leaves_visible_dependency
+  File "<dev-home>/project/virmill/tests/integration/package_docs_test.py", line 181, in test_escaped_opening_backtick_leaves_visible_dependency
     with self.subTest(backslashes=count), self.assertRaises(ValueError):
                                           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
 AssertionError: ValueError not raised

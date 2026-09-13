@@ -1,6 +1,6 @@
 import hashlib,json,os,pathlib,subprocess,time
 root=pathlib.Path.home()/'virmill-tests/run-65930c6-20260907'
-source=pathlib.Path.home()/'images/kali-linux-2026.2-qemu-amd64.7z'
+source=pathlib.Path.home()/'images/<owner-media-5>.7z'
 assert os.getuid()!=0
 output=root/'sources/kali-qemu'
 output.mkdir(parents=True,mode=0o700,exist_ok=False)
@@ -10,7 +10,7 @@ r=subprocess.run(args,capture_output=True,text=True,timeout=900)
 (root/'extraction.log').write_text(r.stdout+r.stderr)
 print(r.stdout+r.stderr,flush=True)
 assert r.returncode==0,r.returncode
-files=list(output.iterdir()); assert len(files)==1 and files[0].name=='kali-linux-2026.2-qemu-amd64.qcow2' and files[0].is_file() and not files[0].is_symlink()
+files=list(output.iterdir()); assert len(files)==1 and files[0].name=='<owner-media-5>.qcow2' and files[0].is_file() and not files[0].is_symlink()
 def sha(p):
  with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 archive_digest=sha(source); assert archive_digest=='c7c35588d05277c482c908bf7a136d348f76ffa68700b04ff53c0b217e6bd071'

@@ -9,7 +9,30 @@ fixture prerequisites only, not guest-tools installation or first-boot support.
 import argparse, hashlib, json, os, socket, stat, subprocess, sys
 from pathlib import Path
 
-SOURCE = Path('/var/lib/libvirt/images/virmill-test/nested-fedora.qcow2')
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
+SOURCE = Path('/var/lib/libvirt/images') / TEST_POOL / 'nested-fedora.qcow2'
 VM = '2ec994ce-2950-498c-8b19-d2f7dbb53a78'
 
 def run(args, timeout=30):
@@ -29,7 +52,7 @@ def main():
     p.add_argument('--root',required=True,type=Path)
     p.add_argument('--execute-disposable',required=True,action='store_true')
     a=p.parse_args()
-    assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==os.geteuid()==1000
+    assert authorized_test_host() and os.getuid()==os.geteuid()==1000
     root=a.root
     assert root.is_absolute() and root==root.resolve() and root.parent==Path.home()/'virmill-tests'
     root.mkdir(mode=0o700)

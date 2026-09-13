@@ -9,14 +9,30 @@ Keeps previous policy entries and saves public before/after policy evidence.
 The key is never printed, read into this script, copied, or returned to the host.
 """
 import argparse
+import grp
 import hashlib
 import json
 import os
 from pathlib import Path
+import pwd
 import socket
 import stat
 import subprocess
 import uuid
+
+# The fixture's fixed test actor; root mode runs under sudo with a different home.
+TEST_ACTOR = pwd.getpwuid(1000)
+TEST_HOME = Path(TEST_ACTOR.pw_dir)
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(TEST_HOME / '.config/virmill-tests/authorized-hosts') as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 
 
 def run(*argv):
@@ -35,9 +51,9 @@ def main():
     parser.add_argument('--allow-storage-root', action='append', default=[])
     a = parser.parse_args()
     os.umask(0o077)
-    assert socket.gethostname() in ('virmill-test', 'virmill-test.home')
+    assert authorized_test_host()
     root = a.root.resolve(strict=True)
-    assert root.parent == Path('/home/virmill-test/virmill-tests')
+    assert root.parent == TEST_HOME / 'virmill-tests'
     assert root.stat().st_uid == 1000 and stat.S_IMODE(root.stat().st_mode) == 0o700
     if a.register_root:
         assert os.getuid() == os.geteuid() == 0
@@ -74,12 +90,12 @@ def main():
         fd = os.open(policy.parent, os.O_RDONLY | os.O_DIRECTORY); os.fsync(fd); os.close(fd)
         print(json.dumps({'policyUpdated': True, 'networkID': change.get('networkID')}))
         return
-    assert os.getuid() == os.geteuid() == 1000 and Path.home() == Path('/home/virmill-test')
+    assert os.getuid() == os.geteuid() == 1000 and Path.home() == TEST_HOME
     policy = json.loads(run('sudo', '-n', 'cat', '/etc/virmill/helper-policy.json'))
     approved_roots = dict(item.split('=', 1) for item in a.allow_storage_root)
     assert policy.get('roots', {}) == approved_roots, 'registering a key also grants existing storage-root authority; explicit exact --allow-storage-root ID=PATH required'
     unit = run('systemctl', 'cat', 'virmill-host-helper.socket')
-    assert 'SocketGroup=virmill-test' in unit and 'DirectoryMode=0755' in unit
+    assert ('SocketGroup=' + grp.getgrgid(TEST_ACTOR.pw_gid).gr_name) in unit and 'DirectoryMode=0755' in unit
     assert run('systemctl', 'is-active', 'firewalld').strip() == 'active'
     config = Path.home() / '.config/virmill'; assert config.is_dir() and not config.is_symlink()
     key = config / 'helper-key.pem'

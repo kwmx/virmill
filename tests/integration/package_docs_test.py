@@ -92,7 +92,7 @@ class PackageDocuments(unittest.TestCase):
                     self.rewrite('[source](' + destination + ')')
 
     def test_absolute_frozen_checkout_link_has_no_alias(self):
-        for destination in ('/home/faisal/project/virmill/docs/guide.md', '/usr/share/doc/virmill/guide.md',
+        for destination in ('/home/developer/project/virmill/docs/guide.md', '/usr/share/doc/virmill/guide.md',
                             '//localhost/etc/passwd', 'file:///etc/passwd', 'C:/docs/guide.md'):
             with self.subTest(destination=destination):
                 with self.assertRaises(ValueError):

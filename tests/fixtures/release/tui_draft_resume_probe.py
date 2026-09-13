@@ -3,7 +3,7 @@
 
 Requires --execute-disposable --root PRIVATE_STAGED_DIRECTORY and binaries.json,
 plus adjacent tui_workspace_probe.py. Runs only as UID1000 on the authorized
-virmill-test host. Uses three real80x24 PTYs and a private XDG_STATE_HOME below
+<test-vm-login> host. Uses three real80x24 PTYs and a private XDG_STATE_HOME below
 its new output directory, leaving the owner's actual drafts untouched.
 
 The probe edits an ISO wizard's Media name before choosing any source, exits
@@ -27,6 +27,16 @@ import unittest
 
 from tui_workspace_probe import (Runner, Terminal, canonical_path, inventory,
                                  jobs, media_listing, require, strict_json)
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 
 URI = 'qemu:///system'
 SENTINEL = 'draft-resume-installer'
@@ -114,7 +124,7 @@ def open_iso_form(terminal):
 
 
 def execute(root):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and
+    require(authorized_test_host() and
             os.getuid() == 1000 and os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(root.absolute()))
     require(stage.is_relative_to(Path.home() / 'virmill-tests') and

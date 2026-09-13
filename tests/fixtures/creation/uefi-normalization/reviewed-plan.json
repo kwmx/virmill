@@ -52,7 +52,7 @@
     "requiredFreeBytes": 125829120,
     "seedStagingDirectory": "",
     "serialConsole": true,
-    "sourceDirectory": "/home/virmill-test/virmill-tests/run-65930c6-20260907/prepared/uefi-tpm-probe-v1",
+    "sourceDirectory": "<test-vm-home>/virmill-tests/run-65930c6-20260907/prepared/uefi-tpm-probe-v1",
     "sourceHardware": {
       "diskIDs": [
         "boot"

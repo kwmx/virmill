@@ -21,6 +21,29 @@ import unittest
 
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require, strict_json
 
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 SOURCE_ID = '5a464dae-5ff1-4080-a4ed-1b239b697aaa'
 SOURCE_REL = 'virmill-tests/spice-creation-a1d6cb6/spice-creation/prepared'
@@ -83,7 +106,7 @@ def read_draft(path):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host or actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000
@@ -166,7 +189,7 @@ def execute(stage):
             require('> [ ' + source['name'] + ' ]' in terminal.screen.text(), 'selected row differs from exact CLI source ordering')
             wait('VM options', lambda s: 'CPU cores' in s and 'Storage pool' in s, b'\r')
             fill('CPU cores', '3'); fill('Memory (MiB)', '768')
-            choice('Storage pool', 'virmill-test'); choice('Firmware', 'BIOS')
+            choice('Storage pool', TEST_POOL); choice('Firmware', 'BIOS')
             activate('Continue to disks', lambda s: 'Controller bus' in s and 'Continue to networks' in s)
             baseline = snapshot('default-installer-first', 2, 1)
             require(all(item['bus'] == 'sata' for item in baseline['creation']['Spec']['disks'] + baseline['creation']['Spec']['media']),
@@ -242,7 +265,7 @@ class EvidenceTests(unittest.TestCase):
         after['creation']['Spec']['media'][0]['bootOrder'] = 1
         with self.assertRaises(Exception): require_order(after, 1, 1)
     def test_source_requires_operation_and_destination(self):
-        home = Path('/home/virmill-test')
+        home = Path('/home/tester')
         source = {'operationID': SOURCE_ID, 'destination': str(home / SOURCE_REL), 'name': 'prepared'}
         self.assertEqual(selected_source([source], home)[0], 0)
         for changed in [dict(source, destination='/other/prepared'), dict(source, operationID='another')]:

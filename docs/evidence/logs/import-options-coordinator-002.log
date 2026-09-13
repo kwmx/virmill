@@ -1,1 +1,1 @@
-{"error": "allowed preview is not an import.prepare-install plan: 81aa3e69-6a13-4eb6-bf26-11b5a8477d3b", "evidence": "/home/virmill-test/virmill-tests/import-options-01a2b94/restart-verification.json", "newPID": "62334", "status": "failed"}
+{"error": "allowed preview is not an import.prepare-install plan: 81aa3e69-6a13-4eb6-bf26-11b5a8477d3b", "evidence": "<test-vm-home>/virmill-tests/import-options-01a2b94/restart-verification.json", "newPID": "62334", "status": "failed"}

@@ -13,6 +13,9 @@ use any discovered host. Preserve supplied source media and unrelated existing
 guests. The local development host remains unauthorized for host mutations.
 Local generated fixture files under this repository or temporary directories may
 be used. Missing access or hardware evidence does not authorize another target.
+Never commit test-host names, addresses, home paths or owner media names; the
+evidence recorder and `scripts/check-private.py` enforce this (see
+`docs/repository-hygiene.md`).
 
 Use `./scripts/go` for the pinned repository-local toolchain. Keep dependencies
 exact in go.mod/go.sum and contracts/dependencies.lock.json. Do not download at runtime.

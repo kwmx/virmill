@@ -1,7 +1,7 @@
 {"apiVersion":"virmill/v1","data":{"cancelRequested":false,"createdAt":"2026-09-07T11:33:56.679052192Z","error":{"code":"RECOVERY_REQUIRED","message":"defined configuration differs from reviewed creation intent","operationID":"b5983e68-bfcc-42f0-bf4e-3877029b756b","resource":"","retryable":false,"safeNextActions":[]},"operationID":"b5983e68-bfcc-42f0-bf4e-3877029b756b","planID":"1a386ed9-6d7d-4395-a990-15ac1ffacb46","state":"recovery-required","step":0},"warnings":[],"error":{"code":"RECOVERY_REQUIRED","message":"defined configuration differs from reviewed creation intent","resource":"","operationID":"","retryable":false,"safeNextActions":[]}}
 RECOVERY_REQUIRED: defined configuration differs from reviewed creation intent
 
-{"preservedFile": "/home/virmill-test/images/kali-linux-2026.2-qemu-amd64.7z", "sha256": "c7c35588d05277c482c908bf7a136d348f76ffa68700b04ff53c0b217e6bd071"}
-{"preservedFile": "/home/virmill-test/virmill-tests/run-65930c6-20260907/sources/kali-qemu/kali-linux-2026.2-qemu-amd64.qcow2", "sha256": "4e24751faa18753ad5f854053c523481d1bc5efa9a45c3828071b7475d825104"}
+{"preservedFile": "<test-vm-home>/images/<owner-media-5>.7z", "sha256": "c7c35588d05277c482c908bf7a136d348f76ffa68700b04ff53c0b217e6bd071"}
+{"preservedFile": "<test-vm-home>/virmill-tests/run-65930c6-20260907/sources/kali-qemu/<owner-media-5>.qcow2", "sha256": "4e24751faa18753ad5f854053c523481d1bc5efa9a45c3828071b7475d825104"}
 {"preservedFile": "/var/lib/libvirt/images/virmill-qualification-65930c6/virmill-ae630461-91d3-4f07-ad88-e6842c3dc3ea-disk-000.qcow2", "sha256": "8eb9be4a9592ad8242fa4e99fbac2dd2eef474bb93e99f3699d17617c7d93c70"}
 {"sourcePreserved": true, "unrelatedGuestXMLPreserved": true, "legacyUncertainXMLAndDiskPreserved": true, "legacyResourceLocks": 3, "newCreationLocks": 0, "newGuestOwnership": "managed", "allThreeGuestsStopped": true, "gracefulShutdownVerified": true, "fullReleaseQualified": false}

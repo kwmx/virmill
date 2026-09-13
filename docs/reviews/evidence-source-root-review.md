@@ -80,7 +80,7 @@ Other existing limitations remain: the source digest is taken before the command
 
 ## Actual frozen 490b88c provenance
 
-Read-only checks of `build/auxiliary-490b88c` found its Git top-level was exactly `/home/faisal/project/virmill/build/auxiliary-490b88c`, HEAD was `490b88cba5bf6e0837e2cb5780e56211c22a7d27`, and tracked status was clean. This is a valid selected checkout under the proposed stronger boundary.
+Read-only checks of `build/auxiliary-490b88c` found its Git top-level was exactly `<dev-home>/project/virmill/build/auxiliary-490b88c`, HEAD was `490b88cba5bf6e0837e2cb5780e56211c22a7d27`, and tracked status was clean. This is a valid selected checkout under the proposed stronger boundary.
 
 The reviewer enumerated its Git index, required regular mode 100644/100755 at stage 0, compared the exact path set to `docs/evidence/environments/source-490b88c.json`, and independently checked every record's byte count and SHA256. All 2,031 records matched. Recomputing the unchanged implementation-tree algorithm yielded `26e4f8410395a37606d577073d0bdff424610ae04b83df678e61d618ae38eb06`. All three generated binary and four RPM/DEB hashes matched the parent's deployment manifest. No artifact was executed or rebuilt during this review.
 

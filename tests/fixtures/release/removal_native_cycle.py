@@ -29,6 +29,16 @@ import xml.etree.ElementTree as ET
 from tui_workspace_probe import Runner, Terminal, canonical_path, canonical_uuid, inventory, media_listing, require, strict_json
 from guest_agent_edit_probe import select_machine
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 NS = 'urn:virmill:removal-fixture:v1'
 ACKS = {'host-mutation', 'remove-vm-definition', 'exclusive-lifecycle-writer'}
@@ -187,7 +197,7 @@ def tui_preview(runner, vm, disk):
 
 
 def execute(stage, resume_path=None):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized disposable host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stat.S_ISDIR(stage.lstat().st_mode)
@@ -410,7 +420,7 @@ class PureRules(unittest.TestCase):
 
     def test_generated_path_cannot_target_existing_media(self):
         identity, _, _ = self.fixture()
-        with self.assertRaises(Exception): fixture_xml(identity, 'pc-i440fx-10.1', Path('/home/virmill-test/images/source.qcow2'))
+        with self.assertRaises(Exception): fixture_xml(identity, 'pc-i440fx-10.1', Path('/home/tester/images/source.qcow2'))
 
     def test_resume_refuses_every_uncertain_apply_or_changed_binding(self):
         identity, disk, vm = self.fixture()
@@ -422,7 +432,7 @@ class PureRules(unittest.TestCase):
         self.assertEqual(check_resume_report(report), (identity, disk))
         for field, value in [('applyAttempted', True), ('applyAttempted', 'false'), ('status', 'passed'),
                              ('jobs', [identity]), ('jobs', None), ('cleanupPerformed', True),
-                             ('fixtureName', 'another VM'), ('retainedDisk', '/home/virmill-test/images/source.qcow2'),
+                             ('fixtureName', 'another VM'), ('retainedDisk', '/home/tester/images/source.qcow2'),
                              ('observedRetainedDiskSHA256', 'd' * 64), ('sourceRawSHA256', ''),
                              ('unrelatedFinalObservationMatches', False)]:
             with self.subTest(field=field, value=value):

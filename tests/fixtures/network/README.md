@@ -44,7 +44,7 @@ All existing identity and single-use arguments remain required, including
 `--run-id`, `--recipe-sha256`, `--network-id`, `--network-xml-sha256` and the exact
 UUID-bound `--bridge vm[12 lowercase hex]`. Output must be exactly
 `ROOT/network-packet-RUN_UUID`; ROOT must be an existing ordinary, symlink-free
-direct child of `/home/virmill-test/virmill-tests`. The parent supplies the frozen
+direct child of `<test-vm-home>/virmill-tests`. The parent supplies the frozen
 root-owned script and all hashes. Existing output is never reused or removed.
 
 The new arguments are:

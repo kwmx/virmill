@@ -32,6 +32,7 @@ class EvidenceSourceRoot(unittest.TestCase):
             self.revisions[root] = self.git(root, 'rev-parse', 'HEAD').strip()
         (self.root / 'scripts').mkdir()
         shutil.copyfile(SOURCE, self.root / 'scripts/record-evidence.py')
+        shutil.copyfile(SOURCE.with_name('private_values.py'), self.root / 'scripts/private_values.py')
 
     def git(self, root, *args):
         return subprocess.check_output(['git', '-c', 'core.hooksPath=/dev/null', *args], cwd=root,

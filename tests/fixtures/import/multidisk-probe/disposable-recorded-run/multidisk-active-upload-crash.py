@@ -1,6 +1,6 @@
 import datetime,hashlib,json,os,pathlib,select,signal,sqlite3,subprocess,time
 root=pathlib.Path.home()/'virmill-tests/run-65930c6-20260907';env={**os.environ,**json.loads((root/'environment.json').read_text())}
-unit='virmill-test-12d7bba.service';dbpath=root/'state/virmill/journal.db';plan=json.loads((root/'multidisk-create-plan.json').read_text())['data']
+unit='<test-vm-login>-12d7bba.service';dbpath=root/'state/virmill/journal.db';plan=json.loads((root/'multidisk-create-plan.json').read_text())['data']
 spec=plan['review']['target']['spec'];pool=json.loads((root/'multidisk-pool.json').read_text());dest=pathlib.Path(pool['target'])
 assert plan['operation']=='vm.create.devices-v1' and spec['name']=='Virmill multi-disk interrupted copy' and spec['poolID']==pool['uuid']=='36ab8b28-60d8-4495-9046-6f2f6bfc23b2'
 assert spec['nics']==[] and spec['firmware']=={'mode':'bios','secureBoot':False,'tpm':False}

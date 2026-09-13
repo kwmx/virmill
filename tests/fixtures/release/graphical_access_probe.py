@@ -27,6 +27,16 @@ import uuid
 import xml.etree.ElementTree as ET
 import zlib
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 class Blocked(RuntimeError):
     pass
 
@@ -110,7 +120,7 @@ def main():
     parser.add_argument('--execute-disposable', action='store_true', required=True)
     parser.add_argument('--root', type=Path, required=True)
     args = parser.parse_args()
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == 1000 and os.geteuid() == 1000, 'wrong authorized host/actor')
+    require(authorized_test_host() and os.getuid() == 1000 and os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = args.root.absolute()
     require(stage == stage.resolve(strict=True) and stage.is_relative_to(Path.home() / 'virmill-tests') and stage != Path.home() / 'virmill-tests', 'canonical staged test root required')
     require(stage.stat().st_uid == os.getuid() and stat.S_IMODE(stage.stat().st_mode) & 0o077 == 0, 'staging root must be private to actor')

@@ -21,7 +21,7 @@ import unittest
 import uuid
 import xml.etree.ElementTree as ET
 
-ROOT = pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+ROOT = pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 RECIPE = 'auxiliary-inspection-native-002'
 STATE_ROOT = '/var/lib/virmill-host-helper/auxiliary-fixture-002'
 ROOT_ID = 'auxiliary-fixture-002'
@@ -297,7 +297,7 @@ ROOT_PROGRAM = r'''
 import base64, copy, hashlib, json, os, pathlib, stat, sys
 ROOT = '/var/lib/virmill-host-helper/auxiliary-fixture-002'
 POLICY = '/etc/virmill/helper-policy.json'
-DISPOSABLE = '/home/virmill-test/virmill-tests/run-65930c6-20260907'
+DISPOSABLE = '<test-vm-home>/virmill-tests/run-65930c6-20260907'
 def need(ok, message):
     if not ok: raise RuntimeError(message)
 def signature(s):
@@ -574,7 +574,7 @@ class Run:
             binaries[name] = sha(read_regular(path, 128 << 20))
             require(binaries[name] == expected, 'installed binary differs: ' + name)
         require(binaries['virmill'] == self.args.binary_sha256, 'explicit CLI binary pin differs')
-        unit = 'virmill-test-' + self.args.revision[:7] + '.service'
+        unit = '<test-vm-login>-' + self.args.revision[:7] + '.service'
         require(self.property(unit, 'ActiveState', True) == 'active' and
                 self.property(unit, 'WorkingDirectory', True) == str(ROOT), 'private coordinator unavailable')
         pid = self.property(unit, 'MainPID', True)
@@ -681,7 +681,7 @@ class Run:
         # Existing disposable files are stat-only, including any signing-key
         # pathname. Database rows have their separate transactional comparison.
         out = {}
-        for base, prefix in ((ROOT, 'run/'), (pathlib.Path('/home/virmill-test/images'), 'source-media/')):
+        for base, prefix in ((ROOT, 'run/'), (pathlib.Path('<test-vm-home>/images'), 'source-media/')):
             require(base.is_dir() and base.resolve() == base, 'preserved media/run root unavailable')
             for directory, dirs, files in os.walk(base, followlinks=False):
                 dirs[:] = sorted(d for d in dirs if pathlib.Path(directory, d) != self.output)
@@ -755,7 +755,7 @@ class Run:
         return self.native_xml
 
     def preflight(self):
-        require(os.getuid() > 0 and self.checked(['/usr/bin/id', '-un']).strip() == b'virmill-test',
+        require(os.getuid() > 0 and self.checked(['/usr/bin/id', '-un']).strip() == b'<test-vm-login>',
                 'only the designated ordinary disposable actor may execute')
         env = strict_json(read_regular(ROOT / 'environment.json'))
         for key in ('XDG_STATE_HOME', 'XDG_RUNTIME_DIR', 'XDG_CACHE_HOME', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME'):

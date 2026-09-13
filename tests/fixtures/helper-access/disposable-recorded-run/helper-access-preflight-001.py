@@ -5,7 +5,7 @@ def run(args):
 run(['id'])
 run(['sudo','-n','true'])
 run(['date','-u','+%FT%TZ'])
-run(['systemctl','--user','show','virmill-test-12d7bba.service','-p','ActiveState','-p','SubState'])
+run(['systemctl','--user','show','<test-vm-login>-12d7bba.service','-p','ActiveState','-p','SubState'])
 run(['sudo','-n','virsh','-c','qemu:///system','list','--all'])
 run(['rpm','-q','openssl','libvirt-libs','acl'])
 run(['sudo','-n','systemctl','is-active','virmill-host-helper.socket','virmill-host-helper.service'])

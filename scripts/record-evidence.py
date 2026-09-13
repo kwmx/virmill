@@ -10,6 +10,9 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import private_values
+
 ROOT = Path(__file__).resolve().parents[1]
 p = argparse.ArgumentParser()
 p.add_argument('--id', required=True)
@@ -91,12 +94,21 @@ except subprocess.TimeoutExpired as e:
     def decoded(value):
         return value.decode('utf-8', errors='replace') if isinstance(value, bytes) else (value or '')
     code, output = 124, decoded(e.stdout) + decoded(e.stderr) + '\nCheck timed out; no passing evidence.\n'
+# Private test-environment values and credentials never reach the log or ledger.
+private = private_values.load(ROOT / '.virmill-local/private-values.json')
+output, hidden = private_values.redact(output, private)
+recorded = []
+for arg in [*command, a.cwd]:
+    arg, count = private_values.redact(arg, private)
+    recorded.append(arg)
+    hidden += count
+recorded, recorded_cwd = recorded[:-1], recorded[-1]
 logs.mkdir(exist_ok=True)
 if log.exists():
     sys.exit('Evidence ID already exists; choose a new ID to preserve history.')
 log.write_text(output)
 entry = dict(id=a.id, at=at, revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=source_root,text=True).strip(),
-             sourceDigest=digest, evidenceClass=a.evidence_class, command=command, cwd=a.cwd,
+             sourceDigest=digest, evidenceClass=a.evidence_class, command=recorded, cwd=recorded_cwd,
              exitCode=code, result='passed' if code == 0 else 'failed',
              requirements=requirements, environment='environment.json',
              log=log.relative_to(ROOT/'docs/evidence').as_posix(), logSHA256=hashlib.sha256(log.read_bytes()).hexdigest())
@@ -106,6 +118,8 @@ if source_relative != '.':
     entry['sourceRoot'] = source_relative
     entry['recorderRevision'] = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
 entry['testEnvironment'] = {key: os.environ[key] for key in ('VIRMILL_TEST_CONFORMANCE', 'VIRMILL_TEST_REQUIRE_IPC', 'VIRMILL_TEST_DISK_TOOLS', 'SOURCE_DATE_EPOCH', 'CGO_ENABLED', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'GOPROXY') if key in os.environ}
+if hidden:
+    entry['redactedValues'] = hidden
 if 'SKIP' in output or '[no test files]' in output or 'BLOCKED' in output:
     entry['limitations'] = 'Review log for skipped/unavailable paths; command success is not acceptance of those paths.'
 with (ROOT/'docs/evidence/ledger.jsonl').open('a') as f:

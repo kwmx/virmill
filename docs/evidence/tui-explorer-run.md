@@ -42,7 +42,7 @@ shared contract preservation, packaging, all remote execution and evidence.
 - `tui-explorer-native-004`: the unchanged installed CLI passed both 80×24 and
   120×36 walks with resizing, common/advanced navigation, compact CPU/RAM forms,
   plan review/cancellation, actual home/images folder browsing, and selection of
-  the existing DFIR-Win11.ova into the OVA source field. No import or guest operation
+  the existing <owner-media-1>.ova into the OVA source field. No import or guest operation
   was submitted; VM inventory, job states, binary and metadata of all six source
   files stayed identical. Preview metadata was intentionally recorded by the
   coordinator. These checks prove interaction/preservation, not OVA content validity.

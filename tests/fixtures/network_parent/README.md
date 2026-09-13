@@ -1,7 +1,7 @@
 # Parent-operated native network run
 
 `create_native.py` is an execution recipe for the owner-authorized disposable
-`virmill-test` VM. It must run as that ordinary user, in a fresh direct child of
+`<test-vm-login>` VM. It must run as that ordinary user, in a fresh direct child of
 `~/virmill-tests`, with passwordless sudo already authorized. The parent alone
 coordinates mutations; concurrent fixture runs are prohibited. Never run it on
 the development host or infer another target from discovered libvirt resources.

@@ -32,3 +32,37 @@ or history rewriting, and nothing was pushed.
 Before staging, inspect `git status --short` and `git diff --cached`. Gitignore does
 not remove tracked files or prevent `git add --force`, and evidence logs still
 require review for sensitive command output before they are committed.
+
+## Private test-environment values
+
+Test host names and addresses, home directory paths and owner media names must
+never be committed. List them in the ignored `.virmill-local/private-values.json`:
+
+```json
+{"values": [
+  {"match": "HOST.EXAMPLE", "placeholder": "<test-vm-host>", "wholeWord": true},
+  {"match": "Owner-Image", "placeholder": "<owner-media-1>", "ignoreCase": true}
+]}
+```
+
+`wholeWord` leaves longer names containing the value alone; `ignoreCase` also
+catches renamed copies. Your home directory is always included.
+
+- `scripts/record-evidence.py` replaces listed values and common credentials in
+  command lines and logs before writing them, and counts them in `redactedValues`.
+- `scripts/check-private.py` fails when a tracked file contains a listed value or a
+  credential: tokens, private keys with key data, or passwords in URLs. `make verify`
+  runs it. CI runs it too, but only for credentials, because the list is local.
+- Enable the pre-commit hook once per clone with `git config core.hooksPath .githooks`.
+  It runs the same check on staged files.
+- `scripts/redact-tracked.py --dry-run` lists affected tracked files. With `--id ID`
+  it redacts them and appends a ledger record holding each file's before/after SHA-256.
+
+Native fixtures no longer name the test host. A disposable host is designated by
+listing its own hostname in `~/.config/virmill-tests/authorized-hosts` on that host;
+fixtures refuse to run anywhere else. Fixtures that use a storage pool read its name
+from `~/.config/virmill-tests/storage-pool` and refuse when it is missing. Paths are
+built from the test user's home directory.
+
+On 2026-09-13 the tracked tree was redacted (`private-values-redaction-001`).
+Earlier commits still hold the original values; history was not rewritten.

@@ -26,7 +26,7 @@ import uuid
 import xml.etree.ElementTree as ET
 
 
-APPROVED_PARENT = Path("/home/virmill-test/virmill-tests")
+APPROVED_PARENT = Path("<test-vm-home>/virmill-tests")
 MAX_FRAME = 2048
 MAX_COMMAND_OUTPUT = 262144
 COOKIE = b"\x63\x82\x53\x63"

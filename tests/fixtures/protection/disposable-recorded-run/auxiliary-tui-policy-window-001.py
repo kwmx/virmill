@@ -19,7 +19,7 @@ import types
 import unittest
 from unittest import mock
 
-ROOT = pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+ROOT = pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 RECIPE = 'auxiliary-tui-policy-window-001'
 OUTPUT = ROOT / 'aux-tui-policy-window001'
 NATIVE_NAME = 'auxiliary-inspection-native-003'
@@ -36,7 +36,7 @@ BINARIES = {
     'virmilld': '44522f6cbe2dd7eb54134038adfee4bd650ced9e4ae5aafe4e042471158cd7aa',
     'virmill-host-helper': '4d67ec32a0aa891d16af237885fe45ba95ee5377829f86ab4761aba89b42917a',
 }
-RUNTIME = {'unit': 'virmill-test-490b88c.service', 'pid': '30897', 'helperPID': '31125', 'binarySHA256': BINARIES}
+RUNTIME = {'unit': '<test-vm-login>-490b88c.service', 'pid': '30897', 'helperPID': '31125', 'binarySHA256': BINARIES}
 VM = '074d9083-1953-4941-b006-9e301bb6d907'
 GUESTS = {VM, '2ec994ce-2950-498c-8b19-d2f7dbb53a78', '50a0583b-3587-495f-90f4-9a42b8ad2fa3',
           '666c692d-da0e-4119-9554-727c4af3c751', 'a19bf9ee-cd7f-4921-baac-39ce1694eb35',
@@ -335,7 +335,7 @@ def main():
     require(args.execute_reviewed and args.exclusive_policy_window and
             re.fullmatch('[a-f0-9]{64}', args.recipe_sha256 or ''), 'parent review/exclusive window/source pin required')
     read_source(pathlib.Path(__file__).absolute(), args.recipe_sha256)
-    require(os.getuid() != 0 and pathlib.Path.home() == pathlib.Path('/home/virmill-test') and
+    require(os.getuid() != 0 and pathlib.Path.home() == pathlib.Path('<test-vm-home>') and
             ROOT.is_dir() and ROOT.resolve() == ROOT, 'designated ordinary disposable actor/root required')
     sys.dont_write_bytecode = True
     native = load_pinned(ROOT/'sources'/NATIVE_NAME/(NATIVE_NAME+'.py'), NATIVE_SHA, 'reviewed_native003')

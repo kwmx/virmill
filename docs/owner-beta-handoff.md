@@ -106,10 +106,11 @@ the old job is not evidence of a new failed installation in the current build.
 
 ## Start testing now
 
-From your computer:
+From your computer, using the test VM's login and host from the private
+`.virmill-local/test-host.json` (never committed):
 
 ```sh
-ssh virmill-test@virmill-test.home
+ssh <test-vm-login>@<test-vm-host>
 virmill version --output json
 virmill
 ```
@@ -133,7 +134,7 @@ are superseded.
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use
-`systemctl --user start virmilld.service`. Run the CLI and TUI as `virmill-test`,
+`systemctl --user start virmilld.service`. Run the CLI and TUI as `<test-vm-login>`,
 not with sudo. The separate privileged helper remains inactive and its existing
 policy is unchanged. Workflows requiring it need their documented exact grants.
 

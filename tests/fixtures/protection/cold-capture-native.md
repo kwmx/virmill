@@ -1,7 +1,7 @@
 # Complete cold capture and new restore recipe
 
 `cold_capture_native.py` runs only on the owner-authorized disposable
-`virmill-test` host as its ordinary UID1000 account. Supply a new private run
+`<test-vm-login>` host as its ordinary UID1000 account. Supply a new private run
 root containing exact `bin/virmill`, `bin/virmilld` and their SHA256 mapping in
 `binaries.json`. Required arguments are `--execute-disposable`, `--root`,
 `--source-vm`, `--source-root` and `--pool`.

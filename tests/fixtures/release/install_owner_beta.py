@@ -15,6 +15,16 @@ import socket
 import subprocess
 import time
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 p=argparse.ArgumentParser()
 p.add_argument('--execute-disposable',action='store_true',required=True)
 p.add_argument('--root',type=Path,required=True)
@@ -22,7 +32,7 @@ p.add_argument('--revision',required=True)
 p.add_argument('--product-version',required=True)
 p.add_argument('--verify-installed',action='store_true',help='Read installed artifacts; do not reinstall or back up a running journal')
 a=p.parse_args()
-assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000
+assert authorized_test_host() and os.getuid()==1000
 root=a.root.resolve(strict=True)
 assert root.is_relative_to(Path.home()/'virmill-tests')
 results=root/('verification' if a.verify_installed else 'results');results.mkdir(mode=0o700)

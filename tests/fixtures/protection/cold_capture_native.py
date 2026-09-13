@@ -17,6 +17,16 @@ import uuid
 import xml.etree.ElementTree as ET
 
 
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--execute-disposable', action='store_true', required=True)
@@ -25,7 +35,7 @@ def main():
     p.add_argument('--source-root', type=Path, required=True)
     p.add_argument('--pool', required=True)
     args=p.parse_args()
-    assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000
+    assert authorized_test_host() and os.getuid()==1000
     root=args.root.resolve(strict=True)
     assert root.is_relative_to(Path.home()/'virmill-tests')
     assert str(uuid.UUID(args.source_vm))==args.source_vm and str(uuid.UUID(args.pool))==args.pool

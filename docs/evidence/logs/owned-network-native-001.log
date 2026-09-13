@@ -290,10 +290,10 @@
   "existingFirewallPreserved": true
 }
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/network-151536d/create_native.py", line 115, in <module>
+  File "<test-vm-home>/virmill-tests/network-151536d/create_native.py", line 115, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/network-151536d/create_native.py", line 83, in main
+  File "<test-vm-home>/virmill-tests/network-151536d/create_native.py", line 83, in main
     assert applied['error'] is None and applied['data']['state']=='succeeded',applied
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: {'apiVersion': 'virmill/v1', 'data': {'operationID': '5f24a9ee-2b6f-4d34-bfde-7fedc4f1b971', 'planID': '279c0f69-0987-4871-b58c-0d1361beb094', 'state': 'running', 'step': 1, 'createdAt': '2026-09-08T04:17:01.827171465Z', 'error': None, 'cancelRequested': False}, 'warnings': ['Client detached; operation may still be running'], 'error': {'code': 'WAIT_TIMEOUT', 'message': 'wait timed out', 'resource': '', 'operationID': '', 'retryable': False, 'safeNextActions': []}}

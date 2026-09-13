@@ -14,7 +14,7 @@
   "declaredFormats": [
     "date-time"
   ],
-  "executable": "/home/faisal/project/virmill/build/spec-qa/venv/bin/python",
+  "executable": "<dev-home>/project/virmill/build/spec-qa/venv/bin/python",
   "executableSHA256": "0d64bd6d66d68dac91cdadafc46e22d4f09f22bdc997aaae870f42865b024a3e",
   "formatProbe": "valid date-time accepted; malformed and impossible date-time rejected",
   "packages": {
@@ -29,7 +29,7 @@
     "six": "1.17.0"
   },
   "platform": "Linux-7.1.13-200.fc44.x86_64-x86_64-with-glibc2.43",
-  "prefix": "/home/faisal/project/virmill/build/spec-qa/venv",
+  "prefix": "<dev-home>/project/virmill/build/spec-qa/venv",
   "python": "3.14.7 (main, Aug 10 2026, 00:00:00) [GCC 16.1.1 20260515 (Red Hat 16.1.1-2)]",
   "timezoneDataHeader": "# version 2026c",
   "timezoneDataPath": "/usr/share/zoneinfo/tzdata.zi",

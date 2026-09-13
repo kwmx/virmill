@@ -1,7 +1,7 @@
 import hashlib,json,os,pathlib,sqlite3,subprocess,xml.etree.ElementTree as ET
 root=pathlib.Path.home()/'virmill-tests/run-65930c6-20260907';env={**os.environ,**json.loads((root/'environment.json').read_text())}
 vm='a19bf9ee-cd7f-4921-baac-39ce1694eb35';pool='virmill-policy-c7f8b76'
-iso=pathlib.Path.home()/'images/kali-linux-2026.2-installer-amd64.iso';copy=pathlib.Path('/var/lib/libvirt/images')/pool/'virmill-boot-media-fixture.iso'
+iso=pathlib.Path.home()/'images/<owner-media-4>.iso';copy=pathlib.Path('/var/lib/libvirt/images')/pool/'virmill-boot-media-fixture.iso'
 expected='6dbefacc95e3b556c19c48e8bae39b8b505e2d3a1aba0bfb7ab62b036c3d2ba3'
 assert iso.is_file() and not iso.is_symlink() and iso.stat().st_size==4802531328 and not copy.exists() and not copy.is_symlink()
 assert subprocess.check_output(['virsh','--readonly','-c','qemu:///system','pool-uuid',pool],text=True).strip()=='eede6ba7-13a9-48d6-8cba-b8611d36513b'

@@ -35,7 +35,7 @@
       "exitCode": 0,
       "stdout": "go version go1.27.1 linux/amd64\n",
       "stderr": "",
-      "executable": "/home/faisal/project/virmill/scripts/go",
+      "executable": "<dev-home>/project/virmill/scripts/go",
       "executableSHA256": "e278bb0e67cf0f71f09a76ff4ac29054e03b512ae8fdabcc4aac5750144b6d91"
     },
     {

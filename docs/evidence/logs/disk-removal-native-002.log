@@ -1,13 +1,13 @@
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/disk-removal-fix-3e6a7db/disk_removal_native_cycle.py", line 357, in <module>
+  File "<test-vm-home>/virmill-tests/disk-removal-fix-3e6a7db/disk_removal_native_cycle.py", line 357, in <module>
     elif a.execute_disposable and a.root:execute(a.root,a.resume_from)
                                          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/virmill-test/virmill-tests/disk-removal-fix-3e6a7db/disk_removal_native_cycle.py", line 280, in execute
+  File "<test-vm-home>/virmill-tests/disk-removal-fix-3e6a7db/disk_removal_native_cycle.py", line 280, in execute
     finish(tui_delete(r,target_vm,paths[:2],plan,before_apply,accepted))
            ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/virmill-test/virmill-tests/disk-removal-fix-3e6a7db/disk_removal_native_cycle.py", line 112, in tui_delete
+  File "<test-vm-home>/virmill-tests/disk-removal-fix-3e6a7db/disk_removal_native_cycle.py", line 112, in tui_delete
     require(ack in terminal.screen.text(), 'acknowledgement not visible: '+ack)
     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/virmill-test/virmill-tests/disk-removal-fix-3e6a7db/tui_workspace_probe.py", line 56, in require
+  File "<test-vm-home>/virmill-tests/disk-removal-fix-3e6a7db/tui_workspace_probe.py", line 56, in require
     raise RuntimeError(message)
 RuntimeError: acknowledgement not visible: data-loss-delete-disks

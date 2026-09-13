@@ -2,7 +2,7 @@
 """Parent-operated read-only real-PTY workspace walkthrough.
 
 Run --self-test locally; it opens no PTY, service or network connection.
-Native execution requires --execute-disposable, UID 1000 and virmill-test(.home).
+Native execution requires --execute-disposable, UID 1000 and <test-vm-login>(.home).
 Use the existing/default coordinator environment. No fake/render-local mode is
 provided: passing requires real libvirt-labelled CLI inventory and matching TUI
 rows/details. This observes software navigation, not full UX/hardware acceptance.
@@ -10,7 +10,7 @@ rows/details. This observes software navigation, not full UX/hardware acceptance
 Example (parent executes only on the authorized disposable machine):
   python3 -B tui_workspace_probe.py --execute-disposable \
     --binary /usr/bin/virmill --binary-sha256 REVIEWED_SHA256 \
-    --output /home/virmill-test/virmill-tests/RUN/workspace-001
+    --output <test-vm-home>/virmill-tests/RUN/workspace-001
 
 All output is retained on failure. Never reuse the output directory. The script
 only invokes version/vm list/operation list and the TUI. Its key sequence opens
@@ -46,9 +46,19 @@ import unittest
 from unittest import mock
 import uuid
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 MAX_OUTPUT = 8 << 20
 MAX_TRANSCRIPT = 4 << 20
-OUTPUT_ROOT = Path('/home/virmill-test/virmill-tests')
+OUTPUT_ROOT = Path.home() / 'virmill-tests'
 
 
 def require(ok, message):
@@ -619,7 +629,7 @@ def main():
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(ProbeTests)
         return 0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() else 1
     require(args.execute_disposable and args.binary and args.output, 'explicit disposable guard, binary and new output are required')
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and
+    require(authorized_test_host() and
             os.getuid() == os.geteuid() == 1000, 'only the authorized ordinary-user disposable host may execute')
     binary, output = canonical_path(args.binary), canonical_path(args.output)
     require(output.is_relative_to(OUTPUT_ROOT) and output != OUTPUT_ROOT, 'output must be a new child of the approved test tree')
@@ -778,12 +788,12 @@ class ProbeTests(unittest.TestCase):
 
     def test_wrong_host_or_uid_refuses_before_files_or_processes(self):
         argv = ['probe', '--execute-disposable', '--binary', '/usr/bin/virmill',
-                '--output', '/home/virmill-test/virmill-tests/new-output']
-        for host, uid, euid in [('developer-host', 1000, 1000), ('virmill-test', 0, 0),
-                                ('virmill-test', 1000, 0)]:
+                '--output', str(OUTPUT_ROOT / 'new-output')]
+        for host, uid, euid in [('developer-host', 1000, 1000), ('designated-host', 0, 0),
+                                ('designated-host', 1000, 0)]:
             with self.subTest(host=host, uid=uid, euid=euid), \
                     mock.patch.object(sys, 'argv', argv), \
-                    mock.patch.object(socket, 'gethostname', return_value=host), \
+                    mock.patch(__name__ + '.authorized_test_host', return_value=host == 'designated-host'), \
                     mock.patch.object(os, 'getuid', return_value=uid), \
                     mock.patch.object(os, 'geteuid', return_value=euid), \
                     mock.patch.object(os, 'open', side_effect=AssertionError('opened filesystem')), \

@@ -7,6 +7,7 @@ test:
 verify: test
 	GOPROXY=off ./scripts/go vet -mod=vendor -tags libvirt_dlopen ./...
 	python3 scripts/traceability.py --check
+	python3 scripts/check-private.py
 reference: build
 packages: build
 	python3 scripts/package.py

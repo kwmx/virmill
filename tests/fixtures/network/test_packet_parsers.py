@@ -209,9 +209,9 @@ class DNSTests(unittest.TestCase):
 
 class NativeGuardTests(unittest.TestCase):
     def test_run_root_is_an_explicit_canonical_direct_child(self):
-        root = "/home/virmill-test/virmill-tests/run-network-generated"
+        root = "<test-vm-home>/virmill-tests/run-network-generated"
         self.assertEqual(str(fixture.selected_root(root)), root)
-        for value in ("/tmp/run-test", "/home/virmill-test/virmill-tests", root + "/nested",
+        for value in ("/tmp/run-test", "<test-vm-home>/virmill-tests", root + "/nested",
                       root + "/", root + "/../another", root.replace("/run-", "//run-"),
                       root + "\n", " " + root, "relative", root + "\0"):
             with self.subTest(root=value), self.assertRaises(fixture.Refusal):
@@ -1030,7 +1030,7 @@ class OwnLeaseDNSTests(unittest.TestCase):
             values = {**vars(protected_args(dns_name=None, dns_own_lease=True)), **change}
             with self.subTest(change=change), self.assertRaises(fixture.Refusal):
                 fixture.validate_profile(types.SimpleNamespace(**values))
-        root = "/home/virmill-test/virmill-tests/generated-test"
+        root = "<test-vm-home>/virmill-tests/generated-test"
         args = ["run", "--execute-reviewed", "--confirm-new-unused-network", "--root", root, "--output", root + "/network-packet-" + UUID,
                 "--run-id", UUID, "--network-id", UUID, "--bridge", "vm123456781234", "--recipe-sha256", "a" * 64,
                 "--network-xml-sha256", "b" * 64, "--kind", "lab", "--host-access", "services-only", "--dhcp", "on",

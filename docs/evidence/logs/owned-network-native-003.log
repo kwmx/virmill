@@ -373,10 +373,10 @@
   "existingFirewallPreserved": true
 }
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/network-native-003/create_native.py", line 119, in <module>
+  File "<test-vm-home>/virmill-tests/network-native-003/create_native.py", line 119, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/network-native-003/create_native.py", line 91, in main
+  File "<test-vm-home>/virmill-tests/network-native-003/create_native.py", line 91, in main
     assert packet.returncode==0,item['packetReport']
            ^^^^^^^^^^^^^^^^^^^^
 AssertionError: {'cleanup': {'DHCPLeasesRetained': True, 'errors': ['vpaa0cdad290f: unknown or replaced veth; manual review required'], 'networkRemoved': False, 'status': 'manual_review_required'}, 'error': 'Refusal: created veth ownership mismatch', 'fullNetworkAcceptance': False, 'guestOrHardwareQualification': False, 'networkId': 'bc247e57-0919-489b-a02e-3f3ad3c92447', 'networkXMLSHA256': '84dfcdd7e147a41f5429a387885cddf6447c247651d07615b40342efbdb6ebda', 'observations': None, 'recipeSHA256': 'c886946c958f4961cfd7703b1fcb5dafb092e9947c20cdb37beda59cb1ea600a', 'runId': 'a0cdad29-0f51-461f-85df-44a517b46100', 'status': 'failed_or_policy_discrepancy'}

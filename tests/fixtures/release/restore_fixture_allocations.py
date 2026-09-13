@@ -7,8 +7,18 @@ Facts come from protected-network-native-002/003 retained release evidence.
 """
 import argparse, hashlib, json, os, socket, stat, subprocess
 from pathlib import Path
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--execute-disposable',action='store_true',required=True);a=p.parse_args()
-assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==os.geteuid()==1000
+assert authorized_test_host() and os.getuid()==os.geteuid()==1000
 root=a.root.absolute();assert root.resolve(strict=True)==root and root.parent==Path.home()/'virmill-tests' and root.stat().st_uid==1000 and stat.S_IMODE(root.stat().st_mode)==0o700
 os.umask(0o077);out=root/'allocation-facts';out.mkdir(mode=0o700)
 def sha(path):

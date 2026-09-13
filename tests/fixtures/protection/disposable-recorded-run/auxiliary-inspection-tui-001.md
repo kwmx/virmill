@@ -80,10 +80,10 @@ Both modes require this frozen deployment:
 | CLI SHA256 | `9cc64d8aa14e7f5d5992514910364f316d3d12fab784393630d7c160628ac886` |
 
 The pinned deployment file at
-`/home/virmill-test/virmill-tests/run-65930c6-20260907/packages/490b88c/deployment.json`
+`<test-vm-home>/virmill-tests/run-65930c6-20260907/packages/490b88c/deployment.json`
 also supplies the exact daemon/helper binary and source inventory hashes. The
 installed binaries must match. The active ordinary coordinator must be
-`virmill-test-490b88c.service`, with the expected working directory, same recorded
+`<test-vm-login>-490b88c.service`, with the expected working directory, same recorded
 PID and a fresh matching `/proc/PID/exe` hash. The helper service/socket must
 already be active; its reported PID and process-start timestamp must stay stable.
 No service activation or restart is performed.
@@ -116,7 +116,7 @@ report and runtime pins remain required. This is a template, not an authoring
 execution or permission to prepare policy automatically.
 
 The fixed run root is
-`/home/virmill-test/virmill-tests/run-65930c6-20260907`. `environment.json` selects
+`<test-vm-home>/virmill-tests/run-65930c6-20260907`. `environment.json` selects
 the existing private coordinator. Private XDG variables apply only to Virmill;
 systemctl and read-only virsh retain the invoking ordinary host environment.
 Ambient `VIRSH_DEBUG` and `VIRSH_LOG_FILE` are removed. Each mode creates a new

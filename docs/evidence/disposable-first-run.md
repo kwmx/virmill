@@ -84,8 +84,8 @@ virmill vm creation result b5983e68-bfcc-42f0-bf4e-3877029b756b --output json
 virmill tui --connection qemu:///system
 ```
 
-This first run used transient user unit `virmill-test-c9aa310.service`; the
-[subsequent run](device-policy-run.md) replaced it with `virmill-test-c7f8b76.service`,
+This first run used transient user unit `<test-vm-login>-c9aa310.service`; the
+[subsequent run](device-policy-run.md) replaced it with `<test-vm-login>-c7f8b76.service`,
 with a two-hour runtime bound. Run `virmilld` with these variables if that unit has
 expired; never start a second coordinator over the same journal. Systemctl user
 commands need the normal login runtime/bus environment, not this private runtime.

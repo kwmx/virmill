@@ -1129,8 +1129,8 @@
             "filterEnforcementProven": false,
             "hostAccessExpected": "deny",
             "listenerAccepts": [
-              "192.168.100.252",
-              "192.168.100.252"
+              "<test-vm-address>",
+              "<test-vm-address>"
             ],
             "listenerBoundOnlyToSelectedBridge": false,
             "listenerClosed": true,
@@ -1140,19 +1140,19 @@
               {
                 "port": 32957,
                 "status": "connected",
-                "target": "192.168.100.252",
+                "target": "<test-vm-address>",
                 "tokenVerified": true
               },
               {
                 "port": 32957,
                 "status": "connected",
-                "target": "192.168.100.252",
+                "target": "<test-vm-address>",
                 "tokenVerified": true
               }
             ],
             "reason": "timed out",
             "status": "not_connected",
-            "target": "192.168.100.252"
+            "target": "<test-vm-address>"
           },
           "ipv4ChecksMet": true,
           "ipv6DisabledContradictedByObservedTraffic": false,
@@ -1178,7 +1178,7 @@
                 },
                 {
                   "dev": "veaded3955ad9",
-                  "dst": "192.168.100.252",
+                  "dst": "<test-vm-address>",
                   "flags": [],
                   "scope": "link"
                 },
@@ -1607,10 +1607,10 @@
   "existingFirewallPreserved": false
 }
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/protected-network-native-003/create_native.py", line 147, in <module>
+  File "<test-vm-home>/virmill-tests/protected-network-native-003/create_native.py", line 147, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/protected-network-native-003/create_native.py", line 145, in main
+  File "<test-vm-home>/virmill-tests/protected-network-native-003/create_native.py", line 145, in main
     if not report.get('existingResourcesPreserved') or not report.get('existingFirewallPreserved') or not report.get('policyRestored'):raise RuntimeError('preservation verification failed')
                                                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RuntimeError: preservation verification failed

@@ -28,7 +28,7 @@ import unittest
 import uuid
 import xml.etree.ElementTree as ET
 
-ROOT = pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+ROOT = pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 NATIVE = ROOT / 'auxiliary-inspection-native-002'
 NATIVE_NAME = 'auxiliary-inspection-native-002'
 RECIPE = 'auxiliary-inspection-tui-001'
@@ -771,7 +771,7 @@ class Recipe:
             hashes[name] = sha(read_regular(path, 128 << 20))
             require(hashes[name] == manifest['artifacts']['build/bin/'+name], 'installed binary differs: '+name)
         require(hashes['virmill'] == CLI_SHA, 'explicit CLI pin differs')
-        unit = 'virmill-test-490b88c.service'
+        unit = '<test-vm-login>-490b88c.service'
         require(self.property(unit, 'ActiveState', True) == 'active' and
                 self.property(unit, 'WorkingDirectory', True) == str(ROOT), 'wrong private coordinator')
         pid = self.property(unit, 'MainPID', True)
@@ -857,7 +857,7 @@ class Recipe:
         for path, historical in self.native_media.items():
             target = pathlib.Path(path)
             require(target.is_absolute() and str(target) == os.path.normpath(path) and target.resolve() == target and
-                    any(target.is_relative_to(base) for base in (ROOT, pathlib.Path('/home/virmill-test/images'),
+                    any(target.is_relative_to(base) for base in (ROOT, pathlib.Path('<test-vm-home>/images'),
                         pathlib.Path('/var/lib/libvirt/images'))), 'media path outside observed approved roots')
             state = file_state(target.lstat())
             require(stat.S_ISREG(state['mode']) and state['links'] == 1, 'media no longer one regular file')
@@ -868,7 +868,7 @@ class Recipe:
 
     def files(self):
         result = {}
-        for base, prefix in ((ROOT, 'run/'), (pathlib.Path('/home/virmill-test/images'), 'source-media/')):
+        for base, prefix in ((ROOT, 'run/'), (pathlib.Path('<test-vm-home>/images'), 'source-media/')):
             require(base.is_dir() and base.resolve() == base, 'preserved ordinary media root unavailable')
             for directory, dirs, files in os.walk(base, followlinks=False, onerror=walk_error):
                 dirs[:] = sorted(name for name in dirs if pathlib.Path(directory, name) != self.output)
@@ -890,7 +890,7 @@ class Recipe:
             require(inventory == self.expected_inventory, 'metadata differs from selected native restored observation')
 
     def inspect(self):
-        require(os.getuid() != 0 and pathlib.Path.home() == pathlib.Path('/home/virmill-test'), 'designated ordinary actor required')
+        require(os.getuid() != 0 and pathlib.Path.home() == pathlib.Path('<test-vm-home>'), 'designated ordinary actor required')
         environment = strict_json(read_regular(ROOT/'environment.json'))
         for key in ('XDG_STATE_HOME', 'XDG_RUNTIME_DIR', 'XDG_CACHE_HOME', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME'):
             path = pathlib.Path(environment[key])

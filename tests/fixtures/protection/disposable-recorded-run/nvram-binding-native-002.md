@@ -23,8 +23,8 @@ normalized deterministically. It does not try another command or silently skip a
 row on failure.
 
 The only target is the already authorized disposable root
-`/home/virmill-test/virmill-tests/run-65930c6-20260907`. Run as its ordinary
-`virmill-test` user, UID 1000. Supply the full installed revision and SHA256 of
+`<test-vm-home>/virmill-tests/run-65930c6-20260907`. Run as its ordinary
+`<test-vm-login>` user, UID 1000. Supply the full installed revision and SHA256 of
 the parent-reviewed deployment manifest:
 
 ```text
@@ -39,7 +39,7 @@ trigger prefix, fault marker and idempotency key use the new `002` identity; no
 
 The recipe derives `packages/<revision-prefix>/deployment.json`, checks that
 manifest's exact digest and revision, hashes the installed CLI and daemon, and
-checks the running `virmill-test-<revision-prefix>.service` PID executable against
+checks the running `<test-vm-login>-<revision-prefix>.service` PID executable against
 the daemon hash. It requires the service working directory and all five Virmill
 XDG directories to select this disposable run. Only Virmill commands receive
 those private directories; `systemctl --user` keeps the ordinary host environment

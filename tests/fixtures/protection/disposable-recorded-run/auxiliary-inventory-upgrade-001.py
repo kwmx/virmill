@@ -21,7 +21,7 @@ import time
 import unittest
 import xml.etree.ElementTree as ET
 
-ROOT = pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+ROOT = pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 RECIPE = 'auxiliary-inventory-upgrade-001'
 REVISION = '490b88cba5bf6e0837e2cb5780e56211c22a7d27'
 DEPLOYMENT = '5c9945fcfabe2808ff941ef57144f0f7985edba60fe7358b6e18ae2c71bf739c'
@@ -29,8 +29,8 @@ SOURCE_DIGEST = '26e4f8410395a37606d577073d0bdff424610ae04b83df678e61d618ae38eb0
 SOURCE_INVENTORY = 'f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576'
 OLD_REVISION = 'dc2ab1a7af8c023c1485d36d0e858a65264ace3e'
 OLD_DEPLOYMENT = 'c0b4ef70f038291e4f4803e7934e660b740654c2e2e660bc3784cb86939914f9'
-OLD_UNIT = 'virmill-test-dc2ab1a.service'
-NEW_UNIT = 'virmill-test-490b88c.service'
+OLD_UNIT = '<test-vm-login>-dc2ab1a.service'
+NEW_UNIT = '<test-vm-login>-490b88c.service'
 OLD_PID = '27851'
 URI = 'qemu:///system'
 EXECUTABLES = {'virmill': '/usr/bin/virmill', 'virmilld': '/usr/bin/virmilld',
@@ -230,7 +230,7 @@ def collect_child(arguments, environment, timeout):
 # No auxiliary state or private-key bytes enter this program's readable opens.
 PROTECTED_PROGRAM = r'''
 import hashlib,json,os,pathlib,re,stat,sys
-root=pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+root=pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 result={};count=0
 def need(v):
  if not v: raise RuntimeError('protected metadata shape/bound violation')
@@ -257,7 +257,7 @@ def tree(p):
  if stat.S_ISDIR(s.st_mode):
   for child in sorted(p.iterdir()): tree(child)
 for name in ('sources','prepared'): tree(root/name)
-tree(pathlib.Path('/home/virmill-test/images'))
+tree(pathlib.Path('<test-vm-home>/images'))
 metadata(root/'config/virmill/helper-key.pem')
 for name in ('/etc/virmill/helper-policy.json','/etc/systemd/system/virmill-host-helper.socket.d/50-virmill-disposable-test.conf'):
  metadata(pathlib.Path(name),True)
@@ -529,7 +529,7 @@ class Recipe:
                            privateKeyOrAuxiliaryContentRead=False, sourceMediaContentRehashed=False)
 
     def main(self):
-        require(os.getuid() != 0 and pwd.getpwuid(os.getuid()).pw_name == 'virmill-test'
+        require(os.getuid() != 0 and pwd.getpwuid(os.getuid()).pw_name == '<test-vm-login>'
                 and pathlib.Path.home() == ROOT.parents[1], 'only the fixed ordinary disposable user may execute')
         require(checked_path(ROOT).stat().st_uid == os.getuid(), 'run root owner differs')
         self.output.mkdir(mode=0o700)  # Existing file/directory/symlink is a permanent single-use refusal.

@@ -22,7 +22,7 @@ recipe includes that stopped guest and state in its preservation baseline.
 Only this new namespace may be created or temporarily authorized:
 
 ```text
-output: /home/virmill-test/virmill-tests/run-65930c6-20260907/auxiliary-inspection-native-003
+output: <test-vm-home>/virmill-tests/run-65930c6-20260907/auxiliary-inspection-native-003
 state: /var/lib/virmill-host-helper/auxiliary-fixture-003
 root ID: auxiliary-fixture-003
 domain name: virmill-auxiliary-fixture-003

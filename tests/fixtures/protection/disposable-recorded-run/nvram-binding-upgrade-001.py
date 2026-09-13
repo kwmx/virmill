@@ -97,7 +97,7 @@ probe = 'd4c95f21-28bc-428d-9e5f-ceda025d279e'
 probe_disk = '/var/lib/libvirt/images/virmill-cold-probe-v1/virmill-' + probe + '-disk-000.qcow2'
 probe_sha = 'f0eafe1814a7a137def96128e8f5bc15838669c868a25aa808f8d084c4382e51'
 assert run(['sudo', '-n', 'sha256sum', '--', probe_disk]).decode().split()[0] == probe_sha
-old_unit = 'virmill-test-' + OLD_REVISION[:7] + '.service'
+old_unit = '<test-vm-login>-' + OLD_REVISION[:7] + '.service'
 assert run(['systemctl', '--user', 'show', old_unit, '-p', 'WorkingDirectory', '--value']).decode().strip() == str(ROOT)
 
 # All preflight checks precede the only authorized mutations in this recipe.
@@ -108,7 +108,7 @@ executables = {'virmill': '/usr/bin/virmill', 'virmilld': '/usr/bin/virmilld',
                'virmill-host-helper': '/usr/libexec/virmill-host-helper'}
 for name, path in executables.items():
     assert digest(path) == manifest['artifacts']['build/bin/' + name]
-unit = 'virmill-test-' + revision[:7] + '.service'
+unit = '<test-vm-login>-' + revision[:7] + '.service'
 args = ['systemd-run', '--user', '--unit=' + unit, '--property=RuntimeMaxSec=7200',
         '--property=Restart=no', '--property=WorkingDirectory=' + str(ROOT)]
 for key in ('XDG_STATE_HOME', 'XDG_RUNTIME_DIR', 'XDG_CACHE_HOME', 'XDG_DATA_HOME', 'XDG_CONFIG_HOME'):

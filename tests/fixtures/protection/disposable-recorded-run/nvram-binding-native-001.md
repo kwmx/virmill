@@ -6,8 +6,8 @@ bounded native evidence for ADR 0021 and IMP-07, SNAP-01, JOB-02 and UX-03
 prerequisites. It does not promote an acceptance scenario or certify 1.0.
 
 The only target is the already authorized disposable root
-`/home/virmill-test/virmill-tests/run-65930c6-20260907`. Run as its ordinary
-`virmill-test` user, UID 1000. Supply the full installed revision and SHA256 of
+`<test-vm-home>/virmill-tests/run-65930c6-20260907`. Run as its ordinary
+`<test-vm-login>` user, UID 1000. Supply the full installed revision and SHA256 of
 the parent-reviewed deployment manifest:
 
 ```text
@@ -16,7 +16,7 @@ python3 nvram-binding-native-001.py --revision <40 lowercase hex> --deployment-s
 
 The recipe derives `packages/<revision-prefix>/deployment.json`, checks that
 manifest's exact digest and revision, hashes the installed CLI and daemon, and
-checks the running `virmill-test-<revision-prefix>.service` PID executable against
+checks the running `<test-vm-login>-<revision-prefix>.service` PID executable against
 the daemon hash. It requires the service working directory and all five Virmill
 XDG directories to select this disposable run. Only Virmill commands receive
 those private directories; `systemctl --user` keeps the ordinary host environment

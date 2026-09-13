@@ -1,16 +1,16 @@
-+ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -fsanitize=undefined -fsanitize-undefined-trap-on-error /home/faisal/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/test_wire.c /home/faisal/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/wire.c -o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/test-wire
-+ /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/test-wire
++ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -fsanitize=undefined -fsanitize-undefined-trap-on-error <dev-home>/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/test_wire.c <dev-home>/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/wire.c -o <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/test-wire
++ <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/test-wire
 PASS: synthetic TPM command vectors and bounded malformed-response parsing; no EFI/TPM execution
-+ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fpie -mno-red-zone -maccumulate-outgoing-args -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -c /home/faisal/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/probe.c -o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe.o
-+ /usr/bin/objcopy --remove-section=.note* /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe.o
-+ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fpie -mno-red-zone -maccumulate-outgoing-args -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -c /home/faisal/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/wire.c -o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/wire.o
-+ /usr/bin/objcopy --remove-section=.note* /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/wire.o
-+ /usr/bin/ld -mi386pep --subsystem 10 --entry efi_main --image-base 0x100000 --file-alignment 512 --section-alignment 4096 --enable-reloc-section --no-insert-timestamp --disable-auto-import --strip-all -o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/BOOTX64.EFI /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe.o /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/wire.o
-+ /usr/bin/mkfs.fat --invariant -F 16 -n VIRMILLTPM -i 564d5052 -C /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img 32768
++ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fpie -mno-red-zone -maccumulate-outgoing-args -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -c <dev-home>/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/probe.c -o <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe.o
++ /usr/bin/objcopy --remove-section=.note* <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe.o
++ /usr/bin/gcc -std=c11 -Wall -Wextra -Werror -O2 -ffreestanding -fno-builtin -fno-stack-protector -fpie -mno-red-zone -maccumulate-outgoing-args -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-ident -c <dev-home>/project/virmill/build/cold-24858d4/tests/fixtures/protection/uefi-tpm-probe/wire.c -o <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/wire.o
++ /usr/bin/objcopy --remove-section=.note* <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/wire.o
++ /usr/bin/ld -mi386pep --subsystem 10 --entry efi_main --image-base 0x100000 --file-alignment 512 --section-alignment 4096 --enable-reloc-section --no-insert-timestamp --disable-auto-import --strip-all -o <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/BOOTX64.EFI <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe.o <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/wire.o
++ /usr/bin/mkfs.fat --invariant -F 16 -n VIRMILLTPM -i 564d5052 -C <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img 32768
 mkfs.fat 4.2 (2021-01-31)
-+ /usr/bin/mmd -i /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img ::/EFI ::/EFI/BOOT
-+ /usr/bin/mcopy -i /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI
-+ /usr/bin/mcopy -i /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img ::/EFI/BOOT/BOOTX64.EFI /home/faisal/project/virmill/build/cold-24858d4/build/uefi-probe-b/boot-readback.efi
++ /usr/bin/mmd -i <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img ::/EFI ::/EFI/BOOT
++ /usr/bin/mcopy -i <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/BOOTX64.EFI ::/EFI/BOOT/BOOTX64.EFI
++ /usr/bin/mcopy -i <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/probe-fat.img ::/EFI/BOOT/BOOTX64.EFI <dev-home>/project/virmill/build/cold-24858d4/build/uefi-probe-b/boot-readback.efi
 {
   "BOOTX64.EFI": {
     "bytes": 9728,

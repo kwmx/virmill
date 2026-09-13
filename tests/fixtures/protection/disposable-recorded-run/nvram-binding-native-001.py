@@ -19,7 +19,7 @@ import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape, unescape
 
 
-ROOT = pathlib.Path("/home/virmill-test/virmill-tests/run-65930c6-20260907")
+ROOT = pathlib.Path("<test-vm-home>/virmill-tests/run-65930c6-20260907")
 URI = "qemu:///system"
 POOL_ID = "95b94843-0db0-46ac-9bbf-a2fa3c183818"
 POOL_NAME = "virmill-cold-probe-v1"
@@ -399,7 +399,7 @@ class Recipe:
             require(re.fullmatch("[a-f0-9]{64}", expected), "invalid deployment binary digest")
             hashes[name] = regular_hash(path)
             require(hashes[name] == expected, "installed binary differs from reviewed deployment")
-        unit = "virmill-test-" + self.arguments.revision[:7] + ".service"
+        unit = "<test-vm-login>-" + self.arguments.revision[:7] + ".service"
         def property_value(name):
             return self.checked(["/usr/bin/systemctl", "--user", "show", unit, "-p", name, "--value"]).decode().strip()
         require(property_value("ActiveState") == "active" and property_value("WorkingDirectory") == str(ROOT),
@@ -500,7 +500,7 @@ class Recipe:
 
     def run(self):
         require(os.geteuid() == 1000 and pathlib.Path.home() == ROOT.parent.parent,
-                "recipe is only for ordinary-user virmill-test on the approved disposable root")
+                "recipe is only for ordinary-user <test-vm-login> on the approved disposable root")
         require(ROOT.is_dir() and ROOT.resolve() == ROOT, "approved root absent or symlinked")
         os.umask(0o077)
         self.output.mkdir(mode=0o700)  # Single-use: no --force or automatic retry.

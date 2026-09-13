@@ -20,7 +20,7 @@ with os.fdopen(os.open(key,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600),'wb') as f:
 identity=json.loads(cli('host','helper','identity').stdout)['data']
 assert identity['actorUID']==1000 and len(identity['keyID'])==64 and len(identity['publicKey'])==64 and identity['policyApproved'] is False
 policy={'apiVersion':'virmill/v1','keys':{identity['keyID']:identity['publicKey']},'roots':{'images':'/var/lib/libvirt/images'},'actors':[1000]}
-dropin='[Socket]\nSocketGroup=virmill-test\nSocketMode=0660\nDirectoryMode=0755\n'
+dropin='[Socket]\nSocketGroup=<test-vm-login>\nSocketMode=0660\nDirectoryMode=0755\n'
 setup={'policy':policy,'dropin':dropin}
 program='''import os,json,pathlib,sys
 data=json.load(sys.stdin)
@@ -36,6 +36,6 @@ subprocess.run(['sudo','-n','systemctl','daemon-reload'],check=True)
 subprocess.run(['sudo','-n','systemctl','start','virmill-host-helper.socket'],check=True)
 identity=json.loads(cli('host','helper','identity').stdout)['data'];assert identity['policyApproved'] is True
 assert pathlib.Path('/run/virmill-host-helper/control.sock').stat().st_uid==0
-report={'publicIdentity':identity,'policySHA256':hashlib.sha256(pathlib.Path('/etc/virmill/helper-policy.json').read_bytes()).hexdigest(),'dropInSHA256':hashlib.sha256(dropin.encode()).hexdigest(),'socketStartedNotEnabled':True,'existingGroupUsed':'virmill-test','privateKeyContentsLogged':False,'SELinux':subprocess.check_output(['getenforce'],text=True).strip()}
+report={'publicIdentity':identity,'policySHA256':hashlib.sha256(pathlib.Path('/etc/virmill/helper-policy.json').read_bytes()).hexdigest(),'dropInSHA256':hashlib.sha256(dropin.encode()).hexdigest(),'socketStartedNotEnabled':True,'existingGroupUsed':'<test-vm-login>','privateKeyContentsLogged':False,'SELinux':subprocess.check_output(['getenforce'],text=True).strip()}
 with (root/'helper-access-setup-b7fe053.json').open('x') as f:json.dump(report,f,indent=2)
 print(json.dumps(report),flush=True)

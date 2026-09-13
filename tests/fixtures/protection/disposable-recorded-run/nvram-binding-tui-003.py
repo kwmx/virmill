@@ -30,7 +30,7 @@ import uuid
 import xml.etree.ElementTree as ET
 
 
-ROOT = pathlib.Path('/home/virmill-test/virmill-tests/run-65930c6-20260907')
+ROOT = pathlib.Path('<test-vm-home>/virmill-tests/run-65930c6-20260907')
 URI = 'qemu:///system'
 POOL_ID = '95b94843-0db0-46ac-9bbf-a2fa3c183818'
 POOL_NAME = 'virmill-cold-probe-v1'
@@ -597,7 +597,7 @@ class Recipe:
             require(re.fullmatch('[a-f0-9]{64}', expected), 'invalid binary digest')
             hashes[name] = sha(read_regular('/usr/bin/' + name, 128 << 20))
             require(hashes[name] == expected, 'installed binary differs from deployment')
-        unit = 'virmill-test-' + self.args.revision[:7] + '.service'
+        unit = '<test-vm-login>-' + self.args.revision[:7] + '.service'
 
         def prop(name):
             return self.command(['/usr/bin/systemctl', '--user', 'show', unit, '-p', name, '--value']).decode().strip()

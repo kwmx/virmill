@@ -5,10 +5,10 @@ test_cli_and_real_pty_use_private_confined_provider_workspace (__main__.Provider
 FAIL: test_cli_and_real_pty_use_private_confined_provider_workspace (__main__.ProviderConformanceUI.test_cli_and_real_pty_use_private_confined_provider_workspace)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/faisal/project/virmill/tests/integration/provider_conformance_ui_test.py", line 86, in test_cli_and_real_pty_use_private_confined_provider_workspace
+  File "<dev-home>/project/virmill/tests/integration/provider_conformance_ui_test.py", line 86, in test_cli_and_real_pty_use_private_confined_provider_workspace
     until(b'provider-fixture', 90)
     ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/faisal/project/virmill/tests/integration/provider_conformance_ui_test.py", line 65, in until
+  File "<dev-home>/project/virmill/tests/integration/provider_conformance_ui_test.py", line 65, in until
     self.assertIn(expected, received, received.decode(errors='replace'))
     ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 AssertionError: b'provider-fixture' not found in bytearray(b'\x1b[H\n\n\n\nRequest in progress; UI remains available.\x1b[K\r\nDevelopment build. Hardware qualification and mandatory workflows remain incompl\r\nete. Press Tab to navigate; ? shows help.\x1b[K\r\n\x1b[K\x1b[J\x1b[8;H\x1b[H\n\n\n\n{\x1b[K\r\n  "apiVersion": "virmill/v1",\x1b[K\r\n  "data": {\x1b[K\r\n    "checks": [\x1b[K\r\n      "simulated provider initialize identity/version/protocol and bounded descr\r\nibe schemas",\x1b[K\r\n      "explicit simulated capabilities and fixture connection namespace",\x1b[K\r\n      "reviewed create/get with stable fake IDs, exact deduplication and stale i\r\ndempotency refusal",\x1b[K\r\n      "stable ordered paginated inventory with repeated opaque cursors",\x1b[K\r\n      "partial effect reported: operation=conformance-partial; resource=fixture-\r\nconformance-partial; status=partial",\x1b[K\r\n      "restart/status/reconcile without apply replay: fixture-conformance-partia\r\nl remains status=partial, reconciled=true, revision=1; inventory generation unch\r\nanged",\x1b[K\r\n      "reviewed start/stop/delete preserve resource identity and retain a delete\r\nd receipt",\x1b[K\r\n      "backup and lifecycle cancellation explicitly unsupported; no fake support\r\ned result",\x1b[K\r\n\x1b[K\x1b[24;H') : [H

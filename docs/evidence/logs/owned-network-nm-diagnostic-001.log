@@ -1,80 +1,80 @@
-2026-09-08T07:53:41.472959+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4729] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
-2026-09-08T07:53:41.473481+03:00 virmill-test.home NetworkManager[779]: <warn>  [1788843221.4734] device (ens19): Activation: failed for connection 'Wired connection 1'
-2026-09-08T07:53:41.473729+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4737] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
-2026-09-08T07:53:41.487909+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4878] dhcp4 (ens19): canceled DHCP transaction
-2026-09-08T07:53:41.487924+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4879] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:53:41.487936+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4879] dhcp4 (ens19): state changed no lease
-2026-09-08T07:53:41.488760+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4887] policy: auto-activating connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
-2026-09-08T07:53:41.489014+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4890] device (ens19): Activation: starting connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
-2026-09-08T07:53:41.489046+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4890] device (ens19): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
-2026-09-08T07:53:41.489147+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.4891] device (ens19): state change: prepare -> config (reason 'none', managed-type: 'full')
-2026-09-08T07:53:41.503524+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.5035] device (ens19): state change: config -> ip-config (reason 'none', managed-type: 'full')
-2026-09-08T07:53:41.503896+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843221.5038] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:54:26.479578+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4792] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
-2026-09-08T07:54:26.479874+03:00 virmill-test.home NetworkManager[779]: <warn>  [1788843266.4798] device (ens19): Activation: failed for connection 'Wired connection 1'
-2026-09-08T07:54:26.479987+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4799] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
-2026-09-08T07:54:26.490960+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4909] dhcp4 (ens19): canceled DHCP transaction
-2026-09-08T07:54:26.490981+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4909] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:54:26.491002+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4909] dhcp4 (ens19): state changed no lease
-2026-09-08T07:54:26.492382+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4923] policy: auto-activating connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
-2026-09-08T07:54:26.492755+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4927] device (ens19): Activation: starting connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
-2026-09-08T07:54:26.492875+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4928] device (ens19): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
-2026-09-08T07:54:26.493129+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.4931] device (ens19): state change: prepare -> config (reason 'none', managed-type: 'full')
-2026-09-08T07:54:26.508892+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.5088] device (ens19): state change: config -> ip-config (reason 'none', managed-type: 'full')
-2026-09-08T07:54:26.509418+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843266.5094] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:54:27.678511+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.6784] manager: (vmdceba41d8d1a): new Bridge device (/org/freedesktop/NetworkManager/Devices/14)
-2026-09-08T07:54:27.738533+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7384] device (vmdceba41d8d1a): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
-2026-09-08T07:54:27.738887+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7388] device (vmdceba41d8d1a): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
-2026-09-08T07:54:27.739226+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7392] device (vmdceba41d8d1a): Activation: starting connection 'vmdceba41d8d1a' (8450761e-e8b7-4778-a100-961cd11465a3)
-2026-09-08T07:54:27.739358+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7393] device (vmdceba41d8d1a): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
-2026-09-08T07:54:27.739500+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7394] device (vmdceba41d8d1a): state change: prepare -> config (reason 'none', managed-type: 'external')
-2026-09-08T07:54:27.739592+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7395] device (vmdceba41d8d1a): state change: config -> ip-config (reason 'none', managed-type: 'external')
-2026-09-08T07:54:27.739687+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7396] device (vmdceba41d8d1a): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
-2026-09-08T07:54:27.763974+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7639] device (vmdceba41d8d1a): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
-2026-09-08T07:54:27.764102+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7640] device (vmdceba41d8d1a): state change: secondaries -> activated (reason 'none', managed-type: 'external')
-2026-09-08T07:54:27.764481+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843267.7644] device (vmdceba41d8d1a): Activation: successful, device activated.
-2026-09-08T07:54:31.274704+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843271.2746] manager: (vea7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/15)
-2026-09-08T07:54:31.275243+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843271.2752] manager: (vpa7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/16)
-2026-09-08T07:54:31.509220+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843271.5091] device (vpa7a26cc44aa): carrier: link connected
-2026-09-08T07:54:35.592905+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843275.5928] device (vmdceba41d8d1a): carrier: link connected
-2026-09-08T07:54:38.815824+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843278.8157] manager: (veb7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/17)
-2026-09-08T07:54:38.816645+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843278.8166] manager: (vpb7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/18)
-2026-09-08T07:54:39.049904+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843279.0498] device (vpb7a26cc44aa): carrier: link connected
-2026-09-08T07:55:11.473608+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4733] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
-2026-09-08T07:55:11.474048+03:00 virmill-test.home NetworkManager[779]: <warn>  [1788843311.4740] device (ens19): Activation: failed for connection 'Wired connection 1'
-2026-09-08T07:55:11.474231+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4742] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
-2026-09-08T07:55:11.478974+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4789] dhcp4 (ens19): canceled DHCP transaction
-2026-09-08T07:55:11.479002+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4789] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:55:11.479022+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4790] dhcp4 (ens19): state changed no lease
-2026-09-08T07:55:11.480805+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4807] policy: auto-activating connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
-2026-09-08T07:55:11.481152+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4811] device (ens19): Activation: starting connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
-2026-09-08T07:55:11.481259+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4812] device (ens19): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
-2026-09-08T07:55:11.481488+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.4814] device (ens19): state change: prepare -> config (reason 'none', managed-type: 'full')
-2026-09-08T07:55:11.511370+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.5113] device (ens19): state change: config -> ip-config (reason 'none', managed-type: 'full')
-2026-09-08T07:55:11.512050+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843311.5120] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:55:41.733383+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.7333] manager: (vme19169805169): new Bridge device (/org/freedesktop/NetworkManager/Devices/19)
-2026-09-08T07:55:41.836644+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8366] device (vme19169805169): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
-2026-09-08T07:55:41.836965+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8369] device (vme19169805169): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
-2026-09-08T07:55:41.837369+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8373] device (vme19169805169): Activation: starting connection 'vme19169805169' (7e26bcfe-16ec-44cf-89c8-a393690d69ad)
-2026-09-08T07:55:41.837437+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8374] device (vme19169805169): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
-2026-09-08T07:55:41.837566+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8375] device (vme19169805169): state change: prepare -> config (reason 'none', managed-type: 'external')
-2026-09-08T07:55:41.837666+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8376] device (vme19169805169): state change: config -> ip-config (reason 'none', managed-type: 'external')
-2026-09-08T07:55:41.837782+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8377] device (vme19169805169): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
-2026-09-08T07:55:41.864617+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8645] device (vme19169805169): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
-2026-09-08T07:55:41.864760+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8647] device (vme19169805169): state change: secondaries -> activated (reason 'none', managed-type: 'external')
-2026-09-08T07:55:41.865165+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843341.8651] device (vme19169805169): Activation: successful, device activated.
-2026-09-08T07:55:45.324412+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843345.3242] manager: (vea025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/20)
-2026-09-08T07:55:45.325389+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843345.3253] manager: (vpa025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/21)
-2026-09-08T07:55:45.571421+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843345.5713] device (vpa025aa76fbf): carrier: link connected
-2026-09-08T07:55:49.641115+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843349.6410] device (vme19169805169): carrier: link connected
-2026-09-08T07:55:52.886716+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843352.8866] manager: (veb025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/22)
-2026-09-08T07:55:52.887182+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843352.8871] manager: (vpb025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/23)
-2026-09-08T07:55:53.141823+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843353.1418] device (vpb025aa76fbf): carrier: link connected
-2026-09-08T07:55:56.467336+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843356.4672] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
-2026-09-08T07:55:56.467577+03:00 virmill-test.home NetworkManager[779]: <warn>  [1788843356.4675] device (ens19): Activation: failed for connection 'Wired connection 1'
-2026-09-08T07:55:56.467663+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843356.4676] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
-2026-09-08T07:55:56.481916+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843356.4818] dhcp4 (ens19): canceled DHCP transaction
-2026-09-08T07:55:56.481930+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843356.4819] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
-2026-09-08T07:55:56.481941+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843356.4819] dhcp4 (ens19): state changed no lease
-2026-09-08T07:56:12.667000+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843372.6669] device (vme19169805169): state change: activated -> unmanaged (reason 'unmanaged-external-down', managed-type: 'external')
-2026-09-08T07:56:16.777486+03:00 virmill-test.home NetworkManager[779]: <info>  [1788843376.7774] device (vmdceba41d8d1a): state change: activated -> unmanaged (reason 'unmanaged-external-down', managed-type: 'external')
+2026-09-08T07:53:41.472959+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4729] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
+2026-09-08T07:53:41.473481+03:00 <test-vm-host> NetworkManager[779]: <warn>  [1788843221.4734] device (ens19): Activation: failed for connection 'Wired connection 1'
+2026-09-08T07:53:41.473729+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4737] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
+2026-09-08T07:53:41.487909+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4878] dhcp4 (ens19): canceled DHCP transaction
+2026-09-08T07:53:41.487924+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4879] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:53:41.487936+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4879] dhcp4 (ens19): state changed no lease
+2026-09-08T07:53:41.488760+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4887] policy: auto-activating connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
+2026-09-08T07:53:41.489014+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4890] device (ens19): Activation: starting connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
+2026-09-08T07:53:41.489046+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4890] device (ens19): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
+2026-09-08T07:53:41.489147+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.4891] device (ens19): state change: prepare -> config (reason 'none', managed-type: 'full')
+2026-09-08T07:53:41.503524+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.5035] device (ens19): state change: config -> ip-config (reason 'none', managed-type: 'full')
+2026-09-08T07:53:41.503896+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843221.5038] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:54:26.479578+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4792] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
+2026-09-08T07:54:26.479874+03:00 <test-vm-host> NetworkManager[779]: <warn>  [1788843266.4798] device (ens19): Activation: failed for connection 'Wired connection 1'
+2026-09-08T07:54:26.479987+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4799] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
+2026-09-08T07:54:26.490960+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4909] dhcp4 (ens19): canceled DHCP transaction
+2026-09-08T07:54:26.490981+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4909] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:54:26.491002+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4909] dhcp4 (ens19): state changed no lease
+2026-09-08T07:54:26.492382+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4923] policy: auto-activating connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
+2026-09-08T07:54:26.492755+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4927] device (ens19): Activation: starting connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
+2026-09-08T07:54:26.492875+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4928] device (ens19): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
+2026-09-08T07:54:26.493129+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.4931] device (ens19): state change: prepare -> config (reason 'none', managed-type: 'full')
+2026-09-08T07:54:26.508892+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.5088] device (ens19): state change: config -> ip-config (reason 'none', managed-type: 'full')
+2026-09-08T07:54:26.509418+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843266.5094] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:54:27.678511+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.6784] manager: (vmdceba41d8d1a): new Bridge device (/org/freedesktop/NetworkManager/Devices/14)
+2026-09-08T07:54:27.738533+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7384] device (vmdceba41d8d1a): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
+2026-09-08T07:54:27.738887+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7388] device (vmdceba41d8d1a): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
+2026-09-08T07:54:27.739226+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7392] device (vmdceba41d8d1a): Activation: starting connection 'vmdceba41d8d1a' (8450761e-e8b7-4778-a100-961cd11465a3)
+2026-09-08T07:54:27.739358+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7393] device (vmdceba41d8d1a): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
+2026-09-08T07:54:27.739500+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7394] device (vmdceba41d8d1a): state change: prepare -> config (reason 'none', managed-type: 'external')
+2026-09-08T07:54:27.739592+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7395] device (vmdceba41d8d1a): state change: config -> ip-config (reason 'none', managed-type: 'external')
+2026-09-08T07:54:27.739687+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7396] device (vmdceba41d8d1a): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
+2026-09-08T07:54:27.763974+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7639] device (vmdceba41d8d1a): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
+2026-09-08T07:54:27.764102+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7640] device (vmdceba41d8d1a): state change: secondaries -> activated (reason 'none', managed-type: 'external')
+2026-09-08T07:54:27.764481+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843267.7644] device (vmdceba41d8d1a): Activation: successful, device activated.
+2026-09-08T07:54:31.274704+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843271.2746] manager: (vea7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/15)
+2026-09-08T07:54:31.275243+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843271.2752] manager: (vpa7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/16)
+2026-09-08T07:54:31.509220+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843271.5091] device (vpa7a26cc44aa): carrier: link connected
+2026-09-08T07:54:35.592905+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843275.5928] device (vmdceba41d8d1a): carrier: link connected
+2026-09-08T07:54:38.815824+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843278.8157] manager: (veb7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/17)
+2026-09-08T07:54:38.816645+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843278.8166] manager: (vpb7a26cc44aa): new Veth device (/org/freedesktop/NetworkManager/Devices/18)
+2026-09-08T07:54:39.049904+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843279.0498] device (vpb7a26cc44aa): carrier: link connected
+2026-09-08T07:55:11.473608+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4733] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
+2026-09-08T07:55:11.474048+03:00 <test-vm-host> NetworkManager[779]: <warn>  [1788843311.4740] device (ens19): Activation: failed for connection 'Wired connection 1'
+2026-09-08T07:55:11.474231+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4742] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
+2026-09-08T07:55:11.478974+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4789] dhcp4 (ens19): canceled DHCP transaction
+2026-09-08T07:55:11.479002+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4789] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:55:11.479022+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4790] dhcp4 (ens19): state changed no lease
+2026-09-08T07:55:11.480805+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4807] policy: auto-activating connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
+2026-09-08T07:55:11.481152+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4811] device (ens19): Activation: starting connection 'Wired connection 1' (849606a3-6e9d-3bc1-941a-9df55a7fc21f)
+2026-09-08T07:55:11.481259+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4812] device (ens19): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
+2026-09-08T07:55:11.481488+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.4814] device (ens19): state change: prepare -> config (reason 'none', managed-type: 'full')
+2026-09-08T07:55:11.511370+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.5113] device (ens19): state change: config -> ip-config (reason 'none', managed-type: 'full')
+2026-09-08T07:55:11.512050+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843311.5120] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:55:41.733383+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.7333] manager: (vme19169805169): new Bridge device (/org/freedesktop/NetworkManager/Devices/19)
+2026-09-08T07:55:41.836644+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8366] device (vme19169805169): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
+2026-09-08T07:55:41.836965+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8369] device (vme19169805169): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
+2026-09-08T07:55:41.837369+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8373] device (vme19169805169): Activation: starting connection 'vme19169805169' (7e26bcfe-16ec-44cf-89c8-a393690d69ad)
+2026-09-08T07:55:41.837437+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8374] device (vme19169805169): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
+2026-09-08T07:55:41.837566+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8375] device (vme19169805169): state change: prepare -> config (reason 'none', managed-type: 'external')
+2026-09-08T07:55:41.837666+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8376] device (vme19169805169): state change: config -> ip-config (reason 'none', managed-type: 'external')
+2026-09-08T07:55:41.837782+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8377] device (vme19169805169): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
+2026-09-08T07:55:41.864617+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8645] device (vme19169805169): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
+2026-09-08T07:55:41.864760+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8647] device (vme19169805169): state change: secondaries -> activated (reason 'none', managed-type: 'external')
+2026-09-08T07:55:41.865165+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843341.8651] device (vme19169805169): Activation: successful, device activated.
+2026-09-08T07:55:45.324412+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843345.3242] manager: (vea025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/20)
+2026-09-08T07:55:45.325389+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843345.3253] manager: (vpa025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/21)
+2026-09-08T07:55:45.571421+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843345.5713] device (vpa025aa76fbf): carrier: link connected
+2026-09-08T07:55:49.641115+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843349.6410] device (vme19169805169): carrier: link connected
+2026-09-08T07:55:52.886716+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843352.8866] manager: (veb025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/22)
+2026-09-08T07:55:52.887182+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843352.8871] manager: (vpb025aa76fbf): new Veth device (/org/freedesktop/NetworkManager/Devices/23)
+2026-09-08T07:55:53.141823+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843353.1418] device (vpb025aa76fbf): carrier: link connected
+2026-09-08T07:55:56.467336+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843356.4672] device (ens19): state change: ip-config -> failed (reason 'ip-config-unavailable', managed-type: 'full')
+2026-09-08T07:55:56.467577+03:00 <test-vm-host> NetworkManager[779]: <warn>  [1788843356.4675] device (ens19): Activation: failed for connection 'Wired connection 1'
+2026-09-08T07:55:56.467663+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843356.4676] device (ens19): state change: failed -> disconnected (reason 'none', managed-type: 'full')
+2026-09-08T07:55:56.481916+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843356.4818] dhcp4 (ens19): canceled DHCP transaction
+2026-09-08T07:55:56.481930+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843356.4819] dhcp4 (ens19): activation: beginning transaction (timeout in 45 seconds)
+2026-09-08T07:55:56.481941+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843356.4819] dhcp4 (ens19): state changed no lease
+2026-09-08T07:56:12.667000+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843372.6669] device (vme19169805169): state change: activated -> unmanaged (reason 'unmanaged-external-down', managed-type: 'external')
+2026-09-08T07:56:16.777486+03:00 <test-vm-host> NetworkManager[779]: <info>  [1788843376.7774] device (vmdceba41d8d1a): state change: activated -> unmanaged (reason 'unmanaged-external-down', managed-type: 'external')

@@ -28,6 +28,16 @@ import xml.etree.ElementTree as ET
 from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, media_listing, require, strict_json
 from guest_agent_edit_probe import URI, select_machine, xml_for, owned, semantic
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 ACKS = {'host-mutation', 'exclusive-configuration-writer'}
 TERMINAL = {'succeeded', 'failed', 'canceled', 'partial', 'recovery-required'}
 
@@ -90,7 +100,7 @@ def check_xml(before, after, identity, name):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized test host or actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000

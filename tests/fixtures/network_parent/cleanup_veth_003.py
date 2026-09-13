@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 
 assert os.geteuid() == 0
-root = Path('/home/virmill-test/virmill-tests/network-native-003/network-packet-a0cdad29-0f51-461f-85df-44a517b46100')
+root = Path('<test-vm-home>/virmill-tests/network-native-003/network-packet-a0cdad29-0f51-461f-85df-44a517b46100')
 journal = (root / 'commands.jsonl').read_bytes()
 assert hashlib.sha256(journal).hexdigest() == '2e7c744c06e963da8d1a9c7b01cc258897ed138cc5cbf6263934045d95f0f107'
 assert not Path('/run/netns/virmill-packet-a0cdad290f51461f85df44a517b46100-a').exists()

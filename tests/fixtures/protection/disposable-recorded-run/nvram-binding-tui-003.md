@@ -11,9 +11,9 @@ product stays at the parent's reviewed
 `dc2ab1a7af8c023c1485d36d0e858a65264ace3e` deployment.
 
 The parent alone reviews and executes this fixture on the authorized disposable
-host as ordinary `virmill-test`. Authoring and synthetic tests are not native
+host as ordinary `<test-vm-login>`. Authoring and synthetic tests are not native
 qualification. The only run root is
-`/home/virmill-test/virmill-tests/run-65930c6-20260907`.
+`<test-vm-home>/virmill-tests/run-65930c6-20260907`.
 
 The fixture accepts only native-002's exact failure list
 `["existing pool XML changed"]`, status `uncertain-preserve-resources`, final stage

@@ -11,7 +11,7 @@
     "restic-0.19.1-1.fc44.x86_64"
   ],
   "SELinux": "Enforcing",
-  "privateCoordinatorUnit": "virmill-test-dc2ab1a.service",
+  "privateCoordinatorUnit": "<test-vm-login>-dc2ab1a.service",
   "privilegedHelper": "inactive",
   "sourceOfObservation": "nvram-binding-upgrade-001; verified package upgrade, binary/PID hashes, unchanged prior journal/guests and legacy creation result",
   "priorEnvironment": "environments/disposable-cold-4c58176.json",

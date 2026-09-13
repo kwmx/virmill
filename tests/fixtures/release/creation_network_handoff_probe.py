@@ -36,6 +36,29 @@ from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, med
 from guest_tools_fedora_probe import network_snapshot
 from network_form_tui_probe import document, validate_and_normalize
 
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 SOURCE_ID = '7ab996ee-4ed1-4330-9975-4459bf9286c2'
 SOURCE_REL = 'virmill-tests/beta-ux-47d1a8b/walkthrough/prepared'
@@ -132,7 +155,7 @@ def validate_helper_refusal(screen):
 
 def execute(stage, await_helper_approval=False, expect_helper_refusal=False):
     require(not (await_helper_approval and expect_helper_refusal), 'helper approval and expected refusal modes are mutually exclusive')
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000
@@ -220,7 +243,7 @@ def execute(stage, await_helper_approval=False, expect_helper_refusal=False):
                 'selected prepared source row/path differs from exact CLI ordering')
         wait('VM basic settings', lambda s: 'CPU cores' in s and 'Storage pool' in s, b'\r')
         fill('CPU cores', '3'); fill('Memory (MiB)', '768')
-        choice('Storage pool', 'virmill-test'); choice('Firmware', 'BIOS')
+        choice('Storage pool', TEST_POOL); choice('Firmware', 'BIOS')
         activate('Continue to disks', lambda s: 'Controller bus' in s and 'Continue to networks' in s)
         saved = None
         deadline = time.monotonic() + 5
@@ -431,7 +454,7 @@ class Tests(unittest.TestCase):
         self.assertNotEqual(normalize_allow_plan(p, doc), normalize_allow_plan(bad, doc))
 
     def test_preparation_identity_not_display_name_alone(self):
-        home = Path('/home/virmill-test')
+        home = Path('/home/tester')
         wanted = {'operationID': SOURCE_ID, 'name': 'hardware-fixture', 'destination': str(home / SOURCE_REL)}
         self.assertEqual(selected_source([dict(wanted, operationID=str(uuid.uuid4())), wanted], home)[0], 1)
         for bad in ([wanted, wanted], [dict(wanted, destination='/foreign')], [dict(wanted, name='foreign')]):

@@ -3,7 +3,7 @@
 
 Native mode: --execute-disposable --root PRIVATE_STAGED_DIRECTORY. Requires
 binaries.json and adjacent tui_workspace_probe.py. Only the owner-authorized
-virmill-test host/UID1000 may execute it. Creates one NEW persistent diskless,
+<test-vm-login> host/UID1000 may execute it. Creates one NEW persistent diskless,
 networkless, stopped BIOS VM using an actually advertised i440fx machine.
 Virmill previews and applies the opt-in channel edit; native readback proves
 normalization and preservation. CLI and TUI observations distinguish a configured
@@ -32,6 +32,16 @@ import xml.etree.ElementTree as ET
 
 from tui_workspace_probe import (Runner, Terminal, canonical_path, canonical_uuid,
                                  inventory, media_listing, require, strict_json)
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
 
 URI = 'qemu:///system'
 NS = 'urn:virmill:guest-agent-edit-fixture:v1'
@@ -194,7 +204,7 @@ def tui_inspection(runner, identity, name, configured):
 
 
 def execute(root):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == 1000 and os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == 1000 and os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(root.absolute()))
     require(stage.is_relative_to(Path.home() / 'virmill-tests') and stage != Path.home() / 'virmill-tests' and

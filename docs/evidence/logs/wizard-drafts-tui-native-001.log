@@ -9,9 +9,9 @@
     "virmill": "58bf8b16362043a9df0693c027083e9569ca6ae621660247ba2463b53deadd02",
     "virmilld": "06d55685cf5d97e5ce61f8ae457215e09338251c1d9567deea56f8fc8daf660a"
   },
-  "xdgStateHome": "/home/virmill-test/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state",
+  "xdgStateHome": "<test-vm-home>/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state",
   "saved": {
-    "path": "/home/virmill-test/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state/virmill/tui-drafts/import.json",
+    "path": "<test-vm-home>/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state/virmill/tui-drafts/import.json",
     "sha256": "85b80096445839e9b3d365cf8064539ab2be962caca0580c34faa8575e96031f",
     "document": {
       "version": 1,
@@ -44,7 +44,7 @@
     }
   },
   "resumed": {
-    "path": "/home/virmill-test/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state/virmill/tui-drafts/import.json",
+    "path": "<test-vm-home>/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state/virmill/tui-drafts/import.json",
     "sha256": "ef456dc2f70700711a9ea2a06ba5ea8fe50b3647f9ec7d24d29ab3d34c19ce3b",
     "document": {
       "version": 1,
@@ -77,7 +77,7 @@
     }
   },
   "startedNew": {
-    "path": "/home/virmill-test/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state/virmill/tui-drafts/import.json",
+    "path": "<test-vm-home>/virmill-tests/wizard-drafts-tools-f371fa8/tui-draft-resume/state/virmill/tui-drafts/import.json",
     "sha256": "5e1513aae950634ac2995a3833c015928a47e1942200a07200308fd4b5553748",
     "document": {
       "version": 1,

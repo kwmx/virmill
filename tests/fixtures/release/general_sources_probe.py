@@ -21,6 +21,16 @@ from tui_workspace_probe import (OUTPUT_ROOT, Runner, Terminal, canonical_path,
                                  generation, inventory, jobs, require, sha, strict_json)
 from import_options_probe import selected_label, workspace_page
 
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 FORMATS = {'qcow2': 'qcow2', 'raw': 'raw', 'vmdk': 'vmdk', 'vdi': 'vdi',
            'vpc': 'vhd', 'vhdx': 'vhdx'}
 
@@ -202,7 +212,7 @@ def main():
         return 0 if unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(ProbeTests)).wasSuccessful() else 1
     require(args.execute_disposable and args.output and re.fullmatch('[0-9a-f]{64}', args.binary_sha256 or ''),
             'explicit disposable execution, output and executable SHA256 required')
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'only the authorized ordinary-user disposable host may execute')
     require(args.binary == '/usr/bin/virmill', 'installed /usr/bin/virmill required')
     binary, output = canonical_path(args.binary), canonical_path(args.output)

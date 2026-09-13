@@ -16,8 +16,8 @@ a failed window. The TUI process remains the ordinary user.
 ## Immutable prerequisites
 
 The only execution root is
-`/home/virmill-test/virmill-tests/run-65930c6-20260907`. The actor must be nonroot
-with home `/home/virmill-test`. The parent must keep policy writers idle for the
+`<test-vm-home>/virmill-tests/run-65930c6-20260907`. The actor must be nonroot
+with home `<test-vm-home>`. The parent must keep policy writers idle for the
 entire window, and ensure the existing coordinator, helper and helper socket are
 already active. No prerequisite is repaired by this recipe.
 
@@ -31,7 +31,7 @@ already active. No prerequisite is repaired by this recipe.
 | Original public policy bytes | `1ec86a37a44cac12e7fa7c16c542ec83e552e348ea2f2cec841597dc999d6ed4` |
 
 The program also pins all three installed binary hashes, coordinator unit
-`virmill-test-490b88c.service` and actual PID `30897`, and helper PID `31125`.
+`<test-vm-login>-490b88c.service` and actual PID `30897`, and helper PID `31125`.
 It freshly hashes both actual running executable identities before and after the
 window. The root helper process must hash to
 `4d67ec32a0aa891d16af237885fe45ba95ee5377829f86ab4761aba89b42917a`.

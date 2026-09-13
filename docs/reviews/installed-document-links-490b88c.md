@@ -114,7 +114,7 @@ Line numbers here identify frozen source files, not newly installed line anchors
   `docs/reviews/creation-nvram-binding-review.md`: 17 implementation filenames,
   one normative specification filename, and one ADR filename.
 * `docs/creation-nvram-path-validation.md:37` contains the sole absolute link:
-  `/home/faisal/project/virmill/docs/reviews/creation-nvram-binding-review.md`.
+  `<dev-home>/project/virmill/docs/reviews/creation-nvram-binding-review.md`.
   The checker does not open that absolute destination. The parent corrected the
   current source link to `reviews/creation-nvram-binding-review.md`; the frozen
   archive and packages retain their original bytes and this finding.

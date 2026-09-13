@@ -10,8 +10,8 @@
     "ForwardAgent=no",
     "-o",
     "ConnectTimeout=10",
-    "virmill-test@virmill-test.home",
-    "python3 -I /home/virmill-test/virmill-tests/network-native-003/create_native.py --execute-disposable --root /home/virmill-test/virmill-tests/network-native-003 --lab-cidr 10.197.234.0/24 --nat-cidr 10.197.235.0/24"
+    "<test-vm-login>@<test-vm-host>",
+    "python3 -I <test-vm-home>/virmill-tests/network-native-003/create_native.py --execute-disposable --root <test-vm-home>/virmill-tests/network-native-003 --lab-cidr 10.197.234.0/24 --nat-cidr 10.197.235.0/24"
   ],
   "cwd": ".",
   "environment": "environment.json",

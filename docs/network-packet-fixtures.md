@@ -104,7 +104,7 @@ Those versions describe the authoring environment. A remote run records its own 
 Only the parent/operator may execute this fixture on the already authorized disposable VM. Required `--root` selects an existing, canonical, nonsymlink direct child of:
 
 ```text
-/home/virmill-test/virmill-tests
+<test-vm-home>/virmill-tests
 ```
 
 The selected child is the parent's new isolated run directory, not an inferred historical run. Root-only, relative, nested, noncanonical, control-bearing and symlink paths are refused. No old run journal is touched. Before execution, the parent must create and identify the new network through Virmill's reviewed workflow, inspect its creation/job binding, and exclude concurrent network/guest/namespace mutations throughout the fixture window. A Virmill XML marker is checked as a structural prerequisite; it is not treated as an authority grant or proof of ownership. The explicit `--confirm-new-unused-network` records the parent's external ownership check. This fixture is not safe for adoption of an existing/shared network.
@@ -134,14 +134,14 @@ Parent invocation template; every uppercase placeholder must be resolved from th
 ```text
 /usr/bin/python3 -I -B /ABSOLUTE/FROZEN/network_packet_fixture.py run
   --execute-reviewed --confirm-new-unused-network
-  --root /home/virmill-test/virmill-tests/NEW_ISOLATED_RUN
+  --root <test-vm-home>/virmill-tests/NEW_ISOLATED_RUN
   --recipe-sha256 REVIEWED_SOURCE_SHA256
   --run-id NEW_RUN_UUID
   --network-id NEW_NETWORK_UUID
   --network-xml-sha256 EXACT_LIVE_XML_STDOUT_SHA256
   --bridge vmLOWERCASE12HEX
   --kind nat --host-access allow --dhcp on
-  --output /home/virmill-test/virmill-tests/NEW_ISOLATED_RUN/network-packet-NEW_RUN_UUID
+  --output <test-vm-home>/virmill-tests/NEW_ISOLATED_RUN/network-packet-NEW_RUN_UUID
 ```
 
 The template shows argv on separate lines for review, not a shell script. Parent code should invoke a list of literal argv elements. Use `--kind lab --dhcp on` for managed lab DHCP. For the static lab profile use `--kind lab --dhcp off --static-a4 ADDRESS_A --static-b4 ADDRESS_B`; both addresses must be distinct ordinary unicast addresses in the exact native subnet and must exclude its network, broadcast and gateway. No prefix is included in these address arguments; the pinned native subnet supplies it.

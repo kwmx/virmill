@@ -37,6 +37,29 @@ from tui_workspace_probe import Runner, Terminal, canonical_path, inventory, med
 from console_access_probe import assembly, serial_roundtrip
 from graphical_access_probe import xauthority, framebuffer_png
 
+
+def designated_pool():
+    """The dedicated libvirt pool named in ~/.config/virmill-tests/storage-pool on the test host."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/storage-pool')) as f:
+            return f.read().strip()
+    except OSError:
+        return 'unconfigured-pool'  # no such pool exists, so native runs refuse
+
+
+TEST_POOL = designated_pool()
+
+
+
+def authorized_test_host():
+    """True only on a host that lists its own name in ~/.config/virmill-tests/authorized-hosts."""
+    try:
+        with open(os.path.expanduser('~/.config/virmill-tests/authorized-hosts')) as f:
+            return socket.gethostname() in f.read().split()
+    except OSError:
+        return False
+
+
 URI = 'qemu:///system'
 TERMINAL = {'succeeded', 'failed', 'partial', 'canceled', 'recovery-required'}
 CREATE_ACKS = {'host-mutation', 'copy-managed-volumes', 'new-vm-identity', 'attach-readonly-media', 'creation-device-policy'}
@@ -101,7 +124,7 @@ def check_owned(vm, receipt, name, pool):
     for disk in disks:
         source = disk.find('source'); require(source is not None, 'managed source missing')
         matching = [name for name, volume in volumes.items()
-                    if (disk.get('type') == 'volume' and source.attrib == {'pool': 'virmill-test', 'volume': name})
+                    if (disk.get('type') == 'volume' and source.attrib == {'pool': TEST_POOL, 'volume': name})
                     or (disk.get('type') == 'file' and source.attrib == {'file': volume['path']})]
         require(len(matching) == 1 and matching[0] in remaining, 'managed source mapping differs')
         remaining.remove(matching[0])
@@ -225,7 +248,7 @@ def viewer_roundtrip(runner, native, identity, name):
 
 
 def execute(stage):
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000
             and stat.S_IMODE(stage.stat().st_mode) == 0o700, 'private staged root required')
@@ -270,7 +293,7 @@ def execute(stage):
         require('spice-unix' in choices['graphics'] and 'sata' in choices['diskBuses'], 'SPICE/SATA not advertised')
         firmware = next((x['firmware'] for x in choices['firmware'] if x['firmware']['mode'] == 'bios'), None)
         require(firmware is not None, 'no advertised BIOS fixture choice')
-        pools = [p for p in r.cli('storage', 'pool', 'list') if p['name'] == 'virmill-test' and p['active'] and p['type'] == 'dir']
+        pools = [p for p in r.cli('storage', 'pool', 'list') if p['name'] == TEST_POOL and p['active'] and p['type'] == 'dir']
         require(len(pools) == 1, 'dedicated pool missing or ambiguous'); pool_id = pools[0]['key']['resourceUUID']; r.save('selected-pool.json', pools[0])
         source_dir = out / 'source'; source_dir.mkdir(mode=0o700)
         marker = 'VIRMILL CONSOLE PASS ' + uuid.uuid4().hex
@@ -374,7 +397,7 @@ def execute(stage):
 
 def resume_viewer(stage):
     """Recheck only the retained product-created guest; do not replay creation."""
-    require(socket.gethostname() in ('virmill-test', 'virmill-test.home') and os.getuid() == os.geteuid() == 1000,
+    require(authorized_test_host() and os.getuid() == os.geteuid() == 1000,
             'wrong authorized host/actor')
     stage = canonical_path(str(stage.absolute()))
     require(stage.parent == Path.home() / 'virmill-tests' and stage.stat().st_uid == 1000
@@ -396,7 +419,7 @@ def resume_viewer(stage):
     retained = strict_json((original / 'creation-result.json').read_bytes())
     receipt = retained['receipt']
     pool = strict_json((original / 'selected-pool.json').read_bytes())
-    require(pool['name'] == 'virmill-test' and receipt['vmID'] == identity
+    require(pool['name'] == TEST_POOL and receipt['vmID'] == identity
             and receipt['operationID'] == prior['creationOperationID'] and retained['complete'], 'original receipt/pool binding differs')
     pool_id = pool['key']['resourceUUID']
     original_report_sha = sha(original / 'report.json')
@@ -515,11 +538,11 @@ class Tests(unittest.TestCase):
                    'volumes': [{'verified': True, 'allocated': {'intent': {'name': name, 'poolID': pool,
                                 'contentType': 'cdrom-iso' if i else ''}, 'path': '/pool/' + name}} for i, name in enumerate(names)]}
         raw = '<domain><uuid>' + identity + '</uuid><name>fixture</name><metadata><v:creation xmlns:v="urn:virmill:v1" binding="' + 'b' * 64 + '"/></metadata><devices><graphics type="spice"><listen type="socket"/><clipboard copypaste="no"/><filetransfer enable="no"/></graphics>'
-        raw += '<disk type="volume" device="disk"><source pool="virmill-test" volume="' + names[0] + '"/></disk>'
-        raw += '<disk type="volume" device="cdrom"><source pool="virmill-test" volume="' + names[1] + '"/><readonly/><boot order="1"/></disk></devices></domain>'
+        raw += '<disk type="volume" device="disk"><source pool="' + TEST_POOL + '" volume="' + names[0] + '"/></disk>'
+        raw += '<disk type="volume" device="cdrom"><source pool="' + TEST_POOL + '" volume="' + names[1] + '"/><readonly/><boot order="1"/></disk></devices></domain>'
         vm = {'key': {'resourceUUID': identity}, 'name': 'fixture', 'hasManagedSave': False, 'persistentXML': raw}
         check_owned(vm, receipt, 'fixture', pool)
-        for original, changed in [('pool="virmill-test"', 'pool="other"'), (names[0], 'foreign.qcow2'), ('device="cdrom"', 'device="disk"')]:
+        for original, changed in [('pool="' + TEST_POOL + '"', 'pool="other"'), (names[0], 'foreign.qcow2'), ('device="cdrom"', 'device="disk"')]:
             bad = dict(vm, persistentXML=raw.replace(original, changed))
             with self.assertRaises(RuntimeError): check_owned(bad, receipt, 'fixture', pool)
 

@@ -31,17 +31,17 @@ The recipe refuses the previously installed `dc2ab1a` runtime. Supplied pins are
 | Source inventory SHA256 | `f0585986ff6693a306a54e86d48db9eecbed5cddca83941d461d3e2bb2727576` |
 
 The exact deployment file must be at
-`/home/virmill-test/virmill-tests/run-65930c6-20260907/packages/490b88c/deployment.json`.
+`<test-vm-home>/virmill-tests/run-65930c6-20260907/packages/490b88c/deployment.json`.
 Do not rewrite its historical installation-status field: the supplied byte hash
 is authoritative. Its `sourceDigest` and separate `sourceInventorySHA256` are
 recorded independently. All three installed binaries must match the manifest.
 The coordinator must be the active ordinary-user
-`virmill-test-490b88c.service`, with the approved working directory and matching
+`<test-vm-login>-490b88c.service`, with the approved working directory and matching
 running `/proc/PID/exe` hash. The system helper service **and** socket must already
 be active, with the helper's running executable matching the same deployment.
 There is no activation/start fallback in this recipe.
 
-Run only as `virmill-test`, with ordinary host XDG variables still in the invoking
+Run only as `<test-vm-login>`, with ordinary host XDG variables still in the invoking
 environment. The recipe obtains private Virmill XDG paths from the approved
 `environment.json`; it applies those paths only to `/usr/bin/virmill`. `systemctl
 --user`, virsh and sudo retain the host environment. The parent must provide an

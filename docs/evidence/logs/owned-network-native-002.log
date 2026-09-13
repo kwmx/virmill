@@ -363,10 +363,10 @@
   "existingFirewallPreserved": true
 }
 Traceback (most recent call last):
-  File "/home/virmill-test/virmill-tests/network-22846d4/create_native.py", line 119, in <module>
+  File "<test-vm-home>/virmill-tests/network-22846d4/create_native.py", line 119, in <module>
     if __name__=='__main__':main()
                             ~~~~^^
-  File "/home/virmill-test/virmill-tests/network-22846d4/create_native.py", line 91, in main
+  File "<test-vm-home>/virmill-tests/network-22846d4/create_native.py", line 91, in main
     assert packet.returncode==0,item['packetReport']
            ^^^^^^^^^^^^^^^^^^^^
 AssertionError: {'cleanup': {'DHCPLeasesRetained': True, 'errors': [], 'networkRemoved': False, 'status': 'verified'}, 'error': 'Refusal: this fixture profile requires declared IPv6 disabled', 'fullNetworkAcceptance': False, 'guestOrHardwareQualification': False, 'networkId': '1739e5f7-27cd-4896-992f-961cf5c8b17e', 'networkXMLSHA256': '063004218262379430b40dbe01ac64290c155496f020d919896417efc998d485', 'observations': None, 'recipeSHA256': 'd9af29b160496a01ead222a88754dc45fe9998b8565ca900ce5bc1e9dd67f099', 'runId': 'af696f9a-7662-4a7b-8594-b1a5863596ef', 'status': 'failed_or_policy_discrepancy'}
