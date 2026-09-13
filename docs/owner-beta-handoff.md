@@ -1,18 +1,27 @@
-# Owner beta handoff — updated 12 September 2026
+# Owner beta handoff — updated 13 September 2026
 
 **Virmill 1.0.0-beta.1 was installed and verified running on the authorized
 Fedora 44 test VM.** SSH access and coordinator readiness are verified after reboot. This is an owner-test beta. Complete 1.0 remains
 unqualified: all 71 acceptance scenarios remain mandatory, with 2 accepted,
 57 in progress and 12 not yet implemented in the full release tracker.
 
-**Current UI update:** installed CLI and coordinator use `dc45ee3`.
+**Current beta:** installed CLI and coordinator use `7005898`.
+**Remove VM** now offers unchecked disk choices, exact-name confirmation and a
+separate review. The CLI supports `--delete-disk vda` (repeat or use a comma list).
+Native CLI one-disk deletion and actual 80×24 TUI two-disk deletion passed on
+generated BIOS fixtures. Shared-disk refusal, cancellation, CLI/TUI plan parity,
+exact native absence and source preservation passed. Existing system guests and
+all historical jobs were preserved. See [selected-disk evidence](evidence/disk-removal-run.md)
+and [removal instructions](vm-removal.md). Unsigned RPM/DEB packages are retained
+in `build/disk-removal-handoff-delivery/dist/`.
+
+The previous **Jobs → Activity** update remains included.
 **Jobs → Activity** opens the selected job directly with full scrollable messages,
 UTC times, paging and labeled Refresh/Back buttons. **Checked** confirms a
 successful refresh. Read failures keep earlier events and show the full issue.
 The actual 80×24 CLI/message comparison, refresh and return-to-job test passed;
 existing guests, all 32 jobs, networks and media were unchanged. See
-[Activity evidence](evidence/job-activity-run.md). Final unsigned RPM/DEB artifacts
-are retained in `build/job-activity-final-delivery/dist/`.
+[Activity evidence](evidence/job-activity-run.md). The prior runtime evidence remains scoped to its recorded build.
 
 **Disks and boot** maintains a complete order when you move a device.
 **Attach only** excludes installer media from booting and closes the numbering gap;
@@ -30,12 +39,11 @@ the top of the scrollable review with next steps, rather than only in the footer
 The actual 80×24 error/recovery display and unchanged-resource checks passed.
 See [network handoff evidence](evidence/creation-network-handoff-run.md).
 
-**VMs → More → Advanced tools → Remove VM, keep disks** offers exact-name
-confirmation, a separate preview and a clear retained-storage outcome. Actual
-80×24 TUI/CLI plan parity and one durable definition removal passed on a newly
-generated BIOS fixture, with its full disk hash unchanged. Existing guests and
-source media were preserved. Firmware/TPM and selected-disk deletion remain
-unsupported in this beta. See [removal evidence](evidence/removal-guided-run.md).
+**VMs → More → Advanced tools → Remove VM** keeps disks by default. Selected
+deletion requires stopped BIOS VMs, registered raw/qcow2 file volumes and a
+complete readable reference graph. Firmware/TPM and other protected layouts
+remain unsupported for removal. Backups and unselected files are retained.
+See [removal instructions](vm-removal.md) for limitations and failure recovery.
 **VMs → More → Change VM automatic startup** now shows current settings and a
 simple toggle with a separate before/after preview. Actual TUI/CLI plan comparison
 and native enable/restore-to-Off jobs passed without starting or stopping the
@@ -51,7 +59,7 @@ start it, offer **Retry connection**, and keep optional sign-in setup under
 **More help**. The test VM's service is enabled at sign-in. See
 [startup help](coordinator-startup.md).
 Completed local VM jobs offer **Open VM** when their saved result identifies an
-existing VM; removal instead explains the retained disks.
+existing VM; removal instead reports the selected deletion or retained disks.
 Guest tools checks runtime state first and offers reviewed start guidance for
 stopped guests. Prose and review warnings wrap by words. See [job/setup evidence](evidence/guided-job-completion-run.md).
 CPU/RAM settings show live and next-boot values, prefill editable fields and review

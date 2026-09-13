@@ -1,0 +1,19 @@
+--- FAIL: TestApplyRetryRetainsIdempotencyKeyAfterLostResponse (0.00s)
+panic: runtime error: invalid memory address or nil pointer dereference [recovered, repanicked]
+[signal SIGSEGV: segmentation violation code=0x1 addr=0x0 pc=0x91c8be]
+
+goroutine 1075 [running]:
+testing.tRunner.func1.2({0x1007260, 0x10822c0})
+	/home/faisal/project/virmill/.tools/go/src/testing/testing.go:2123 +0x232
+testing.tRunner.func1()
+	/home/faisal/project/virmill/.tools/go/src/testing/testing.go:2126 +0x329
+panic({0x1007260?, 0x10822c0?})
+	/home/faisal/project/virmill/.tools/go/src/runtime/panic.go:859 +0x125
+virmill.local/core/internal/ui/tui.TestApplyRetryRetainsIdempotencyKeyAfterLostResponse(0x2a3abbeaa6c8)
+	/home/faisal/project/virmill/internal/ui/tui/workspace_boot_test.go:61 +0x35e
+testing.tRunner(0x2a3abbeaa6c8, 0x105da58)
+	/home/faisal/project/virmill/.tools/go/src/testing/testing.go:2193 +0xea
+created by testing.(*T).Run in goroutine 1
+	/home/faisal/project/virmill/.tools/go/src/testing/testing.go:2258 +0x4d4
+FAIL	virmill.local/core/internal/ui/tui	0.645s
+FAIL

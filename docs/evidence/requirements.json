@@ -166,13 +166,17 @@
         "disk-removal-cluster-metadata-001",
         "disk-removal-beta-regression-001",
         "disk-removal-fixture-003",
-        "disk-removal-native-002"
+        "disk-removal-native-002",
+        "disk-removal-fixture-004",
+        "disk-removal-native-003",
+        "disk-removal-native-004"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native 1c54175 start/reboot passed for a new independent Kali disk copy with original disk and nine prior definitions preserved; cleanup required force-stop of the copy after graceful timeout. Full lifecycle/state/OS coverage, removal and guest readiness remain required.",
-        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles."
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -463,7 +467,13 @@
         "disk-removal-restart-native-001",
         "disk-removal-packages-002",
         "disk-removal-upgrade-native-002",
-        "disk-removal-restart-native-002"
+        "disk-removal-restart-native-002",
+        "disk-removal-packages-003",
+        "disk-removal-upgrade-native-003",
+        "disk-removal-restart-native-003",
+        "disk-removal-packages-004",
+        "disk-removal-upgrade-native-004",
+        "disk-removal-restart-native-004"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -2270,10 +2280,14 @@
         "disk-removal-cluster-metadata-001",
         "disk-removal-beta-regression-001",
         "disk-removal-fixture-003",
-        "disk-removal-native-002"
+        "disk-removal-native-002",
+        "disk-removal-fixture-004",
+        "disk-removal-native-003",
+        "disk-removal-native-004"
       ],
       "outstanding": [
-        "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete."
+        "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete.",
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -3862,7 +3876,11 @@
         "disk-removal-native-001",
         "disk-removal-beta-regression-001",
         "disk-removal-restart-native-002",
-        "disk-removal-native-002"
+        "disk-removal-native-002",
+        "disk-removal-restart-native-003",
+        "disk-removal-native-003",
+        "disk-removal-restart-native-004",
+        "disk-removal-native-004"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -3882,7 +3900,8 @@
         "Durable local restic init/check/backup/full restored-set recovery implemented through CLI/TUI. Native generated-repository adapter roundtrip passed after recorded JSON/extraction/root-mode corrections. Complete VM repository recovery and remaining acceptance variants still require qualification; this does not close the full scenario.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
         "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
-        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles."
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4366,7 +4385,8 @@
         "Sealed auxiliary FD transport is tested independently and is not yet connected to an authenticated typed capture method. Native grant binding, held source resolution, durable capture publication and confidential restore remain required.",
         "Authenticated VM-specific auxiliary metadata inspection has shared CLI/TUI access and integrated race/private-IPC checks. Frozen 490b88c passed the disposable helper metadata-only grant/denial/FIFO/unresolved-source matrix, exact policy/XML restoration, and actual CLI/TUI denial and positive parity (3 and 17 current-screen pages); all earlier guests/media and journal rows were preserved within documented metadata limits. It reads no state content, creates no job, and proves no capture, independent restore or boot. The exact metadata-only policy window restored original policy bytes/access metadata; complete mandatory workflows remain open.",
         "Shared CLI/TUI now create explicit allowed-host NAT/lab networks with durable subnet reservations, separate define/filter/activate intents, exact authenticated helper grants and reviewed lock-preserving recovery. Final scoped race/IPC and reproducible builds passed. Native lab creation passed, but packet fixture failures are retained in owned-network-run.md; complete required profiles, guest routing/isolation and the full recovery/host matrix remain open.",
-        "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification."
+        "Frozen 66c2d1f passed one native automatic /24 allocation and allowed-host lab creation, excluding an inactive native subnet, planned subnet and UUID-bound foreign guest-only allocation. Unauthorized apply refused; approved durable apply and bounded namespace DHCP/peer/host checks passed. Ten existing guests, twelve networks, helper policy and firewall rules/zones preserved; new network retained inactive. This is no real-guest, VPN, multi-NIC, physical device or complete acceptance qualification.",
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4758,7 +4778,11 @@
         "disk-removal-packages-001",
         "disk-removal-upgrade-native-001",
         "disk-removal-packages-002",
-        "disk-removal-upgrade-native-002"
+        "disk-removal-upgrade-native-002",
+        "disk-removal-packages-003",
+        "disk-removal-upgrade-native-003",
+        "disk-removal-packages-004",
+        "disk-removal-upgrade-native-004"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -5636,7 +5660,12 @@
         "disk-removal-native-002",
         "disk-removal-confirmation-001",
         "disk-removal-confirmation-002",
-        "disk-removal-confirmation-003"
+        "disk-removal-confirmation-003",
+        "disk-removal-fixture-004",
+        "disk-removal-native-003",
+        "disk-removal-confirmation-004",
+        "disk-removal-confirmation-005",
+        "disk-removal-native-004"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -5658,7 +5687,8 @@
         "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Fedora 44 guest-agent installation/repeat/native ping passed (guest-tools-fedora-live-002), followed by actual TUI repeat submission and Open VM (guest-tools-tui-native-002). Other guest profiles and the complete OS/accessibility/console matrix remain open.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
         "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
-        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles."
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false
@@ -6076,7 +6106,18 @@
         "disk-removal-native-002",
         "disk-removal-confirmation-001",
         "disk-removal-confirmation-002",
-        "disk-removal-confirmation-003"
+        "disk-removal-confirmation-003",
+        "disk-removal-fixture-004",
+        "disk-removal-packages-003",
+        "disk-removal-upgrade-native-003",
+        "disk-removal-restart-native-003",
+        "disk-removal-native-003",
+        "disk-removal-confirmation-004",
+        "disk-removal-confirmation-005",
+        "disk-removal-packages-004",
+        "disk-removal-upgrade-native-004",
+        "disk-removal-restart-native-004",
+        "disk-removal-native-004"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
@@ -6084,7 +6125,8 @@
         "Section-local action search, Unicode matching, remembered selection, no-results behavior and compact resize/paging are implemented. Component tests cover forms and approval preservation; real terminal/accessibility matrix remains required.",
         "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Private resumable choices and native edit/restart/resume/Start new now passed (wizard-drafts-tui-final-001). Complete scenario qualification remains open; draft checks do not certify guest boot or all 71 scenarios.",
         "Native CLI and 80x24 TUI serial attachment/return passed; private SPICE viewer main/display channels and close-without-stopping passed. VNC launch is refused pending safe clipboard controls. Fedora 44 guest-agent installation/repeat/native ping passed (guest-tools-fedora-live-002), followed by actual TUI repeat submission and Open VM (guest-tools-tui-native-002). Other guest profiles and the complete OS/accessibility/console matrix remain open.",
-        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles."
+        "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
       ],
       "hardwareVerified": false,
       "released": false

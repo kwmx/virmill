@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/virmill-test/virmill-tests/disk-removal-final-f15de52/disk_removal_native_cycle.py", line 449, in <module>
+    elif a.execute_disposable and a.root:execute(a.root,a.resume_from,a.finish_tui_from)
+                                         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/virmill-test/virmill-tests/disk-removal-final-f15de52/disk_removal_native_cycle.py", line 337, in execute
+    finish(tui_delete(r,target_vm,paths[:2],plan,before_apply,accepted))
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/virmill-test/virmill-tests/disk-removal-final-f15de52/disk_removal_native_cycle.py", line 112, in tui_delete
+    wait('Explicit confirmation', lambda s: 'Confirm reviewed changes' in s, b'\r')
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/virmill-test/virmill-tests/disk-removal-final-f15de52/disk_removal_native_cycle.py", line 78, in wait
+    return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/virmill-test/virmill-tests/disk-removal-final-f15de52/tui_workspace_probe.py", line 401, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy Explicit confirmation

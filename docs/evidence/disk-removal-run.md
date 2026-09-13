@@ -52,3 +52,37 @@ The failed overall result remains in the ledger. Runtime `f15de52` separates
 readable consequence text from the exact approval identifier; the full TUI suite
 passes (`disk-removal-confirmation-003`). Earlier failing test iterations are
 retained as `disk-removal-confirmation-001/002`.
+
+`disk-removal-native-003` stopped before TUI submission because Enter retained
+the plan's scroll offset and hid the confirmation heading. It created no job and
+left the remaining fixture intact. Runtime `7005898` resets only the scroll offset,
+preserving prior acknowledgement/idempotency state on submission retry. The full
+TUI suite, including existing lost-response retry tests, passes
+(`disk-removal-confirmation-005`). `disk-removal-confirmation-004` records the
+intermediate regression that incorrectly reset acknowledgement focus.
+
+
+`disk-removal-native-004` **passed**, running `70058986dad108a03f27d3ced9ec67458e9430e8`.
+The exact pending fixture continued after independently checking the previous
+successful CLI job and absence of its VM/disk. No CLI effect was replayed.
+Actual 80×24 TUI cancellation, default-off disk selection, explicit two-disk
+selection, CLI/TUI full-plan parity, readable confirmation/each acknowledgement
+and durable submission passed. Job `84ac6de1-8851-432c-aaec-31b98a02ac3a` succeeded.
+Both selected files and their native volumes are absent, and both generated VM
+UUIDs are absent. All three generated source files retained their full SHA-256;
+pre-existing system VM observations, supplied media metadata and all prior jobs
+were unchanged. The empty fixture pool and evidence/source directories remain.
+The CLI success belongs to runtime `3e6a7db`; final TUI success belongs to `7005898`.
+
+Final package checks (`disk-removal-packages-004`), installation and idle
+coordinator activation (`disk-removal-upgrade-native-004`,
+`disk-removal-restart-native-004`) passed. Native reports and terminal captures
+are retained under `build/disk-removal-handoff-delivery/`; the final report is also
+recorded verbatim in the evidence log. All 71 statuses stay unchanged: this
+qualifies the tested BIOS/file-volume slice, not firmware/TPM, every storage
+profile, physical hardware, or the complete 1.0 release.
+
+Root owned architecture, integration, remote mutations and evidence. The fixture
+agent implemented bounded continuation guards; five offline tests passed. A
+separate agent reviewed receipts/reference checks and found no confirmed defect;
+that review is not native test evidence. No dependencies were changed.
