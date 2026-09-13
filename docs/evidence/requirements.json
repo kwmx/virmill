@@ -783,7 +783,8 @@
         "beta2-spice-creation-native-001",
         "beta2-general-sources-native-002",
         "beta2-general-sources-native-003",
-        "beta2-general-sources-native-004"
+        "beta2-general-sources-native-004",
+        "beta3-general-sources-native-001"
       ],
       "outstanding": [
         "Existing-disk, ISO installation and identity-bound NoCloud seed preparation feed reviewed creation. Actual confined seed generation/readback and synthetic durable creation are implemented. Native storage streaming and narrow retained-media ejection have passed; full installer console, OS installation and declared guest provisioning/readiness levels remain incomplete or unqualified.",
@@ -1092,7 +1093,8 @@
         "beta2-spice-creation-native-001",
         "beta2-general-sources-native-002",
         "beta2-general-sources-native-003",
-        "beta2-general-sources-native-004"
+        "beta2-general-sources-native-004",
+        "beta3-general-sources-native-001"
       ],
       "outstanding": [
         "Explicit format/size and backing-graph checks refuse unsupported/encrypted/dirty/corrupt dependencies. Full hardware/driver preflight and guest adaptation remain.",
@@ -1577,7 +1579,8 @@
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
         "creation-network-handoff-native-001",
-        "beta2-network-form-native-001"
+        "beta2-network-form-native-001",
+        "beta3-network-form-native-001"
       ],
       "outstanding": [
         "Allowed-host NAT/lab definition, authenticated IPv6 filters and activation now execute through shared CLI/TUI. Native namespace DHCP, peer/host IPv4, NAT DNS/TCP and lab no-default-route checks passed in native005; its overall result failed a strict active-zone comparison while existing ens19 DHCP repeatedly failed. Full required profiles and real guest/host preservation qualification remain open."
@@ -1729,7 +1732,8 @@
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
         "creation-network-handoff-native-001",
-        "beta2-network-form-native-001"
+        "beta2-network-form-native-001",
+        "beta3-network-form-native-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1808,7 +1812,8 @@
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
         "creation-network-handoff-native-001",
-        "beta2-network-form-native-001"
+        "beta2-network-form-native-001",
+        "beta3-network-form-native-001"
       ],
       "outstanding": [
         "Frozen36e7838 implements protected creation and shared CLI/TUI recovery. Native namespace packet checks pass for services-only lab and guest-only after documented fixture corrections; overall runs fail strict active-zone preservation because ens19 changes membership. Actual guest OS routing, complete isolation/reload/reboot and the required host matrix remain unqualified."
@@ -1994,7 +1999,8 @@
         "network-form-tui-native-002",
         "creation-network-handoff-ui-001",
         "creation-network-handoff-native-001",
-        "beta2-network-form-native-001"
+        "beta2-network-form-native-001",
+        "beta3-network-form-native-001"
       ],
       "outstanding": [
         "Native assigned-address/all-route-table/live-persistent subnet discovery, durable reservations, metadata integrity and plan/apply revalidation are implemented and tested. Actual VPN/policy-table changes and full external-writer qualification remain required; independent snapshots are not atomic.",
@@ -3333,7 +3339,8 @@
         "beta2-general-sources-native-001",
         "beta2-general-sources-native-002",
         "beta2-general-sources-native-003",
-        "beta2-general-sources-native-004"
+        "beta2-general-sources-native-004",
+        "beta3-general-sources-native-001"
       ],
       "outstanding": [
         "Shared CLI/TUI now observe actual running-VM agent channel state and one fixed bounded guest ping, with runtime-ID rechecks and explicit absent/unknown/unresponsive results. Focused tests pass. Positive native guest-agent evidence, SSH readiness, provisioning integration and the complete supported guest matrix remain required.",
@@ -3902,7 +3909,8 @@
         "disk-removal-restart-native-004",
         "disk-removal-native-004",
         "beta2-job-activity-native-001",
-        "private-values-native-001"
+        "private-values-native-001",
+        "beta3-job-activity-native-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -4027,7 +4035,8 @@
         "job-activity-fixture-002",
         "job-activity-native-002",
         "beta2-job-activity-native-001",
-        "private-values-native-001"
+        "private-values-native-001",
+        "beta3-job-activity-native-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -5703,7 +5712,11 @@
         "beta2-tui-workspace-native-005",
         "beta2-general-sources-native-004",
         "import-esc-origin-race-001",
-        "private-values-native-001"
+        "private-values-native-001",
+        "beta3-tui-workspace-native-001",
+        "beta3-job-activity-native-001",
+        "beta3-network-form-native-001",
+        "beta3-general-sources-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -6169,7 +6182,11 @@
         "beta2-tui-workspace-native-005",
         "beta2-general-sources-native-004",
         "import-esc-origin-race-001",
-        "private-values-native-001"
+        "private-values-native-001",
+        "beta3-tui-workspace-native-001",
+        "beta3-job-activity-native-001",
+        "beta3-network-form-native-001",
+        "beta3-general-sources-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
@@ -6391,7 +6408,8 @@
         "beta2-tui-workspace-native-002",
         "beta2-tui-workspace-native-003",
         "beta2-tui-workspace-native-004",
-        "beta2-tui-workspace-native-005"
+        "beta2-tui-workspace-native-005",
+        "beta3-tui-workspace-native-001"
       ],
       "outstanding": [
         "Frozen715aa9f provides ordered NDJSON following, resume cursors, one bound apply submission, typed terminal results and timeout/interruption detachment through shared services. Race and actual private coordinator tests pass, including four durable events and zero duplicate resume events. The complete mandatory command/format/exit/wait matrix remains required; generic blocked stdout cannot be deadline-interrupted.",
@@ -6586,7 +6604,10 @@
         "beta2-install-native-001",
         "beta2-reproducibility-001",
         "deb-install-container-001",
-        "deb-install-container-002"
+        "deb-install-container-002",
+        "beta3-reproducibility-001",
+        "beta3-deb-install-container-001",
+        "beta3-install-native-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
@@ -7180,7 +7201,8 @@
         "beta-owner-artifacts-001",
         "beta-owner-install-native-001",
         "beta-owner-install-native-002",
-        "beta2-install-native-001"
+        "beta2-install-native-001",
+        "beta3-install-native-001"
       ],
       "outstanding": [
         "Full release remains blocked by incomplete mandatory implementation and missing required host/guest/hardware/restore evidence. Narrow native Kali and generated two-disk BIOS workflows passed, including one actual coordinator upload crash and explicit TUI retention. The complete source/OS/NIC, firmware/TPM, USB, protection, host-power-loss and all-handler matrices remain required. All 71 complete acceptance cases and the ship checklist remain open.",

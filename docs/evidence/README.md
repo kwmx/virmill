@@ -33,9 +33,9 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest release verification: [1.0.0-beta.2 owner pre-release](beta2-release-run.md).
-Installed-package, reproducibility and native workflow results are recorded with
-the failed fixture runs and an owner-state correction. No status is promoted.
+Latest release verification: [1.0.0-beta.3 owner pre-release](beta3-release-run.md).
+Build, reproducibility, Debian/Ubuntu DEB installation and native workflow results
+are recorded. No status is promoted. Previous: [1.0.0-beta.2](beta2-release-run.md).
 
 Latest recovery evidence: [two-disk cold capture and independent BIOS boot](cold-recovery-run.md).
 The complete stopped BIOS set was restored into new volumes and a new guest;

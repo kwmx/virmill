@@ -1,0 +1,132 @@
+######## docker.io/library/debian:13
+== Debian GNU/Linux 13 (trixie)
+   new Debian package, version 2.0.
+   size 18737672 bytes: control archive=9996 bytes.
+       486 bytes,    12 lines      control
+     29981 bytes,   329 lines      md5sums
+   Package: virmill
+   Version: 1.0.0~beta.3
+   Architecture: amd64
+   Maintainer: Faisal Alhisan <faisal@alhisan.com>
+   Installed-Size: 38723
+   Depends: libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, xorriso
+   Section: admin
+   Priority: optional
+   Homepage: https://github.com/kwmx/virmill
+   Description: local QEMU/KVM virtual machine manager with CLI and TUI
+    Owner-test beta 1.0.0-beta.3: incomplete and not release-qualified.
+    Installing it enables no service, host network or privilege setup.
+   new Debian package, version 2.0.
+   size 7471580 bytes: control archive=800 bytes.
+       446 bytes,    12 lines      control
+       570 bytes,     7 lines      md5sums
+   Package: virmill-host-helper
+   Version: 1.0.0~beta.3
+   Architecture: amd64
+   Maintainer: Faisal Alhisan <faisal@alhisan.com>
+   Installed-Size: 12849
+   Depends: libc6, libvirt0
+   Section: admin
+   Priority: optional
+   Homepage: https://github.com/kwmx/virmill
+   Description: bounded privileged helper for the Virmill coordinator
+    Owner-test beta 1.0.0-beta.3: incomplete and not release-qualified.
+    Installing it enables no service, host network or privilege setup.
+== lintian Lintian v2.122.0
+        1 E: virmill-host-helper: unstripped-binary-or-object
+        2 E: virmill: unstripped-binary-or-object
+        1 I: virmill-host-helper: extra-license-file
+        1 I: virmill-host-helper: hardening-no-bindnow
+        1 I: virmill-host-helper: hardening-no-fortify-functions
+        1 I: virmill-host-helper: package-contains-documentation-outside-usr-share-doc
+        1 I: virmill-host-helper: systemd-service-file-missing-documentation-key
+        1 I: virmill-host-helper: systemd-service-file-missing-install-key
+        1 I: virmill: extra-license-file
+        2 I: virmill: hardening-no-bindnow
+        2 I: virmill: hardening-no-fortify-functions
+        3 I: virmill: package-contains-documentation-outside-usr-share-doc
+        1 W: virmill-host-helper: hardening-no-pie
+        2 W: virmill: hardening-no-pie
+        2 W: virmill: no-manual-page
+        2 X: virmill-host-helper: spelling-error-in-binary
+        1 X: virmill: duplicate-files
+        8 X: virmill: spelling-error-in-binary
+== install
+  virmill 1.0.0~beta.3 ii 
+  virmill-host-helper 1.0.0~beta.3 ii 
+dpkg --verify: ok
+{"apiVersion":"virmill/v1","data":{"apiVersion":"virmill/v1","architecture":"amd64","buildTime":"0","go":"go1.27.1","os":"linux","pluginProtocol":"1.0","product":"Virmill","releaseQualified":false,"revision":"0627800b70d6e04e826df72d7dc0e257c1c0d7df","version":"1.0.0-beta.3"},"warnings":[],"error":null}
+
+systemd units: ok
+owned directories: 52
+purge left nothing behind
+RESULT: passed
+######## docker.io/library/ubuntu:24.04
+== Ubuntu 24.04.4 LTS
+removed image dpkg path excludes
+   new Debian package, version 2.0.
+   size 18737672 bytes: control archive=9996 bytes.
+       486 bytes,    12 lines      control
+     29981 bytes,   329 lines      md5sums
+   Package: virmill
+   Version: 1.0.0~beta.3
+   Architecture: amd64
+   Maintainer: Faisal Alhisan <faisal@alhisan.com>
+   Installed-Size: 38723
+   Depends: libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, xorriso
+   Section: admin
+   Priority: optional
+   Homepage: https://github.com/kwmx/virmill
+   Description: local QEMU/KVM virtual machine manager with CLI and TUI
+    Owner-test beta 1.0.0-beta.3: incomplete and not release-qualified.
+    Installing it enables no service, host network or privilege setup.
+   new Debian package, version 2.0.
+   size 7471580 bytes: control archive=800 bytes.
+       446 bytes,    12 lines      control
+       570 bytes,     7 lines      md5sums
+   Package: virmill-host-helper
+   Version: 1.0.0~beta.3
+   Architecture: amd64
+   Maintainer: Faisal Alhisan <faisal@alhisan.com>
+   Installed-Size: 12849
+   Depends: libc6, libvirt0
+   Section: admin
+   Priority: optional
+   Homepage: https://github.com/kwmx/virmill
+   Description: bounded privileged helper for the Virmill coordinator
+    Owner-test beta 1.0.0-beta.3: incomplete and not release-qualified.
+    Installing it enables no service, host network or privilege setup.
+== lintian Lintian v2.117.0ubuntu1.5
+        1 E: virmill-host-helper: unstripped-binary-or-object
+        2 E: virmill: unstripped-binary-or-object
+        1 I: virmill-host-helper: extra-license-file
+        1 I: virmill-host-helper: hardening-no-bindnow
+        1 I: virmill-host-helper: hardening-no-fortify-functions
+        1 I: virmill-host-helper: package-contains-documentation-outside-usr-share-doc
+        2 I: virmill-host-helper: spelling-error-in-binary
+        1 I: virmill-host-helper: systemd-service-file-missing-documentation-key
+        1 I: virmill-host-helper: systemd-service-file-missing-install-key
+        1 I: virmill: extra-license-file
+        2 I: virmill: hardening-no-bindnow
+        2 I: virmill: hardening-no-fortify-functions
+        3 I: virmill: package-contains-documentation-outside-usr-share-doc
+        8 I: virmill: spelling-error-in-binary
+        1 W: virmill-host-helper: hardening-no-pie
+        2 W: virmill: hardening-no-pie
+        2 W: virmill: no-manual-page
+        1 X: virmill: duplicate-files
+== install
+  virmill 1.0.0~beta.3 ii 
+  virmill-host-helper 1.0.0~beta.3 ii 
+dpkg --verify: ok
+{"apiVersion":"virmill/v1","data":{"apiVersion":"virmill/v1","architecture":"amd64","buildTime":"0","go":"go1.27.1","os":"linux","pluginProtocol":"1.0","product":"Virmill","releaseQualified":false,"revision":"0627800b70d6e04e826df72d7dc0e257c1c0d7df","version":"1.0.0-beta.3"},"warnings":[],"error":null}
+
+systemd units: ok
+owned directories: 52
+purge left nothing behind
+RESULT: passed
+Trying to pull docker.io/library/debian:13...
+Getting image source signatures
+Copying blob sha256:27ee9a8250487842a26b1ffa1215982ba9ae27010bce1997d52f9f8628578d17
+Copying config sha256:c038a8ef24ab88bc8edacfc93704c9bf301647b9253a59077f6f5342f39727ae
+Writing manifest to image destination
