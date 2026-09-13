@@ -19,6 +19,7 @@ p=argparse.ArgumentParser()
 p.add_argument('--execute-disposable',action='store_true',required=True)
 p.add_argument('--root',type=Path,required=True)
 p.add_argument('--revision',required=True)
+p.add_argument('--product-version',required=True)
 p.add_argument('--verify-installed',action='store_true',help='Read installed artifacts; do not reinstall or back up a running journal')
 a=p.parse_args()
 assert socket.gethostname() in ('virmill-test','virmill-test.home') and os.getuid()==1000
@@ -89,7 +90,7 @@ try:
   if (Path('/run/user/1000/virmill/control.sock')).exists():break
   time.sleep(.05)
  version=cli('version')['data'];report['version']=version
- assert version['version']=='1.0.0-beta.1' and version['revision']==a.revision and not version['releaseQualified']
+ assert version['version']==a.product_version and version['revision']==a.revision and not version['releaseQualified']
  for args in [('doctor',),('host','capabilities'),('vm','list'),('storage','pool','list'),('network','list'),('device','usb','list'),('operation','list'),('config','validate','/usr/share/virmill/examples/guest-recipes/posix-readiness.json')]:
   cli(*args)
  # Real terminal startup and clean keyboard exit of the installed TUI.

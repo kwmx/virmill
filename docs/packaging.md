@@ -7,7 +7,7 @@ local snapshots. Reproduce under the recorded native compiler/libc combination;
 a different native toolchain is not claimed byte-identical. No static binary claim.
 
 `make packages` creates separate core and helper RPM/DEB files under `dist/`, plus
-SHA-256 metadata. Version is `1.0.0-beta.1` for owner testing; the artifacts are unsigned and
+SHA-256 metadata. Version is `1.0.0-beta.2` for owner testing; the artifacts are unsigned and
 not release-qualified. Building a DEB on Fedora does not establish Debian/Ubuntu
 installation compatibility. No package is uploaded, signed or installed by the build.
 

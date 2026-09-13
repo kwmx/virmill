@@ -28,10 +28,11 @@ def observations():
 before=None;native=None
 try:
  before=coordinator();native=observations();report['coordinatorBefore']=before
- expected=json.loads((root/'checksums.json').read_text());assert set(expected)=={'virmill-1.0.0-0.beta.1.x86_64.rpm'}
+ expected=json.loads((root/'checksums.json').read_text());assert len(expected)==1;core=next(iter(expected))
+ assert '/' not in core and core.startswith('virmill-1.0.0-0.beta.') and core.endswith('.x86_64.rpm')
  for name,sha in expected.items():assert digest(root/name)==sha
  report['packageSHA256']=expected
- run(['sudo','-n','rpm','-Uvh','--replacepkgs',str(root/'virmill-1.0.0-0.beta.1.x86_64.rpm')])
+ run(['sudo','-n','rpm','-Uvh','--replacepkgs',str(root/core)])
  wanted=json.loads((root/'binaries.json').read_text());assert digest('/usr/bin/virmill')==wanted['virmill'] and digest('/usr/bin/virmilld')==wanted['virmilld']
  report['installedBinarySHA256']=wanted;report['version']=cli('version');assert report['version']['revision']==a.revision
  report['status']='passed'
