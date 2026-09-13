@@ -3901,7 +3901,8 @@
         "disk-removal-native-003",
         "disk-removal-restart-native-004",
         "disk-removal-native-004",
-        "beta2-job-activity-native-001"
+        "beta2-job-activity-native-001",
+        "private-values-native-001"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -4025,7 +4026,8 @@
         "job-activity-ui-002",
         "job-activity-fixture-002",
         "job-activity-native-002",
-        "beta2-job-activity-native-001"
+        "beta2-job-activity-native-001",
+        "private-values-native-001"
       ],
       "outstanding": [
         "Actor/hash/key/expiry fixtures pass; broaden live service integration and retained-key migration coverage.",
@@ -5700,7 +5702,8 @@
         "beta2-tui-workspace-native-004",
         "beta2-tui-workspace-native-005",
         "beta2-general-sources-native-004",
-        "import-esc-origin-race-001"
+        "import-esc-origin-race-001",
+        "private-values-native-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -6165,7 +6168,8 @@
         "beta2-tui-workspace-native-004",
         "beta2-tui-workspace-native-005",
         "beta2-general-sources-native-004",
-        "import-esc-origin-race-001"
+        "import-esc-origin-race-001",
+        "private-values-native-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",
