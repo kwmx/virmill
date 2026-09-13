@@ -6584,7 +6584,9 @@
         "tui-workspace-upgrade-native-001",
         "import-options-coordinator-003",
         "beta2-install-native-001",
-        "beta2-reproducibility-001"
+        "beta2-reproducibility-001",
+        "deb-install-container-001",
+        "deb-install-container-002"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",

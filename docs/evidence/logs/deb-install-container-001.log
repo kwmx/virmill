@@ -1,0 +1,102 @@
+######## docker.io/library/debian:13
+== Debian GNU/Linux 13 (trixie)
+FAIL: dpkg-deb cannot read virmill_0.0.0~dev_amd64.deb
+virmill_1.0.0~beta.1_amd64.deb
+virmill_1.0.0~beta.2_amd64.deb
+FAIL: dpkg-deb cannot read virmill-host-helper_0.0.0~dev_amd64.deb
+virmill-host-helper_1.0.0~beta.1_amd64.deb
+virmill-host-helper_1.0.0~beta.2_amd64.deb
+== lintian Lintian v2.122.0
+== install
+Reading package lists...
+E: Unsupported file ./virmill_0.0.0~dev_amd64.deb
+   virmill_1.0.0~beta.1_amd64.deb
+   virmill_1.0.0~beta.2_amd64.deb given on commandline
+E: Unsupported file ./virmill-host-helper_0.0.0~dev_amd64.deb
+   virmill-host-helper_1.0.0~beta.1_amd64.deb
+   virmill-host-helper_1.0.0~beta.2_amd64.deb given on commandline
+FAIL: apt install
+FAIL: dpkg --verify
+FAIL: virmill version as an ordinary user
+FAIL: systemd-analyze verify
+owned directories: 0
+FAIL: apt remove
+purge left nothing behind
+RESULT: failed
+######## docker.io/library/ubuntu:24.04
+== Ubuntu 24.04.4 LTS
+removed image dpkg path excludes
+FAIL: dpkg-deb cannot read virmill_0.0.0~dev_amd64.deb
+virmill_1.0.0~beta.1_amd64.deb
+virmill_1.0.0~beta.2_amd64.deb
+FAIL: dpkg-deb cannot read virmill-host-helper_0.0.0~dev_amd64.deb
+virmill-host-helper_1.0.0~beta.1_amd64.deb
+virmill-host-helper_1.0.0~beta.2_amd64.deb
+== lintian Lintian v2.117.0ubuntu1.5
+== install
+Reading package lists...
+E: Unsupported file ./virmill_0.0.0~dev_amd64.deb
+   virmill_1.0.0~beta.1_amd64.deb
+   virmill_1.0.0~beta.2_amd64.deb given on commandline
+E: Unsupported file ./virmill-host-helper_0.0.0~dev_amd64.deb
+   virmill-host-helper_1.0.0~beta.1_amd64.deb
+   virmill-host-helper_1.0.0~beta.2_amd64.deb given on commandline
+FAIL: apt install
+FAIL: dpkg --verify
+FAIL: virmill version as an ordinary user
+FAIL: systemd-analyze verify
+owned directories: 0
+FAIL: apt remove
+purge left nothing behind
+RESULT: failed
+Trying to pull docker.io/library/debian:13...
+Getting image source signatures
+Copying blob sha256:27ee9a8250487842a26b1ffa1215982ba9ae27010bce1997d52f9f8628578d17
+Copying config sha256:c038a8ef24ab88bc8edacfc93704c9bf301647b9253a59077f6f5342f39727ae
+Writing manifest to image destination
+dpkg-deb: error: failed to read archive 'virmill_0.0.0~dev_amd64.deb
+virmill_1.0.0~beta.1_amd64.deb
+virmill_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-deb: error: failed to read archive 'virmill_0.0.0~dev_amd64.deb
+virmill_1.0.0~beta.1_amd64.deb
+virmill_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-deb: error: failed to read archive 'virmill-host-helper_0.0.0~dev_amd64.deb
+virmill-host-helper_1.0.0~beta.1_amd64.deb
+virmill-host-helper_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-deb: error: failed to read archive 'virmill-host-helper_0.0.0~dev_amd64.deb
+virmill-host-helper_1.0.0~beta.1_amd64.deb
+virmill-host-helper_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-query: no packages found matching virmill
+dpkg-query: no packages found matching virmill-host-helper
+dpkg: package 'virmill' is not installed
+dpkg: package 'virmill-host-helper' is not installed
+-sh: 1: virmill: not found
+Unit virmill-host-helper.socket not found.
+Unit virmill-host-helper.service not found.
+Unit virmilld.service not found.
+dpkg-query: package 'virmill' is not installed
+dpkg-query: package 'virmill-host-helper' is not installed
+Use dpkg --contents (= dpkg-deb --contents) to list archive files contents.
+dpkg-deb: error: failed to read archive 'virmill_0.0.0~dev_amd64.deb
+virmill_1.0.0~beta.1_amd64.deb
+virmill_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-deb: error: failed to read archive 'virmill_0.0.0~dev_amd64.deb
+virmill_1.0.0~beta.1_amd64.deb
+virmill_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-deb: error: failed to read archive 'virmill-host-helper_0.0.0~dev_amd64.deb
+virmill-host-helper_1.0.0~beta.1_amd64.deb
+virmill-host-helper_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-deb: error: failed to read archive 'virmill-host-helper_0.0.0~dev_amd64.deb
+virmill-host-helper_1.0.0~beta.1_amd64.deb
+virmill-host-helper_1.0.0~beta.2_amd64.deb': No such file or directory
+dpkg-query: no packages found matching virmill
+dpkg-query: no packages found matching virmill-host-helper
+dpkg: package 'virmill' is not installed
+dpkg: package 'virmill-host-helper' is not installed
+-sh: 1: virmill: not found
+Unit virmill-host-helper.socket not found.
+Unit virmill-host-helper.service not found.
+Unit virmilld.service not found.
+dpkg-query: package 'virmill' is not installed
+dpkg-query: package 'virmill-host-helper' is not installed
+Use dpkg --contents (= dpkg-deb --contents) to list archive files contents.
