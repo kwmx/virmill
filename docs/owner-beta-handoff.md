@@ -106,9 +106,20 @@ virmill version --output json
 virmill
 ```
 
-Final unsigned RPM/DEB packages and SHA-256 manifests are retained in
-`build/job-activity-final-delivery/`. The full installed build revision is
-`dc45ee39165ea4dd5699e4f771dd1b1d85a02f99`.
+Current unsigned RPM/DEB packages and their SHA-256 manifest are retained in
+`build/disk-removal-handoff-delivery/dist/`. The full installed build revision is
+`70058986dad108a03f27d3ced9ec67458e9430e8`, confirmed by `virmill version` on the
+test VM on 13 September 2026. The earlier `build/job-activity-final-delivery/`
+(`dc45ee3`) packages are superseded.
+
+| Current artifact | SHA-256 |
+| --- | --- |
+| `virmill-1.0.0-0.beta.1.x86_64.rpm` | `c029db4057543745cb0058ef37d336afbd6a4d605f0bf72a1126ddfe654a36b6` |
+| `virmill-host-helper-1.0.0-0.beta.1.x86_64.rpm` | `f2d56339e9c075291d4565f94d81d181f16568013bd25193f32e81999659b0f7` |
+| `virmill_1.0.0~beta.1_amd64.deb` | `6318f5da2b502bdca793bebc808e3064af7fb77dde16cf5927c3d325c8eefede` |
+| `virmill-host-helper_1.0.0~beta.1_amd64.deb` | `88c4ad20098f67c9ca34b0a1a87f4c95b1fe8900640b0758d26ee1cdfa664ab1` |
+| installed `/usr/bin/virmill` | `6e9e7ee181ffeba910bcaba37a61faa9471eedd8b209865bc2a4f8f407beca28` |
+| installed `/usr/bin/virmilld` | `84d6eaaccf700956a4a34faf9f9590f84d722fd55f7c39064381502f2002b7bb` |
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use
