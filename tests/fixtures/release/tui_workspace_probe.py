@@ -593,8 +593,8 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         require(terminal.process.wait(timeout=2) == 0, 'TUI did not exit cleanly')
         runner.checks.append({'case': label, 'status': 'passed', 'selectedVM': selected,
                               'arrowSelectedVM': observed[0], 'exitCode': 0, 'resizedTo': list(new_size),
-                              'mediaFolderTraversed': str(traversal_path), 'sourceSelected': True,
-                              'selectedSourceFile': str(selected_file), 'importSubmitted': False,
+                              'mediaFolderTraversed': str(traversal_path), 'sourceSelected': False,
+                              'importSubmitted': False,
                               'advancedToolsSeparated': True})
     finally:
         terminal.close()

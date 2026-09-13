@@ -164,9 +164,15 @@ def guest_tools_walkthrough(runner, columns, rows):
     try:
         c.wait('Default Overview', lambda text: 'Virmill' in text and 'Virtual machines' in text)
         c.wait('VM workspace', lambda text: workspace_page(text, 'VMs') and 'NAME' in text, b'2')
-        c.wait('Selected VM guest tools', lambda text: 'Install guest tools' in text and 'Guest system' in text, b'g')
+        form = lambda text: 'Install guest tools' in text and 'Guest system' in text
+        options = ('Prepare options / Windows help', 'Installation options / Windows help')
+        text = c.wait('Selected VM guest tools', lambda text: form(text) or any(o in text for o in options), b'g')
+        if not form(text):
+            # Readiness guidance comes first; its options button opens the form without a plan.
+            c.activate(next(o for o in options if o in text), form)
         c.focus('Guest system')
-        c.wait('Guest profile chooser', lambda text: 'debian' in text, b'\x1b[C')
+        c.wait('Guest profile chooser', lambda text: 'Guest system: < Debian >' in text, b'\x1b[C')
+        c.activate('Advanced: desktop tools and SSH port', lambda text: 'Hide advanced options' in text)
         c.focus('Desktop tools')
         c.wait('Desktop toggle', lambda text: re.search(r'\[[xX]\] Desktop tools', text) is not None, b' ')
         for field in ('Guest IP address', 'Guest SSH user', 'SSH key', 'Verified host keys', 'SSH port'):
