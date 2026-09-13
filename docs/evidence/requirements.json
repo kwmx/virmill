@@ -160,7 +160,13 @@
         "removal-secure-inspection-core-001",
         "removal-guided-cycle-native-002",
         "disk-removal-fixture-001",
-        "disk-removal-ui-service-001"
+        "disk-removal-ui-service-001",
+        "disk-removal-fixture-002",
+        "disk-removal-native-001",
+        "disk-removal-cluster-metadata-001",
+        "disk-removal-beta-regression-001",
+        "disk-removal-fixture-003",
+        "disk-removal-native-002"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -451,7 +457,13 @@
         "job-activity-restart-native-001",
         "job-activity-packages-002",
         "job-activity-upgrade-native-002",
-        "job-activity-restart-native-002"
+        "job-activity-restart-native-002",
+        "disk-removal-packages-001",
+        "disk-removal-upgrade-native-001",
+        "disk-removal-restart-native-001",
+        "disk-removal-packages-002",
+        "disk-removal-upgrade-native-002",
+        "disk-removal-restart-native-002"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -2252,7 +2264,13 @@
         "disk-set-core-001",
         "disk-set-confinement-001",
         "disk-removal-fixture-001",
-        "disk-removal-ui-service-001"
+        "disk-removal-ui-service-001",
+        "disk-removal-fixture-002",
+        "disk-removal-native-001",
+        "disk-removal-cluster-metadata-001",
+        "disk-removal-beta-regression-001",
+        "disk-removal-fixture-003",
+        "disk-removal-native-002"
       ],
       "outstanding": [
         "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete."
@@ -3839,7 +3857,12 @@
         "job-activity-fixture-002",
         "job-activity-restart-native-002",
         "job-activity-native-002",
-        "disk-removal-ui-service-001"
+        "disk-removal-ui-service-001",
+        "disk-removal-restart-native-001",
+        "disk-removal-native-001",
+        "disk-removal-beta-regression-001",
+        "disk-removal-restart-native-002",
+        "disk-removal-native-002"
       ],
       "outstanding": [
         "Creation cleanup persists per-delete intent and reconciles lost acknowledgements after journal reopen without replay; partial failures retain locks. Old referenced jobs beyond recent-history limits are protected. Actual host/reboot and all-handler fault matrix remains.",
@@ -4731,7 +4754,11 @@
         "job-activity-packages-001",
         "job-activity-upgrade-native-001",
         "job-activity-packages-002",
-        "job-activity-upgrade-native-002"
+        "job-activity-upgrade-native-002",
+        "disk-removal-packages-001",
+        "disk-removal-upgrade-native-001",
+        "disk-removal-packages-002",
+        "disk-removal-upgrade-native-002"
       ],
       "outstanding": [
         "Canonical plan/grant/package substitution guards tested; installed invocation-grant integration remains.",
@@ -5601,7 +5628,15 @@
         "job-activity-fixture-002",
         "job-activity-native-002",
         "disk-removal-fixture-001",
-        "disk-removal-ui-service-001"
+        "disk-removal-ui-service-001",
+        "disk-removal-fixture-002",
+        "disk-removal-native-001",
+        "disk-removal-beta-regression-001",
+        "disk-removal-fixture-003",
+        "disk-removal-native-002",
+        "disk-removal-confirmation-001",
+        "disk-removal-confirmation-002",
+        "disk-removal-confirmation-003"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -6027,7 +6062,21 @@
         "job-activity-restart-native-002",
         "job-activity-native-002",
         "disk-removal-fixture-001",
-        "disk-removal-ui-service-001"
+        "disk-removal-ui-service-001",
+        "disk-removal-fixture-002",
+        "disk-removal-packages-001",
+        "disk-removal-upgrade-native-001",
+        "disk-removal-restart-native-001",
+        "disk-removal-native-001",
+        "disk-removal-packages-002",
+        "disk-removal-upgrade-native-002",
+        "disk-removal-beta-regression-001",
+        "disk-removal-restart-native-002",
+        "disk-removal-fixture-003",
+        "disk-removal-native-002",
+        "disk-removal-confirmation-001",
+        "disk-removal-confirmation-002",
+        "disk-removal-confirmation-003"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

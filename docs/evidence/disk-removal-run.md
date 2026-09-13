@@ -25,3 +25,30 @@ policy, boot guests or delete supplied images. Results follow after execution.
 race suites (6.961s, 12.689s, 18.451s, 9.687s and 4.176s).
 `disk-removal-fixture-001` passed two offline fixture declaration/plan-comparison
 checks. These tests do not validate native file deletion.
+
+The initial native run (`disk-removal-native-001`, runtime `5cde08e`) stopped
+before any apply: libvirt's ordinary qcow2 `<clusterSize unit='B'>65536</clusterSize>`
+metadata was rejected as unknown. No deletion job was submitted. Both generated
+VMs and all three disks remained; the failed evidence is retained. Runtime
+`3e6a7db` accepts validated positive byte cluster sizes, with malformed/unknown
+metadata still refused. The backend regression passed. A subsequent read-only
+plan correctly refused the shared disk with `RESOURCE_BUSY`.
+
+`disk-removal-beta-regression-001` passed the complete Go package suite.
+Go vet and the separate Go plugin SDK suite also passed. Package validation
+(`disk-removal-packages-002`) passed all three tests, including staged
+installation/uninstallation and private IPC. Installation and idle coordinator
+activation (`disk-removal-upgrade-native-002`, `disk-removal-restart-native-002`)
+preserved existing guests, all 32 historical jobs and supplied media observations.
+The installed runtime is `3e6a7dbb7e82756b20a13850dbcf9085c8d0b294`.
+
+`disk-removal-native-002` verified the shared-reference refusal, default keep
+behavior and successful native CLI deletion of the secondary fixture plus its
+one selected disk (`1cb55b38-965d-433c-9fcd-dbdab160dbe5`). Both target disks kept
+their original full hashes. Actual 80×24 TUI cancellation, explicit two-disk
+selection and CLI/TUI plan parity passed, but the run stopped at confirmation:
+long approval identifiers were split across terminal rows. No TUI apply occurred.
+The failed overall result remains in the ledger. Runtime `f15de52` separates
+readable consequence text from the exact approval identifier; the full TUI suite
+passes (`disk-removal-confirmation-003`). Earlier failing test iterations are
+retained as `disk-removal-confirmation-001/002`.

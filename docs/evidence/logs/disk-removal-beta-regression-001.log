@@ -1,0 +1,47 @@
+?   	virmill.local/core/cmd/virmill	[no test files]
+?   	virmill.local/core/cmd/virmill-dev	[no test files]
+?   	virmill.local/core/cmd/virmill-host-helper	[no test files]
+?   	virmill.local/core/cmd/virmilld	[no test files]
+?   	virmill.local/core/contracts	[no test files]
+ok  	virmill.local/core/internal/app	2.023s
+ok  	virmill.local/core/internal/app/devices	0.003s
+ok  	virmill.local/core/internal/app/importer	0.038s
+?   	virmill.local/core/internal/app/lab	[no test files]
+ok  	virmill.local/core/internal/app/network	0.119s
+ok  	virmill.local/core/internal/app/protection	0.671s
+ok  	virmill.local/core/internal/app/provision	0.107s
+ok  	virmill.local/core/internal/app/storage	0.004s
+ok  	virmill.local/core/internal/auxiliary	0.063s
+ok  	virmill.local/core/internal/backend/coldfiles	0.014s
+ok  	virmill.local/core/internal/backend/fileaccess	0.007s
+ok  	virmill.local/core/internal/backend/fileidentity	0.004s
+ok  	virmill.local/core/internal/backend/guestssh	0.170s
+ok  	virmill.local/core/internal/backend/image	0.006s
+ok  	virmill.local/core/internal/backend/libvirt	(cached)
+ok  	virmill.local/core/internal/backend/networkxml	0.066s
+ok  	virmill.local/core/internal/backend/restic	0.128s
+ok  	virmill.local/core/internal/backend/seed	0.006s
+ok  	virmill.local/core/internal/backend/xmlpatch	0.597s
+?   	virmill.local/core/internal/buildinfo	[no test files]
+ok  	virmill.local/core/internal/coldcapture	0.773s
+ok  	virmill.local/core/internal/coldstore	0.548s
+ok  	virmill.local/core/internal/creating	2.614s
+ok  	virmill.local/core/internal/domain	0.003s
+ok  	virmill.local/core/internal/guestsetup	1.479s
+ok  	virmill.local/core/internal/helper	1.600s
+ok  	virmill.local/core/internal/importing	0.540s
+ok  	virmill.local/core/internal/localbackup	0.574s
+?   	virmill.local/core/internal/networkfirewall	[no test files]
+ok  	virmill.local/core/internal/networksettings	0.011s
+ok  	virmill.local/core/internal/operations	0.093s
+ok  	virmill.local/core/internal/platform/linux	0.111s
+ok  	virmill.local/core/internal/plugins	4.293s
+ok  	virmill.local/core/internal/storageaccess	0.066s
+ok  	virmill.local/core/internal/store	0.031s
+ok  	virmill.local/core/internal/transport/local	0.577s
+ok  	virmill.local/core/internal/ui	0.018s
+ok  	virmill.local/core/internal/ui/cli	0.774s
+ok  	virmill.local/core/internal/ui/tui	0.818s
+ok  	virmill.local/core/internal/validation	0.051s
+ok  	virmill.local/core/internal/wire	0.003s
+?   	virmill.local/core/schemas	[no test files]

@@ -1,0 +1,4 @@
+FAIL	virmill.local/core/internal/ui/tui [build failed]
+FAIL
+# virmill.local/core/internal/ui/tui [virmill.local/core/internal/ui/tui.test]
+internal/ui/tui/approval_labels_test.go:11:23: cannot use domain.Plan{…} (value of struct type domain.Plan) as *domain.Plan value in struct literal

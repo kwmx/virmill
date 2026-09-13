@@ -1,0 +1,5 @@
+--- FAIL: TestConfirmationWrapsCheckboxProseWithoutSplittingIDs (0.00s)
+    approval_labels_test.go:16: focused acknowledgement data-loss-delete-disks split or hidden: ["Confirm reviewed changes" "Check each consequence, then choose Apply." "Plan: " "" "  [ ] Allow the reviewed changes on this host [host-mutation]" "  [ ] Remove this VM's saved definition [remove-vm-definition]" "> [ ] Permanently delete only the listed disk files; this cannot be undone [data" "      -" "      loss-delete-disks]" "  [ ] No other administrator is changing or starting these VMs [exclusive-" "      lifecycle-writer]" "  [ ] No other administrator or tool is changing this storage [exclusive-storage" "      -" "      writer]" "" "  [ Apply reviewed plan ]" "" "Esc returns to the full plan and exact resource identities."]
+FAIL
+FAIL	virmill.local/core/internal/ui/tui	0.689s
+FAIL

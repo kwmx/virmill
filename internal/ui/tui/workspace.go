@@ -1242,6 +1242,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				if !m.Reviewing {
 					m.Reviewing = true
+					m.Offset = 0
 					return m, nil
 				}
 				if m.AckIndex < len(m.Approved) {
