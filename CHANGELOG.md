@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Binaries are built stripped (`-s -w`), about a third smaller. lintian no
+  longer reports `unstripped-binary-or-object` for the DEBs.
+
 ## 1.0.0-beta.3 — owner-test pre-release
 
 Unsigned development beta; not a certified 1.0. See the
