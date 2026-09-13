@@ -16,8 +16,14 @@ jobs:
       GOPROXY: off
       GOSUMDB: off
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      # .tools/ is not tracked; fetch the pinned Go archive and verify its
+      # locked SHA-256 before extraction.
+      - name: Bootstrap pinned Go toolchain
+        run: python3 scripts/bootstrap.py
       - name: Build native Linux binaries
         run: |
           chmod +x scripts/go scripts/build.sh
           make build
+      - name: Check generated reference and completions are committed
+        run: git diff --exit-code -- docs/cli-reference.md packaging/completions
