@@ -2,12 +2,12 @@
 
 `make build` uses the exact local toolchain plus vendored dependencies, disables
 network/module resolution, strips build paths, clears Go build IDs and supplies
-revision/build-time metadata. `SOURCE_DATE_EPOCH` defaults to 0 for deterministic
-local snapshots. Reproduce under the recorded native compiler/libc combination;
+revision/build-time metadata. The binaries' embedded build time uses `SOURCE_DATE_EPOCH`, default 0;
+package file timestamps default to the commit time, so a commit rebuilds identically. Reproduce under the recorded native compiler/libc combination;
 a different native toolchain is not claimed byte-identical. No static binary claim.
 
 `make packages` creates separate core and helper RPM/DEB files under `dist/`, plus
-SHA-256 metadata. Version is `1.0.0-beta.2` for owner testing; the artifacts are unsigned and
+SHA-256 metadata. Version is `1.0.0-beta.3` for owner testing; the artifacts are unsigned and
 not release-qualified. DEBs are checked with dpkg and lintian by installing, running
 and purging them in Debian 13 and Ubuntu 24.04 containers
 (`tests/fixtures/release/deb_container_check.sh`); that is not a host install

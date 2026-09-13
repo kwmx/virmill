@@ -27,7 +27,7 @@ class BetaVersion(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix='virmill-beta-version-')
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.source = b'package buildinfo\n\nconst Version = "1.0.0-beta.2"\n'
+        self.source = b'package buildinfo\n\nconst Version = "1.0.0-beta.3"\n'
         self.write(packages.VERSION_SOURCE, self.source)
         self.files = {
             name: {'usr/share/' + name + '/fixture': (b'original generated fixture', 0o644),
@@ -49,14 +49,14 @@ class BetaVersion(unittest.TestCase):
             return packages.build_packages(self.root)
 
     def test_canonical_product_and_exact_package_identities(self):
-        self.assertEqual(packages.PRODUCT_VERSION, '1.0.0-beta.2')
-        self.assertEqual(packages.DEBIAN_VERSION, '1.0.0~beta.2')
-        self.assertEqual((packages.RPM_VERSION, packages.RPM_RELEASE), ('1.0.0', '0.beta.2'))
+        self.assertEqual(packages.PRODUCT_VERSION, '1.0.0-beta.3')
+        self.assertEqual(packages.DEBIAN_VERSION, '1.0.0~beta.3')
+        self.assertEqual((packages.RPM_VERSION, packages.RPM_RELEASE), ('1.0.0', '0.beta.3'))
         self.assertEqual(packages.PACKAGE_ARTIFACTS, (
-            'virmill-1.0.0-0.beta.2.x86_64.rpm',
-            'virmill-host-helper-1.0.0-0.beta.2.x86_64.rpm',
-            'virmill-host-helper_1.0.0~beta.2_amd64.deb',
-            'virmill_1.0.0~beta.2_amd64.deb',
+            'virmill-1.0.0-0.beta.3.x86_64.rpm',
+            'virmill-host-helper-1.0.0-0.beta.3.x86_64.rpm',
+            'virmill-host-helper_1.0.0~beta.3_amd64.deb',
+            'virmill_1.0.0~beta.3_amd64.deb',
         ))
         for name, kind in (('unknown', 'rpm'), ('../virmill', 'deb'), ('virmill', 'tar')):
             with self.subTest(name=name, kind=kind), self.assertRaises(ValueError):
@@ -66,23 +66,23 @@ class BetaVersion(unittest.TestCase):
         invalid = {
             'missing': b'package buildinfo\n',
             'mutable': self.source.replace(b'const Version', b'var Version'),
-            'duplicate': self.source + b'const Version = "1.0.0-beta.3"\n',
-            'extra variable': self.source + b'var Version = "1.0.0-beta.2"\n',
-            'expression': self.source.replace(b'"1.0.0-beta.2"', b'os.Getenv("VERSION")'),
-            'concatenation': self.source.replace(b'"1.0.0-beta.2"', b'"1.0.0-" + "beta.2"'),
+            'duplicate': self.source + b'const Version = "1.0.0-beta.4"\n',
+            'extra variable': self.source + b'var Version = "1.0.0-beta.3"\n',
+            'expression': self.source.replace(b'"1.0.0-beta.3"', b'os.Getenv("VERSION")'),
+            'concatenation': self.source.replace(b'"1.0.0-beta.3"', b'"1.0.0-" + "beta.3"'),
             'non-UTF8': self.source + b'\xff',
             'oversize': self.source + b' ' * 16384,
         }
         for version in ('1.0.0', '0.0.0-dev', '1.0.0-rc.1', '1.0.0-beta.0',
-                        '01.0.0-beta.2', '1.00.0-beta.2', '1.0.0-beta.01',
-                        '1.0.0-beta.2+metadata', '1.0.0-beta.2\nRelease: 1',
+                        '01.0.0-beta.3', '1.00.0-beta.3', '1.0.0-beta.01',
+                        '1.0.0-beta.3+metadata', '1.0.0-beta.3\nRelease: 1',
                         '1.0.0-beta.%{evil}', '1.0.0-beta.9999999999'):
-            invalid[version] = self.source.replace(b'1.0.0-beta.2', version.encode())
+            invalid[version] = self.source.replace(b'1.0.0-beta.3', version.encode())
         for name, data in invalid.items():
             with self.subTest(name=name), self.assertRaises((UnicodeError, ValueError)):
                 packages.parse_product_version(data)
         # Later beta numbers derive all native fields from the same literal.
-        self.assertEqual(packages.parse_product_version(self.source), '1.0.0-beta.2')
+        self.assertEqual(packages.parse_product_version(self.source), '1.0.0-beta.3')
         self.assertEqual(packages.beta_version_parts('2.3.4-beta.12'),
                          ('2.3.4~beta.12', '2.3.4', '0.beta.12'))
 
@@ -93,13 +93,13 @@ class BetaVersion(unittest.TestCase):
             spec = importlib.util.spec_from_file_location('beta_version_package_fixture', ROOT / 'scripts/package.py')
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-        self.assertEqual(module.PRODUCT_VERSION, '1.0.0-beta.2')
+        self.assertEqual(module.PRODUCT_VERSION, '1.0.0-beta.3')
         self.assertEqual(module.PACKAGE_ARTIFACTS, packages.PACKAGE_ARTIFACTS)
 
     def test_source_root_version_refusal_precedes_output_or_builder(self):
         retained = self.write('dist/retained', b'untouched prior artifact')
         variants = {
-            'different source': (b'100644', self.source.replace(b'beta.2', b'beta.3')),
+            'different source': (b'100644', self.source.replace(b'beta.3', b'beta.4')),
             'untracked': (None, self.source),
             'indexed symlink': (b'120000', self.source),
             'malformed': (b'100644', self.source.replace(b'const Version', b'var Version')),
@@ -167,8 +167,8 @@ class BetaVersion(unittest.TestCase):
         for record in report['built']:
             self.assertEqual(record['sha256'], hashlib.sha256((self.root / 'dist' / record['path']).read_bytes()).hexdigest())
         for name in packages.PACKAGE_NAMES:
-            self.assertIn('\nVersion: 1.0.0\nRelease: 0.beta.2\n', specs[name])
-            self.assertIn('Virmill 1.0.0-beta.2 owner-test beta; incomplete and not release-qualified', specs[name])
+            self.assertIn('\nVersion: 1.0.0\nRelease: 0.beta.3\n', specs[name])
+            self.assertIn('Virmill 1.0.0-beta.3 owner-test beta; incomplete and not release-qualified', specs[name])
             deb = (self.root / 'dist' / packages.package_filename(name, 'deb')).read_bytes()
             self.assertEqual(deb[:8], b'!<arch>\n')
             entries = {}
@@ -183,8 +183,8 @@ class BetaVersion(unittest.TestCase):
             with tarfile.open(fileobj=io.BytesIO(entries['control.tar.xz']), mode='r:xz') as archive:
                 control = archive.extractfile('./control').read().decode()
                 sums = archive.extractfile('./md5sums').read().decode()
-            self.assertIn(f'Package: {name}\nVersion: 1.0.0~beta.2\nArchitecture: amd64\n', control)
-            self.assertIn('Owner-test beta 1.0.0-beta.2: incomplete and not release-qualified.', control)
+            self.assertIn(f'Package: {name}\nVersion: 1.0.0~beta.3\nArchitecture: amd64\n', control)
+            self.assertIn('Owner-test beta 1.0.0-beta.3: incomplete and not release-qualified.', control)
             self.assertTrue(all(len(line) <= 80 for line in control.splitlines()), control)
             self.assertIn('\nMaintainer: Faisal Alhisan <faisal@alhisan.com>\n', control)
             self.assertNotIn('util-linux', control)
@@ -228,7 +228,7 @@ class BetaVersion(unittest.TestCase):
 import "testing"
 func TestBetaInfo(t *testing.T) {
     info := Info()
-    if Version != "1.0.0-beta.2" || info["version"] != Version { t.Fatal(info) }
+    if Version != "1.0.0-beta.3" || info["version"] != Version { t.Fatal(info) }
     if info["releaseQualified"] != false { t.Fatal(info) }
     if info["apiVersion"] != "virmill/v1" || info["pluginProtocol"] != "1.0" { t.Fatal(info) }
     if info["revision"] != "uncommitted" || info["buildTime"] != "unknown" { t.Fatal(info) }
