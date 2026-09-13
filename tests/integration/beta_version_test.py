@@ -30,7 +30,8 @@ class BetaVersion(unittest.TestCase):
         self.source = b'package buildinfo\n\nconst Version = "1.0.0-beta.2"\n'
         self.write(packages.VERSION_SOURCE, self.source)
         self.files = {
-            name: {'usr/share/' + name + '/fixture': (b'original generated fixture', 0o644)}
+            name: {'usr/share/' + name + '/fixture': (b'original generated fixture', 0o644),
+                   f'usr/share/licenses/{name}/LICENSE': (b'MIT License\n\nCopyright (c) fixture author\n\nfixture terms\n', 0o644)}
             for name in packages.PACKAGE_NAMES
         }
 
@@ -180,11 +181,24 @@ class BetaVersion(unittest.TestCase):
                 position += 60 + size + size % 2
             self.assertEqual(set(entries), {'debian-binary', 'control.tar.xz', 'data.tar.xz'})
             with tarfile.open(fileobj=io.BytesIO(entries['control.tar.xz']), mode='r:xz') as archive:
-                control = archive.extractfile('control').read().decode()
+                control = archive.extractfile('./control').read().decode()
+                sums = archive.extractfile('./md5sums').read().decode()
             self.assertIn(f'Package: {name}\nVersion: 1.0.0~beta.2\nArchitecture: amd64\n', control)
-            self.assertIn('owner-test beta; incomplete and not release-qualified', control)
+            self.assertIn('Owner-test beta 1.0.0-beta.2: incomplete and not release-qualified.', control)
+            self.assertTrue(all(len(line) <= 80 for line in control.splitlines()), control)
+            self.assertIn('\nMaintainer: Faisal Alhisan <faisal@alhisan.com>\n', control)
+            self.assertNotIn('util-linux', control)
             with tarfile.open(fileobj=io.BytesIO(entries['data.tar.xz']), mode='r:xz') as archive:
-                self.assertEqual(archive.getnames(), list(self.files[name]))
+                members = archive.getmembers()
+                paths = [m.name.removeprefix('./') for m in members if m.isfile()]
+                self.assertEqual(paths, sorted([*self.files[name], f'usr/share/doc/{name}/changelog.gz',
+                                                f'usr/share/doc/{name}/copyright']))
+                seen = set()
+                for m in members:
+                    parent = m.name.rsplit('/', 1)[0] if m.name != '.' else None
+                    self.assertTrue(parent is None or parent in seen, 'directory must precede ' + m.name)
+                    seen.add(m.name)
+                self.assertEqual(len(sums.splitlines()), len(paths))
             manifest = json.loads((self.root / f'build/package-stage/{name}/install-manifest.json').read_text())
             self.assertFalse(manifest['releaseQualified'])
             self.assertEqual(manifest['package'], name)

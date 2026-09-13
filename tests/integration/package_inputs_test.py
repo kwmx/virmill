@@ -37,7 +37,7 @@ class PackageInputs(unittest.TestCase):
         self.git('init', '-q')
         self.files = {
             '.gitignore': b'build/\ncredentials/\n.env.*\n',
-            'LICENSE': b'original fixture license\n',
+            'LICENSE': b'Copyright (c) fixture author\n\noriginal fixture license\n',
             'internal/buildinfo/version.go': f'package buildinfo\n\nconst Version = "{packages.PRODUCT_VERSION}"\n'.encode(),
             'packaging/systemd/virmilld.service': b'fixture user unit\n',
             'packaging/systemd/virmill-host-helper.service': b'fixture helper unit\n',
@@ -282,16 +282,17 @@ class PackageInputs(unittest.TestCase):
         self.assert_refused(lambda: packages.write_regular(self.root, 'dist/checksums.json', b'no'))
         self.assertEqual(outside.read_bytes(), b'preserve outside output')
 
-    def test_package_control_archive_retains_original_layout(self):
+    def test_package_data_archive_lists_parent_directories_first(self):
         files = {'usr/bin/fixture': (b'original fixture bytes', 0o755)}
         data = packages.tar_bytes(files, 123)
         with tarfile.open(fileobj=io.BytesIO(data), mode='r:xz') as archive:
-            self.assertEqual(archive.getnames(), ['usr/bin/fixture'])
-            entry = archive.getmember('usr/bin/fixture')
-            self.assertEqual((entry.mode, entry.mtime), (0o755, 123))
-            self.assertEqual(archive.extractfile(entry).read(), b'original fixture bytes')
+            members = archive.getmembers()
+            self.assertEqual([(m.name, m.isdir()) for m in members],
+                             [('.', True), ('./usr', True), ('./usr/bin', True), ('./usr/bin/fixture', False)])
+            self.assertTrue(all((m.mode, m.mtime, m.uid, m.gid) == (0o755, 123, 0, 0) for m in members))
+            self.assertEqual(archive.extractfile('./usr/bin/fixture').read(), b'original fixture bytes')
         ar = packages.ar_bytes([('debian-binary', b'2.0\n'), ('data.tar.xz', data)], 123)
-        self.assertTrue(ar.startswith(b'!<arch>\ndebian-binary/'))
+        self.assertTrue(ar.startswith(b'!<arch>\ndebian-binary   '))
 
     def test_package_orchestration_reports_only_four_new_expected_artifacts(self):
         stale = self.write('dist/retained.rpm', b'preserve unrelated artifact')

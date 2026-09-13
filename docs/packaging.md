@@ -8,8 +8,11 @@ a different native toolchain is not claimed byte-identical. No static binary cla
 
 `make packages` creates separate core and helper RPM/DEB files under `dist/`, plus
 SHA-256 metadata. Version is `1.0.0-beta.2` for owner testing; the artifacts are unsigned and
-not release-qualified. Building a DEB on Fedora does not establish Debian/Ubuntu
-installation compatibility. No package is uploaded, signed or installed by the build.
+not release-qualified. DEBs are checked with dpkg and lintian by installing, running
+and purging them in Debian 13 and Ubuntu 24.04 containers
+(`tests/fixtures/release/deb_container_check.sh`); that is not a host install
+matrix. The binaries keep their symbols, so lintian still reports
+`unstripped-binary-or-object`. No package is uploaded, signed or installed by the build.
 
 Package assembly relocates Markdown links to the actual installed examples,
 schemas, SDK and documents. The language-neutral plugin protocol ships with the

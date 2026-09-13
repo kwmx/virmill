@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Build unsigned development RPM/DEB artifacts from a Git checkout only."""
+import gzip
 import hashlib
 import io
 import json
@@ -11,6 +12,7 @@ import shutil
 import stat
 import subprocess
 import tarfile
+import time
 
 from package_docs import rewrite_markdown
 
@@ -25,6 +27,13 @@ SOURCE_TREES = (('docs', 'usr/share/doc/virmill'),
 SOURCE_SUFFIXES = ('.md', '.json', '.go', '.yaml', '.py', '.mod')
 PROTOCOL_SOURCE = 'virmill-v1-spec/docs/12-plugin-protocol.md'
 PROTOCOL_TARGET = 'usr/share/doc/virmill/virmill-v1-spec/docs/12-plugin-protocol.md'
+MAINTAINER = 'Faisal Alhisan <faisal@alhisan.com>'
+HOMEPAGE = 'https://github.com/kwmx/virmill'
+# util-linux is Essential on Debian and must not be listed.
+DEB_DEPENDS = {'virmill': 'libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, xorriso',
+               'virmill-host-helper': 'libc6, libvirt0'}
+DEB_SUMMARY = {'virmill': 'local QEMU/KVM virtual machine manager with CLI and TUI',
+               'virmill-host-helper': 'bounded privileged helper for the Virmill coordinator'}
 
 
 def relative_parts(path):
@@ -242,10 +251,19 @@ def reset_owned_directory(root, relative):
 
 
 def tar_bytes(files, epoch):
+    """A dpkg-style archive: './' names, with every parent directory before its files.
+
+    dpkg cannot unpack a file whose directory is neither on disk nor in the archive.
+    """
     output = io.BytesIO()
+    directories = {parent for name in files for parent in PurePosixPath(name).parents} - {PurePosixPath('.')}
     with tarfile.open(fileobj=output, mode='w:xz', format=tarfile.USTAR_FORMAT) as archive:
-        for name, (data, mode) in sorted(files.items()):
+        for name in ['./'] + [f'./{directory}/' for directory in sorted(directories, key=str)]:
             entry = tarfile.TarInfo(name)
+            entry.type, entry.mode, entry.mtime = tarfile.DIRTYPE, 0o755, epoch
+            archive.addfile(entry)
+        for name, (data, mode) in sorted(files.items()):
+            entry = tarfile.TarInfo('./' + name)
             entry.size, entry.mode, entry.mtime = len(data), mode, epoch
             archive.addfile(entry, io.BytesIO(data))
     return output.getvalue()
@@ -255,13 +273,61 @@ def ar_bytes(members, epoch):
     output = io.BytesIO()
     output.write(b'!<arch>\n')
     for name, data in members:
-        header = f'{name+"/":<16}{epoch:<12}{0:<6}{0:<6}{"100644":<8}{len(data):<10}`\n'
+        header = f'{name:<16}{epoch:<12}{0:<6}{0:<6}{"100644":<8}{len(data):<10}`\n'
         assert len(header) == 60
         output.write(header.encode('ascii'))
         output.write(data)
         if len(data) % 2:
             output.write(b'\n')
     return output.getvalue()
+
+
+def debian_docs(name, files, epoch):
+    """Policy-required copyright and native changelog, from the packaged license."""
+    license_path = f'usr/share/licenses/{name}/LICENSE'
+    if license_path not in files:
+        raise ValueError(f'{name} has no packaged license for its Debian copyright file')
+    lines = files[license_path][0].decode().strip().splitlines()
+    notice = next((line for line in lines if line.startswith('Copyright')), None)
+    if notice is None:
+        raise ValueError('LICENSE has no Copyright line for the Debian copyright file')
+    body = lines[lines.index(notice) + 1:]
+    while body and not body[0].strip():
+        body.pop(0)
+    holder = notice.removeprefix('Copyright').strip().removeprefix('(c)').strip()
+    copyright = (f'Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/\n'
+                 f'Upstream-Name: Virmill\nSource: {HOMEPAGE}\n\nFiles: *\nCopyright: {holder}\nLicense: Expat\n'
+                 + ''.join(f' {line}\n' if line.strip() else ' .\n' for line in body))
+    t = time.gmtime(epoch)
+    day = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')[t.tm_wday]
+    month = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[t.tm_mon - 1]
+    changelog = (f'{name} ({DEBIAN_VERSION}) unstable; urgency=medium\n\n'
+                 f'  * Virmill {PRODUCT_VERSION} owner-test beta; incomplete and not\n    release-qualified.\n\n'
+                 f' -- {MAINTAINER}  {day}, {t.tm_mday:02d} {month} {t.tm_year} {t.tm_hour:02d}:{t.tm_min:02d}:{t.tm_sec:02d} +0000\n')
+    return {f'usr/share/doc/{name}/copyright': (copyright.encode(), 0o644),
+            f'usr/share/doc/{name}/changelog.gz': (gzip.compress(changelog.encode(), compresslevel=9, mtime=0), 0o644)}
+
+
+def deb_control(name, files):
+    """Binary control file; Installed-Size counts KiB per file plus one per directory, like dpkg."""
+    directories = {parent for path in files for parent in PurePosixPath(path).parents} - {PurePosixPath('.')}
+    size = sum(-(-len(data) // 1024) for data, _ in files.values()) + len(directories)
+    return (f'Package: {name}\nVersion: {DEBIAN_VERSION}\nArchitecture: amd64\nMaintainer: {MAINTAINER}\n'
+            f'Installed-Size: {size}\nDepends: {DEB_DEPENDS[name]}\nSection: admin\nPriority: optional\n'
+            f'Homepage: {HOMEPAGE}\nDescription: {DEB_SUMMARY[name]}\n'
+            f' Owner-test beta {PRODUCT_VERSION}: incomplete and not release-qualified.\n'
+            ' Installing it enables no service, host network or privilege setup.\n')
+
+
+def md5sums(files):
+    return ''.join(f'{hashlib.md5(data, usedforsecurity=False).hexdigest()}  {path}\n'
+                   for path, (data, _) in sorted(files.items())).encode()
+
+
+def commit_time(root):
+    """Reproducible default timestamp: the checkout's commit time, or 0 without a commit."""
+    result = subprocess.run(['git', 'show', '-s', '--format=%ct', 'HEAD'], cwd=root, capture_output=True, text=True)
+    return int(result.stdout) if result.returncode == 0 and result.stdout.strip().isdigit() else 0
 
 
 def copy_expected_rpm(root, name):
@@ -282,18 +348,18 @@ def build_packages(root=ROOT):
         raise ValueError('Product version source is not an indexed regular file')
     if parse_product_version(read_regular(root, VERSION_SOURCE)) != PRODUCT_VERSION:
         raise ValueError('Package source root version does not match the executing package builder')
-    epoch = int(os.environ.get('SOURCE_DATE_EPOCH', '0'))
+    epoch = int(os.environ['SOURCE_DATE_EPOCH']) if 'SOURCE_DATE_EPOCH' in os.environ else commit_time(root)
     packages = collect_package_files(root)
     os.close(directory_fd(root / 'dist', create=True))
     for name, files in packages.items():
         stage = reset_owned_directory(root, f'build/package-stage/{name}')
         rpm = reset_owned_directory(root, f'build/rpm/{name}')
-        dependencies = 'libc6, libvirt0, qemu-system-x86, qemu-utils, bubblewrap, util-linux, xorriso' if name == 'virmill' else 'libc6, libvirt0'
         description = f'Virmill {PRODUCT_VERSION} owner-test beta; incomplete and not release-qualified'
-        control = f'Package: {name}\nVersion: {DEBIAN_VERSION}\nArchitecture: amd64\nMaintainer: Virmill contributors\nSection: admin\nPriority: optional\nDepends: {dependencies}\nDescription: {description}\n'
+        deb_files = {**files, **debian_docs(name, files, epoch)}
+        control = {'control': (deb_control(name, deb_files).encode(), 0o644), 'md5sums': (md5sums(deb_files), 0o644)}
         deb = ar_bytes([('debian-binary', b'2.0\n'),
-                        ('control.tar.xz', tar_bytes({'control': (control.encode(), 0o644)}, epoch)),
-                        ('data.tar.xz', tar_bytes(files, epoch))], epoch)
+                        ('control.tar.xz', tar_bytes(control, epoch)),
+                        ('data.tar.xz', tar_bytes(deb_files, epoch))], epoch)
         write_regular(root, 'dist/' + package_filename(name, 'deb'), deb)
         for path, (data, mode) in files.items():
             write_regular(root, f'build/package-stage/{name}/' + path, data, mode)

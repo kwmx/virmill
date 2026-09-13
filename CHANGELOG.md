@@ -5,6 +5,11 @@
 - Leaving an unused Import started from the VM list (`i`, then Esc) returns to
   the list instead of the VM's More tasks menu. Import started from a task menu
   still returns to that menu.
+- DEB packages now install on Debian 13 and Ubuntu 24.04. The published
+  1.0.0-beta.2 DEBs fail to unpack because they list no directories. The
+  rebuilt packages add directory entries, `md5sums`, a copyright file and
+  changelog, a maintainer address, a longer description and commit-time
+  timestamps, and drop the Essential `util-linux` dependency.
 
 ## 1.0.0-beta.2 — owner-test pre-release
 
