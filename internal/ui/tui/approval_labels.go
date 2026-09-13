@@ -47,7 +47,17 @@ func (m Workspace) confirmationLines(width, height int) []string {
 			prefix = ">" + prefix[1:]
 			selectedLine = len(lines)
 		}
-		lines = append(lines, wrap(prefix+acknowledgementLabel(ack), width)...)
+		// Wrap prose before adding the checkbox, so layout detection does not
+		// mistake confirmation text for a preformatted table.
+		label := strings.TrimSuffix(acknowledgementLabel(ack), " ["+ack+"]")
+		for row, text := range wrap(label, max(1, width-6)) {
+			if row == 0 {
+				lines = append(lines, prefix+text)
+			} else {
+				lines = append(lines, "      "+text)
+			}
+		}
+		lines = append(lines, wrap("      ["+ack+"]", width)...)
 	}
 	lines = append(lines, "")
 	prefix := "  "
