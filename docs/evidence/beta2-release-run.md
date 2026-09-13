@@ -95,8 +95,10 @@ The installed `b327d7b` build did not change.
   import or guest tools plan or applied anything, and the owner's draft directory
   stayed unchanged.
 
-UX observation for owner review: pressing `i` in the VM list and then Esc twice
-leaves the selected VM's More tasks menu open instead of returning to the list.
+UX observation: pressing `i` in the VM list and then Esc twice left the selected
+VM's More tasks menu open instead of returning to the list. It was fixed after
+this release (CHANGELOG, Unreleased); the published beta.2 packages still behave
+this way, and the updated workspace probe expects the fixed behavior.
 
 ## Artifacts
 

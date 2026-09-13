@@ -43,8 +43,42 @@ func TestImportOpensBrowserAndAutomaticallyDescribesSelection(t *testing.T) {
 	}
 	m, _ = wk(m, "esc") // cancel metadata read
 	m, cmd = wk(m, "esc")
-	if cmd != nil || m.Import != nil || !m.Advanced {
-		t.Fatal("back must return to import choices")
+	if cmd != nil || m.Import != nil || m.Advanced {
+		t.Fatal("back must return to the list Import was opened from")
+	}
+}
+func TestUnusedImportFromListIgnoresEarlierTaskMenu(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	m := fixtureWorkspace()
+	m.Section = 1
+	m, _ = wk(m, "a") // leaves More tasks catalog state behind
+	m, _ = wk(m, "esc")
+	if m.Advanced {
+		t.Fatal("Esc must close the task menu")
+	}
+	m, cmd := wk(m, "i")
+	pending := cmd()
+	m, _ = wk(m, "esc") // close the browser
+	n, _ := m.Update(pending)
+	m = n.(Workspace)
+	m, _ = wk(m, "esc") // leave the unused form
+	if m.Import != nil || m.Advanced || strings.Contains(m.View(), "More tasks") {
+		t.Fatal("unused import opened from the VM list must return to it", m.View())
+	}
+}
+func TestUnusedImportFromTaskMenuReturnsToMenu(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	m := fixtureWorkspace()
+	m.Section = 1
+	m.advanced()
+	m.CatalogMode = "import"
+	pending := m.openImport("auto")()
+	m, _ = wk(m, "esc") // close the browser
+	n, _ := m.Update(pending)
+	m = n.(Workspace)
+	m, _ = wk(m, "esc") // leave the unused form
+	if m.Import != nil || !m.Advanced || m.CatalogMode != "import" || !strings.Contains(m.View(), "Import / Choose a source") {
+		t.Fatal("unused import opened from a task menu must return to it", m.View())
 	}
 }
 func TestPickerCancelAndResizeCannotSubmitUnderlyingForm(t *testing.T) {

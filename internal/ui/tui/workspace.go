@@ -81,6 +81,7 @@ type Workspace struct {
 	CatalogSearching             bool
 	CatalogMode                  string
 	CatalogExpert                bool
+	ImportFromCatalog            bool
 	Picker                       *FilePicker
 	PickerField                  int
 	PickerAction                 bool

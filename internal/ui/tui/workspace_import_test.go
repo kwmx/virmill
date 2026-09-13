@@ -86,6 +86,7 @@ func importWorkspace(t *testing.T) Workspace {
 
 func TestImportWorkspacePreviewRetainsOptionsAndUsesSharedService(t *testing.T) {
 	m := importWorkspace(t)
+	m.ImportFromCatalog = true // a preview clears Advanced; the origin must survive it
 	f := importFocus(t, *m.Import, "preview")
 	m.Import = &f
 	c := m.Client.(*workspaceClient)

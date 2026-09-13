@@ -62,6 +62,8 @@ func importError(err error) string {
 }
 
 func (m *Workspace) openImport(kind string) tea.Cmd {
+	// Leaving an unused import returns to whichever view opened it.
+	m.ImportFromCatalog = m.Advanced
 	if m.offerSetup(kind) {
 		return nil
 	}
@@ -246,7 +248,7 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.ImportCancel = nil
 		}
 		m.Import = nil
-		m.Advanced = true
+		m.Advanced = m.ImportFromCatalog
 		m.Pending = maps.Clone(m.Pending)
 		delete(m.Pending, "import-inspect")
 		delete(m.Pending, "plan")

@@ -571,10 +571,9 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         terminal.wait('Esc cancels browser and returns to import form', import_form, terminal.send(b'\x1b'))
         terminal.wait('Ctrl+O reopens browser from source field', picker, terminal.send(b'\x0f'))
         terminal.wait('Esc closes reopened browser without choosing a file', import_form, terminal.send(b'\x1b'))
-        # An unused import form returns to the selected VM's task menu.
-        terminal.wait('Esc returns from import form to VM tasks', more_menu, terminal.send(b'\x1b'))
-        terminal.wait('Esc closes VM tasks back to VM workspace', vm_table,
-                      terminal.send(b'\x1b'))
+        # An unused import form opened from the list returns to the list.
+        terminal.wait('Esc returns from import form to VM workspace', lambda text:
+                      vm_table(text) and 'VMs / More tasks' not in text, terminal.send(b'\x1b'))
         terminal.wait('Jobs workspace has loaded observations', lambda text: page(text, 'Jobs') and
                       ('NAME' in text and 'STATE' in text or 'No resources to display.' in text) and
                       'Could not load' not in text, terminal.send(b'9'))

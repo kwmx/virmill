@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Leaving an unused Import started from the VM list (`i`, then Esc) returns to
+  the list instead of the VM's More tasks menu. Import started from a task menu
+  still returns to that menu.
+
 ## 1.0.0-beta.2 — owner-test pre-release
 
 Unsigned development beta; not a certified 1.0. 2 of 71 acceptance scenarios
