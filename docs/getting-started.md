@@ -39,7 +39,7 @@ build/bin/virmilld
 ```
 
 Run another terminal with the same variables and `build/bin/virmill tui`,
-`build/bin/virmill doctor --output json`, or
+`build/bin/virmill doctor`, or
 `build/bin/virmill lab validate examples/labs/multi-network-lab.yaml`.
 The example templates are unresolved references, not downloadable guest images.
 Validation does not create networks or guests.

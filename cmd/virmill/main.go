@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -22,6 +23,10 @@ func main() {
 	}
 	root := cli.New(local.Client{Socket: socket, Timeout: 30 * time.Second}, os.Stdout, os.Stderr)
 	if e = root.Execute(); e != nil {
+		var shown cli.ShownError
+		if errors.As(e, &shown) {
+			os.Exit(domain.ExitCode(shown.Err))
+		}
 		fmt.Fprintln(os.Stderr, e)
 		os.Exit(domain.ExitCode(e))
 	}

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `virmill doctor` prints a readable report: what is ready, what is missing and
+  why, and the exact `dnf` or `apt` command to install it. It now checks that
+  libvirt is installed and running and that you can open `/dev/kvm`, checks
+  `virt-viewer` (the console viewer) instead of `remote-viewer`, and no longer
+  reports the unused `virt-v2v`. `--output json` keeps the full data, with
+  new `purpose`, `optional`, `packages` and `installer` fields.
 - Binaries are built stripped (`-s -w`), about a third smaller. lintian no
   longer reports `unstripped-binary-or-object` for the DEBs.
 

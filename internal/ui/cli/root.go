@@ -64,7 +64,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 	emit := func(response app.Response) error {
 		return writeResponse(out, o.Output, o.Quiet, response)
 	}
-	call := func(c *cobra.Command, method string, r app.Request) error {
+	send := func(c *cobra.Command, method string, r app.Request, write func(app.Response) error) error {
 		r.Connection = o.Connection
 		var err error
 		r, err = ui.NormalizeRequest(method, r)
@@ -83,14 +83,20 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			if !ok {
 				d = domain.Fail("OPERATION_FAILED", e.Error())
 			}
-			return emit(app.Response{APIVersion: domain.APIVersion, Warnings: []string{}, Error: d})
+			return write(app.Response{APIVersion: domain.APIVersion, Warnings: []string{}, Error: d})
 		}
-		return emit(resp)
+		return write(resp)
 	}
+	call := func(c *cobra.Command, method string, r app.Request) error { return send(c, method, r, emit) }
 	root.AddCommand(&cobra.Command{Use: "version", Short: "Show application and build contracts", RunE: func(c *cobra.Command, args []string) error {
 		return emit(app.Response{APIVersion: domain.APIVersion, Data: buildinfo.Info(), Warnings: []string{}})
 	}})
-	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Read-only prerequisites; never applies repairs", RunE: func(c *cobra.Command, args []string) error { return call(c, "host.doctor", app.Request{}) }})
+	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check host prerequisites and show how to install what's missing (read-only)", RunE: func(c *cobra.Command, args []string) error {
+		if o.Output != "table" || o.Quiet {
+			return call(c, "host.doctor", app.Request{})
+		}
+		return send(c, "host.doctor", app.Request{}, func(r app.Response) error { return writeDoctor(out, r) })
+	}})
 	root.AddCommand(&cobra.Command{Use: "tui", Short: "Open the keyboard interface", RunE: func(c *cobra.Command, args []string) error {
 		if o.NonInteractive {
 			return domain.Fail("INVALID_INPUT", "TUI requires an interactive terminal")

@@ -79,6 +79,11 @@ type Capability struct {
 	Reason        string   `json:"reason"`
 	Alternatives  []string `json:"alternatives"`
 	EvidenceClass string   `json:"evidenceClass"`
+	// Optional guidance; absent from older coordinators.
+	Purpose   string   `json:"purpose,omitempty"`
+	Optional  bool     `json:"optional,omitempty"`
+	Packages  []string `json:"packages,omitempty"`
+	Installer string   `json:"installer,omitempty"`
 }
 type VM struct {
 	Key            ResourceKey `json:"key"`

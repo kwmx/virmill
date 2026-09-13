@@ -16,7 +16,7 @@ Available Commands:
   completion  Generate shell completions
   config      Manage config
   device      Manage device
-  doctor      Read-only prerequisites; never applies repairs
+  doctor      Check host prerequisites and show how to install what's missing (read-only)
   guest       Manage guest
   help        Help about any command
   host        Manage host
@@ -388,7 +388,7 @@ Global Flags:
 
 ## `virmill doctor`
 
-Read-only prerequisites; never applies repairs
+Check host prerequisites and show how to install what's missing (read-only)
 
 ```text
 Usage:

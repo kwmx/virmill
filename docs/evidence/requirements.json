@@ -560,7 +560,8 @@
         "cold-native-readiness-003",
         "cold-native-readiness-004",
         "cold-prerequisites-cross-001",
-        "cold-prerequisites-core-sandbox-001"
+        "cold-prerequisites-core-sandbox-001",
+        "doctor-guidance-race-001"
       ],
       "outstanding": [
         "Connection allowlist implemented; full session capability probes and actual restrictions remain.",
@@ -5716,7 +5717,8 @@
         "beta3-tui-workspace-native-001",
         "beta3-job-activity-native-001",
         "beta3-network-form-native-001",
-        "beta3-general-sources-native-001"
+        "beta3-general-sources-native-001",
+        "doctor-guidance-race-001"
       ],
       "outstanding": [
         "Shared registry for implemented subset only; mandatory workflow parity/wizards not complete.",
@@ -6186,7 +6188,8 @@
         "beta3-tui-workspace-native-001",
         "beta3-job-activity-native-001",
         "beta3-network-form-native-001",
-        "beta3-general-sources-native-001"
+        "beta3-general-sources-native-001",
+        "doctor-guidance-race-001"
       ],
       "outstanding": [
         "Physical spaces, literal key-name input, bounded approval review, dialog focus, visible failures and resized offsets are implemented with 11 new model regressions. Frozen715aa9f race, actual80x24 provider PTY and artifact checks pass. Complete supported-terminal/manual/accessibility and all-workflow qualification remain required.",

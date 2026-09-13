@@ -50,7 +50,7 @@ As the ordinary coordinator user, start one coordinator, then inspect:
 systemctl --user daemon-reload
 systemctl --user start virmilld.service
 virmill version --output json
-virmill doctor --output json
+virmill doctor
 virmill host capabilities --connection qemu:///system --output json
 virmill storage pool list --output json
 virmill vm list --output json
