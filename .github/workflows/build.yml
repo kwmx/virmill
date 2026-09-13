@@ -1,0 +1,23 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-native-linux:
+    name: Build Linux host target
+    runs-on: ubuntu-latest
+    env:
+      GOPROXY: off
+      GOSUMDB: off
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native Linux binaries
+        run: |
+          chmod +x scripts/go scripts/build.sh
+          make build
