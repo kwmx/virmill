@@ -518,8 +518,6 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
                       terminal.send(b'\x1b'))
         terminal.wait('Esc clears filter and restores observed rows', lambda text: vm_table(text) and 'Search:' not in text and
                       f'1 of {len(vms)} selected' in text, terminal.send(b'\x1b'))
-        source_menu = lambda text: 'Import / Choose a source' in text and all(
-            choice in text for choice in ('OVA appliance', 'ISO installer', 'Existing disk images'))
         picker = lambda text: re.search(r'(?:^|[│|])Choose a file[ \t]*$', text, re.MULTILINE) is not None and 'Esc' in text
         def choose_browser_entry(name, description):
             terminal.wait(description + ' filter focus', lambda text:
@@ -573,8 +571,9 @@ def walkthrough(runner, vms, selected, columns, rows, media_root, folder, select
         terminal.wait('Esc cancels browser and returns to import form', import_form, terminal.send(b'\x1b'))
         terminal.wait('Ctrl+O reopens browser from source field', picker, terminal.send(b'\x0f'))
         terminal.wait('Esc closes reopened browser without choosing a file', import_form, terminal.send(b'\x1b'))
-        terminal.wait('Esc returns from import form to source choices', source_menu, terminal.send(b'\x1b'))
-        terminal.wait('Esc closes source choices back to VM workspace', vm_table,
+        # An unused import form returns to the selected VM's task menu.
+        terminal.wait('Esc returns from import form to VM tasks', more_menu, terminal.send(b'\x1b'))
+        terminal.wait('Esc closes VM tasks back to VM workspace', vm_table,
                       terminal.send(b'\x1b'))
         terminal.wait('Jobs workspace has loaded observations', lambda text: page(text, 'Jobs') and
                       ('NAME' in text and 'STATE' in text or 'No resources to display.' in text) and
