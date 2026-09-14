@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 183, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 179, in main
+    execute(a.root)
+    ~~~~~~~^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 144, in execute
+    report = walkthrough(runner, run, source, 'onestep-' + ident)
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 81, in walkthrough
+    disks = wait('Folder step skipped with the private default', lambda text: 'Saved in' in text and str(stage / 'data' / 'virmill' / 'imports') in text, b'\r')
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 65, in wait
+    return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-433d964/tui_workspace_probe.py", line 411, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy Folder step skipped with the private default

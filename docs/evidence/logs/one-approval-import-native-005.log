@@ -1,0 +1,16 @@
+{
+  "firmwareSuggested": true,
+  "folderStepSkipped": true,
+  "itemsChecked": 7,
+  "otherResourcesUnchanged": true,
+  "result": "passed",
+  "retainedStoppedVM": "onestep-b3215d48",
+  "reviewListsCreation": true,
+  "reviewListsStart": true,
+  "succeededOperations": [
+    "import.prepare-disks",
+    "vm.create.devices-v1",
+    "vm.start"
+  ],
+  "vm": "onestep-b3215d48"
+}

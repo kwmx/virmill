@@ -5302,7 +5302,8 @@
         "docs/evidence/disk-removal-run.md",
         "internal/ui/tui/import_staging.go",
         "internal/ui/tui/workspace_import_chain.go",
-        "docs/adr/0057-one-approval-import.md"
+        "docs/adr/0057-one-approval-import.md",
+        "docs/evidence/one-approval-import-run.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5492,7 +5493,8 @@
         "tests/fixtures/release/disk_removal_native_cycle.py",
         "internal/ui/tui/workspace_streamlined_test.go",
         "internal/ui/tui/workspace_creation_pool_test.go",
-        "internal/ui/tui/workspace_import_chain_test.go"
+        "internal/ui/tui/workspace_import_chain_test.go",
+        "tests/fixtures/release/one_approval_import_probe.py"
       ],
       "evidence": [
         "core-tests-001",

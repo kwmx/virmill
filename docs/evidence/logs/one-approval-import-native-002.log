@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 184, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 180, in main
+    execute(a.root)
+    ~~~~~~~^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 145, in execute
+    report = walkthrough(runner, run, source, 'onestep-' + ident)
+  File "<test-vm-home>/virmill-tests/onestep-433d964/one_approval_import_probe.py", line 115, in walkthrough
+    require('needs your review' not in screen and 'Confirm reviewed changes' not in screen, 'a later step stopped for another review')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-433d964/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: a later step stopped for another review
