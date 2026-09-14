@@ -107,7 +107,11 @@ def execute(stage):
             wait('Jobs inventory', lambda s: 'Jobs' in s and 'NAME' in s and 'STATE' in s, b'9')
             for i in range(index):
                 old = terminal.screen.text(); wait('Select existing job' + str(i), lambda s: s != old, b'\x1b[B')
-            require(any(line.startswith('> ') and JOB_ID in line for line in terminal.screen.text().splitlines()),
+            # Rows name the task, not the operation ID: check the position here;
+            # the details page below proves the exact job identity.
+            listing = terminal.screen.text()
+            require(re.search(rf'row {index + 1} of {len(before["jobs"])}\b', listing) is not None and
+                    any(line.startswith('> ') for line in listing.splitlines()),
                     'selected job row differs from fresh CLI ordering')
             wait('Exact job details', lambda s: 'Job /' in s and JOB_ID in s, b'\r')
             for i in range(10):

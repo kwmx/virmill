@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/prerelease-b627747/job_activity_tui_probe.py", line 261, in <module>
+    execute(args.root)
+    ~~~~~~~^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/prerelease-b627747/job_activity_tui_probe.py", line 110, in execute
+    require(any(line.startswith('> ') and JOB_ID in line for line in terminal.screen.text().splitlines()),
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            'selected job row differs from fresh CLI ordering')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/prerelease-b627747/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: selected job row differs from fresh CLI ordering

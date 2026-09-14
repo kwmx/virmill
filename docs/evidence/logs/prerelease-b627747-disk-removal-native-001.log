@@ -1,0 +1,13 @@
+{"acceptanceSupport": ["CORE-02", "STO-03", "UX-01", "UX-02"], "applyAttempted": false, "binaries": {"virmill": "532a72a3e7f36de3735a7f07ec5630598e4b51e435e25538ad921901b496031a", "virmill-host-helper": "9acaad6aaae06d75e3a49072ff68992e9913330c6c902d8998a99623bdd165de", "virmilld": "a5b54c0e8fc4be685dc9e83818a225dce5e7aaddc4fc3546ccb1769623ce55e2"}, "cleanupPerformed": false, "failure": "session must be empty; do not disturb existing session resources", "fixtureSHA256": "3dfcc86b89a096d0d4991fd0580f9da04adead70355b61acc8eabd86933a4b33", "jobs": [], "scope": "generated never-booted BIOS session guests only; selected disk deletion via CLI and TUI", "status": "failed", "systemInventoryAndMediaPreserved": true}
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/prerelease-b627747/disk_removal_native_cycle.py", line 459, in <module>
+    elif a.execute_disposable and a.root:execute(a.root,a.resume_from,a.finish_tui_from)
+                                         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/prerelease-b627747/disk_removal_native_cycle.py", line 309, in execute
+    require(not virsh('list','--all','--uuid').strip() and not virsh('pool-list','--all','--uuid').strip()
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and not virsh('net-list','--all','--uuid').strip(),'session must be empty; do not disturb existing session resources')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/prerelease-b627747/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: session must be empty; do not disturb existing session resources
