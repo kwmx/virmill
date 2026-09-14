@@ -110,6 +110,22 @@ func TestWorkspaceJobsShowTaskTargetAndTime(t *testing.T) {
 	}
 }
 
+func TestJobDetailsKeepTheTaskFromTheList(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Section = 8
+	m.Data["jobs"] = []any{map[string]any{"operationID": "11111111-1111-4111-8111-111111111111", "state": "succeeded",
+		"operation": "vm.start", "targetName": "Build guest", "resourceIDs": []any{"libvirt|qemu:///system|vm|x"}}}
+	stored := map[string]any{"operationID": "11111111-1111-4111-8111-111111111111", "state": "succeeded", "planID": "p"}
+	got := object(m.withJobSummary(stored))
+	if got["operation"] != "vm.start" || got["targetName"] != "Build guest" || got["planID"] != "p" || stored["operation"] != nil {
+		t.Fatalf("detail %v, stored %v", got, stored)
+	}
+	m.Section = 1
+	if object(m.withJobSummary(stored))["operation"] != nil {
+		t.Fatal("only Jobs details take list fields")
+	}
+}
+
 func TestJobLabelsAreTasks(t *testing.T) {
 	for op, want := range map[string]string{"vm.start": "Start VM", "vm.stop": "Shut down VM", "vm.hard-stop": "Force off VM",
 		"vm.create.devices-v1": "Create VM", "import.prepare-install": "Prepare ISO installer", "vm.remove-disks-v1": "Remove VM and disks",

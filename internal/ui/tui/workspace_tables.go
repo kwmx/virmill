@@ -3,6 +3,7 @@ package tui
 import (
 	"encoding/xml"
 	"fmt"
+	"maps"
 	"net"
 	"sort"
 	"strings"
@@ -366,6 +367,28 @@ func (m Workspace) jobTarget(v any) string {
 		}
 	}
 	return ""
+}
+
+// withJobSummary adds the Jobs list's task fields to a job read with
+// operation.get, which returns the stored job only.
+func (m Workspace) withJobSummary(data any) any {
+	job, id := object(data), field(data, "operationID")
+	if m.Section != 8 || job == nil || id == "" || field(job, "operation") != "" {
+		return data
+	}
+	for _, row := range array(m.Data["jobs"]) {
+		if field(row, "operationID") != id {
+			continue
+		}
+		out := maps.Clone(job)
+		for _, key := range []string{"operation", "resourceIDs", "targetName"} {
+			if v, ok := object(row)[key]; ok {
+				out[key] = v
+			}
+		}
+		return out
+	}
+	return data
 }
 
 // jobName is "task · target"; older coordinators send no task, so the ID stays.

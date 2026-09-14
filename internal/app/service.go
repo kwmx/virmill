@@ -260,7 +260,7 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		}
 		return p, nil
 	case "operation.get":
-		return s.Engine.Store.JobSummary(r.ID)
+		return s.Engine.Store.Job(r.ID)
 	case "operation.list":
 		return s.Engine.Store.JobSummaries()
 	case "operation.watch":

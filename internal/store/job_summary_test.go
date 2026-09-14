@@ -44,16 +44,13 @@ func TestJobSummariesAddPlanOperationAndTarget(t *testing.T) {
 		!reflect.DeepEqual(list[0].ResourceIDs, []string{"fixture-network"}) {
 		t.Fatalf("newest job summary %+v", list[0])
 	}
-	one, err := s.JobSummary(jobs[0].ID)
-	if err != nil || !reflect.DeepEqual(one, list[1]) || one.Operation != "vm.start" || one.TargetName != "Build guest" ||
+	one := list[1]
+	if one.ID != jobs[0].ID || one.Operation != "vm.start" || one.TargetName != "Build guest" ||
 		one.State != "queued" || one.PlanID != start.ID || !reflect.DeepEqual(one.ResourceIDs, []string{vm}) {
-		t.Fatalf("job summary %+v %v", one, err)
+		t.Fatalf("job summary %+v", one)
 	}
 	body, _ := json.Marshal(one)
 	if !strings.Contains(string(body), `"operationID":"`+jobs[0].ID+`"`) || !strings.Contains(string(body), `"operation":"vm.start"`) {
 		t.Fatalf("summary JSON %s", body)
-	}
-	if _, err = s.JobSummary(domain.ID()); err == nil {
-		t.Fatal("unknown job returned a summary")
 	}
 }

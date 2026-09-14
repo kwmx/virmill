@@ -847,7 +847,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.receiveJobVM(v.Response.Data)
 		case "job-update":
 			if m.Section == 8 && resourceID(m.Detail) != "" && resourceID(m.Detail) == resourceID(data) {
-				m.Detail = data
+				m.Detail = m.withJobSummary(data)
 				if m.canAutoReturnCreationNetwork() && field(data, "state") == "succeeded" {
 					return m, m.returnCreationNetwork(true)
 				}
@@ -901,7 +901,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), draftCommand)
 		case "detail":
-			m.Detail = data
+			m.Detail = m.withJobSummary(data)
 			m.Busy = m.Pending["plan"] != 0 || m.Pending["apply"] != 0
 			m.ActionForm = nil
 			m.Advanced = false

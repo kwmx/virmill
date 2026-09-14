@@ -41,8 +41,8 @@ betas can be installed with `virmill update`.
   everything. Remove VM is in More for a stopped VM. The Jobs page no longer
   offers Create VM, and an empty Jobs list no longer offers Activity. Help
   is grouped by task and fits an 80x24 terminal.
-- `operation.list` and `operation.get` add each job's plan `operation`,
-  `resourceIDs` and, when known, `targetName`. Existing fields are unchanged.
+- `operation.list` adds each job's plan `operation`, `resourceIDs` and, when
+  known, `targetName`. Existing fields and `operation.get` are unchanged.
 - `virmill doctor` prints a readable report: what is ready, what is missing and
   why, and the exact `dnf` or `apt` command to install it. It now checks that
   libvirt is installed and running and that you can open `/dev/kvm`, checks

@@ -10,8 +10,11 @@ remain mandatory.
 `b62774765880b5354e8dd575a92b54f834c316a0` is `2be7f70` plus the
 `--replace-same-version` option of `install_owner_beta.py`. The product version
 is still `1.0.0-beta.3`, so the build is identified by its revision, which
-`virmill version` reports. `make verify` passed, and so did the package
-integration test with the private IPC opt-in.
+`virmill version` reports. `make verify` passed. The package integration test
+was reported as passing, but only its last output line was checked. It
+actually failed: `plan apply --wait` rejected the extra job fields that
+`operation.get` returned from `0498b7f` on. The beta.4 build restores
+`operation.get`.
 
 ## Native results
 

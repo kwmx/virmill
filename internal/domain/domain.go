@@ -162,8 +162,9 @@ type Job struct {
 	RecoveryOperationID string    `json:"recoveryOperationID,omitempty"`
 }
 
-// JobSummary is a job with what its plan changes, for job lists and details.
-// The plan fields are read when listing; the journal stores only the Job.
+// JobSummary is a job with what its plan changes, for job lists. The plan
+// fields are read when listing; the journal stores only the Job, and
+// operation.get returns the plain Job because strict clients decode it.
 type JobSummary struct {
 	Job
 	Operation   string   `json:"operation,omitempty"`

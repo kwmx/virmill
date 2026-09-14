@@ -206,11 +206,6 @@ func scanJobSummary(scan func(...any) error) (domain.JobSummary, error) {
 	return out, nil
 }
 
-// JobSummary is Job plus what its plan changes.
-func (s *Store) JobSummary(id string) (domain.JobSummary, error) {
-	return scanJobSummary(s.DB.QueryRow(jobSummaryQuery+" WHERE j.id=?", id).Scan)
-}
-
 // JobSummaries lists recent jobs, newest first, with what each plan changes.
 func (s *Store) JobSummaries() ([]domain.JobSummary, error) {
 	rows, e := s.DB.Query(jobSummaryQuery + " ORDER BY j.rowid DESC LIMIT 1000")
