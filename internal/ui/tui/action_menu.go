@@ -44,7 +44,7 @@ func actionGroup(a ui.Action) (int, string) {
 		return 20, "Volume access"
 	case c == "network create" || c == "network cidr check":
 		return 10, "Network setup"
-	case c == "storage pool create":
+	case c == "storage pool create" || c == "storage pool start":
 		return 10, "Storage setup"
 	case c == "operation cancel" || c == "operation watch":
 		return 10, "Manage job"
@@ -75,7 +75,7 @@ func (m Workspace) commonAction(a ui.Action) bool {
 		return m.selectedVM().State == "paused"
 	case "vm remove":
 		return m.selectedVM().State == "stopped" || m.selectedVM().State == "shut off"
-	case "vm console show", "vm set", "vm boot set", "vm autostart", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "storage pool create", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup restore", "backup receipts", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
+	case "vm console show", "vm set", "vm boot set", "vm autostart", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "storage pool create", "storage pool start", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup restore", "backup receipts", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
 		return true
 	}
 	return false

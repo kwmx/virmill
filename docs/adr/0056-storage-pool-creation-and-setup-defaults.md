@@ -28,6 +28,14 @@ its folder. Libvirt has no create-only definition call, so an external writer
 between the final check and definition can still collide; that is reported as
 needing recovery, never repaired.
 
+`storage.pool.start` starts an existing stopped persistent file-based pool
+(`dir`, `fs`, `netfs`) as a reviewed job, bound to the pool's reviewed
+fingerprint, and by default also enables autostart (`--no-autostart` leaves it
+unchanged). It never builds a folder, redefines, stops or deletes a pool; a
+missing folder fails with libvirt's reason. VM setup offers Start pool NAME,
+preferring `default`, when stopped pools are the only candidates, and follows
+it like Create storage pool.
+
 The Storage page offers Create pool, and its empty page no longer names other
 tools. In VM setup, when no usable pool exists, Create storage pool shows the
 review over the form. After approval the form stays open and editable while the

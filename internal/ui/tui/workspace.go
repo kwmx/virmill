@@ -418,6 +418,19 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	case "storage pool create":
 		m.Advanced = false
 		return m.openPoolCreation()
+	case "storage pool start":
+		m.Advanced = false
+		row := m.Detail
+		if row == nil {
+			rows := m.rows()
+			if m.Selected >= 0 && m.Selected < len(rows) {
+				row = rows[m.Selected]
+			}
+		}
+		if m.Section != 3 {
+			row = nil
+		}
+		return m.openPoolStart(resourceID(row))
 	case "vm create", "vm create-devices":
 		return m.openCreationSources()
 	case "import prepare", "import source describe":
@@ -2166,6 +2179,9 @@ func (m Workspace) buttons() []workspaceButton {
 		out := []workspaceButton{}
 		if m.Section == 6 {
 			out = append(out, workspaceButton{"Restore", "action:snapshot restore"}, workspaceButton{"Back up", "action:backup create"})
+		}
+		if m.Section == 3 && field(m.Detail, "active") == "false" && field(m.Detail, "persistent") == "true" {
+			out = append(out, workspaceButton{"Start pool", "action:storage pool start"})
 		}
 		return append(out, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 	}

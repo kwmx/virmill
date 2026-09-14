@@ -100,6 +100,15 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 		o.Summary = "Pool " + validation.SafeText(d.Name) + " is active and keeps VM disks in " + validation.SafeText(d.Path) + ". Create VM and Import can use it now."
 		o.VMID = ""
 		return o
+	case "storage.pool.start":
+		pool, ok := p.Review["pool"].(map[string]any)
+		if !ok || p.ConnectionID != o.Connection || fmt.Sprint(pool["name"]) == "" {
+			return fail(fmt.Errorf("Storage pool result does not match its reviewed plan. Inspect the job."))
+		}
+		o.Title = "Storage pool started"
+		o.Summary = "Pool " + validation.SafeText(fmt.Sprint(pool["name"])) + " is running. Create VM and Import can use it now."
+		o.VMID = ""
+		return o
 	case "vm.create", "vm.create.devices-v1":
 		o.Title = "VM created"
 		o.Summary = "The VM definition and disk copies were confirmed. Open the VM for its current state, Start and Console. Guest setup is a separate step."

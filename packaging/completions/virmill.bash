@@ -4336,6 +4336,50 @@ _virmill_storage_pool_show()
     noun_aliases=()
 }
 
+_virmill_storage_pool_start()
+{
+    last_command="virmill_storage_pool_start"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--no-autostart")
+    local_nonpersistent_flags+=("--no-autostart")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_storage_pool()
 {
     last_command="virmill_storage_pool"
@@ -4346,6 +4390,7 @@ _virmill_storage_pool()
     commands+=("create")
     commands+=("list")
     commands+=("show")
+    commands+=("start")
 
     flags=()
     two_word_flags=()

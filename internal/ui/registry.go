@@ -43,6 +43,7 @@ var Actions = []Action{
 	{"storage pool list", "storage.pool.list", "Storage", "List existing local libvirt pools without adoption or activation", "", ""},
 	{"storage pool show", "storage.pool.get", "Storage", "Inspect pool XML and available capacity by stable UUID", "id", ""},
 	{"storage pool create", "storage.pool.create", "Storage", "Plan a new folder-backed pool for VM disks; defaults to libvirt's standard images folder", "", "create"},
+	{"storage pool start", "storage.pool.start", "Storage", "Plan starting an existing stopped pool; it also starts with the host unless --no-autostart", "id", "start"},
 	{"storage access grant", "storage.access.grant", "Storage", "Plan actor-only read access to one stopped VM's managed volume through the approved helper", "id", "grant-read"},
 	{"storage access revoke", "storage.access.revoke", "Storage", "Plan exact access restoration from a successful original grant operation", "id", "revoke-read"},
 	{"storage access result", "storage.access.result", "Storage", "Read the durable helper observation for an access operation", "id", ""},

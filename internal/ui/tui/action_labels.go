@@ -29,6 +29,7 @@ var actionText = map[string]struct{ label, description string }{
 	"storage pool list":             {"Browse storage pools", "See existing pools without activating or adopting them."},
 	"storage pool show":             {"View storage pool details", "Inspect pool configuration and reported available capacity."},
 	"storage pool create":           {"Create storage pool", "Set up a folder for VM disks; libvirt's standard folder by default."},
+	"storage pool start":            {"Start storage pool", "Start the selected stopped pool so VMs can use it."},
 	"storage access grant":          {"Grant disk read access", "Review temporary access to one stopped VM's managed volume."},
 	"storage access revoke":         {"Revoke disk read access", "Restore access settings from the original grant job."},
 	"storage access result":         {"View disk access result", "Inspect the saved result of a disk access job."},

@@ -2164,7 +2164,9 @@
         "internal/backend/libvirt/storage_pool_creation_linux.go",
         "internal/app/storage_pool_creation.go",
         "internal/ui/tui/workspace_creation_pool.go",
-        "docs/adr/0056-storage-pool-creation-and-setup-defaults.md"
+        "docs/adr/0056-storage-pool-creation-and-setup-defaults.md",
+        "internal/app/storage_pool_start.go",
+        "internal/backend/libvirt/storage_pool_start_linux.go"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -2190,7 +2192,9 @@
         "internal/backend/libvirt/storage_pool_creation_linux_test.go",
         "internal/app/storage_pool_creation_test.go",
         "internal/ui/tui/workspace_creation_pool_test.go",
-        "internal/ui/tui/creation_form_test.go"
+        "internal/ui/tui/creation_form_test.go",
+        "internal/app/storage_pool_start_test.go",
+        "internal/backend/libvirt/storage_pool_start_linux_test.go"
       ],
       "evidence": [
         "resource-inventory-001",

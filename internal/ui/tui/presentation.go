@@ -148,6 +148,17 @@ func planSummary(f *details, p domain.Plan) {
 			f.scalar("Starts", starts, 0)
 		}
 	}
+	if p.Operation == "storage.pool.start" {
+		if d, ok := p.Review["pool"].(map[string]any); ok {
+			f.scalar("Pool name", fmt.Sprint(d["name"]), 0)
+			f.scalar("Folder", fmt.Sprint(d["path"]), 0)
+			starts := "Now; automatic start with the host is unchanged"
+			if p.Review["enableAutostart"] == true {
+				starts = "Now and whenever the host starts"
+			}
+			f.scalar("Starts", starts, 0)
+		}
+	}
 	resourceChanges := resourcePlanChanges(f, p)
 	for _, field := range []struct {
 		label string

@@ -154,6 +154,96 @@ func TestStoragePageCreatesPoolWithoutOtherTools(t *testing.T) {
 	t.Fatal("storage pool create is not registered")
 }
 
+func creationPoolStartPlan(t *testing.T, connection string) domain.Plan {
+	t.Helper()
+	p := domain.Plan{APIVersion: domain.APIVersion, ID: creationPoolPlanID, ConnectionID: connection, Operation: "storage.pool.start", ResourceIDs: []string{}, Before: map[string]string{}, RequiredGrants: []domain.Grant{}, Acknowledgements: []string{"host-mutation"}, Risks: []string{"Starts the existing pool exactly as it is defined"}, Steps: []domain.Step{{ID: "start"}}, Review: map[string]any{"pool": map[string]any{"uuid": creationPoolID, "name": "default", "type": "dir", "path": "/var/lib/libvirt/images"}, "enableAutostart": true}}
+	digest, err := operations.PlanDigest(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Digest = digest
+	return p
+}
+
+func stoppedCreationPool(connection string) domain.StoragePool {
+	return domain.StoragePool{Key: domain.ResourceKey{ProviderID: "libvirt", ConnectionID: connection, Kind: "storage-pool", UUID: creationPoolID}, Name: "default", Type: "dir", Persistent: true}
+}
+
+// A stopped pool is started from VM setup instead of a second pool being made.
+func TestCreationStartsAStoppedPoolInsideVMSetup(t *testing.T) {
+	m := creationNetworkWorkspace(t, false)
+	stopped := stoppedCreationPool(m.Connection)
+	m.Creation.Pools, m.Creation.Spec.PoolID = []domain.StoragePool{stopped}, ""
+	m.Creation.Page = 0
+	f := creationFocus(t, *m.Creation, "start-pool")
+	if f.controls()[f.Focus].label != "Start pool default" {
+		t.Fatal("stopped pool not offered", f.controls()[f.Focus].label)
+	}
+	f, intent := creationPress(f, tea.KeyEnter)
+	if intent.Kind != "start-pool" || intent.Target != creationPoolID {
+		t.Fatal("start intent", intent)
+	}
+	c := &workspaceClient{}
+	m.Client = c
+	m, _ = creationPoolReply(t, m, c, m.openPoolStart(intent.Target), creationPoolStartPlan(t, m.Connection))
+	if m.Plan == nil || m.Plan.Operation != "storage.pool.start" || c.requests[0].ID != creationPoolID || c.requests[0].Action != "start" || len(c.requests[0].Input) != 0 {
+		t.Fatal("pool start review not requested", c.requests)
+	}
+	apply := m.request("apply", "operation.apply", app.Request{})
+	m, _ = creationPoolReply(t, m, c, apply, domain.Job{ID: creationPoolJobID, PlanID: creationPoolPlanID, State: "queued"})
+	if m.Creation == nil || m.CreationPool == nil || m.Section == 8 || m.draftSubmitted || !strings.Contains(m.Notice, "Starting storage pool default") {
+		t.Fatal("pool start left VM setup", m.Notice)
+	}
+	m, cmd := creationPoolPulseReply(t, m, c, domain.Job{ID: creationPoolJobID, PlanID: creationPoolPlanID, State: "succeeded"})
+	running := stopped
+	running.Active = true
+	m, _ = creationPoolReply(t, m, c, cmd, []domain.StoragePool{running})
+	if m.Creation.Spec.PoolID != creationPoolID || m.CreationPool != nil {
+		t.Fatal("started pool not selected", m.Creation.Error)
+	}
+	for _, pool := range []domain.StoragePool{{Key: stopped.Key, Name: "lvm", Type: "logical", Persistent: true}, {Key: stopped.Key, Name: "temp", Type: "dir"}} {
+		g := NewCreationForm(creationFormOperation, m.Creation.Source, m.Creation.Options, []domain.StoragePool{pool}, nil)
+		for _, control := range g.controls() {
+			if control.id == "start-pool" {
+				t.Fatal("unstartable pool offered", pool.Name)
+			}
+		}
+	}
+}
+
+func TestStoppedPoolDetailsOfferStartAndReview(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Width, m.Height = 120, 36
+	m.Section, m.NavIndex = 3, 3
+	m.Detail = generic(stoppedCreationPool(m.Connection))
+	has := func() bool {
+		for _, b := range m.buttons() {
+			if b.label == "Start pool" {
+				return true
+			}
+		}
+		return false
+	}
+	if !has() {
+		t.Fatal("stopped pool details lack Start pool")
+	}
+	running := stoppedCreationPool(m.Connection)
+	running.Active = true
+	m.Detail = generic(running)
+	if has() {
+		t.Fatal("running pool offers Start pool")
+	}
+	p := creationPoolStartPlan(t, m.Connection)
+	m.Detail = nil
+	m.Plan = &p
+	view := m.View()
+	for _, want := range []string{"Pool name: default", "Folder: /var/lib/libvirt/images", "Starts: Now and whenever the host starts"} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("start review lacks %q", want)
+		}
+	}
+}
+
 func TestPoolReviewNamesPoolFolderAndStartup(t *testing.T) {
 	m := fixtureWorkspace()
 	m.Width, m.Height = 120, 36

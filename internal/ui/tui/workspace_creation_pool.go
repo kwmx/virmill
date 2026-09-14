@@ -41,12 +41,42 @@ func (m *Workspace) openPoolCreation() tea.Cmd {
 	return m.request("plan", "storage.pool.create", app.Request{Action: "create", Input: map[string]any{}})
 }
 
+func poolPlanOperation(operation string) bool {
+	return operation == "storage.pool.create" || operation == "storage.pool.start"
+}
+
+// openPoolStart reviews starting an existing stopped pool.
+func (m *Workspace) openPoolStart(id string) tea.Cmd {
+	if !guidedUUID.MatchString(id) {
+		m.Error = "Select a stopped storage pool first."
+		return nil
+	}
+	if m.Busy || m.Pending["apply"] != 0 {
+		m.Error = "Wait for the current request before starting a storage pool."
+		return nil
+	}
+	if m.CreationPool != nil {
+		if m.Creation != nil {
+			m.Creation.Error = "A storage pool is still being prepared; it is selected when ready."
+		}
+		return nil
+	}
+	m.Busy = true
+	m.Error = ""
+	m.Notice = "Preparing the storage pool review…"
+	return m.request("plan", "storage.pool.start", app.Request{ID: id, Action: "start", Input: map[string]any{}})
+}
+
 func planPoolDefinition(p *domain.Plan) (domain.StoragePoolDefinition, bool) {
 	var d domain.StoragePoolDefinition
-	if p == nil || p.Operation != "storage.pool.create" {
+	if p == nil || !poolPlanOperation(p.Operation) {
 		return d, false
 	}
-	raw, err := json.Marshal(p.Review["definition"])
+	key := "definition"
+	if p.Operation == "storage.pool.start" {
+		key = "pool"
+	}
+	raw, err := json.Marshal(p.Review[key])
 	if err != nil || json.Unmarshal(raw, &d) != nil || !guidedUUID.MatchString(d.UUID) || d.Name == "" || d.Path == "" {
 		return d, false
 	}
@@ -55,8 +85,12 @@ func planPoolDefinition(p *domain.Plan) (domain.StoragePoolDefinition, bool) {
 
 // acceptCreationPool keeps the VM form open instead of switching to Jobs.
 func (m *Workspace) acceptCreationPool(data any) (bool, tea.Cmd) {
-	if m.Creation == nil || m.Plan == nil || m.Plan.Operation != "storage.pool.create" {
+	if m.Creation == nil || m.Plan == nil || !poolPlanOperation(m.Plan.Operation) {
 		return false, nil
+	}
+	verb := "Creating"
+	if m.Plan.Operation == "storage.pool.start" {
+		verb = "Starting"
 	}
 	var job domain.Job
 	raw, err := json.Marshal(data)
@@ -72,7 +106,7 @@ func (m *Workspace) acceptCreationPool(data any) (bool, tea.Cmd) {
 	m.Busy = false
 	m.Error = ""
 	m.Creation.Error = ""
-	m.Notice = "Creating storage pool " + pool.Name + "… Keep setting up your VM; the pool is selected when ready."
+	m.Notice = verb + " storage pool " + pool.Name + "… Keep setting up your VM; the pool is selected when ready."
 	return true, tea.Batch(creationPoolTick(job.ID), m.request("jobs", "operation.list", app.Request{}))
 }
 

@@ -163,6 +163,9 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			cmd.Flags().BoolVar(&noAutostart, "no-autostart", false, "Do not start the pool automatically when the host starts")
 			cmd.Long += " With no flags this plans libvirt's standard default pool: /var/lib/libvirt/images on qemu:///system. An existing folder keeps its permissions and files."
 		}
+		if a.Command == "storage pool start" {
+			cmd.Flags().BoolVar(&noAutostart, "no-autostart", false, "Leave automatic start with the host unchanged")
+		}
 		if a.Command == "vm remove" {
 			cmd.Flags().StringArrayVar(&deleteDisks, "delete-disk", nil, "Permanently delete selected guest disk targets (vda,vdb); repeatable; omitted keeps all disks")
 			cmd.Long += " Disks and backups are kept by default. --delete-disk accepts guest target IDs, not host paths; selected disk deletion is irreversible and requires its own plan acknowledgement. Backups are retained."
@@ -244,7 +247,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 				}
 				r.Input["deleteDisks"] = selected
 			}
-			if a.Command == "storage pool create" {
+			if a.Command == "storage pool create" || a.Command == "storage pool start" {
 				if poolPath != "" {
 					absolute, err := filepath.Abs(poolPath)
 					if err != nil {

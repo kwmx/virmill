@@ -174,11 +174,18 @@ func (f CreationForm) controls() []importControl {
 			}
 		}
 		poolHelp := "Where copies of the VM's disks are stored."
+		stopped, hasStopped := f.startablePool()
 		if len(pools) == 0 {
 			poolHelp = "No storage pool yet. Choose Create storage pool below; your settings stay here."
+			if hasStopped {
+				poolHelp = "Your storage pools are stopped. Start one below, or create libvirt's standard pool."
+			}
 		}
 		choice("pool", "Storage pool", poolHelp, poolName, pools)
 		if len(pools) == 0 {
+			if hasStopped {
+				c = append(c, importButton("start-pool", "Start pool "+validation.SafeText(stopped.Name), "Starts this existing pool after one short review; your settings stay here."))
+			}
 			c = append(c, importButton("create-pool", "Create storage pool", "Sets up libvirt's standard folder for VM disks after one short review."))
 		}
 		firmware := ""
@@ -461,6 +468,9 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 		switch c.id {
 		case "create-network", "refresh-networks", "create-pool":
 			return f, ImportIntent{Kind: c.id}
+		case "start-pool":
+			p, _ := f.startablePool()
+			return f, ImportIntent{Kind: c.id, Target: p.Key.UUID}
 		case "advanced":
 			f.Page = 3
 			f.Focus = 0
@@ -835,6 +845,18 @@ func (f *CreationForm) addDefaultNIC() {
 			return
 		}
 	}
+}
+
+// startablePool is a stopped persistent file-based pool, preferring "default".
+func (f CreationForm) startablePool() (domain.StoragePool, bool) {
+	var found domain.StoragePool
+	ok := false
+	for _, p := range f.Pools {
+		if !p.Active && p.Persistent && slices.Contains([]string{"dir", "fs", "netfs"}, p.Type) && guidedUUID.MatchString(p.Key.UUID) && (!ok || p.Name == "default") {
+			found, ok = p, true
+		}
+	}
+	return found, ok
 }
 
 // defaultCreationPool preselects libvirt's "default" pool, or the only usable

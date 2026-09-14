@@ -248,7 +248,7 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 func (m *Workspace) guardSetupApply(cmd tea.Cmd) tea.Cmd {
 	// A pool created from VM setup is a separate job; the VM draft stays editing.
-	if m.Plan != nil && m.Plan.Operation == "storage.pool.create" {
+	if m.Plan != nil && poolPlanOperation(m.Plan.Operation) {
 		return cmd
 	}
 	if m.CreationNetwork != nil && m.draftWriter != nil {

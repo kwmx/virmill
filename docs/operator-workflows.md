@@ -20,7 +20,10 @@ To create a pool, run `storage pool create` (TUI: **Storage → Create pool**, o
 pool: `default` at `/var/lib/libvirt/images` on the system connection. `--name`,
 `--path` and `--no-autostart` adjust it. Apply the plan as usual; the job defines,
 starts and enables autostart for a new directory pool. An existing folder keeps its
-permissions, label and files. Existing pools are never changed ([ADR 0056](adr/0056-storage-pool-creation-and-setup-defaults.md)). Pools show the backend type, configuration XML,
+permissions, label and files. Existing pools are never changed ([ADR 0056](adr/0056-storage-pool-creation-and-setup-defaults.md)).
+To use a stopped pool instead, run `storage pool start UUID` (TUI: **Start pool**
+on its details). It starts the pool as defined and, unless `--no-autostart`,
+starts it with the host; its folder is not created or changed. Pools show the backend type, configuration XML,
 active/persistent/autostart state and observed capacity when active. Capacity fields
 are null when unavailable, rather than fabricated zero space. Pool fingerprints
 bind the returned XML and activation settings; any XML change invalidates that

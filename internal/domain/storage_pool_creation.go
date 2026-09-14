@@ -23,3 +23,11 @@ type StoragePoolCreationProvider interface {
 	SetStoragePoolAutostart(context.Context, string, StoragePoolDefinition) error
 	InspectCreatedStoragePool(context.Context, string, StoragePoolDefinition) (StoragePool, error)
 }
+
+// StoragePoolStartProvider starts an existing persistent pool exactly as it is
+// defined. It never builds, redefines, stops or deletes a pool or its folder.
+// Start refuses a pool whose fingerprint differs from the reviewed one.
+type StoragePoolStartProvider interface {
+	StartExistingStoragePool(ctx context.Context, uri, id, fingerprint string) error
+	EnableStoragePoolAutostart(ctx context.Context, uri, id string) error
+}
