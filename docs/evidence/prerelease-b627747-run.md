@@ -29,6 +29,7 @@ with a private client state directory for each TUI probe.
 | `prerelease-b627747-job-activity-native-001` | failed: probe expectation |
 | `prerelease-b627747-job-activity-native-002` | **passed** |
 | `prerelease-b627747-disk-removal-native-001` | refused before any action |
+| `prerelease-b627747-disk-removal-native-002` | **passed** |
 
 The install replaced the beta.3 RPMs with this build (`rpm -U --replacepkgs`),
 checked the three installed binary hashes, version and revision, the CLI
@@ -48,9 +49,15 @@ guest was started. Those two runs added three succeeded jobs; all 41 jobs are
 terminal, including the historical recovery-required fixture job.
 
 Disk removal 001 stopped at its precondition: the `qemu:///session` inventory
-must be empty, and it still holds the storage pool retained by
-`disk-removal-native-001`. Nothing was created or deleted. The pool is left for
-the owner to decide on.
+must be empty, and it still held the storage pool retained by
+`disk-removal-native-001`. Nothing was created or deleted. With the owner's
+approval that pool's definition was removed (`pool-destroy`, `pool-undefine`);
+its folder was already empty, and its XML is kept in the run folder. Run 002
+then passed in a fresh stage: the shared-disk refusal, keeping disks by default,
+and selected-disk deletion through both the CLI and the TUI (More → Remove VM),
+on generated never-booted session guests only. It added two succeeded jobs, 43
+in all. Like earlier runs, it leaves its own session pool defined, so the next
+fresh run needs that pool removed first.
 
 The owner's draft directory held only its lock file after every run.
 
