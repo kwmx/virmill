@@ -88,6 +88,12 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	case "repository-init", "repository-check":
 		field("repository", "Repository directory", "Choose the local directory for encrypted backups.", 4096)
 		field("passwordFile", "Password file", "Choose a file outside the repository; no password text.", 4096)
+	case "pool-create":
+		field("name", "Pool name", "Letters, digits, dots, dashes or underscores. libvirt's standard pool is called default.", 64)
+		f.Fields[0].Value, f.Fields[0].Cursor = "default", len("default")
+		field("folder", "Folder", "Leave empty for libvirt's standard folder, or choose an existing or new folder (Ctrl+O).", 1024)
+		field("autostart", "Start with the host", "Keeps VM disks available after a restart.", 5)
+		f.Fields[2].Value, f.Fields[2].Toggle = "true", true
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
@@ -128,6 +134,8 @@ func (f GuidedForm) Title() string {
 		return "Initialize an encrypted repository"
 	case "repository-check":
 		return "Check an encrypted repository"
+	case "pool-create":
+		return "Create a storage pool"
 	default:
 		return "Guided form unavailable"
 	}
@@ -157,6 +165,8 @@ func (f GuidedForm) note() string {
 		return "Create encrypted storage for your backups."
 	case "repository-check":
 		return "Check your backup storage for damage or missing data."
+	case "pool-create":
+		return "An existing folder keeps its permissions and files. You review the pool before anything changes."
 	default:
 		return "Review the plan before making changes."
 	}
@@ -166,7 +176,7 @@ func (f GuidedForm) note() string {
 // changing request validation. The workspace owns opening the picker.
 func guidedBrowseKind(fieldName string) string {
 	switch fieldName {
-	case "repository", "sourceRoot":
+	case "repository", "sourceRoot", "folder":
 		return "directory"
 	case "path", "parametersFile", "recipe", "identityFile", "knownHostsFile", "passwordFile":
 		return "file"
@@ -496,6 +506,19 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		}
 		r.Path, r.Action, r.Input["passwordFile"] = values["repository"], strings.TrimPrefix(f.Kind, "repository-"), values["passwordFile"]
 		return "backup.repository." + r.Action, r, -1, nil
+	case "pool-create":
+		if !guidedRootID.MatchString(values["name"]) {
+			return fail("name", "Pool name: use 1-64 letters, digits, dots, dashes or underscores, starting with a letter or digit.")
+		}
+		if values["folder"] != "" && !guidedPath(values["folder"]) {
+			return fail("folder", "Folder: choose a canonical absolute path, or leave it empty for libvirt's standard folder.")
+		}
+		r.Action = "create"
+		r.Input = map[string]any{"name": values["name"], "autostart": values["autostart"] == "true"}
+		if values["folder"] != "" {
+			r.Input["path"] = values["folder"]
+		}
+		return "storage.pool.create", r, -1, nil
 	}
 	return fail("", "Choose a supported form.")
 }

@@ -5,7 +5,8 @@
 - Create storage pools in Virmill: `virmill storage pool create`, **Storage →
   Create pool**, and **Create storage pool** inside VM setup. With no options it
   plans libvirt's standard `default` pool at `/var/lib/libvirt/images`; `--name`,
-  `--path` and `--no-autostart` adjust it. In VM setup the form stays open while
+  `--path` and `--no-autostart` adjust it, as does **Storage → Custom pool** in
+  the TUI. In VM setup the form stays open while
   the pool is created, and the new pool is then selected. Existing folders keep
   their permissions and files; existing pools are never changed (ADR 0056).
 - Import in one review: the import review also covers creating the VM with

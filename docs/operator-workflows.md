@@ -16,7 +16,8 @@ These are read-only native libvirt calls. They do not adopt, activate, refresh,
 create or delete resources.
 
 To create a pool, run `storage pool create` (TUI: **Storage → Create pool**, or
-**Create storage pool** in VM setup). With no flags it plans libvirt's standard
+**Create storage pool** in VM setup; **Custom pool** chooses another name or
+folder). With no flags it plans libvirt's standard
 pool: `default` at `/var/lib/libvirt/images` on the system connection. `--name`,
 `--path` and `--no-autostart` adjust it. Apply the plan as usual; the job defines,
 starts and enables autostart for a new directory pool. An existing folder keeps its

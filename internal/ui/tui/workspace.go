@@ -1545,6 +1545,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "n":
 			if !m.Busy && m.Section == 6 {
 				m.guided("repository-init")
+			} else if !m.Busy && m.Section == 3 {
+				m.guided("pool-create")
 			}
 		case "v":
 			if !m.Busy && m.Section == 6 {
@@ -2227,7 +2229,7 @@ func (m Workspace) buttons() []workspaceButton {
 	}
 	primary := map[int][]workspaceButton{
 		2:  {{"Details", "enter"}, {"Create network", "action:network create"}},
-		3:  {{"Details", "enter"}, {"Create pool", "action:storage pool create"}, {"Refresh", "r"}},
+		3:  {{"Details", "enter"}, {"Create pool", "action:storage pool create"}, {"Custom pool", "n"}, {"Refresh", "r"}},
 		4:  {},
 		5:  {{"Validate lab", "action:lab validate"}},
 		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"Back up", "action:backup create"}, {"New repository", "n"}},
