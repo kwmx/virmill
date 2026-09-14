@@ -183,7 +183,8 @@ func TestWorkspaceSummaryAdvancedNeedsNoDestinationAndSavesOnBack(t *testing.T) 
 		t.Fatal("Back lost advanced choices", m.View())
 	}
 	for _, method := range c.Calls {
-		if method != "vm.creation.options" && method != "storage.pool.list" && method != "network.list" {
+		// inventory.list only suggests a free VM name; all are read-only.
+		if method != "vm.creation.options" && method != "storage.pool.list" && method != "network.list" && method != "inventory.list" {
 			t.Fatal("advanced should only read host choices", c.Calls)
 		}
 	}

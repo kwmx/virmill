@@ -45,6 +45,7 @@ type CreationForm struct {
 	CPUText, MemoryText     string
 	CPUOrigin, MemoryOrigin string
 	FirmwareOrigin          string
+	NameOrigin              string
 	NetworkOrigin           string
 	SuggestedNetworkID      string
 	StartAfter              bool // start the VM once creation succeeds (ADR 0057)
@@ -166,7 +167,11 @@ func (f CreationForm) controls() []importControl {
 	}
 	switch f.Page {
 	case 0:
-		c = append(c, importText("name", "VM name", "Choose a name not already used on this connection.", f.Spec.Name), importText("cpu", "CPU cores", f.CPUOrigin, f.CPUText), importText("memory", "Memory (MiB)", f.MemoryOrigin, f.MemoryText))
+		nameHelp := "Choose a name not already used on this connection."
+		if f.NameOrigin != "" {
+			nameHelp = f.NameOrigin
+		}
+		c = append(c, importText("name", "VM name", nameHelp, f.Spec.Name), importText("cpu", "CPU cores", f.CPUOrigin, f.CPUText), importText("memory", "Memory (MiB)", f.MemoryOrigin, f.MemoryText))
 		pools := []string{}
 		poolName := ""
 		for _, p := range f.Pools {
@@ -889,6 +894,27 @@ func defaultNATNetwork(networks []domain.VirtualNetwork) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// uniqueName suggests the next free name when a VM on this connection already
+// uses the current one, as when importing the same appliance again. The change
+// is labelled and editable; creation still checks names itself.
+func (f *CreationForm) uniqueName(vms []domain.VM) {
+	used := map[string]bool{}
+	for _, v := range vms {
+		used[v.Name] = true
+	}
+	if f == nil || !used[f.Spec.Name] {
+		return
+	}
+	base := f.Spec.Name
+	for i := 2; i < 1000; i++ {
+		if candidate := fmt.Sprintf("%s %d", base, i); !used[candidate] {
+			f.Spec.Name = candidate
+			f.NameOrigin = "Suggested: a VM named " + base + " already exists on this connection."
+			return
+		}
+	}
 }
 
 // startablePool is a stopped persistent file-based pool, preferring "default".

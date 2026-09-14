@@ -57,7 +57,8 @@ an uncertain operation with `operation reconcile OPERATION_ID`. A complete,
 matching published artifact can reconcile after coordinator restart, even if the
 original ISO is no longer available. Reconciliation never recreates disks or copies
 media. Unpublished failed staging requires a future explicit disposition workflow;
-successful staging is also retained pending dependency-aware cleanup.
+successful staging is retained until you remove it with `import discard
+OPERATION_ID`, which VM setup can do after creation ([ADR 0058](adr/0058-remove-prepared-copies.md)).
 
 Use the successful preparation operation ID in the separate
 [VM creation workflow](vm-creation.md), with

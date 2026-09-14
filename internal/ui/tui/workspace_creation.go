@@ -24,6 +24,7 @@ type creationBundle struct {
 	Options     domain.CreationOptions
 	Pools       []domain.StoragePool
 	Networks    []domain.VirtualNetwork
+	VMs         []domain.VM // names already used on this connection
 	OperationID string
 }
 type creationPulse struct{ OperationID string }
@@ -104,6 +105,10 @@ func (m *Workspace) loadCreation(id, machine string) tea.Cmd {
 		}
 		if err == nil {
 			err = call("network.list", app.Request{}, &b.Networks)
+		}
+		// Existing names only refine the suggested name; creation rechecks them.
+		if err == nil && call("inventory.list", app.Request{}, &b.VMs) != nil {
+			b.VMs = nil
 		}
 		return workspaceReply{Kind: "creation-load", Token: token, Response: app.Response{Data: b}, Err: err}
 	}

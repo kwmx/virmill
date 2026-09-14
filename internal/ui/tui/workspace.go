@@ -804,6 +804,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.draftSubmitted = false
 			m.Notice = ""
 			m.Error = ""
+			m.Creation.uniqueName(bundle.VMs)
 			// Import Preview loads VM settings first, so one review covers all.
 			if m.ImportAutoPreview && bundle.OperationID == "" && m.Import != nil && m.Creation != nil {
 				m.ImportAutoPreview = false

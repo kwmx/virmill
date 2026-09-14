@@ -95,6 +95,9 @@ still depends on the supported QEMU build.
    once. Creation and start run by themselves while this TUI stays open, but only
    if they ask for nothing beyond what you checked; otherwise their own review
    opens. If you close the TUI, Create VM continues from the prepared images.
+   With **Prepared copy: Remove after creation** (the default), the last step
+   removes the preparation's work folder and prepared images to free disk space;
+   the VM keeps its own disks. Choose **Keep** to create more VMs from them.
 
 For ISO and existing disks, stop programs or VMs using the selected images and
 check **Source images are not in use**. The backend repeats source identity,

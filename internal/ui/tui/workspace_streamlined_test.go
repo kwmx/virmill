@@ -130,6 +130,31 @@ func TestPreparedImagesOpenVMReviewDirectly(t *testing.T) {
 	}
 }
 
+// Importing the same appliance again suggests a free name instead of failing
+// creation after preparation.
+func TestCreationSuggestsAFreeNameWhenTaken(t *testing.T) {
+	base := creationFormFixture()
+	m := fixtureWorkspace()
+	m.Client = &workspaceClient{}
+	m.Pending["creation-load"] = 51
+	taken := []domain.VM{workspaceVM(workspaceVMID, "appliance"), workspaceVM("22345678-1234-4234-8234-123456789abc", "appliance 2")}
+	bundle := creationBundle{OperationID: creationFormOperation, Source: base.Source, Options: base.Options, Pools: base.Pools, Networks: base.Networks, VMs: taken}
+	next, _ := m.Update(workspaceReply{Kind: "creation-load", Token: 51, Response: app.Response{Data: bundle}})
+	m = next.(Workspace)
+	if m.Creation == nil || m.Creation.Spec.Name != "appliance 3" || !strings.Contains(m.Creation.NameOrigin, "already exists") {
+		t.Fatal("taken name not replaced by a free suggestion", m.Creation.Spec.Name)
+	}
+	f := creationFocus(t, *m.Creation, "name")
+	if !strings.Contains(f.controls()[f.Focus].help, "a VM named appliance already exists") {
+		t.Fatal("name suggestion not labelled")
+	}
+	free := NewCreationForm(creationFormOperation, base.Source, base.Options, nil, nil)
+	free.uniqueName([]domain.VM{workspaceVM(workspaceVMID, "other")})
+	if free.Spec.Name != "appliance" || free.NameOrigin != "" {
+		t.Fatal("free name changed")
+	}
+}
+
 func TestCreatedVMCanBeStartedFromItsResult(t *testing.T) {
 	m := fixtureWorkspace()
 	m.Client = &workspaceClient{}
