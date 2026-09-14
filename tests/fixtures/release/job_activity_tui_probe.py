@@ -96,7 +96,10 @@ def execute(stage):
                     'networks': runner.cli('network', 'list'), 'media': media_listing(Path.home() / 'images')}
         try:
             before = observe(); index, job = selected_job(before['jobs'])
-            require(runner.cli('operation', 'show', JOB_ID) == job, 'selected job changed between observations')
+            # operation list adds the plan's task fields; operation show returns the stored job.
+            shown = runner.cli('operation', 'show', JOB_ID)
+            require(shown == {k: v for k, v in job.items() if k not in ('operation', 'resourceIDs', 'targetName')},
+                    'selected job changed between observations')
             events = checked_events(runner.cli('operation', 'watch', JOB_ID, '--after', '0'))
             runner.save('before.json', before); runner.save('cli-events.json', events)
             runner.save('selected-job.json', job)

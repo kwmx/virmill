@@ -1,17 +1,20 @@
-# Owner beta handoff — updated 13 September 2026
+# Owner beta handoff — updated 14 September 2026
 
-**Virmill 1.0.0-beta.3 is installed and verified on the authorized Fedora 44
+**Virmill 1.0.0-beta.4 is installed and verified on the authorized Fedora 44
 test VM.** This is an owner-test pre-release, not a certified 1.0. All 71
 acceptance scenarios remain mandatory, with 2 accepted, 57 in progress and 12 not
 yet implemented in the full release tracker.
 
-**Current beta:** `1.0.0-beta.3`, build revision `0627800`. It fixes the DEB
-packages, which now install on Debian 13 and Ubuntu 24.04 (container-tested), and
-returns an unused Import started from the VM list to the list on Esc. The in-place
-upgrade from beta.2, CLI and 80×24 TUI smoke test, TUI workspace, Jobs → Activity,
-network form and source detection walkthroughs passed. Two clean builds were
-byte-identical. See [beta.3 verification](evidence/beta3-release-run.md) and the
-earlier [beta.2 verification](evidence/beta2-release-run.md), which also covers the
+**Current beta:** `1.0.0-beta.4`, build revision `f6a2c9a`. It adds
+`virmill update`, the redesigned TUI, a readable `virmill doctor` and stripped
+binaries. The in-place upgrade from beta.3, CLI and 80×24 TUI smoke test, TUI
+workspace, Jobs → Activity, network form and source detection walkthroughs and a
+read-only update check passed, and `virmill update` installed the published
+beta.3 over an older test build. Two clean builds were byte-identical. Later
+betas can be installed with `virmill update`. See
+[beta.4 verification](evidence/beta4-release-run.md), the earlier
+[beta.3 verification](evidence/beta3-release-run.md) and
+[beta.2 verification](evidence/beta2-release-run.md), which also covers the
 generated SPICE creation fixture `virmill-spice-e79f41dbb545`, retained stopped.
 
 **Remove VM** offers unchecked disk choices, exact-name confirmation and a
@@ -115,21 +118,20 @@ virmill
 ```
 
 Current unsigned RPM/DEB packages, the source archive and `SHA256SUMS` are
-retained in `build/beta3-delivery/`. The installed build revision is
-`0627800b70d6e04e826df72d7dc0e257c1c0d7df`, and `virmill version` reports
-`1.0.0-beta.3`. The beta.2 packages in `build/beta2-delivery/` are superseded;
-their DEBs do not install on Debian or Ubuntu.
+retained in `build/beta4-delivery/`. The installed build revision is
+`f6a2c9a98bfcc272765ca93f99fd4f40ffc1607b`, and `virmill version` reports
+`1.0.0-beta.4`. The beta.3 packages in `build/beta3-delivery/` are superseded.
 
 | Current artifact | SHA-256 |
 | --- | --- |
-| `virmill-1.0.0-0.beta.3.x86_64.rpm` | `fa75f7658731b3087aab1762833dec644204d8039d8a4003929982e55b9ecfae` |
-| `virmill-host-helper-1.0.0-0.beta.3.x86_64.rpm` | `fe3a154d8b50cd31db47876de1c51c854b988bc3457fb73e7f7e802295c41986` |
-| `virmill_1.0.0~beta.3_amd64.deb` | `8c0d005b6eddef4dda9e6ace1305edb3aa648835d19e09025faff8de355e32ea` |
-| `virmill-host-helper_1.0.0~beta.3_amd64.deb` | `0707956630e810902968aa2a71a3d51b2051f00c6c6104e3d5b2f36b3f14eae0` |
-| `virmill-1.0.0-beta.3-source.tar.gz` | `e8fff234771fd97ff2f3973ea3702cc36b9698d7653da0441690f3e5b93453af` |
-| installed `/usr/bin/virmill` | `eaa0379aeb6982c28ec7237e78b64fcfcd51c441877e1800ffe08916263ccfa5` |
-| installed `/usr/bin/virmilld` | `4926c3198380c77647acd3dedfbaf0a53026fc135d4de2684c578488a4e83430` |
-| installed `/usr/libexec/virmill-host-helper` | `2321037e07a666798fbb896c9aad9a3f120e11f16bedd4fc2dae8eb71e15904e` |
+| `virmill-1.0.0-0.beta.4.x86_64.rpm` | `1081f117391876d8e659433fd584ad4b984024cab59b31baea5318d162799838` |
+| `virmill-host-helper-1.0.0-0.beta.4.x86_64.rpm` | `057e9a59d52f40c397023b9525c53f3a8d1630d2c0e8921e394d4f7d4f9cca83` |
+| `virmill_1.0.0~beta.4_amd64.deb` | `b07d74af941433977c2f5c9af26398d1f7b10a8a665f41caa42ed0bbd481d052` |
+| `virmill-host-helper_1.0.0~beta.4_amd64.deb` | `003b70716a3f0d2912dc5eb536c2e70f0f79c8065512dc987a526c8a78d7b385` |
+| `virmill-1.0.0-beta.4-source.tar.gz` | `86d06bc20b878ae257ac516a0faa7e19187b7c6bfc3583ec9badd52aa1717fb3` |
+| installed `/usr/bin/virmill` | `755678817cf24959478d385397ad98f2ae7258e3816e0b85fca0746e0c7d897a` |
+| installed `/usr/bin/virmilld` | `1cb78f9a8ad5775a038088bb4f1505cd036ade8a62f5a3a1822adf6edc91cd26` |
+| installed `/usr/libexec/virmill-host-helper` | `29d56c012aa3577549284af98ecaaa888648da7d5343cdf731a7e05816687055` |
 
 The ordinary user's `virmilld.service` is running and enabled at sign-in.
 If it is stopped, use

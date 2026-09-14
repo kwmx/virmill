@@ -33,7 +33,8 @@ is a readable view. No row passes solely because a related unit test passed.
 The release check fails while any mandatory row lacks its required evidence.
 
 
-Latest release verification: [1.0.0-beta.3 owner pre-release](beta3-release-run.md).
+Latest release verification: [1.0.0-beta.4 owner pre-release](beta4-release-run.md).
+Previous: [1.0.0-beta.3](beta3-release-run.md).
 Latest pre-release check: [b627747, TUI redesign](prerelease-b627747-run.md).
 Build, reproducibility, Debian/Ubuntu DEB installation and native workflow results
 are recorded. No status is promoted. Previous: [1.0.0-beta.2](beta2-release-run.md).

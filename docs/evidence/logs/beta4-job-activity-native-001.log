@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/beta4-f6a2c9a/job_activity_tui_probe.py", line 265, in <module>
+    execute(args.root)
+    ~~~~~~~^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/beta4-f6a2c9a/job_activity_tui_probe.py", line 99, in execute
+    require(runner.cli('operation', 'show', JOB_ID) == job, 'selected job changed between observations')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/beta4-f6a2c9a/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: selected job changed between observations
