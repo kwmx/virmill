@@ -175,6 +175,10 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 				m.Creation.Error = "Return to import and choose the source again."
 				return m, nil
 			}
+			if err := m.ensureImportStaging(); err != nil {
+				m.Creation.Error = err.Error()
+				return m, nil
+			}
 			method, prep, err := m.Import.Draft.Request(m.Connection)
 			if err != nil {
 				m.Creation.Error = err.Error()

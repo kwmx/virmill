@@ -192,6 +192,8 @@ func (m *Workspace) openJobVM() tea.Cmd {
 	return m.request("job-open-vm", "inventory.get", app.Request{ID: o.VMID})
 }
 func (m *Workspace) receiveJobVM(data any) tea.Cmd {
+	start := m.JobStartVM
+	m.JobStartVM = false
 	m.Busy = false
 	o := m.currentJobOutcome()
 	if o == nil || o.VMID == "" {
@@ -208,6 +210,9 @@ func (m *Workspace) receiveJobVM(data any) tea.Cmd {
 	m.DetailTitle = "VM details"
 	m.Notice = ""
 	m.Error = ""
+	if start {
+		return tea.Batch(refresh, m.requestResourceSummary(), m.preview("start"))
+	}
 	return tea.Batch(refresh, m.requestResourceSummary())
 }
 

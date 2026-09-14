@@ -11,6 +11,12 @@
 - VM setup preselects libvirt's `default` pool (or the only usable pool) and the
   firmware the source declares. Otherwise BIOS is preselected and labelled
   *Suggested*.
+- Import saves prepared copies in a new private folder under
+  `~/.local/share/virmill/imports` by default, so the folder step is skipped;
+  **Back: Destination** still chooses another folder.
+- When image preparation finishes and the VM settings are complete, the VM review
+  opens directly instead of the settings form. A created VM's result offers
+  **Start VM**.
 
 - `virmill update` also requires each download, and `SHA256SUMS` itself, to
   match the SHA-256 digest GitHub recorded for the upload, as the install script

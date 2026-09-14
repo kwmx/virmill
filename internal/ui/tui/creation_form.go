@@ -219,6 +219,9 @@ func (f CreationForm) controls() []importControl {
 			if (f.Source.Kind == "PreparedInstallation" || f.Source.Kind == "installation-media") && slices.Contains(choices, "sata") {
 				busHelp = "Suggested: SATA for installation media. Choose another bus only if the guest supports it."
 			}
+			if f.Source.Kind == "PreparedDiskSet" && slices.Contains(choices, "sata") {
+				busHelp = "Suggested: SATA, which nearly every guest boots from. Choose VirtIO for speed if the guest has its drivers."
+			}
 			choice("bus", "Controller bus", busHelp, bus, choices)
 			bootHelp := "1 boots first; other devices shift to keep the order."
 			if index >= len(f.Spec.Disks) {
@@ -844,7 +847,9 @@ func creationSourceBus(source CreationSource, diskID string, options domain.Crea
 	if !slices.Contains(options.DiskBuses, "sata") {
 		return ""
 	}
-	if source.Kind == "PreparedInstallation" || source.Kind == "installation-media" {
+	// Installers and plain disk images carry no controller metadata. SATA boots
+	// on nearly every guest without extra drivers; the form labels it Suggested.
+	if source.Kind == "PreparedInstallation" || source.Kind == "installation-media" || source.Kind == "PreparedDiskSet" {
 		return "sata"
 	}
 	attachments := []importer.Item{}

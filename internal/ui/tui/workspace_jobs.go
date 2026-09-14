@@ -39,7 +39,7 @@ func (m Workspace) jobButtons() []workspaceButton {
 		if o.Error != "" {
 			out = append(out, workspaceButton{"Refresh result", "job-refresh-result"})
 		} else if !o.Loading && o.VMID != "" {
-			out = append(out, workspaceButton{"Open VM", "job-open-vm"})
+			out = append(out, workspaceButton{"Start VM", "job-start-vm"}, workspaceButton{"Open VM", "job-open-vm"})
 		}
 	}
 	out = append(out, workspaceButton{"Activity", "job-activity"})

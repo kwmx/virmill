@@ -42,5 +42,16 @@ source declares. Without a declaration BIOS is preselected and labelled
 the review shows the final choice. With several pools and no `default`, the user
 chooses. This supersedes the earlier rule that unknown firmware is left unset.
 
+Import follows the same approach. Prepared copies default to a new folder under
+`$XDG_DATA_HOME/virmill/imports` (normally `~/.local/share/virmill/imports`),
+named after the VM and the time. The TUI creates only that private parent, mode
+0700, just before the preview; the preparation job still creates and reviews the
+destination itself, and a folder the user chose is never created. When
+preparation succeeds and the VM settings are complete, the creation review opens
+directly; incomplete settings open the form at the missing field. A created VM's
+result offers Start VM, which opens the VM and shows the ordinary start review.
+These change presentation only: preparation and creation remain two reviewed
+operations (ADR 0037).
+
 STO-01 remains in progress: disk growth, move and space accounting, and native
 evidence for pool creation, are separate.

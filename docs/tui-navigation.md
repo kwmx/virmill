@@ -74,8 +74,11 @@ still depends on the supported QEMU build.
    do not provide hardware settings. A disk does not reliably identify its OS,
    firmware or installed drivers. **Advanced settings** opens optional hardware
    choices before any copying. Done or Esc returns to the summary.
-2. **Choose where to save.** Select an existing parent with **Save in**, then enter
-   a **New folder name**. The reviewed preparation job creates that destination.
+2. **Where to save.** Prepared copies go in a new private folder under
+   `~/.local/share/virmill/imports` (or `$XDG_DATA_HOME/virmill/imports`), named
+   after the VM and the time, so this step is skipped; **Saved in** shows it.
+   **Back: Destination** chooses an existing parent with **Save in** and a **New
+   folder name** instead. The reviewed preparation job creates that destination.
    Existing output folders and the original media remain untouched.
 3. **Review the disks.** Switch disks with Left/Right. Detected source formats and
    sizes fill the controls. The maximum virtual size is a safety limit, not a
@@ -85,7 +88,9 @@ still depends on the supported QEMU build.
 4. **Preview image preparation.** Review the source, destination, disk conversion
    and required storage. Space errors name the shortfall in readable units;
    **Back: Destination** returns to the location choice. Confirm the listed
-   consequences and choose **Apply reviewed plan** to start preparation.
+   consequences and choose **Apply reviewed plan** to start preparation. When it
+   finishes and every VM setting is complete, the VM review opens directly; Esc
+   returns to the settings. Otherwise VM setup opens at the missing setting.
 
 For ISO and existing disks, stop programs or VMs using the selected images and
 check **Source images are not in use**. The backend repeats source identity,
@@ -270,7 +275,8 @@ Review the plan before applying. Back from review preserves your choices.
 
 ### Completed jobs and guest tools
 
-After a VM job completes, **Open VM** takes you to fresh VM details. Creation
+After a VM is created, **Start VM** opens it and shows the start review. After
+any VM job completes, **Open VM** takes you to fresh VM details. Creation
 checks its saved receipt first; the completed copy/definition is separate from
 booting and configuring the guest. If the result cannot be verified, **Refresh
 result** retries the observation and leaves the job unchanged. Activity and advanced

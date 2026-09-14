@@ -5291,7 +5291,8 @@
         "internal/backend/libvirt/disk_removal_linux.go",
         "internal/ui/tui/removal_disks.go",
         "docs/adr/0054-explicit-selected-disk-removal.md",
-        "docs/evidence/disk-removal-run.md"
+        "docs/evidence/disk-removal-run.md",
+        "internal/ui/tui/import_staging.go"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5478,7 +5479,9 @@
         "internal/backend/libvirt/disk_removal_linux_test.go",
         "internal/ui/tui/removal_disks_test.go",
         "internal/ui/cli/removal_disks_test.go",
-        "tests/fixtures/release/disk_removal_native_cycle.py"
+        "tests/fixtures/release/disk_removal_native_cycle.py",
+        "internal/ui/tui/workspace_streamlined_test.go",
+        "internal/ui/tui/workspace_creation_pool_test.go"
       ],
       "evidence": [
         "core-tests-001",

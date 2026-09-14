@@ -34,6 +34,7 @@ type Workspace struct {
 	CreationNetworkRefresh *creationNetworkRefresh
 	CreationPool           *creationPoolJob
 	JobOutcome             *jobOutcome
+	JobStartVM             bool // Start VM: open the created VM, then review starting it
 	Resources              *resourceSetup
 	ResourceSummary        *domain.VMResourceView
 	ResourceSummaryVM      domain.VM
@@ -69,6 +70,7 @@ type Workspace struct {
 	CreationChoices       []creationChoice
 	CreationIndex         int
 	PendingPreparation    string
+	CreationAutoReview    string // preparation whose VM review opens when it loads
 	Import                *ImportForm
 	ExportForm            *GuidedForm
 	ImportPickerTarget    string
@@ -654,6 +656,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			if v.Kind == "job-open-vm" {
+				m.JobStartVM = false
 				m.Busy = false
 				m.Error = "Could not open this job's VM: " + text
 			}
@@ -680,6 +683,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Notice = ""
 			}
 			if strings.HasPrefix(v.Kind, "creation-") {
+				m.CreationAutoReview = ""
 				m.Busy = false
 				m.Error = importError(err)
 				if m.Creation != nil {
@@ -778,6 +782,21 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.draftSubmitted = false
 			m.Notice = ""
 			m.Error = ""
+			// After preparation, a complete setup goes straight to its review;
+			// Esc from the review returns to the settings.
+			if id := m.CreationAutoReview; id != "" {
+				m.CreationAutoReview = ""
+				if m.Creation != nil && id == bundle.OperationID && m.Creation.OperationID == id {
+					r, err := m.Creation.Request(m.Connection)
+					if err == nil {
+						m.Busy = true
+						m.Notice = "Images are ready. Review the new VM; Esc returns to its settings."
+						return m, m.request("plan", "vm.create", r)
+					}
+					m.Creation.FocusError(err)
+					m.Notice = "Images are ready. Finish the highlighted setting, then review."
+				}
+			}
 		case "creation-pool-job":
 			return m, m.receiveCreationPoolJob(v.Response.Data)
 		case "creation-pools":
@@ -797,6 +816,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if job.State == "succeeded" {
 				if m.Section == 8 && resourceID(m.Detail) == job.ID && m.Activity == nil && m.Plan == nil && !m.Busy && m.AutostartTarget == nil && m.RemovalTarget == nil && m.CreationNetwork == nil && m.NetworkForm == nil && m.Import == nil && m.Creation == nil && !m.Advanced && m.Form == nil && m.ActionForm == nil && !m.CreationPicking && m.Picker == nil && m.ExportForm == nil && !m.Help {
+					m.CreationAutoReview = job.ID
 					return m, m.loadCreation(job.ID, "")
 				}
 				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
@@ -913,7 +933,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Notice = "Operation accepted. Jobs continue when you leave this page."
 			if prepared {
 				m.PendingPreparation = resourceID(data)
-				m.Notice = "Preparing images. CPU, RAM and network setup opens when ready."
+				m.Notice = "Preparing images. The VM review opens when they are ready."
 				return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), creationTick(m.PendingPreparation), draftCommand)
 			}
 			return m, tea.Batch(m.request("jobs", "operation.list", app.Request{}), draftCommand)
@@ -1354,7 +1374,12 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Offset = 0
 			}
 			return m, nil
+		case "job-start-vm":
+			cmd := m.openJobVM()
+			m.JobStartVM = cmd != nil
+			return m, cmd
 		case "job-open-vm":
+			m.JobStartVM = false
 			return m, m.openJobVM()
 		case "job-activity":
 			return m, m.openJobActivity()

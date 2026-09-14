@@ -77,6 +77,7 @@ func (m *Workspace) openImport(kind string) tea.Cmd {
 		return nil
 	}
 	f := NewImportForm(kind)
+	f.StagingRoot = importStagingRoot()
 	m.Import = &f
 	m.ActionForm = nil
 	m.Form = nil
@@ -239,7 +240,11 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	}
-	f, intent := m.Import.Update(key)
+	current := *m.Import
+	if current.StagingRoot == "" {
+		current.StagingRoot = importStagingRoot()
+	}
+	f, intent := current.Update(key)
 	m.Import = &f
 	switch intent.Kind {
 	case "cancel":
@@ -261,6 +266,12 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "hardware":
 		return m, m.configureImportHardware()
 	case "preview", "export":
+		if intent.Kind == "preview" {
+			if err := m.ensureImportStaging(); err != nil {
+				m.Import.Error = err.Error()
+				return m, nil
+			}
+		}
 		method, r, err := f.Draft.Request(m.Connection)
 		if err != nil {
 			m.Import.Error = err.Error()

@@ -314,12 +314,12 @@ func TestJobOutcomeAsyncResultKeepsEventsFocused(t *testing.T) {
 			}
 			next, _ := m.Update(cmd())
 			m = next.(Workspace)
-			wantFirst := "job-open-vm"
+			wantFirst, wantIndex := "job-start-vm", 2
 			if failed {
-				wantFirst = "job-refresh-result"
+				wantFirst, wantIndex = "job-refresh-result", 1
 			}
 			buttons := m.jobButtons()
-			if buttons[0].key != wantFirst || !m.ButtonFocus || m.ButtonIndex != 1 || buttons[m.ButtonIndex].key != "job-activity" {
+			if buttons[0].key != wantFirst || !m.ButtonFocus || m.ButtonIndex != wantIndex || buttons[m.ButtonIndex].key != "job-activity" {
 				t.Fatal("new result action stole Events focus", buttons, m.ButtonFocus, m.ButtonIndex)
 			}
 		})
@@ -347,7 +347,7 @@ func TestJobOutcomeRefreshClearsFocusWhenResultButtonDisappears(t *testing.T) {
 	}
 	next, _ := m.Update(cmd())
 	m = next.(Workspace)
-	if m.ButtonFocus || m.jobButtons()[0].key != "job-open-vm" {
+	if m.ButtonFocus || m.jobButtons()[0].key != "job-start-vm" {
 		t.Fatal("completed refresh unexpectedly refocused an action")
 	}
 }

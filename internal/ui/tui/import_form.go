@@ -17,6 +17,7 @@ type ImportForm struct {
 	VM                      *CreationForm
 	VMBinding               string
 	Draft                   ImportDraft
+	StagingRoot             string // private default folder for prepared images
 	Error                   string
 	Page, Focus, Disk, File int
 	cursor                  int
@@ -391,6 +392,9 @@ func (f ImportForm) controls() []importControl {
 			importButton("back", backLabel, "Return to the appliance or source without losing these choices."),
 			importButton("next", "Continue", "Set disk sizes and review which files will be copied."))
 	case 2:
+		if d.DestinationParent != "" && d.DestinationName != "" {
+			controls = append(controls, importControl{id: "saveInfo", label: "Saved in", kind: "info", value: importDestination(d), help: "Prepared copies go in this new folder. Back: Destination changes it."})
+		}
 		if len(d.Disks) > 0 {
 			index := max(0, min(f.Disk, len(d.Disks)-1))
 			disk := d.Disks[index]
@@ -575,6 +579,11 @@ func (f ImportForm) Update(key tea.KeyMsg) (ImportForm, ImportIntent) {
 				f.Page = 1
 				f.Focus = 0
 				f.Error = ""
+				// A private default folder skips this step; Back: Destination reaches it.
+				if f.Draft.DestinationParent == "" && f.Draft.DestinationName == "" && f.StagingRoot != "" {
+					f.Draft.DestinationParent, f.Draft.DestinationName = f.StagingRoot, defaultImportFolder(f.Draft)
+					f.Page = 2
+				}
 				return f, none
 			}
 			if f.Page == 0 {
