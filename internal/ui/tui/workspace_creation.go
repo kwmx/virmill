@@ -139,6 +139,15 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 				return m, m.openImport("auto")
 			}
 			return m, m.loadCreation(m.CreationChoices[m.CreationIndex].OperationID, "")
+		case tea.KeyRunes:
+			// x reviews removing the selected prepared copy (ADR 0058); Esc
+			// from that review returns here.
+			if string(key.Runes) == "x" && m.CreationIndex < len(m.CreationChoices) {
+				m.Busy = true
+				m.Error = ""
+				m.Notice = "Preparing the removal review…"
+				return m, m.request("plan", "import.discard", app.Request{ID: m.CreationChoices[m.CreationIndex].OperationID, Action: "discard", Input: map[string]any{}})
+			}
 		}
 		return m, nil
 	}
@@ -213,6 +222,9 @@ func (m Workspace) creationView(width, height int) []string {
 		mark = "> "
 	}
 	lines = append(lines, mark+"[ Import new images ]")
+	if len(m.CreationChoices) > 0 {
+		lines = append(lines, "", "x removes the selected prepared copy to free disk space.")
+	}
 	return pageLines(lines, width, height, max(0, m.CreationIndex-height+9))
 }
 

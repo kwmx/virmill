@@ -302,6 +302,30 @@ func TestUnsetImportChoiceSaysChoose(t *testing.T) {
 	}
 }
 
+func TestSourcePickerRemovesAPreparedCopy(t *testing.T) {
+	m := fixtureWorkspace()
+	c := &workspaceClient{}
+	m.Client = c
+	m.CreationPicking = true
+	m.CreationChoices = []creationChoice{{OperationID: chainPrepJob, Name: "prepared", Kind: "PreparedDiskSet", Destination: "/data/prepared"}}
+	if !strings.Contains(m.View(), "x removes the selected prepared copy") {
+		t.Fatal("removal hint missing", m.View())
+	}
+	m.CreationIndex = 1
+	if m, cmd := wk(m, "x"); cmd != nil || m.Busy {
+		t.Fatal("x on Import new images requested a removal")
+	}
+	m.CreationIndex = 0
+	m, cmd := wk(m, "x")
+	if cmd == nil || !m.CreationPicking {
+		t.Fatal("x did not request the removal review")
+	}
+	cmd()
+	if !slices.Equal(c.calls, []string{"import.discard"}) || c.requests[0].ID != chainPrepJob || c.requests[0].Action != "discard" || len(c.requests[0].Input) != 0 {
+		t.Fatal("removal request", c.calls, c.requests)
+	}
+}
+
 func TestImportPreviewLoadsVMSettingsFirst(t *testing.T) {
 	m := importWorkspace(t)
 	f := importFocus(t, *m.Import, "preview")
