@@ -138,7 +138,7 @@ func TestCommonTasksKeepAllAdvancedActionsReachable(t *testing.T) {
 	m := fixtureWorkspace()
 	m.Section = 1
 	m, _ = wk(m, "a")
-	if len(m.catalog()) > 6 {
+	if len(m.catalog()) > 7 {
 		t.Fatal("common menu too long")
 	}
 	for _, a := range m.catalog() {
@@ -146,19 +146,28 @@ func TestCommonTasksKeepAllAdvancedActionsReachable(t *testing.T) {
 			t.Fatal("specialist task in common menu")
 		}
 	}
+	common := map[string]bool{}
+	for _, a := range m.catalog() {
+		common[a.Command] = true
+	}
 	m.CatalogIndex = len(m.catalog())
 	m, cmd := wk(m, "enter")
 	if cmd != nil || !m.CatalogExpert {
 		t.Fatal("Advanced entry did not open specialist menu")
 	}
-	count := 0
-	for _, a := range ui.Actions {
-		if a.Section == "VMs" {
-			count++
-		}
+	// Advanced holds every VM task More does not, except power tasks a stopped
+	// VM cannot use; All tools still lists everything.
+	advanced := map[string]bool{}
+	for _, a := range m.catalog() {
+		advanced[a.Command] = true
 	}
-	if len(m.catalog()) != count {
-		t.Fatal("advanced menu lost actions")
+	for _, a := range ui.Actions {
+		switch {
+		case a.Section != "VMs" || common[a.Command]:
+		case a.Command == "vm stop" || a.Command == "vm reboot" || a.Command == "vm pause" || a.Command == "vm resume" || a.Command == "vm save" || a.Command == "vm restore-saved":
+		case !advanced[a.Command]:
+			t.Fatal("advanced menu lost", a.Command)
+		}
 	}
 	m, _ = wk(m, "esc")
 	if m.CatalogExpert || !m.Advanced {

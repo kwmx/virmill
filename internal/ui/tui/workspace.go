@@ -1626,14 +1626,14 @@ func emptyState(section int) []string {
 	return []string{"Nothing to show here yet."}
 }
 
-// withoutEmptyDetails drops Details when an empty list has nothing to open.
+// withoutEmptyDetails drops Details and Activity when an empty list has nothing to open.
 func (m Workspace) withoutEmptyDetails(buttons []workspaceButton) []workspaceButton {
 	if m.Detail != nil || len(m.rows()) > 0 {
 		return buttons
 	}
 	out := []workspaceButton{}
 	for _, b := range buttons {
-		if b.key != "enter" {
+		if b.key != "enter" && b.key != "job-activity" {
 			out = append(out, b)
 		}
 	}
@@ -1811,7 +1811,7 @@ func (m Workspace) content(width, height int) []string {
 		return strings.Split(m.Picker.View(width, height), "\n")
 	}
 	if m.Help {
-		return []string{"Keyboard guide", "", "1 Overview  2 VMs  3 Networks  4 Storage  5 Templates", "6 Labs  7 Protection  8 Devices  9 Jobs  0 Plugins  , Settings", "", "Tab cycles content, action buttons and section navigation.", "Arrow keys select rows. Enter opens full resource details.", "/ searches names, states and complete resource IDs.", "r refreshes observations; x toggles raw data in details.", "VMs: s start, t graceful stop, b reboot, p pause, u resume.", "VMs: e CPU/RAM, c cold capture, g guest tools.", "Every VM change opens a review before it can be submitted.", ": opens All tools; a groups more tasks for this section.", "Esc goes back. q/Ctrl-C detach; accepted jobs keep running.", "", "? or Esc closes this help."}
+		return pageLines(m.helpLines(), width, height, 0)
 	}
 	if m.Activity != nil {
 		return m.Activity.View(width, height)
@@ -2126,7 +2126,7 @@ func (m Workspace) buttons() []workspaceButton {
 		5:  {{"Validate lab", "action:lab validate"}},
 		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"Back up", "action:backup create"}, {"New repository", "n"}},
 		7:  {{"USB devices", "action:device usb list"}, {"PCI devices", "action:host pci list"}},
-		8:  {{"Details", "enter"}, {"Create VM", "action:vm create"}, {"Activity", "job-activity"}, {"Refresh", "r"}},
+		8:  {{"Details", "enter"}, {"Activity", "job-activity"}, {"Refresh", "r"}},
 		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
 		10: {{"Check again", "r"}, {"Host capabilities", "action:host capabilities"}},
 	}

@@ -1,6 +1,7 @@
 # Remove a VM, with optional disk deletion
 
-Open **VMs**, select the VM, then **More → Advanced tools → Remove VM**.
+Open **VMs**, select the VM, then **More → Remove VM**. For a running VM
+it is under **Advanced tools**, and the form explains that the VM must be stopped.
 Disks start unchecked: they will be kept. Select a disk only if you want to
 permanently delete it. Type the displayed VM name exactly, select **Preview**,
 and review the exact files before applying.

@@ -22,6 +22,12 @@
   connection, display options, version and the same readable host check as
   `virmill doctor`, instead of a raw field dump. Both now list what is missing
   or needs attention before what is ready.
+- TUI task menus offer only power actions the selected VM's state allows
+  (no "Resume paused VM" for a stopped VM). Advanced tools lists the tasks
+  More does not, so nothing appears twice; All tools and search still list
+  everything. Remove VM is in More for a stopped VM. The Jobs page no longer
+  offers Create VM, and an empty Jobs list no longer offers Activity. Help
+  is grouped by task and fits an 80x24 terminal.
 - `operation.list` and `operation.get` add each job's plan `operation`,
   `resourceIDs` and, when known, `targetName`. Existing fields are unchanged.
 - `virmill doctor` prints a readable report: what is ready, what is missing and

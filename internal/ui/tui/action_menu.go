@@ -15,7 +15,7 @@ func actionGroup(a ui.Action) (int, string) {
 	c := a.Command
 	switch {
 	case c == "vm remove":
-		return 70, "Remove VM"
+		return 70, "Remove"
 	case strings.HasPrefix(c, "vm creation "), strings.HasPrefix(c, "network creation "), c == "operation reconcile":
 		return 80, "Recovery and troubleshooting"
 	case c == "vm start" || c == "vm stop" || c == "vm reboot" || c == "vm pause" || c == "vm resume" || c == "vm save" || c == "vm restore-saved":
@@ -53,8 +53,9 @@ func actionGroup(a ui.Action) (int, string) {
 	}
 }
 
-// The short menu is intentionally curated. Advanced and All tools retain the
-// full shared registry, including specialist recovery and development actions.
+// The short menu is intentionally curated. Advanced holds the rest of the
+// section's tasks, and All tools and search keep the full shared registry,
+// including specialist recovery and development actions.
 func (m Workspace) commonAction(a ui.Action) bool {
 	if m.CatalogMode == "import" {
 		return a.Command == "import prepare" || a.Command == "import prepare-install" || a.Command == "import prepare-disks"
@@ -70,10 +71,35 @@ func (m Workspace) commonAction(a ui.Action) bool {
 		return m.selectedVM().State == "running" || m.selectedVM().Key.UUID == ""
 	case "vm resume":
 		return m.selectedVM().State == "paused"
+	case "vm remove":
+		return m.selectedVM().State == "stopped" || m.selectedVM().State == "shut off"
 	case "vm console show", "vm set", "vm boot set", "vm autostart", "host inspect", "network create", "network show", "network cidr check", "storage pool show", "lab validate", "snapshot show", "snapshot restore", "backup create", "backup restore", "backup receipts", "backup repository init", "backup repository check", "device usb list", "host pci list", "operation show", "operation watch", "operation cancel", "plugin install", "plugin show", "plugin enable", "plugin disable", "host capabilities", "config validate":
 		return true
 	}
 	return false
+}
+
+// powerFits hides power tasks the selected VM's state cannot use. Unknown
+// states keep every task so nothing becomes unreachable.
+func (m Workspace) powerFits(a ui.Action) bool {
+	vm := m.selectedVM()
+	stopped := vm.State == "stopped" || vm.State == "shut off"
+	if vm.Key.UUID == "" || !(stopped || vm.State == "running" || vm.State == "paused") {
+		return true
+	}
+	switch a.Command {
+	case "vm start":
+		return stopped
+	case "vm stop", "vm reboot", "vm pause":
+		return vm.State == "running"
+	case "vm resume":
+		return vm.State == "paused"
+	case "vm save":
+		return vm.State == "running" || vm.State == "paused"
+	case "vm restore-saved":
+		return stopped && vm.HasManagedSave
+	}
+	return true
 }
 func (m Workspace) catalogHasAdvanced() bool {
 	return m.CatalogSection >= 0 && m.CatalogMode != "all" && m.CatalogMode != "import" && !m.CatalogExpert && m.CatalogSearch == ""
@@ -88,8 +114,13 @@ func (m Workspace) catalogCount() int {
 
 func (m Workspace) catalog() []ui.Action {
 	out := []ui.Action{}
+	scoped := m.CatalogSection >= 0 && m.CatalogMode != "all" && m.CatalogSearch == ""
 	for _, a := range ui.Actions {
-		if m.CatalogSection >= 0 && m.CatalogMode != "all" && !m.CatalogExpert && m.CatalogSearch == "" && !m.commonAction(a) {
+		if scoped && !m.CatalogExpert && !m.commonAction(a) {
+			continue
+		}
+		// Advanced lists what More does not, so no task appears twice.
+		if scoped && m.CatalogExpert && (m.commonAction(a) || !m.powerFits(a)) {
 			continue
 		}
 		if m.CatalogMode == "import" && !strings.HasPrefix(a.Command, "import ") {
@@ -190,16 +221,16 @@ func (m Workspace) catalogLines(width, height int) []string {
 		lines = append(lines, menuLine{label, i})
 	}
 	if m.catalogHasAdvanced() {
-		label := "    Advanced tools..."
+		label := "    Advanced tools... (A)"
 		if selected == len(rows) {
-			label = m.color(" >  Advanced tools...", "1;30;46")
+			label = m.color(" >  Advanced tools... (A)", "1;30;46")
 			selectedLine = len(lines)
 		}
 		lines = append(lines, menuLine{label, len(rows)})
 	}
 	// Keep the selected task and its explanation on screen; do not force users
 	// to enter a form just to discover what an action does.
-	count := max(1, height-len(out)-5)
+	count := max(1, height-len(out)-4)
 	start := max(0, selectedLine-count+1)
 	if start > 0 && lines[start].action >= 0 {
 		count = max(1, count-1)
@@ -223,9 +254,6 @@ func (m Workspace) catalogLines(width, height int) []string {
 	out = append(out, "")
 	desc := wrap(description, width)
 	out = append(out, desc[:min(2, len(desc))]...)
-	if m.catalogHasAdvanced() && selected < len(rows) {
-		out = append(out, "A Advanced tools")
-	}
 	out = append(out, fmt.Sprintf("%d of %d", selected+1, m.catalogCount()))
 	return out
 }

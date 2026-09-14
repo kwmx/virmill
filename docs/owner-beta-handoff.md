@@ -46,7 +46,7 @@ the top of the scrollable review with next steps, rather than only in the footer
 The actual 80×24 error/recovery display and unchanged-resource checks passed.
 See [network handoff evidence](evidence/creation-network-handoff-run.md).
 
-**VMs → More → Advanced tools → Remove VM** keeps disks by default. Selected
+**VMs → More → Remove VM** keeps disks by default. Selected
 deletion requires stopped BIOS VMs, registered raw/qcow2 file volumes and a
 complete readable reference graph. Firmware/TPM and other protected layouts
 remain unsupported for removal. Backups and unselected files are retained.

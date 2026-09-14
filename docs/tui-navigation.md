@@ -27,8 +27,9 @@ lists them all. Buttons wrap onto a second row when they do not fit.
 - Common VM buttons include state-appropriate power actions, CPU/RAM,
   **Boot / installer**, **Guest tools** and Capture. Create VM and Import are
   available from the workspace. Selecting a VM never starts it.
-- **a More** shows everyday tasks for the selected resource. **Advanced tools...**
-  (or **A**) opens specialist actions. Each action includes a short explanation.
+- **a More** shows everyday tasks for the selected resource, with only the power
+  actions its state allows. **Advanced tools...** (or **A**) lists the section's
+  other tasks. Each action includes a short explanation.
 - **: All tools** lists every implemented action. Left/Right changes sections;
   **/** searches names and descriptions. Esc clears the search, then goes back.
 - **r** refreshes observations. **x** in details toggles technical data/native XML.
@@ -298,7 +299,7 @@ instructions and **Retry connection**, with optional sign-in setup under
 **VMs → More → Change VM automatic startup** shows a fresh current value and
 a requested toggle with a separate Preview button. See [automatic startup](vm-autostart.md).
 
-Remove a stopped VM with **More → Advanced tools → Remove VM**.
+Remove a stopped VM with **More → Remove VM**.
 The exact-name confirmation and Preview explain retained files and recovery; see
 [VM removal](vm-removal.md).
 
