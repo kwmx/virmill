@@ -431,7 +431,7 @@ func TestCreationFormBeforePreparationAllowsOnlyUnboundValidDraft(t *testing.T) 
 	}
 	f.Page = 2
 	view := f.View(80, 24)
-	if !strings.Contains(view, "Review image preparation") || !strings.Contains(view, "Choose VM hardware before preparing the images.") || strings.Contains(view, "Preview VM creation") {
+	if !strings.Contains(view, "Review import") || !strings.Contains(view, "Choose VM hardware before preparing the images.") || strings.Contains(view, "Preview VM creation") {
 		t.Fatal("preparation boundary is unclear", view)
 	}
 	f = creationFocus(t, f, "preview")

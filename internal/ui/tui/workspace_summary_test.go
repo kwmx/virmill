@@ -115,6 +115,15 @@ func TestWorkspaceSummaryBasicsSurvivePreparationIntoCreationRequest(t *testing.
 			m.Import = &f
 			m, cmd := wk(m, "enter")
 			m = summaryRun(t, m, cmd)
+			if m.Plan == nil && m.Creation != nil && m.Creation.BeforePreparation {
+				// Preview opened VM settings at the missing choice; finish it and review once.
+				fvm := creationComplete(*m.Creation)
+				fvm.Page = 2
+				fvm = creationFocus(t, fvm, "preview")
+				m.Creation = &fvm
+				m, cmd = wk(m, "enter")
+				m = summaryRun(t, m, cmd)
+			}
 			if m.Plan == nil || c.Calls[len(c.Calls)-1] != "import.prepare" {
 				t.Fatal("preparation preview missing", m.View())
 			}
@@ -125,19 +134,27 @@ func TestWorkspaceSummaryBasicsSurvivePreparationIntoCreationRequest(t *testing.
 			m = n.(Workspace)
 			m.Pending["preparation-job"] = 701
 			n, cmd = m.Update(workspaceReply{Kind: "preparation-job", Token: 701, Response: app.Response{Data: domain.Job{ID: creationFormOperation, State: "succeeded"}}})
-			m = summaryRun(t, n.(Workspace), cmd)
+			m = n.(Workspace)
+			if cmd == nil {
+				t.Fatal("prepared images did not load VM settings", m.View())
+			}
+			// A complete setup requests its creation review by itself (ADR 0057).
+			n, review := m.Update(cmd())
+			m = n.(Workspace)
 			if m.Creation == nil || m.Creation.Spec.Name != "Reviewed appliance" || m.Creation.CPUText != "7" || m.Creation.MemoryText != "6144" {
 				t.Fatal("summary edits lost at durable handoff", m.View())
 			}
 			if advanced && m.Creation.Spec.CPU.Model != "test-model" {
 				t.Fatal("advanced CPU choice lost")
 			}
-			fvm := creationComplete(*m.Creation)
-			fvm.Page = 2
-			fvm = creationFocus(t, fvm, "preview")
-			m.Creation = &fvm
-			m, cmd = wk(m, "enter")
-			m = summaryRun(t, m, cmd)
+			if review == nil {
+				fvm := creationComplete(*m.Creation)
+				fvm.Page = 2
+				fvm = creationFocus(t, fvm, "preview")
+				m.Creation = &fvm
+				m, review = wk(m, "enter")
+			}
+			m = summaryRun(t, m, review)
 			r := c.Requests[len(c.Requests)-1]
 			h := r.Input["hardware"].(map[string]any)
 			if c.Calls[len(c.Calls)-1] != "vm.create" || r.ID != creationFormOperation || h["name"] != "Reviewed appliance" || h["vcpus"] != float64(7) || h["memoryMiB"] != float64(6144) {

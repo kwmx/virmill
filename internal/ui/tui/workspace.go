@@ -71,6 +71,9 @@ type Workspace struct {
 	CreationIndex         int
 	PendingPreparation    string
 	CreationAutoReview    string // preparation whose VM review opens when it loads
+	ImportAutoPreview     bool   // import preview waits for VM settings to load
+	ChainOffer            *chainOffer
+	Chain                 *importChain
 	Import                *ImportForm
 	ExportForm            *GuidedForm
 	ImportPickerTarget    string
@@ -697,6 +700,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if strings.HasPrefix(v.Kind, "creation-") {
 				m.CreationAutoReview = ""
+				m.ImportAutoPreview = false
 				m.Busy = false
 				m.Error = importError(err)
 				if m.Creation != nil {
@@ -795,6 +799,17 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.draftSubmitted = false
 			m.Notice = ""
 			m.Error = ""
+			// Import Preview loads VM settings first, so one review covers all.
+			if m.ImportAutoPreview && bundle.OperationID == "" && m.Import != nil && m.Creation != nil {
+				m.ImportAutoPreview = false
+				f := *m.Creation
+				if _, err := f.Request(m.Connection); err != nil {
+					m.Creation.FocusError(err)
+					m.Notice = "Finish the highlighted VM setting, then review."
+					return m, nil
+				}
+				return m, m.previewPreparationWith(f)
+			}
 			// After preparation, a complete setup goes straight to its review;
 			// Esc from the review returns to the settings.
 			if id := m.CreationAutoReview; id != "" {
@@ -804,8 +819,13 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if err == nil {
 						m.Busy = true
 						m.Notice = "Images are ready. Review the new VM; Esc returns to its settings."
+						if m.Chain != nil {
+							m.Chain.Sent = canonicalInput(r.Input)
+							m.Notice = "Images are ready. Creating the approved VM…"
+						}
 						return m, m.request("plan", "vm.create", r)
 					}
+					m.Chain = nil
 					m.Creation.FocusError(err)
 					m.Notice = "Images are ready. Finish the highlighted setting, then review."
 				}
@@ -832,8 +852,15 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.CreationAutoReview = job.ID
 					return m, m.loadCreation(job.ID, "")
 				}
+				// An approved chain continues from any page without an open dialog.
+				if m.Chain != nil && m.Chain.PrepJob == job.ID && m.Plan == nil && !m.Busy && m.Creation == nil && m.Import == nil && m.Form == nil && m.ActionForm == nil && m.NetworkForm == nil && m.Picker == nil && !m.CreationPicking {
+					m.CreationAutoReview = job.ID
+					return m, m.loadCreation(job.ID, "")
+				}
+				m.Chain = nil
 				m.Notice = "Images are ready. Choose Create VM to set CPU, RAM and networks."
 			} else {
+				m.Chain = nil
 				m.Notice = "Import needs attention. Open its job for the error and recovery options."
 			}
 		case "import-inspect":
@@ -859,7 +886,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Plan = &p
 			m.ApplyKey = ""
-			m.Approved = make([]bool, len(p.Acknowledgements))
+			m.ChainOffer = m.chainOfferFor(p)
+			m.Approved = make([]bool, len(m.reviewAcks()))
 			m.AckIndex = 0
 			m.Offset = 0
 			m.Reviewing = false
@@ -868,6 +896,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Form = nil
 			m.ActionForm = nil
 			m.Advanced = false
+			if cmd, ok := m.chainPlanArrived(); ok {
+				return m, cmd
+			}
 		case "resources-load":
 			m.receiveResources(v.Response.Data)
 		case "resources-summary":
@@ -890,17 +921,24 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.receiveBoot(v.Response.Data)
 		case "job-outcome":
 			m.receiveJobOutcome(v.Response.Data)
+			if cmd := m.chainAfterCreation(); cmd != nil {
+				return m, cmd
+			}
 		case "job-open-vm":
 			return m, m.receiveJobVM(v.Response.Data)
 		case "job-update":
 			if m.Section == 8 && resourceID(m.Detail) != "" && resourceID(m.Detail) == resourceID(data) {
 				m.Detail = m.withJobSummary(data)
+				if c := m.Chain; c != nil && c.CreateJob == resourceID(data) && domain.Terminal(field(data, "state")) && field(data, "state") != "succeeded" {
+					m.Chain = nil
+				}
 				if m.canAutoReturnCreationNetwork() && field(data, "state") == "succeeded" {
 					return m, m.returnCreationNetwork(true)
 				}
 				return m, m.loadJobOutcome(false)
 			}
 		case "apply":
+			m.startChain(v.Response.Data)
 			if handled, cmd := m.acceptCreationPool(v.Response.Data); handled {
 				return m, cmd
 			}
@@ -1266,6 +1304,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Reviewing = false
 				} else {
 					m.Plan = nil
+					m.ChainOffer = nil
 					m.ActionForm, m.SavedActionForm = m.SavedActionForm, nil
 					if m.SavedForm != nil {
 						m.Form = m.SavedForm
@@ -1919,6 +1958,7 @@ func (m Workspace) content(width, height int) []string {
 			}
 			lines = append(lines, "Your settings and reviewed plan are kept. Check Jobs before trying again; an accepted job may still be running.", "PgUp/PgDn reads the complete issue and plan. Esc returns to your settings.", "")
 		}
+		lines = append(lines, m.chainOfferLines(width)...)
 		lines = append(lines, PlanDetails(*m.Plan, width)...)
 		return pageLines(lines, width, height, m.Offset)
 	}

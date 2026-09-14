@@ -46,6 +46,7 @@ type CreationForm struct {
 	CPUOrigin, MemoryOrigin string
 	FirmwareOrigin          string
 	NetworkOrigin           string
+	StartAfter              bool // start the VM once creation succeeds (ADR 0057)
 	Page, Focus, Disk, NIC  int
 	Error                   string
 	cursor                  int
@@ -88,6 +89,7 @@ func NewCreationForm(operationID string, source CreationSource, options domain.C
 		}
 	}
 	f.addDefaultNIC()
+	f.StartAfter = true
 	f.Spec.DevicePolicy, _ = domain.DefaultCreationDevices(f.Spec.Machine)
 	f.Spec.PoolID = defaultCreationPool(f.Pools)
 	f.Spec.Firmware, f.FirmwareOrigin = defaultCreationFirmware(options, source.System.Firmware)
@@ -288,9 +290,13 @@ func (f CreationForm) controls() []importControl {
 				c = append(c, importButton("removeNIC", "Remove new adapter", "Only this added adapter is removed; original adapters stay mapped."))
 			}
 		}
+		choice("startAfter", "After creation", "Starting is part of the same review; choose Leave it off to start it later yourself.", strconv.FormatBool(f.StartAfter), []string{"true", "false"})
 		previewLabel, previewHelp := "Preview VM creation", "Create a powered-off VM after approval. Start is a separate action."
+		if f.StartAfter {
+			previewHelp = "Create the VM and start it after one approval."
+		}
 		if f.BeforePreparation {
-			previewLabel, previewHelp = "Review image preparation", "Keep these VM choices and review preparing the source images first."
+			previewLabel, previewHelp = "Review import", "One review covers preparing the images, creating the VM and starting it if chosen."
 		}
 		c = append(c,
 			importButton("create-network", "Create network", "Create a network in a separate review, then return with your VM choices kept."),
@@ -413,6 +419,8 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.Spec.Clock = next(f.Spec.Clock)
 		case "guestAgent":
 			f.Spec.GuestAgent = !f.Spec.GuestAgent
+		case "startAfter":
+			f.StartAfter = !f.StartAfter
 		case "graphics":
 			f.Spec.Graphics = next(f.Spec.Graphics)
 		case "usb":
@@ -729,6 +737,9 @@ func (f CreationForm) View(width, height int) string {
 	titles := []string{"VM options", "Disks and boot", "Network adapters", "Advanced hardware"}
 	page := max(0, min(f.Page, 3))
 	purpose := "Creates a powered-off copy. Start it separately when ready."
+	if f.StartAfter {
+		purpose = "Creates a copy of the images and starts it after one review."
+	}
 	if f.BeforePreparation {
 		purpose = "Choose VM hardware before preparing the images."
 	}
@@ -1003,6 +1014,7 @@ func creationFriendlyValue(id, value string) string {
 	labels := map[string]map[string]string{
 		"boot":       {"0": "Attach only"},
 		"guestAgent": {"false": "Disabled", "true": "Enabled"},
+		"startAfter": {"true": "Start the VM", "false": "Leave it off"},
 		"link":       {"down": "Disconnected", "up": "Connected"},
 		"graphics":   {"none": "No display", "vnc-unix": "Local display (VNC)", "spice-unix": "Local display (SPICE)"},
 		"cpuMode":    {"host-model": "Host-compatible (host-model)", "host-passthrough": "Host CPU (host-passthrough)", "custom": "Choose a CPU model"},

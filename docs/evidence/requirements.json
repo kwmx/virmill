@@ -643,7 +643,8 @@
         "schemas/vm-creation-input.schema.json",
         "internal/ui/tui/creation_boot_order.go",
         "docs/adr/0052-creation-boot-order-controls.md",
-        "docs/evidence/creation-boot-order-run.md"
+        "docs/evidence/creation-boot-order-run.md",
+        "internal/ui/tui/workspace_import_chain.go"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -708,7 +709,8 @@
         "tests/fixtures/release/spice_normalization_probe.py",
         "tests/fixtures/release/spice_creation_probe.py",
         "internal/ui/tui/creation_boot_order_test.go",
-        "tests/fixtures/release/boot_order_tui_probe.py"
+        "tests/fixtures/release/boot_order_tui_probe.py",
+        "internal/ui/tui/workspace_import_chain_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -5296,7 +5298,9 @@
         "internal/ui/tui/removal_disks.go",
         "docs/adr/0054-explicit-selected-disk-removal.md",
         "docs/evidence/disk-removal-run.md",
-        "internal/ui/tui/import_staging.go"
+        "internal/ui/tui/import_staging.go",
+        "internal/ui/tui/workspace_import_chain.go",
+        "docs/adr/0057-one-approval-import.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5485,7 +5489,8 @@
         "internal/ui/cli/removal_disks_test.go",
         "tests/fixtures/release/disk_removal_native_cycle.py",
         "internal/ui/tui/workspace_streamlined_test.go",
-        "internal/ui/tui/workspace_creation_pool_test.go"
+        "internal/ui/tui/workspace_creation_pool_test.go",
+        "internal/ui/tui/workspace_import_chain_test.go"
       ],
       "evidence": [
         "core-tests-001",

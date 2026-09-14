@@ -8,6 +8,10 @@
   `--path` and `--no-autostart` adjust it. In VM setup the form stays open while
   the pool is created, and the new pool is then selected. Existing folders keep
   their permissions and files; existing pools are never changed (ADR 0056).
+- Import in one review: the import review also covers creating the VM with
+  your settings and, with **After creation: Start the VM** (the default),
+  starting it. Later steps run by themselves only if they ask for nothing you
+  did not check; otherwise their own review opens (ADR 0057).
 - Start a stopped storage pool from Virmill: `virmill storage pool start UUID`,
   **Start pool** on a stopped pool's details, and **Start pool NAME** in VM
   setup when your only pools are stopped. It also starts with the host unless

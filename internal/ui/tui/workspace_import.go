@@ -266,6 +266,12 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "hardware":
 		return m, m.configureImportHardware()
 	case "preview", "export":
+		// Preview first loads VM settings, so one review covers preparation,
+		// creation and start (ADR 0057).
+		if intent.Kind == "preview" && (m.Import.VM == nil || m.Import.VMBinding != creationDraftBinding(m.Import.Draft)) {
+			m.ImportAutoPreview = true
+			return m, m.configureImportHardware()
+		}
 		if intent.Kind == "preview" {
 			if err := m.ensureImportStaging(); err != nil {
 				m.Import.Error = err.Error()

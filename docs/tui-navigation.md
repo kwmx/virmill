@@ -88,9 +88,13 @@ still depends on the supported QEMU build.
 4. **Preview image preparation.** Review the source, destination, disk conversion
    and required storage. Space errors name the shortfall in readable units;
    **Back: Destination** returns to the location choice. Confirm the listed
-   consequences and choose **Apply reviewed plan** to start preparation. When it
-   finishes and every VM setting is complete, the VM review opens directly; Esc
-   returns to the settings. Otherwise VM setup opens at the missing setting.
+   consequences and choose **Apply reviewed plan** to start preparation. Preview
+   first opens VM settings if you have not set them. One review then covers
+   preparing the images, creating the VM and, with **After creation: Start the
+   VM**, starting it; check every item, including the next steps, and apply
+   once. Creation and start run by themselves while this TUI stays open, but only
+   if they ask for nothing beyond what you checked; otherwise their own review
+   opens. If you close the TUI, Create VM continues from the prepared images.
 
 For ISO and existing disks, stop programs or VMs using the selected images and
 check **Source images are not in use**. The backend repeats source identity,

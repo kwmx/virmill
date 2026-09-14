@@ -173,25 +173,7 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.Creation.Error = ""
 		m.Error = ""
 		if f.BeforePreparation {
-			if m.Import == nil {
-				m.Creation.Error = "Return to import and choose the source again."
-				return m, nil
-			}
-			if err := m.ensureImportStaging(); err != nil {
-				m.Creation.Error = err.Error()
-				return m, nil
-			}
-			method, prep, err := m.Import.Draft.Request(m.Connection)
-			if err != nil {
-				m.Creation.Error = err.Error()
-				return m, nil
-			}
-			m.Import.VM = &f
-			m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
-			m.Creation = nil
-			m.CreationPicking = false
-			m.Busy = true
-			return m, m.request("plan", method, prep)
+			return m, m.previewPreparationWith(f)
 		}
 		m.Busy = true
 		return m, m.request("plan", "vm.create", r)

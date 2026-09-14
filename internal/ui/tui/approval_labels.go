@@ -25,6 +25,8 @@ func acknowledgementLabel(id string) string {
 		"next-boot-only":                 "Apply these settings at the next boot",
 		"watchdog-reset":                 "Allow the configured watchdog to reset the guest",
 		"start-selected-vm":              "Start this selected VM",
+		"start-vm":                       "Start the VM as soon as it is created",
+		"attach-readonly-media":          "Attach the installer media read-only",
 		"review-network-exposure":        "Accept the reviewed network access",
 	}[id]
 	if text == "" {
@@ -38,7 +40,10 @@ func acknowledgementLabel(id string) string {
 func (m Workspace) confirmationLines(width, height int) []string {
 	lines := []string{"Confirm reviewed changes", "Check each consequence, then choose Apply.", "Plan: " + m.Plan.ID, ""}
 	selectedLine := 0
-	for i, ack := range m.Plan.Acknowledgements {
+	for i, ack := range m.reviewAcks() {
+		if i == len(m.Plan.Acknowledgements) {
+			lines = append(lines, "", "Next steps, applied only if they ask for nothing else:")
+		}
 		prefix := "  [ ] "
 		if i < len(m.Approved) && m.Approved[i] {
 			prefix = "  [x] "
