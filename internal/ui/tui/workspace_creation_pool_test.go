@@ -153,3 +153,16 @@ func TestStoragePageCreatesPoolWithoutOtherTools(t *testing.T) {
 	}
 	t.Fatal("storage pool create is not registered")
 }
+
+func TestPoolReviewNamesPoolFolderAndStartup(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Width, m.Height = 120, 36
+	p := creationPoolPlan(t, m.Connection)
+	m.Plan = &p
+	view := m.View()
+	for _, want := range []string{"Pool name: default", "Folder: /var/lib/libvirt/images", "Starts: Now and whenever the host starts"} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("review lacks %q: %s", want, view)
+		}
+	}
+}

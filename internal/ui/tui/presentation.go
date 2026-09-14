@@ -137,6 +137,17 @@ func planSummary(f *details, p domain.Plan) {
 			f.line("Changes future automatic startup only. This does not start or stop the VM now.", 0)
 		}
 	}
+	if p.Operation == "storage.pool.create" {
+		if d, ok := p.Review["definition"].(map[string]any); ok {
+			f.scalar("Pool name", fmt.Sprint(d["name"]), 0)
+			f.scalar("Folder", fmt.Sprint(d["path"]), 0)
+			starts := "Now and whenever the host starts"
+			if d["autostart"] != true {
+				starts = "Now only; not after a host restart"
+			}
+			f.scalar("Starts", starts, 0)
+		}
+	}
 	resourceChanges := resourcePlanChanges(f, p)
 	for _, field := range []struct {
 		label string
