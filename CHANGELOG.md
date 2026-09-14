@@ -15,6 +15,13 @@
   2 h ago") instead of an operation ID. Network and storage details are
   written in plain language, and `x` shows every field with libvirt XML as
   XML instead of escaped JSON.
+- The TUI Overview is a home screen: VM counts, storage pools with their free
+  space, whether the host is ready, running or failed jobs and the last job,
+  each with the key that opens the details, above the VM list. It no longer
+  adds up the free space of pools that share a filesystem. Settings shows the
+  connection, display options, version and the same readable host check as
+  `virmill doctor`, instead of a raw field dump. Both now list what is missing
+  or needs attention before what is ready.
 - `operation.list` and `operation.get` add each job's plan `operation`,
   `resourceIDs` and, when known, `targetName`. Existing fields are unchanged.
 - `virmill doctor` prints a readable report: what is ready, what is missing and

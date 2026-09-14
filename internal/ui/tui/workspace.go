@@ -163,7 +163,7 @@ func (m *Workspace) request(kind, method string, r app.Request) tea.Cmd {
 }
 func (m *Workspace) refresh() tea.Cmd {
 	if m.Section == 0 {
-		return tea.Batch(m.request("vms", "inventory.list", app.Request{}), m.request("jobs", "operation.list", app.Request{}), m.request("pools", "storage.pool.list", app.Request{}))
+		return tea.Batch(m.request("vms", "inventory.list", app.Request{}), m.request("jobs", "operation.list", app.Request{}), m.request("pools", "storage.pool.list", app.Request{}), m.request("health", "host.inspect", app.Request{}))
 	}
 	kind := workspaceKinds[m.Section]
 	if kind == "" {
@@ -1895,40 +1895,11 @@ func (m Workspace) content(width, height int) []string {
 	lines := []string{}
 	kind := workspaceKinds[m.Section]
 	if m.Section == 0 {
-		vms := array(m.Data["vms"])
-		running, stopped := 0, 0
-		for _, vm := range vms {
-			if rowState(vm) == "running" {
-				running++
-			}
-			if rowState(vm) == "stopped" || rowState(vm) == "shut off" {
-				stopped++
-			}
+		summary := m.homeSummary()
+		if height < 16 {
+			summary = summary[:1]
 		}
-		if _, ok := m.Data["vms"]; ok {
-			lines = append(lines, m.color(fmt.Sprintf("  %d virtual machines     %d running     %d stopped", len(vms), running, stopped), "1;36"))
-		} else {
-			lines = append(lines, "  Loading your virtual machines...")
-		}
-		if len(m.Errors["jobs"]) > 0 {
-			lines = append(lines, "Jobs unavailable: "+m.Errors["jobs"])
-		} else {
-			lines = append(lines, "  "+m.status())
-		}
-		free := float64(0)
-		known := false
-		for _, pool := range array(m.Data["pools"]) {
-			if object(pool)["active"] == true {
-				if n, ok := sizeNumber(object(pool)["availableBytes"]); ok {
-					free += n
-					known = true
-				}
-			}
-		}
-		if known {
-			lines = append(lines, "  Available pool storage: "+sizeText(free))
-		}
-		lines = append(lines, "", m.color("Virtual machines", "1"))
+		lines = append(append(lines, summary...), "", m.color("Virtual machines", "1"))
 	} else {
 		lines = append(lines, m.color(sections[m.Section], "1"))
 	}
@@ -1942,7 +1913,7 @@ func (m Workspace) content(width, height int) []string {
 		lines = append(lines, "Search: "+m.Search)
 	}
 	if m.Section == 10 {
-		return pageLines(append(lines, HumanDetails(m.Data[kind], width)...), width, height, m.Offset)
+		return pageLines(append(append(lines, ""), m.settingsLines(width)...), width, height, m.Offset)
 	}
 	rows := m.rows()
 	if _, loaded := m.Data[kind]; !loaded {
@@ -2157,7 +2128,7 @@ func (m Workspace) buttons() []workspaceButton {
 		7:  {{"USB devices", "action:device usb list"}, {"PCI devices", "action:host pci list"}},
 		8:  {{"Details", "enter"}, {"Create VM", "action:vm create"}, {"Activity", "job-activity"}, {"Refresh", "r"}},
 		9:  {{"Install plugin", "action:plugin install"}, {"Refresh", "r"}},
-		10: {{"Host capabilities", "action:host capabilities"}, {"All tools", ":"}},
+		10: {{"Check again", "r"}, {"Host capabilities", "action:host capabilities"}},
 	}
 	return m.withoutEmptyDetails(append(primary[m.Section], workspaceButton{"More", "a"}))
 }

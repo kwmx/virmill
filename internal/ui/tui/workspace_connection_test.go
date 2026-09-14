@@ -86,8 +86,8 @@ func TestCoordinatorHelpAndRetryOnlyReadObservations(t *testing.T) {
 		t.Fatal("retry missing or success claimed before reply")
 	}
 	batch, ok := cmd().(tea.BatchMsg)
-	if !ok || len(batch) != 3 {
-		t.Fatal("Overview retry should refresh its three existing inventories")
+	if !ok || len(batch) != 4 {
+		t.Fatal("Overview retry should refresh its four observations")
 	}
 	for _, request := range batch {
 		next, followup := m.Update(request())
@@ -96,7 +96,7 @@ func TestCoordinatorHelpAndRetryOnlyReadObservations(t *testing.T) {
 			t.Fatal("inventory retry caused another action")
 		}
 	}
-	if m.coordinator.Unavailable || m.coordinator.Expanded || !reflect.DeepEqual(client.calls, []string{"inventory.list", "operation.list", "storage.pool.list"}) {
+	if m.coordinator.Unavailable || m.coordinator.Expanded || !reflect.DeepEqual(client.calls, []string{"inventory.list", "operation.list", "storage.pool.list", "host.inspect"}) {
 		t.Fatal("retry failed to restore normal observation flow", client.calls)
 	}
 	for _, request := range client.requests {
