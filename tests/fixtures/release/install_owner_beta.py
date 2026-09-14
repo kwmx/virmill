@@ -32,13 +32,14 @@ p.add_argument('--revision',required=True)
 p.add_argument('--product-version',required=True)
 p.add_argument('--verify-installed',action='store_true',help='Read installed artifacts; do not reinstall or back up a running journal')
 p.add_argument('--replace-same-version',action='store_true',help='Reinstall packages with the installed version (unreleased test build)')
+p.add_argument('--allow-downgrade',action='store_true',help='Install a test build labelled older than the installed one (rpm --oldpackage)')
 a=p.parse_args()
 assert authorized_test_host() and os.getuid()==1000
 root=a.root.resolve(strict=True)
 assert root.is_relative_to(Path.home()/'virmill-tests')
 results=root/('verification' if a.verify_installed else 'results');results.mkdir(mode=0o700)
 events=[]
-report={'status':'failed','revision':a.revision,'sameVersionReplacement':a.replace_same_version,'scope':'native Fedora RPM upgrade and ordinary user CLI/TUI smoke; no guest or helper mutation'}
+report={'status':'failed','revision':a.revision,'sameVersionReplacement':a.replace_same_version,'downgrade':a.allow_downgrade,'scope':'native Fedora RPM upgrade and ordinary user CLI/TUI smoke; no guest or helper mutation'}
 def run(args,check=True):
  r=subprocess.run(args,capture_output=True,text=True,timeout=120)
  events.append({'argv':args,'exitCode':r.returncode,'stdout':r.stdout,'stderr':r.stderr})
@@ -89,7 +90,7 @@ try:
  for name,wanted in checks.items():assert '/' not in name and sha(root/name)==wanted
  rpms=[str(root/name) for name in checks if name.endswith('.rpm')]
  assert len(rpms)==2
- if not a.verify_installed:run(['sudo','-n','rpm','-Uvh',*(['--replacepkgs'] if a.replace_same_version else []),*rpms])
+ if not a.verify_installed:run(['sudo','-n','rpm','-Uvh',*(['--replacepkgs'] if a.replace_same_version else []),*(['--oldpackage'] if a.allow_downgrade else []),*rpms])
  expected=json.loads((root/'binaries.json').read_text())
  paths={'virmill':'/usr/bin/virmill','virmilld':'/usr/bin/virmilld','virmill-host-helper':'/usr/libexec/virmill-host-helper'}
  for name,path in paths.items():assert sha(path)==expected[name]
