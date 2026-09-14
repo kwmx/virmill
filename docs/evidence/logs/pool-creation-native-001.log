@@ -1,0 +1,39 @@
+{
+  "existingFolderPool": {
+    "autostart": true,
+    "fileListedUnchanged": true,
+    "folderPreserved": true,
+    "job": "3ff1e0a1-2385-4618-b401-77d94c3a3823"
+  },
+  "missingFolderPool": {
+    "autostart": false,
+    "folderCreated": true,
+    "job": "8e3f2dbd-6864-45eb-afeb-c31110e025e6"
+  },
+  "otherPoolsUnchanged": true,
+  "refusals": {
+    "nested-folder": "INVALID_STATE",
+    "same-folder": "INVALID_STATE",
+    "same-name": "INVALID_STATE",
+    "system-folder": "INVALID_INPUT"
+  },
+  "result": "passed",
+  "retainedSessionPools": [
+    "virmill-pool-62e06457",
+    "virmill-pool-62e06457n"
+  ],
+  "system": {
+    "applied": false,
+    "planned": false,
+    "refusedForExistingPool": true
+  },
+  "tui": {
+    "applied": false,
+    "reviewShown": true,
+    "reviewShowsLibvirtImages": true,
+    "size": [
+      120,
+      36
+    ]
+  }
+}
