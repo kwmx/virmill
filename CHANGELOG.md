@@ -13,6 +13,12 @@
   your settings and, with **After creation: Start the VM** (the default),
   starting it. Later steps run by themselves only if they ask for nothing you
   did not check; otherwise their own review opens (ADR 0057).
+- Cloud images in the TUI: VM setup for a disk image offers **Cloud image: Yes,
+  create my user with cloud-init**, suggested when the name looks like a cloud
+  image. It asks for a user name, your SSH public key file and the image's https
+  download address, and builds the reviewed NoCloud seed; passwordless sudo is
+  the default (ADR 0059).
+- VM setup suggests a free name ("… 2") when the suggested VM name is taken.
 - Free the space an import used: `virmill import discard OPERATION_ID
   [--keep-images]` removes a finished preparation's work folder and prepared
   images, never the original source or created VMs. VM setup's **Prepared copy:

@@ -3173,7 +3173,9 @@
         "docs/adr/0039-unified-source-review-and-guest-tools.md",
         "internal/guestsetup/tools.go",
         "internal/backend/libvirt/creation_guest_agent.go",
-        "docs/guest-tools.md"
+        "docs/guest-tools.md",
+        "internal/ui/tui/creation_cloud.go",
+        "docs/adr/0059-guided-cloud-image-setup.md"
       ],
       "plannedImplementation": "internal/app/guest",
       "plannedTest": "tests/integration/guest/GUEST-01",
@@ -3186,7 +3188,8 @@
         "internal/ui/cli/guest_recipe_test.go",
         "internal/ui/tui/guest_recipe_test.go",
         "internal/guestsetup/tools_test.go",
-        "internal/backend/libvirt/creation_guest_agent_test.go"
+        "internal/backend/libvirt/creation_guest_agent_test.go",
+        "internal/ui/tui/creation_cloud_test.go"
       ],
       "evidence": [
         "nocloud-core-001",
@@ -5315,7 +5318,9 @@
         "docs/adr/0057-one-approval-import.md",
         "docs/evidence/one-approval-import-run.md",
         "internal/importing/discard_linux.go",
-        "docs/adr/0058-remove-prepared-copies.md"
+        "docs/adr/0058-remove-prepared-copies.md",
+        "internal/ui/tui/creation_cloud.go",
+        "docs/adr/0059-guided-cloud-image-setup.md"
       ],
       "plannedImplementation": "internal/ui",
       "plannedTest": "tests/integration/ui/UX-01",
@@ -5507,7 +5512,8 @@
         "internal/ui/tui/workspace_creation_pool_test.go",
         "internal/ui/tui/workspace_import_chain_test.go",
         "tests/fixtures/release/one_approval_import_probe.py",
-        "internal/importing/discard_linux_test.go"
+        "internal/importing/discard_linux_test.go",
+        "internal/ui/tui/creation_cloud_test.go"
       ],
       "evidence": [
         "core-tests-001",

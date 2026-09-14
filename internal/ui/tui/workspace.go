@@ -805,6 +805,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Notice = ""
 			m.Error = ""
 			m.Creation.uniqueName(bundle.VMs)
+			m.Creation.suggestCloud()
 			// Import Preview loads VM settings first, so one review covers all.
 			if m.ImportAutoPreview && bundle.OperationID == "" && m.Import != nil && m.Creation != nil {
 				m.ImportAutoPreview = false
@@ -826,7 +827,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.Busy = true
 						m.Notice = "Images are ready. Review the new VM; Esc returns to its settings."
 						if m.Chain != nil {
-							m.Chain.Sent = canonicalInput(r.Input)
+							m.Chain.Sent = chainSettings(r.Input)
 							m.Notice = "Images are ready. Creating the approved VM…"
 						}
 						return m, m.request("plan", "vm.create", r)

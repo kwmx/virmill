@@ -18,7 +18,14 @@ import (
 )
 
 type CreationSourceDisk struct {
-	SourceID string `json:"sourceID"`
+	SourceID   string `json:"sourceID"`
+	SourcePath string `json:"sourcePath,omitempty"`
+}
+
+// CreationSourceFile is an original source file and its recorded digest.
+type CreationSourceFile struct {
+	Path   string `json:"path"`
+	SHA256 string `json:"sha256"`
 }
 type CreationSourceMedia struct {
 	SourceID string `json:"sourceID"`
@@ -28,6 +35,8 @@ type CreationSource struct {
 	System importer.System       `json:"system"`
 	Disks  []CreationSourceDisk  `json:"disks"`
 	Media  []CreationSourceMedia `json:"media"`
+	// SourceFiles binds a cloud image's declared digest (ADR 0059).
+	SourceFiles []CreationSourceFile `json:"sourceFiles,omitempty"`
 }
 
 // CreationForm collects a clone declaration; only the workspace may request a
@@ -50,6 +59,10 @@ type CreationForm struct {
 	SuggestedNetworkID      string
 	StartAfter              bool // start the VM once creation succeeds (ADR 0057)
 	RemovePrepared          bool // remove the prepared copy afterwards (ADR 0058)
+	CloudEnabled            bool // create the user with cloud-init (ADR 0059)
+	CloudDecided            bool
+	Cloud                   cloudSetup
+	CloudOrigin             string
 	Page, Focus, Disk, NIC  int
 	Error                   string
 	cursor                  int
@@ -210,6 +223,19 @@ func (f CreationForm) controls() []importControl {
 			firmwareHelp = f.FirmwareOrigin
 		}
 		choice("firmware", "Firmware", firmwareHelp, firmware, labels)
+		if f.Source.Kind == "PreparedDiskSet" {
+			cloudHelp := "Choose Yes for cloud images (Ubuntu, Fedora, Debian cloud downloads): they have no password, so cloud-init creates your user with your SSH key."
+			if f.CloudOrigin != "" && f.CloudEnabled {
+				cloudHelp = f.CloudOrigin + " Cloud-init creates your user with your SSH key."
+			}
+			choice("cloudInit", "Cloud image", cloudHelp, strconv.FormatBool(f.CloudEnabled), []string{"false", "true"})
+			if f.CloudEnabled {
+				c = append(c, importText("cloudUser", "Cloud user name", "Your login in the guest; lowercase letters, digits, - or _.", f.Cloud.User),
+					importText("cloudKey", "SSH public key file", "Your key's .pub file; a private key is refused and never copied.", f.Cloud.KeyFile),
+					importText("cloudSource", "Downloaded from", "The https:// address of this image. Virmill records it; it does not download it.", f.Cloud.Reference))
+				choice("cloudSudo", "Administrator access", "Cloud users have no password, so sudo needs this to work.", strconv.FormatBool(f.Cloud.Sudo), []string{"true", "false"})
+			}
+		}
 		c = append(c, importButton("advanced", "Advanced hardware", "Optional: CPU model, display, guest tools channel and other devices."), importButton("next", "Continue to disks", "Review storage controllers and the order in which devices boot."))
 	case 1:
 		total := len(f.Spec.Disks) + len(f.Spec.Media)
@@ -434,6 +460,13 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.StartAfter = !f.StartAfter
 		case "removePrepared":
 			f.RemovePrepared = !f.RemovePrepared
+		case "cloudInit":
+			f.CloudEnabled, f.CloudDecided = !f.CloudEnabled, true
+			if f.CloudEnabled && f.Cloud.User == "" {
+				f.Cloud = defaultCloudSetup()
+			}
+		case "cloudSudo":
+			f.Cloud.Sudo = !f.Cloud.Sudo
 		case "graphics":
 			f.Spec.Graphics = next(f.Spec.Graphics)
 		case "usb":
@@ -583,6 +616,12 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.MemoryOrigin = "Your selected memory size."
 		case "nicName":
 			f.Spec.NICs[max(0, min(f.NIC, len(f.Spec.NICs)-1))].ID = value
+		case "cloudUser":
+			f.Cloud.User = value
+		case "cloudKey":
+			f.Cloud.KeyFile = value
+		case "cloudSource":
+			f.Cloud.Reference = value
 		}
 		f.Error = ""
 	}
@@ -717,6 +756,27 @@ func (f CreationForm) Request(connection string) (app.Request, error) {
 	if len(sourceNICs) != original {
 		return fail("Networks: original adapters cannot be omitted; map them with cable down if needed.")
 	}
+	// The NoCloud seed is one more read-only medium that never boots.
+	var provisioning map[string]any
+	if f.CloudEnabled {
+		if f.Source.Kind != "PreparedDiskSet" {
+			return fail("Cloud image: cloud-init setup needs an existing disk image.")
+		}
+		seed := cloudSeedID(s)
+		bus := "sata"
+		if sata >= 6 || !slices.Contains(f.Options.DiskBuses, "sata") {
+			bus = "scsi"
+		}
+		if !slices.Contains(f.Options.DiskBuses, bus) {
+			return fail("Cloud image: this machine offers no SATA or SCSI bus for the setup disk.")
+		}
+		p, err := f.cloudProvisioning(s, seed)
+		if err != nil {
+			return app.Request{}, err
+		}
+		s.Media = append(s.Media, domain.CreationMedia{SourceID: seed, Bus: bus, BootOrder: 0})
+		provisioning = p
+	}
 	b, err := json.Marshal(s)
 	if err != nil {
 		return fail("Review the VM options before continuing.")
@@ -727,6 +787,9 @@ func (f CreationForm) Request(connection string) (app.Request, error) {
 	}
 	delete(hardware, "uuid")
 	r := app.Request{ID: f.OperationID, Connection: connection, Action: "create", Input: map[string]any{"identityMode": "clone", "hardware": hardware}}
+	if provisioning != nil {
+		r.Input["provisioning"] = provisioning
+	}
 	b, err = json.Marshal(r.Input)
 	if err != nil {
 		return app.Request{}, err
@@ -1008,6 +1071,14 @@ func (f *CreationForm) FocusError(err error) {
 	field := "name"
 	f.Page = 0
 	switch {
+	case strings.HasPrefix(f.Error, "Cloud image:"):
+		field = "cloudInit"
+	case strings.HasPrefix(f.Error, "Cloud user name:"):
+		field = "cloudUser"
+	case strings.HasPrefix(f.Error, "SSH public key:"):
+		field = "cloudKey"
+	case strings.HasPrefix(f.Error, "Downloaded from:"):
+		field = "cloudSource"
 	case strings.HasPrefix(f.Error, "CPU cores:"):
 		field = "cpu"
 	case strings.HasPrefix(f.Error, "Memory:"):
@@ -1081,6 +1152,8 @@ func creationFriendlyValue(id, value string) string {
 		"guestAgent":     {"false": "Disabled", "true": "Enabled"},
 		"startAfter":     {"true": "Start the VM", "false": "Leave it off"},
 		"removePrepared": {"true": "Remove after creation", "false": "Keep"},
+		"cloudInit":      {"false": "No", "true": "Yes, create my user with cloud-init"},
+		"cloudSudo":      {"true": "Passwordless sudo", "false": "None"},
 		"link":           {"down": "Disconnected", "up": "Connected"},
 		"graphics":       {"none": "No display", "vnc-unix": "Local display (VNC)", "spice-unix": "Local display (SPICE)"},
 		"cpuMode":        {"host-model": "Host-compatible (host-model)", "host-passthrough": "Host CPU (host-passthrough)", "custom": "Choose a CPU model"},

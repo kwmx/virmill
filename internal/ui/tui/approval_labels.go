@@ -27,6 +27,9 @@ func acknowledgementLabel(id string) string {
 		"start-selected-vm":              "Start this selected VM",
 		"start-vm":                       "Start the VM as soon as it is created",
 		"delete-prepared-copy":           "Delete the prepared copy and its work folder; the original source is kept",
+		"guest-root-provisioning":        "Let cloud-init create the user and apply the reviewed settings at first boot",
+		"rotate-guest-host-keys":         "Give the guest fresh SSH host keys",
+		"guest-passwordless-sudo":        "Give the cloud user administrator access (sudo) without a password",
 		"attach-readonly-media":          "Attach the installer media read-only",
 		"review-network-exposure":        "Accept the reviewed network access",
 	}[id]

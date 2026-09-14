@@ -51,7 +51,10 @@ explicitly set false in the input.
 The TUI uses **VMs → vm create** with
 `{"id":"PREPARED_DISK_OPERATION_ID","input":{...the same creation JSON...}}`.
 Its review/approval, Operations views and `vm creation result/resume` use the same
-application services as the CLI. Guided provisioning forms remain unfinished.
+application services as the CLI. For an existing disk image, VM setup's **Cloud
+image: Yes, create my user with cloud-init** fills this declaration for you (user
+name, public key file, download address and passwordless sudo), and adds the seed
+medium and per-adapter IPv4 intent ([ADR 0059](adr/0059-guided-cloud-image-setup.md)).
 
 The profile requires a hostname, non-root username and 1–32 canonical public SSH
 keys. Ed25519, RSA of at least 2048 bits and NIST ECDSA keys are structurally checked.

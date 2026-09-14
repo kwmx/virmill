@@ -41,6 +41,24 @@ func canonicalInput(v map[string]any) string {
 	}
 	return string(b)
 }
+
+// chainSettings compares settings without the cloud source digest, which only
+// exists after preparation; the chain binds that preparation and the service
+// checks the digest against it (ADR 0059).
+func chainSettings(input map[string]any) string {
+	raw, err := json.Marshal(input)
+	if err != nil {
+		return ""
+	}
+	var copy map[string]any
+	if json.Unmarshal(raw, &copy) != nil {
+		return ""
+	}
+	if p, ok := copy["provisioning"].(map[string]any); ok {
+		p["sourceSHA256"] = ""
+	}
+	return canonicalInput(copy)
+}
 func preparationOperation(op string) bool {
 	return op == "import.prepare" || op == "import.prepare-disks" || op == "import.prepare-install"
 }
@@ -59,8 +77,14 @@ func expectedCreationAcks(f CreationForm) []string {
 	if len(f.Spec.NICs) > 0 {
 		acks = append(acks, "network-attachment")
 	}
-	if len(f.Spec.Media) > 0 {
+	if len(f.Spec.Media) > 0 || f.CloudEnabled {
 		acks = append(acks, "attach-readonly-media")
+	}
+	if f.CloudEnabled {
+		acks = append(acks, "guest-root-provisioning", "rotate-guest-host-keys")
+		if f.Cloud.Sudo {
+			acks = append(acks, "guest-passwordless-sudo")
+		}
 	}
 	acks = append(acks, "creation-device-policy")
 	if f.Spec.DevicePolicy != nil && f.Spec.DevicePolicy.WatchdogAction == "reset" {
@@ -89,7 +113,7 @@ func (m Workspace) chainOfferFor(p domain.Plan) *chainOffer {
 		return nil
 	}
 	prepare := preparationOperation(p.Operation)
-	o := &chainOffer{Settings: canonicalInput(r.Input), Start: f.StartAfter}
+	o := &chainOffer{Settings: chainSettings(r.Input), Start: f.StartAfter}
 	if prepare {
 		for _, ack := range expectedCreationAcks(f) {
 			if !slices.Contains(p.Acknowledgements, ack) {
@@ -140,6 +164,9 @@ func chainSummary(f CreationForm, create bool) []string {
 			network = "network " + strings.Join(networks, ", ")
 		}
 		lines = append(lines, fmt.Sprintf("- creates VM %s: %s CPU, %s MiB memory, pool %s, %s firmware, %s", f.Spec.Name, f.CPUText, f.MemoryText, pool, firmware, network))
+	}
+	if f.CloudEnabled {
+		lines = append(lines, "- sets up user "+f.Cloud.User+" with your SSH key through cloud-init at first boot")
 	}
 	if f.StartAfter {
 		lines = append(lines, "- starts the VM once it is created")
