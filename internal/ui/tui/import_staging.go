@@ -45,6 +45,17 @@ func defaultImportFolder(d ImportDraft) string {
 	return name + "-" + time.Now().Format("20060102-150405")
 }
 
+// suggestedVMName drops a disk or installer file extension from a source name.
+func suggestedVMName(name string) string {
+	switch strings.ToLower(filepath.Ext(name)) {
+	case ".qcow2", ".qcow", ".img", ".raw", ".vmdk", ".vdi", ".vhd", ".vhdx", ".iso":
+		if base := strings.TrimSuffix(name, filepath.Ext(name)); base != "" {
+			return base
+		}
+	}
+	return name
+}
+
 func importDestination(d ImportDraft) string {
 	return filepath.Join(d.DestinationParent, d.DestinationName)
 }

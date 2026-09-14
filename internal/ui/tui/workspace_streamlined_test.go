@@ -37,6 +37,14 @@ func TestDefaultImportFolderIsNewAndSafe(t *testing.T) {
 	}
 }
 
+func TestSuggestedVMNameDropsImageExtensions(t *testing.T) {
+	for in, want := range map[string]string{"debian-12.qcow2": "debian-12", "Win11.ISO": "Win11", "disk.vmdk": "disk", "appliance.v2": "appliance.v2", ".qcow2": ".qcow2", "": ""} {
+		if got := suggestedVMName(in); got != want {
+			t.Fatalf("suggestedVMName(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 func TestImportSkipsFolderStepWithPrivateDefault(t *testing.T) {
 	root := filepath.Join(t.TempDir(), "virmill", "imports")
 	f := applianceSummaryFixture(t)

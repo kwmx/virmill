@@ -120,7 +120,7 @@ func (d *ImportDraft) ApplySourceDescription(r importer.SourceDescription) error
 	}
 	if r.Kind != "ova" {
 		if _, err := validation.DisplayName(next.VMName); !preserve || err != nil {
-			next.VMName = r.Name
+			next.VMName = suggestedVMName(r.Name)
 			if next.VMName == "" {
 				next.VMName = strings.TrimSuffix(filepath.Base(r.Source), filepath.Ext(r.Source))
 			}
