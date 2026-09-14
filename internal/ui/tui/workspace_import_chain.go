@@ -244,7 +244,9 @@ func (m *Workspace) autoApplyChain() tea.Cmd {
 	for i := range m.Approved {
 		m.Approved[i] = true
 	}
-	m.Reviewing = true
+	// Stay on the review with a notice; a checkbox page the user never saw
+	// would suggest another decision is waiting.
+	m.Reviewing = false
 	m.Busy = true
 	m.Error = ""
 	m.ApplyKey = domain.ID()

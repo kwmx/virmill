@@ -113,7 +113,8 @@ def walkthrough(runner, stage, source, name):
         while time.monotonic() < deadline:
             terminal.read(.5)
             screen = terminal.screen.text()
-            require('needs your review' not in screen and 'Confirm reviewed changes' not in screen, 'a later step stopped for another review')
+            # A chain that stops shows that step's review with this notice.
+            require('needs your review' not in screen, 'a later step stopped for another review')
             new = domains() - before
             if new:
                 created = sorted(new)[0]

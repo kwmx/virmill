@@ -130,8 +130,8 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 	}
 	create := chainPlan(t, chainCreatePlan, "vm.create.devices-v1", m.Connection, expectedCreationAcks(prepared), map[string]any{"sourceOperationID": chainPrepJob}, nil)
 	m, cmd = deliver(t, m, "plan", create)
-	if cmd == nil {
-		t.Fatal("matching creation plan was not applied", m.Notice)
+	if cmd == nil || m.Reviewing || !strings.Contains(m.View(), "Continuing the approved setup") {
+		t.Fatal("matching creation plan was not applied on the review page", m.Notice)
 	}
 	cmd()
 	last := c.requests[len(c.requests)-1]
