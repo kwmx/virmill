@@ -1,0 +1,29 @@
+{
+  "busPreselected": true,
+  "connection": "qemu:///session",
+  "firmware": "BIOS",
+  "folderStepSkipped": true,
+  "formatsChosen": 0,
+  "guestSerialMarker": true,
+  "itemsChecked": 7,
+  "networkPreselected": true,
+  "otherResourcesUnchanged": true,
+  "poolPreselected": false,
+  "preparedCopyRemoved": true,
+  "result": "passed",
+  "retainedStoppedVM": "Virmill generated BIOS multi-disk probe 2",
+  "reviewListsStart": true,
+  "reviewNetwork": null,
+  "reviewSeconds": 0,
+  "reviewedVM": "- creates VM Virmill generated BIOS multi-disk probe 2: 2 CPU, 2048 MiB memory, pool",
+  "seconds": 11,
+  "sourceUnchanged": true,
+  "succeededOperations": [
+    "import.prepare",
+    "vm.create.devices-v1",
+    "vm.start",
+    "import.discard"
+  ],
+  "summary": "appliance",
+  "vm": "Virmill generated BIOS multi-disk probe 2"
+}

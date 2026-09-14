@@ -1,0 +1,28 @@
+{
+  "busPreselected": true,
+  "connection": "qemu:///system",
+  "firmware": "BIOS",
+  "folderStepSkipped": true,
+  "formatsChosen": 0,
+  "itemsChecked": 10,
+  "networkPreselected": true,
+  "otherResourcesUnchanged": true,
+  "poolPreselected": false,
+  "preparedCopyRemoved": true,
+  "result": "passed",
+  "retainedStoppedVM": "Kali Linux amd64 1 2",
+  "reviewListsStart": true,
+  "reviewNetwork": "network default (connected)",
+  "reviewSeconds": 10,
+  "reviewedVM": "- creates VM Kali Linux amd64 1 2: 2 CPU, 2048 MiB memory, pool virmill-multidisk-",
+  "seconds": 77,
+  "sourceUnchanged": true,
+  "succeededOperations": [
+    "import.prepare-install",
+    "vm.create.devices-v1",
+    "vm.start",
+    "import.discard"
+  ],
+  "summary": "source",
+  "vm": "Kali Linux amd64 1 2"
+}

@@ -55,6 +55,19 @@ preparing and copying it would need more than the 93 GB free.
 | `one-approval-import-ova-native-003` | `ef8af6d` | failed: **product defect**. The first Right press on the undeclared format chose `qcow2`, and the choice then disappeared behind Advanced disk options, so it could not be corrected to `vmdk`. Only a declared format now moves behind Advanced, and an undeclared one is suggested from the file name with a label |
 | `one-approval-import-ova-native-004` | `d401a67` | **passed** |
 | `one-approval-import-ova-native-005` | `38a249e` | stopped by hand: **product defect**. Preparation succeeded, but the suggested VM name was already used by the stopped VM from run 4, so creation was refused and the chain waited. VM settings now suggest the next free name (for example "… 2") with a label |
+| `one-approval-import-ova-native-006` | `ac1abe4` | **passed**, with guest boot |
+| `one-approval-import-iso-native-003` | `ac1abe4` | **passed** |
+
+With build `ac1abe4` each import ends by removing its prepared copy
+([ADR 0058](../adr/0058-remove-prepared-copies.md)): one review of 7 (OVA) or 10
+(ISO) items ran preparation, `vm.create.devices-v1`, `vm.start` and
+`import.discard`, and the private imports folder was then empty. Both runs
+suggested a free VM name ("… 2") because the stopped VMs of earlier runs kept
+theirs. After the OVA VM started, the probe attached to its serial console,
+reset it, and read `VIRMILL SECOND DISK PASS` from the generated boot sector.
+That shows the guest booted from its first disk and read the expected marker
+from its second, in the reviewed order. The ISO run took 77 s with the connected
+NAT adapter; its installer guest was not driven.
 
 In the OVA pass both undeclared disk formats were suggested from their file
 names (`vmdk`), SATA was suggested in place of the VMware LSI SCSI controller, and

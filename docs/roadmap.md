@@ -18,8 +18,11 @@ A disk image, ISO or OVA becomes a running VM in one review.
 - Done: native one-approval walk-throughs from a disk image, an installer ISO
   (with the connected NAT default) and a generated two-disk OVA, each to a
   started VM.
-- Remaining: guest boot verification; in-setup Create and Start pool natively;
-  a real owner OVA with a declared format; reclaiming the prepared copy's space.
+- Done: removing the prepared copy after import (ADR 0058), natively for OVA and
+  ISO; guest boot and disk order shown on the serial console for the generated
+  BIOS OVA.
+- Remaining: in-setup Create and Start pool natively (needs a host without a
+  usable pool); a real owner OVA with a declared format; cloud images.
 
 Scenarios: IMP-01, IMP-02, IMP-03, IMP-04, IMP-07, IMP-08, STO-01 (creation).
 
