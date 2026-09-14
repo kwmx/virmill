@@ -43,6 +43,7 @@ type CreationForm struct {
 	Networks                []domain.VirtualNetwork
 	CPUText, MemoryText     string
 	CPUOrigin, MemoryOrigin string
+	FirmwareOrigin          string
 	Page, Focus, Disk, NIC  int
 	Error                   string
 	cursor                  int
@@ -85,6 +86,8 @@ func NewCreationForm(operationID string, source CreationSource, options domain.C
 		}
 	}
 	f.Spec.DevicePolicy, _ = domain.DefaultCreationDevices(f.Spec.Machine)
+	f.Spec.PoolID = defaultCreationPool(f.Pools)
+	f.Spec.Firmware, f.FirmwareOrigin = defaultCreationFirmware(options, source.System.Firmware)
 	return f
 }
 
@@ -167,11 +170,14 @@ func (f CreationForm) controls() []importControl {
 				}
 			}
 		}
-		poolHelp := "Choose active storage for new copies of all disks."
+		poolHelp := "Where copies of the VM's disks are stored."
 		if len(pools) == 0 {
-			poolHelp = "No active file-based pool. Start or create one in Storage, then reopen this form."
+			poolHelp = "No storage pool yet. Choose Create storage pool below; your settings stay here."
 		}
 		choice("pool", "Storage pool", poolHelp, poolName, pools)
+		if len(pools) == 0 {
+			c = append(c, importButton("create-pool", "Create storage pool", "Sets up libvirt's standard folder for VM disks after one short review."))
+		}
 		firmware := ""
 		if i := f.firmwareIndex(); i >= 0 {
 			firmware = f.Options.Firmware[i].Label
@@ -180,7 +186,11 @@ func (f CreationForm) controls() []importControl {
 		for _, option := range f.Options.Firmware {
 			labels = append(labels, option.Label)
 		}
-		choice("firmware", "Firmware", "Match the original BIOS or UEFI. This is required for the guest to boot.", firmware, labels)
+		firmwareHelp := "Match the original BIOS or UEFI. This is required for the guest to boot."
+		if f.FirmwareOrigin != "" {
+			firmwareHelp = f.FirmwareOrigin
+		}
+		choice("firmware", "Firmware", firmwareHelp, firmware, labels)
 		c = append(c, importButton("advanced", "Advanced hardware", "Optional: CPU model, display, guest tools channel and other devices."), importButton("next", "Continue to disks", "Review storage controllers and the order in which devices boot."))
 	case 1:
 		total := len(f.Spec.Disks) + len(f.Spec.Media)
@@ -346,6 +356,9 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 		}
 		if len(c.choices) == 0 {
 			f.Error = "No supported choices are available for " + c.label + "."
+			if c.id == "pool" {
+				f.Error = "No storage pool yet. Choose Create storage pool; your settings stay here."
+			}
 			return f, none
 		}
 		next := func(value string) string { return importCycle(value, c.choices, direction) }
@@ -438,7 +451,7 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 	}
 	if c.kind == "button" && activate {
 		switch c.id {
-		case "create-network", "refresh-networks":
+		case "create-network", "refresh-networks", "create-pool":
 			return f, ImportIntent{Kind: c.id}
 		case "advanced":
 			f.Page = 3
@@ -792,6 +805,40 @@ func (f CreationForm) View(width, height int) string {
 
 func creationUsablePool(p domain.StoragePool) bool {
 	return p.Active && slices.Contains([]string{"dir", "fs", "netfs"}, p.Type)
+}
+
+// defaultCreationPool preselects libvirt's "default" pool, or the only usable
+// pool. With several and no default, the user chooses.
+func defaultCreationPool(pools []domain.StoragePool) string {
+	usable := []domain.StoragePool{}
+	for _, p := range pools {
+		if creationUsablePool(p) {
+			if p.Name == "default" {
+				return p.Key.UUID
+			}
+			usable = append(usable, p)
+		}
+	}
+	if len(usable) == 1 {
+		return usable[0].Key.UUID
+	}
+	return ""
+}
+
+// defaultCreationFirmware follows firmware the source declares. Otherwise it
+// suggests BIOS, which most disk images boot with, and says so in the form.
+func defaultCreationFirmware(options domain.CreationOptions, declared string) (domain.CreationFirmware, string) {
+	uefi := strings.Contains(strings.ToLower(declared), "efi")
+	for _, o := range options.Firmware {
+		bios := o.Firmware.Mode == "bios"
+		if uefi && !bios && !o.Firmware.SecureBoot && !o.Firmware.TPM || !uefi && bios {
+			if declared != "" {
+				return o.Firmware, "Detected from the source. Change it only if the guest does not boot."
+			}
+			return o.Firmware, "Suggested: BIOS, which most disk images use. Choose UEFI if this image was made for UEFI."
+		}
+	}
+	return domain.CreationFirmware{}, ""
 }
 func creationSourceBus(source CreationSource, diskID string, options domain.CreationOptions) string {
 	if !slices.Contains(options.DiskBuses, "sata") {

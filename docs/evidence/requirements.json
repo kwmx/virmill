@@ -2158,7 +2158,13 @@
         "docs/adr/0018-managed-volume-read-access.md",
         "docs/evidence/cold-source-integration-run.md",
         "docs/creation-space-estimates.md",
-        "docs/evidence/cold-fixes-native-run.md"
+        "docs/evidence/cold-fixes-native-run.md",
+        "internal/domain/storage_pool_creation.go",
+        "internal/backend/poolxml/poolxml.go",
+        "internal/backend/libvirt/storage_pool_creation_linux.go",
+        "internal/app/storage_pool_creation.go",
+        "internal/ui/tui/workspace_creation_pool.go",
+        "docs/adr/0056-storage-pool-creation-and-setup-defaults.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -2179,7 +2185,12 @@
         "internal/creating/estimates_linux_test.go",
         "internal/ui/cli/creation_estimates_test.go",
         "internal/ui/tui/creation_estimates_test.go",
-        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-estimate-tui-001.py"
+        "tests/fixtures/protection/disposable-recorded-run/cold-fixes-estimate-tui-001.py",
+        "internal/backend/poolxml/poolxml_test.go",
+        "internal/backend/libvirt/storage_pool_creation_linux_test.go",
+        "internal/app/storage_pool_creation_test.go",
+        "internal/ui/tui/workspace_creation_pool_test.go",
+        "internal/ui/tui/creation_form_test.go"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -2203,7 +2214,7 @@
         "cold-fixes-estimate-tui-001"
       ],
       "outstanding": [
-        "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill pool creation, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
+        "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill directory-pool creation (ADR 0056) has software regressions; its native run, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required."
       ],

@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -136,6 +137,8 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		var input string
 		var deleteDisks []string
+		var poolName, poolPath string
+		var noAutostart bool
 		var after int64
 		var hard, planOnly, follow bool
 		pluginFlags := map[string]*string{}
@@ -153,6 +156,12 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		if a.Command == "vm stop" {
 			cmd.Flags().BoolVar(&hard, "hard", false, "Plan abrupt power-off, requiring data-loss acknowledgement")
+		}
+		if a.Command == "storage pool create" {
+			cmd.Flags().StringVar(&poolName, "name", "", "Pool name (default: default)")
+			cmd.Flags().StringVar(&poolPath, "path", "", "Folder for VM disks (default: libvirt's standard images folder for the connection)")
+			cmd.Flags().BoolVar(&noAutostart, "no-autostart", false, "Do not start the pool automatically when the host starts")
+			cmd.Long += " With no flags this plans libvirt's standard default pool: /var/lib/libvirt/images on qemu:///system. An existing folder keeps its permissions and files."
 		}
 		if a.Command == "vm remove" {
 			cmd.Flags().StringArrayVar(&deleteDisks, "delete-disk", nil, "Permanently delete selected guest disk targets (vda,vdb); repeatable; omitted keeps all disks")
@@ -234,6 +243,24 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 					return domain.Fail("INVALID_INPUT", "--delete-disk requires at least one explicit guest disk target")
 				}
 				r.Input["deleteDisks"] = selected
+			}
+			if a.Command == "storage pool create" {
+				if poolPath != "" {
+					absolute, err := filepath.Abs(poolPath)
+					if err != nil {
+						return domain.Fail("INVALID_INPUT", "storage pool folder could not be resolved")
+					}
+					poolPath = absolute
+				}
+				for key, value := range map[string]any{"name": poolName, "path": poolPath, "autostart": false} {
+					if value == "" || key == "autostart" && !noAutostart {
+						continue
+					}
+					if _, exists := r.Input[key]; exists {
+						return domain.Fail("INVALID_INPUT", "parameter supplied by both flag and JSON: "+key)
+					}
+					r.Input[key] = value
+				}
 			}
 			if a.Command == "vm guest-agent enable" {
 				if _, exists := r.Input["enableGuestAgent"]; exists {

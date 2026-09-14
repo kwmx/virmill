@@ -13,7 +13,14 @@ The TUI exposes the same commands in **Storage** and **Networks**. Names remain
 labels; system and session resources keep separate connection identities.
 
 These are read-only native libvirt calls. They do not adopt, activate, refresh,
-create or delete resources. Pools show the backend type, configuration XML,
+create or delete resources.
+
+To create a pool, run `storage pool create` (TUI: **Storage → Create pool**, or
+**Create storage pool** in VM setup). With no flags it plans libvirt's standard
+pool: `default` at `/var/lib/libvirt/images` on the system connection. `--name`,
+`--path` and `--no-autostart` adjust it. Apply the plan as usual; the job defines,
+starts and enables autostart for a new directory pool. An existing folder keeps its
+permissions, label and files. Existing pools are never changed ([ADR 0056](adr/0056-storage-pool-creation-and-setup-defaults.md)). Pools show the backend type, configuration XML,
 active/persistent/autostart state and observed capacity when active. Capacity fields
 are null when unavailable, rather than fabricated zero space. Pool fingerprints
 bind the returned XML and activation settings; any XML change invalidates that

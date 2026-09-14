@@ -101,8 +101,8 @@ does not authorize another apply.
 ## Suggested sequence
 
 Start with a small offline BIOS disk set and no NICs. Keep all source writers
-stopped throughout preparation and capture. Choose an existing active file pool
-with enough reviewed headroom; initial allocation and copied bytes are distinct
+stopped throughout preparation and capture. Choose an active file pool (**Create
+storage pool** sets up libvirt's standard one) with enough reviewed headroom; initial allocation and copied bytes are distinct
 from the [creation space budget](creation-space-estimates.md).
 
 1. **Prepare independent disks.** Adapt

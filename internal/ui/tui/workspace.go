@@ -32,6 +32,7 @@ type Workspace struct {
 	NetworkForm            *NetworkForm
 	CreationNetwork        *creationNetworkHandoff
 	CreationNetworkRefresh *creationNetworkRefresh
+	CreationPool           *creationPoolJob
 	JobOutcome             *jobOutcome
 	Resources              *resourceSetup
 	ResourceSummary        *domain.VMResourceView
@@ -412,6 +413,9 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 	case "network create":
 		m.openNetworkForm()
 		return nil
+	case "storage pool create":
+		m.Advanced = false
+		return m.openPoolCreation()
 	case "vm create", "vm create-devices":
 		return m.openCreationSources()
 	case "import prepare", "import source describe":
@@ -500,7 +504,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.Picker != nil {
 		switch msg.(type) {
-		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, importPulse, importExportReply, consolePrepared, consoleClosed:
+		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, creationPoolPulse, importPulse, importExportReply, consolePrepared, consoleClosed:
 		default:
 			return m.updatePicker(msg)
 		}
@@ -551,6 +555,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		next, cmd := m.legacy.Update(v)
 		m.legacy = next.(Model)
 		return m, cmd
+	case creationPoolPulse:
+		return m, m.pollCreationPool(v.JobID)
 	case creationPulse:
 		if v.OperationID != m.PendingPreparation {
 			return m, nil
@@ -669,6 +675,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Error = ""
 				delete(m.Errors, v.Kind)
 			}
+			if v.Kind == "creation-pool-job" || v.Kind == "creation-pools" {
+				m.CreationPool = nil
+				m.Notice = ""
+			}
 			if strings.HasPrefix(v.Kind, "creation-") {
 				m.Busy = false
 				m.Error = importError(err)
@@ -768,6 +778,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.draftSubmitted = false
 			m.Notice = ""
 			m.Error = ""
+		case "creation-pool-job":
+			return m, m.receiveCreationPoolJob(v.Response.Data)
+		case "creation-pools":
+			m.receiveCreationPools(v.Response.Data)
 		case "preparation-job":
 			var job domain.Job
 			b, _ := json.Marshal(v.Response.Data)
@@ -854,6 +868,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.loadJobOutcome(false)
 			}
 		case "apply":
+			if handled, cmd := m.acceptCreationPool(v.Response.Data); handled {
+				return m, cmd
+			}
 			if handled, cmd := m.acceptCreationNetwork(v.Response.Data); handled {
 				return m, cmd
 			}
@@ -1620,8 +1637,8 @@ func emptyState(section int) []string {
 	case 2:
 		return []string{"No networks yet.", "", "Create network sets up a private or NAT network for your VMs."}
 	case 3:
-		return []string{"No storage pools found.", "", "VM disks live in libvirt storage pools. Create one with your distribution's",
-			"virtualization tools (for example virt-manager), then press r."}
+		return []string{"No storage pools yet.", "", "VM disks live in a storage pool. Choose Create pool to set up libvirt's",
+			"standard folder for VM disks. You review it before anything changes."}
 	case 6:
 		return []string{"No recovery points yet.", "", "Open a stopped VM and choose Capture to save one."}
 	case 7:
@@ -2129,7 +2146,7 @@ func (m Workspace) buttons() []workspaceButton {
 	}
 	primary := map[int][]workspaceButton{
 		2:  {{"Details", "enter"}, {"Create network", "action:network create"}},
-		3:  {{"Details", "enter"}, {"Refresh", "r"}},
+		3:  {{"Details", "enter"}, {"Create pool", "action:storage pool create"}, {"Refresh", "r"}},
 		4:  {},
 		5:  {{"Validate lab", "action:lab validate"}},
 		6:  {{"Details", "enter"}, {"Restore", "action:snapshot restore"}, {"Back up", "action:backup create"}, {"New repository", "n"}},

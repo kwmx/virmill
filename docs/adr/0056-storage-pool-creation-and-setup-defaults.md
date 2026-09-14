@@ -1,0 +1,46 @@
+# ADR 0056: Create storage pools in Virmill and suggest setup defaults
+
+Status: implemented; native evidence recorded separately.
+
+A first VM or import stopped at "No active file-based pool", and the Storage page
+sent users to another tool to create one. The owner asked for one program with
+simple defaults and optional advanced settings. Specification document 03 lists
+`storage pool create`, STO-01 covers pool creation, and ADR 0006 forbids only
+implicit creation or activation, not an explicit reviewed one.
+
+`storage.pool.create` is an ordinary reviewed plan and durable job with one
+acknowledgement, `host-mutation`. With no input it plans libvirt's standard pool:
+name `default`, folder `/var/lib/libvirt/images` on `qemu:///system`, or
+`$XDG_DATA_HOME/libvirt/images` (normally `~/.local/share/libvirt/images`) on
+`qemu:///session`, starting with the host. Name, folder and autostart are
+optional (`--name`, `--path`, `--no-autostart`). Only persistent directory pools
+are created.
+
+The job defines, starts and then enables autostart. Before definition a durable
+record binds the new pool UUID to the job. Every step reconciles by that UUID and
+is never replayed; an uncertain step needs recovery. Planning and each step refuse
+an existing name or UUID, a folder equal to, inside or containing another pool's
+folder, system folders, top-level folders and non-canonical paths. Existing pools
+are never adopted, started, changed or removed. Libvirt creates a missing folder
+with its default mode; an existing folder keeps its owner, mode, security label
+and files, and those files are listed as volumes. Nothing here deletes a pool or
+its folder. Libvirt has no create-only definition call, so an external writer
+between the final check and definition can still collide; that is reported as
+needing recovery, never repaired.
+
+The Storage page offers Create pool, and its empty page no longer names other
+tools. In VM setup, when no usable pool exists, Create storage pool shows the
+review over the form. After approval the form stays open and editable while the
+job runs; the exact new pool (UUID, name, active) is then selected. A failed job
+is explained in the form. The VM draft stays editing, never submitting, and the
+pool job remains in Jobs with its own completion card.
+
+VM setup now preselects visible defaults instead of leaving required choices
+blank: libvirt's `default` pool, or the only usable pool, and the firmware the
+source declares. Without a declaration BIOS is preselected and labelled
+*Suggested*, which records the assumption required by specification document 05;
+the review shows the final choice. With several pools and no `default`, the user
+chooses. This supersedes the earlier rule that unknown firmware is left unset.
+
+STO-01 remains in progress: disk growth, move and space accounting, and native
+evidence for pool creation, are separate.

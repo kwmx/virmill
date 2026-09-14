@@ -90,6 +90,16 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 	// These are local, known VM workflows. An unknown/plugin operation receives
 	// no invented outcome or target; its normal job/events view stays available.
 	switch p.Operation {
+	case "storage.pool.create":
+		var d domain.StoragePoolDefinition
+		raw, err := json.Marshal(p.Review["definition"])
+		if err != nil || json.Unmarshal(raw, &d) != nil || d.Name == "" || d.Path == "" || p.ConnectionID != o.Connection {
+			return fail(fmt.Errorf("Storage pool result does not match its reviewed plan. Inspect the job."))
+		}
+		o.Title = "Storage pool ready"
+		o.Summary = "Pool " + validation.SafeText(d.Name) + " is active and keeps VM disks in " + validation.SafeText(d.Path) + ". Create VM and Import can use it now."
+		o.VMID = ""
+		return o
 	case "vm.create", "vm.create.devices-v1":
 		o.Title = "VM created"
 		o.Summary = "The VM definition and disk copies were confirmed. Open the VM for its current state, Start and Console. Guest setup is a separate step."

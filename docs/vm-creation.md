@@ -20,7 +20,9 @@ receipt. A rewritten public manifest does not authorize creation.
 Inspect the target with `storage pool list/show` and `network list/show`, using
 the same explicit `--connection` throughout. Select an already active file-based
 pool (`dir`, `fs` or `netfs`) and existing active networks. Creation does not
-activate these resources. Pool space must meet the displayed conservative budget.
+activate these resources; if no pool exists, plan one first with `storage pool
+create`, which defaults to libvirt's standard images folder. Pool space must meet
+the displayed conservative budget.
 
 Creation preflight needs permission to open a writable libvirt connection: the
 native QEMU driver refuses its domain-capability query on a read-only handle.

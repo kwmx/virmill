@@ -111,8 +111,13 @@ automatically. Otherwise choose **Create VM** and select the prepared images.
 The CPU/RAM choices from the source summary carry into this setup.
 
 The ordinary **VM options** page contains name, CPU cores, memory, storage pool
-and **Firmware**. Choose BIOS or UEFI to match the original guest or installer.
-Unknown firmware is not guessed. **Advanced hardware** keeps machine type,
+and **Firmware**. Firmware the source declares is preselected; otherwise BIOS
+is preselected and labelled *Suggested*; choose UEFI if the image needs it. The
+storage pool is preselected when libvirt's `default` pool or a single usable pool
+exists. With no pool, **Create storage pool** reviews libvirt's standard folder
+(`/var/lib/libvirt/images` on the system connection) and creates it as its own
+job while the VM form stays open; the new pool is selected when it is ready.
+**Advanced hardware** keeps machine type,
 CPU model, display, clock, USB controller, memory balloon, watchdog and the guest
 agent channel available without putting all those decisions on the first page.
 Changing the machine reloads its supported options; unsupported retained choices

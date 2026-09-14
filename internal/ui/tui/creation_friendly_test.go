@@ -13,13 +13,14 @@ import (
 func TestCreationFriendlyFirmwareWithoutAdvanced(t *testing.T) {
 	f := creationFormFixture()
 	f = creationFocus(t, f, "firmware")
-	if f.Spec.Firmware.Mode != "" {
-		t.Fatal("firmware must not be guessed")
+	if f.Spec.Firmware.Mode != "bios" || !strings.Contains(f.View(80, 24), "Suggested: BIOS") {
+		t.Fatal("suggested firmware must be preselected and labeled", f.View(80, 24))
 	}
 	f, intent := creationPress(f, tea.KeyRight)
-	if intent.Kind != "" || f.Page != 0 || f.Spec.Firmware.Mode != "bios" {
+	if intent.Kind != "" || f.Page != 0 || f.Spec.Firmware.Mode != "uefi" {
 		t.Fatal("basic firmware choice failed")
 	}
+	f, _ = creationPress(f, tea.KeyLeft)
 	view := f.View(80, 24)
 	for _, text := range []string{"Step 1 of 3", "Firmware: < BIOS >", "Advanced hardware", "Continue to disks"} {
 		if !strings.Contains(view, text) {

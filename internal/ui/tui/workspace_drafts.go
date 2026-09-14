@@ -247,6 +247,10 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return w, tea.Batch(cmd, tea.Tick(400*time.Millisecond, func(time.Time) tea.Msg { return setupSaveTick{seq} }))
 }
 func (m *Workspace) guardSetupApply(cmd tea.Cmd) tea.Cmd {
+	// A pool created from VM setup is a separate job; the VM draft stays editing.
+	if m.Plan != nil && m.Plan.Operation == "storage.pool.create" {
+		return cmd
+	}
 	if m.CreationNetwork != nil && m.draftWriter != nil {
 		d := m.setupDocument()
 		if d == nil {

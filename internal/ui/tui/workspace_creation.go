@@ -154,6 +154,8 @@ func (m Workspace) updateCreation(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, m.openCreationNetwork()
 	case "refresh-networks":
 		return m, m.refreshCreationNetworks()
+	case "create-pool":
+		return m, m.openPoolCreation()
 	case "cancel":
 		m.Creation = nil
 		m.CreationPicking = false

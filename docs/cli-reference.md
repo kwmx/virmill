@@ -1727,6 +1727,33 @@ Global Flags:
       --verbose             Verbose diagnostics
 ```
 
+## `virmill storage pool create`
+
+Plan a new folder-backed pool for VM disks; defaults to libvirt's standard images folder
+
+```text
+Usage:
+  virmill storage pool create [flags]
+
+Flags:
+      --after int      Event cursor
+      --input string   JSON parameters; secrets must be references (default "{}")
+      --name string    Pool name (default: default)
+      --no-autostart   Do not start the pool automatically when the host starts
+      --path string    Folder for VM disks (default: libvirt's standard images folder for the connection)
+      --plan           Return preview (apply separately after review) (default true)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
 ## `virmill storage pool list`
 
 List existing local libvirt pools without adoption or activation

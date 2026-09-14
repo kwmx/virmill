@@ -4204,6 +4204,58 @@ _virmill_storage_access()
     noun_aliases=()
 }
 
+_virmill_storage_pool_create()
+{
+    last_command="virmill_storage_pool_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--name=")
+    two_word_flags+=("--name")
+    local_nonpersistent_flags+=("--name")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--no-autostart")
+    local_nonpersistent_flags+=("--no-autostart")
+    flags+=("--path=")
+    two_word_flags+=("--path")
+    local_nonpersistent_flags+=("--path")
+    local_nonpersistent_flags+=("--path=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_storage_pool_list()
 {
     last_command="virmill_storage_pool_list"
@@ -4291,6 +4343,7 @@ _virmill_storage_pool()
     command_aliases=()
 
     commands=()
+    commands+=("create")
     commands+=("list")
     commands+=("show")
 

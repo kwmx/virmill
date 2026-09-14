@@ -56,8 +56,8 @@ func TestCreationFormDetectedAndFallbackResources(t *testing.T) {
 	if f.CPUText != "4" || f.MemoryText != "4096" || !strings.Contains(f.CPUOrigin, "Detected") || !strings.Contains(f.MemoryOrigin, "Detected") {
 		t.Fatal("source hardware lost")
 	}
-	if f.Spec.Name != "appliance" || f.Spec.Firmware.Mode != "" || f.Spec.PoolID != "" {
-		t.Fatal("name missing or firmware/pool silently selected")
+	if f.Spec.Name != "appliance" || f.Spec.Firmware.Mode != "bios" || !strings.Contains(f.FirmwareOrigin, "Suggested") || f.Spec.PoolID != creationFormPool {
+		t.Fatal("name missing, or labeled firmware suggestion / only usable pool not preselected")
 	}
 	empty := NewCreationForm(creationFormOperation, CreationSource{}, f.Options, nil, nil)
 	if empty.CPUText != "2" || empty.MemoryText != "2048" || !strings.Contains(empty.CPUOrigin, "Suggested") || empty.Spec.Name != "new-vm" {
@@ -82,6 +82,10 @@ func TestCreationFormNativeMappingsAndRequestSchema(t *testing.T) {
 	f.Page = 3
 	f = creationFocus(t, f, "firmware")
 	f, _ = creationPress(f, tea.KeyRight)
+	if f.Spec.Firmware.Mode != "uefi" {
+		t.Fatal("explicit firmware choice failed")
+	}
+	f, _ = creationPress(f, tea.KeyLeft)
 	if f.Spec.Firmware.Mode != "bios" {
 		t.Fatal("explicit firmware choice failed")
 	}
@@ -318,8 +322,48 @@ func TestCreationFormPoolKindsAndWrappedError(t *testing.T) {
 	}
 	f.Pools = nil
 	f = creationFocus(t, f, "pool")
-	if !strings.Contains(f.controls()[f.Focus].help, "No active") {
+	if !strings.Contains(f.controls()[f.Focus].help, "No storage pool yet") {
 		t.Fatal("missing explanation for empty pool list")
+	}
+	if g, _ := creationPress(f, tea.KeyEnter); !strings.Contains(g.Error, "Create storage pool") {
+		t.Fatal("empty pool choice does not point to inline creation", g.Error)
+	}
+	f = creationFocus(t, f, "create-pool")
+	if _, intent := creationPress(f, tea.KeyEnter); intent.Kind != "create-pool" {
+		t.Fatal("empty pool list lacks inline pool creation", intent)
+	}
+}
+
+// Defaults are visible suggestions, never hidden: libvirt's default pool or
+// the only usable pool, and the firmware a source declares or labeled BIOS.
+func TestCreationFormSuggestedDefaults(t *testing.T) {
+	base := creationFormFixture()
+	pool := func(id, name string, active bool) domain.StoragePool {
+		return domain.StoragePool{Key: domain.ResourceKey{UUID: id}, Name: name, Type: "dir", Active: active}
+	}
+	for _, tt := range []struct {
+		pools []domain.StoragePool
+		want  string
+	}{
+		{[]domain.StoragePool{pool("a", "one", true), pool("b", "two", true)}, ""},
+		{[]domain.StoragePool{pool("a", "one", true), pool("b", "default", true)}, "b"},
+		{[]domain.StoragePool{pool("a", "one", true), pool("b", "default", false)}, "a"},
+		{nil, ""},
+	} {
+		if got := NewCreationForm(creationFormOperation, base.Source, base.Options, tt.pools, nil).Spec.PoolID; got != tt.want {
+			t.Fatalf("pool default %q, want %q", got, tt.want)
+		}
+	}
+	source := base.Source
+	source.System.Firmware = "efi"
+	f := NewCreationForm(creationFormOperation, source, base.Options, nil, nil)
+	if f.Spec.Firmware.Mode != "uefi" || !strings.Contains(f.FirmwareOrigin, "Detected") {
+		t.Fatal("declared UEFI firmware not followed", f.Spec.Firmware)
+	}
+	options := base.Options
+	options.Firmware = options.Firmware[1:]
+	if f = NewCreationForm(creationFormOperation, base.Source, options, nil, nil); f.Spec.Firmware.Mode != "" || f.FirmwareOrigin != "" {
+		t.Fatal("firmware suggested without a BIOS option", f.Spec.Firmware)
 	}
 }
 

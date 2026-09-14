@@ -58,6 +58,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	e.Handlers["vm.remove-disks-v1"] = &diskRemovalHandler{s: s}
 	e.Handlers["network.create"] = &networkCreationHandler{s: s}
 	e.Handlers["network.creation.resume"] = &networkResumeHandler{networkCreationHandler{s: s}}
+	e.Handlers["storage.pool.create"] = &storagePoolCreationHandler{s: s}
 	return s
 }
 func (s *Service) Call(ctx context.Context, uid uint32, method string, r Request) Response {
@@ -114,6 +115,8 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		return s.planNetworkResume(ctx, uid, r)
 	case "network.creation.result":
 		return s.networkCreationResult(ctx, uid, r)
+	case "storage.pool.create":
+		return s.planStoragePoolCreation(ctx, uid, r)
 	case "host.capabilities":
 		suite, err := contracts.Capabilities()
 		if err != nil {

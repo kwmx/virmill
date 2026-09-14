@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Create storage pools in Virmill: `virmill storage pool create`, **Storage →
+  Create pool**, and **Create storage pool** inside VM setup. With no options it
+  plans libvirt's standard `default` pool at `/var/lib/libvirt/images`; `--name`,
+  `--path` and `--no-autostart` adjust it. In VM setup the form stays open while
+  the pool is created, and the new pool is then selected. Existing folders keep
+  their permissions and files; existing pools are never changed (ADR 0056).
+- VM setup preselects libvirt's `default` pool (or the only usable pool) and the
+  firmware the source declares. Otherwise BIOS is preselected and labelled
+  *Suggested*.
+
 - `virmill update` also requires each download, and `SHA256SUMS` itself, to
   match the SHA-256 digest GitHub recorded for the upload, as the install script
   does. It refuses a checksum file that disagrees with the uploaded files, and a
