@@ -48,6 +48,7 @@ type CreationForm struct {
 	NetworkOrigin           string
 	SuggestedNetworkID      string
 	StartAfter              bool // start the VM once creation succeeds (ADR 0057)
+	RemovePrepared          bool // remove the prepared copy afterwards (ADR 0058)
 	Page, Focus, Disk, NIC  int
 	Error                   string
 	cursor                  int
@@ -90,7 +91,7 @@ func NewCreationForm(operationID string, source CreationSource, options domain.C
 		}
 	}
 	f.addDefaultNIC()
-	f.StartAfter = true
+	f.StartAfter, f.RemovePrepared = true, true
 	f.Spec.DevicePolicy, _ = domain.DefaultCreationDevices(f.Spec.Machine)
 	f.Spec.PoolID = defaultCreationPool(f.Pools)
 	f.Spec.Firmware, f.FirmwareOrigin = defaultCreationFirmware(options, source.System.Firmware)
@@ -295,6 +296,7 @@ func (f CreationForm) controls() []importControl {
 			}
 		}
 		choice("startAfter", "After creation", "Starting is part of the same review; choose Leave it off to start it later yourself.", strconv.FormatBool(f.StartAfter), []string{"true", "false"})
+		choice("removePrepared", "Prepared copy", "Frees the disk space the import used; the VM keeps its own disks. Keep it to create more VMs from these images.", strconv.FormatBool(f.RemovePrepared), []string{"true", "false"})
 		previewLabel, previewHelp := "Preview VM creation", "Create a powered-off VM after approval. Start is a separate action."
 		if f.StartAfter {
 			previewHelp = "Create the VM and start it after one approval."
@@ -425,6 +427,8 @@ func (f CreationForm) Update(key tea.KeyMsg) (CreationForm, ImportIntent) {
 			f.Spec.GuestAgent = !f.Spec.GuestAgent
 		case "startAfter":
 			f.StartAfter = !f.StartAfter
+		case "removePrepared":
+			f.RemovePrepared = !f.RemovePrepared
 		case "graphics":
 			f.Spec.Graphics = next(f.Spec.Graphics)
 		case "usb":
@@ -1047,17 +1051,18 @@ func (f *CreationForm) FocusError(err error) {
 // changing the declaration sent to the shared service.
 func creationFriendlyValue(id, value string) string {
 	labels := map[string]map[string]string{
-		"boot":       {"0": "Attach only"},
-		"guestAgent": {"false": "Disabled", "true": "Enabled"},
-		"startAfter": {"true": "Start the VM", "false": "Leave it off"},
-		"link":       {"down": "Disconnected", "up": "Connected"},
-		"graphics":   {"none": "No display", "vnc-unix": "Local display (VNC)", "spice-unix": "Local display (SPICE)"},
-		"cpuMode":    {"host-model": "Host-compatible (host-model)", "host-passthrough": "Host CPU (host-passthrough)", "custom": "Choose a CPU model"},
-		"clock":      {"utc": "UTC", "localtime": "Local time"},
-		"usb":        {"none": "Disabled", "qemu-xhci": "USB 3 (qemu-xhci)"},
-		"balloon":    {"none": "Disabled", "virtio": "Enabled (virtio)"},
-		"watchdog":   {"none": "Disabled", "reset": "Restart guest on timeout"},
-		"bus":        {"sata": "SATA", "scsi": "SCSI", "virtio": "Virtio (guest driver required)"},
+		"boot":           {"0": "Attach only"},
+		"guestAgent":     {"false": "Disabled", "true": "Enabled"},
+		"startAfter":     {"true": "Start the VM", "false": "Leave it off"},
+		"removePrepared": {"true": "Remove after creation", "false": "Keep"},
+		"link":           {"down": "Disconnected", "up": "Connected"},
+		"graphics":       {"none": "No display", "vnc-unix": "Local display (VNC)", "spice-unix": "Local display (SPICE)"},
+		"cpuMode":        {"host-model": "Host-compatible (host-model)", "host-passthrough": "Host CPU (host-passthrough)", "custom": "Choose a CPU model"},
+		"clock":          {"utc": "UTC", "localtime": "Local time"},
+		"usb":            {"none": "Disabled", "qemu-xhci": "USB 3 (qemu-xhci)"},
+		"balloon":        {"none": "Disabled", "virtio": "Enabled (virtio)"},
+		"watchdog":       {"none": "Disabled", "reset": "Restart guest on timeout"},
+		"bus":            {"sata": "SATA", "scsi": "SCSI", "virtio": "Virtio (guest driver required)"},
 	}
 	if text := labels[id][value]; text != "" {
 		return text

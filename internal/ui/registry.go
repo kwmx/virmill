@@ -20,6 +20,7 @@ type Action struct {
 
 var Actions = []Action{
 	{"import sources", "import.sources", "VMs", "List your completed image preparations for VM creation", "", ""},
+	{"import discard", "import.discard", "VMs", "Plan removing a finished import's work folder and, unless --keep-images, its prepared images to free space", "id", "discard"},
 	{"vm creation options", "vm.creation.options", "VMs", "Show supported local CPU, memory, machine and firmware choices", "", ""},
 	{"plugin call", "plugin.call", "Plugins", "Plan a confined read-only action on explicitly selected VMs", "id", "call"},
 	{"plugin result", "plugin.result", "Plugins", "Read a durable plugin result by operation ID", "id", ""},

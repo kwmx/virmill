@@ -163,9 +163,44 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 	if last = c.requests[len(c.requests)-1]; last.Apply == nil || last.Apply.PlanID != chainStartPlan {
 		t.Fatal("start apply", last)
 	}
-	m, _ = deliver(t, m, "apply", domain.Job{ID: "99999999-9999-4999-8999-999999999996", PlanID: chainStartPlan, State: "queued"})
+	const startJob = "99999999-9999-4999-8999-999999999996"
+	m, _ = deliver(t, m, "apply", domain.Job{ID: startJob, PlanID: chainStartPlan, State: "queued"})
+	if m.Chain == nil || m.Chain.StartJob != startJob {
+		t.Fatal("chain ended before removing the prepared copy")
+	}
+
+	// Once started, the approved preparation's copy is removed, and nothing else.
+	m.Section, m.NavIndex = 8, 8
+	m.Detail = generic(domain.Job{ID: startJob, PlanID: chainStartPlan, State: "succeeded"})
+	m.JobOutcome = &jobOutcome{JobID: startJob, PlanID: chainStartPlan, State: "succeeded", Connection: m.Connection, VMID: workspaceVMID}
+	if cmd = m.chainAfterStart(); cmd == nil {
+		t.Fatal("prepared copy removal not requested")
+	}
+	cmd()
+	if last = c.requests[len(c.requests)-1]; c.calls[len(c.calls)-1] != "import.discard" || last.ID != chainPrepJob || last.Action != "discard" || len(last.Input) != 0 {
+		t.Fatal("removal request", c.calls, last)
+	}
+	discard := chainPlan(t, "99999999-9999-4999-8999-999999999997", "import.discard", "local", []string{"delete-prepared-copy"}, map[string]any{"sourceOperationID": chainPrepJob, "sourceFilesChanged": false}, nil)
+	m, cmd = deliver(t, m, "plan", discard)
+	if cmd == nil {
+		t.Fatal("approved removal was not applied", m.Notice)
+	}
+	cmd()
+	m, _ = deliver(t, m, "apply", domain.Job{ID: "99999999-9999-4999-8999-999999999998", PlanID: discard.ID, State: "queued"})
 	if m.Chain != nil {
 		t.Fatal("chain kept after its last step")
+	}
+}
+
+func TestChainRemovalOnlyForTheApprovedPreparation(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Client = &workspaceClient{}
+	m.Chain = &importChain{Connection: m.Connection, Approved: []string{"host-mutation", "delete-prepared-copy"}, Cleanup: true, Discarding: true, Source: chainPrepJob, PrepJob: chainPrepJob, CreateJob: chainCreateJob}
+	m.Pending = map[string]uint64{"plan": 3}
+	other := chainPlan(t, "99999999-9999-4999-8999-999999999997", "import.discard", "local", []string{"delete-prepared-copy"}, map[string]any{"sourceOperationID": chainCreateJob, "sourceFilesChanged": false}, nil)
+	m, cmd := deliver(t, m, "plan", other)
+	if cmd != nil || m.Chain != nil || !strings.Contains(m.Notice, "needs your review") {
+		t.Fatal("removal of another preparation applied")
 	}
 }
 
@@ -217,7 +252,7 @@ func TestChainStopsAtReviewForAnythingNotApproved(t *testing.T) {
 func TestCreationWithoutStartHasNoLaterSteps(t *testing.T) {
 	m := fixtureWorkspace()
 	f := creationComplete(creationFormFixture())
-	f.StartAfter = false
+	f.StartAfter, f.RemovePrepared = false, false
 	m.Creation = &f
 	m.Pending = map[string]uint64{"plan": 5}
 	m, _ = deliver(t, m, "plan", chainPlan(t, chainCreatePlan, "vm.create.devices-v1", m.Connection, expectedCreationAcks(f), map[string]any{"sourceOperationID": creationFormOperation}, nil))
@@ -230,6 +265,13 @@ func TestCreationWithoutStartHasNoLaterSteps(t *testing.T) {
 	m, _ = deliver(t, m, "plan", chainPlan(t, chainCreatePlan, "vm.create.devices-v1", m.Connection, expectedCreationAcks(f), map[string]any{"sourceOperationID": creationFormOperation}, nil))
 	if m.ChainOffer == nil || !slices.Equal(m.ChainOffer.Extras, []string{startVMAck}) {
 		t.Fatal("start after creation not offered", m.ChainOffer)
+	}
+	f.StartAfter, f.RemovePrepared = false, true
+	m.Creation, m.Plan = &f, nil
+	m.Pending = map[string]uint64{"plan": 7}
+	m, _ = deliver(t, m, "plan", chainPlan(t, chainCreatePlan, "vm.create.devices-v1", m.Connection, expectedCreationAcks(f), map[string]any{"sourceOperationID": creationFormOperation}, nil))
+	if m.ChainOffer == nil || !m.ChainOffer.Cleanup || !slices.Equal(m.ChainOffer.Extras, []string{"delete-prepared-copy"}) {
+		t.Fatal("removing the prepared copy not offered", m.ChainOffer)
 	}
 }
 

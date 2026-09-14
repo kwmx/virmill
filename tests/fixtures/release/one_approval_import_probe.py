@@ -59,7 +59,36 @@ def focus_row(terminal, label, wait_label, limit=40):
     raise RuntimeError('control not reachable: ' + label)
 
 
-def walkthrough(runner, uri, source, deadline_seconds):
+def serial_marker(uri, name, marker, seconds=30):
+    """Attach to the serial console, reset the disposable VM, look for marker."""
+    import pty
+    import select
+    master, slave = pty.openpty()
+    console = subprocess.Popen(['virsh', '-c', uri, 'console', '--force', name], stdin=slave, stdout=slave, stderr=slave, start_new_session=True)
+    os.close(slave)
+    seen = bytearray()
+    try:
+        time.sleep(2)
+        virsh(uri, 'reset', name)
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline and marker.encode() not in seen:
+            ready, _, _ = select.select([master], [], [], 1)
+            if ready:
+                try:
+                    seen.extend(os.read(master, 4096))
+                except OSError:
+                    break
+        return marker.encode() in seen
+    finally:
+        os.write(master, b'\x1d')
+        time.sleep(.5)
+        if console.poll() is None:
+            console.kill()
+        console.wait(timeout=5)
+        os.close(master)
+
+
+def walkthrough(runner, uri, source, deadline_seconds, imports):
     terminal = Terminal(runner, 'one-approval-import', 120, 36)
     report = {}
     try:
@@ -156,9 +185,11 @@ def walkthrough(runner, uri, source, deadline_seconds):
             new = domains(uri) - before
             if new:
                 created = sorted(new)[0]
-                if virsh(uri, 'domstate', created).strip() == 'running':
+                # The chain ends by removing the prepared copy; keep the TUI open.
+                if virsh(uri, 'domstate', created).strip() == 'running' and imports.is_dir() and not any(imports.iterdir()):
                     break
         require(created is not None and virsh(uri, 'domstate', created).strip() == 'running', 'VM was not created and started')
+        require(not any(imports.iterdir()), 'prepared copy was not removed')
         report['vm'] = created
         report['seconds'] = round(time.monotonic() - started)
         return report
@@ -166,7 +197,7 @@ def walkthrough(runner, uri, source, deadline_seconds):
         terminal.close()
 
 
-def execute(root, uri, source, deadline_seconds):
+def execute(root, uri, source, deadline_seconds, marker=None):
     require(authorized_test_host() and os.getuid() == 1000 and os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(root.absolute()))
     require(stage.is_relative_to(Path.home() / 'virmill-tests') and stage != Path.home() / 'virmill-tests' and
@@ -189,13 +220,18 @@ def execute(root, uri, source, deadline_seconds):
     args = SimpleNamespace(binary='/usr/bin/virmill', connection=uri)
     runner = Runner(args, run, fd)
     jobs_before = {j['operationID'] for j in runner.cli('operation', 'list')}
-    report = walkthrough(runner, uri, source, deadline_seconds)
+    report = walkthrough(runner, uri, source, deadline_seconds, run / 'data' / 'virmill' / 'imports')
     # Only jobs this run created count; earlier history is ignored.
     new = [j for j in runner.cli('operation', 'list') if j['operationID'] not in jobs_before]
     ops = {j.get('operation'): j['state'] for j in new}
     prepared = [op for op in PREPARE if ops.get(op) == 'succeeded']
-    require(len(new) == 3 and len(prepared) == 1 and ops.get('vm.create.devices-v1') == 'succeeded' and ops.get('vm.start') == 'succeeded', 'expected exactly prepare, create and start jobs')
-    report['succeededOperations'] = [prepared[0], 'vm.create.devices-v1', 'vm.start']
+    require(len(new) == 4 and len(prepared) == 1 and all(ops.get(op) == 'succeeded' for op in ('vm.create.devices-v1', 'vm.start', 'import.discard')),
+            'expected exactly prepare, create, start and removal jobs')
+    report['succeededOperations'] = [prepared[0], 'vm.create.devices-v1', 'vm.start', 'import.discard']
+    report['preparedCopyRemoved'] = True
+    if marker:
+        report['guestSerialMarker'] = serial_marker(uri, report['vm'], marker)
+        require(report['guestSerialMarker'], 'guest did not print its boot marker')
     vm = next(v for v in runner.cli('vm', 'list') if v['name'] == report['vm'])
     plan = runner.cli('vm', 'stop', vm['key']['resourceUUID'], '--hard')
     require(set(plan['acknowledgements']) <= {'host-mutation', 'data-loss-hard-stop'}, 'stop review asks for unexpected consequences')
@@ -225,12 +261,13 @@ def main():
     p.add_argument('--source', type=Path, help='existing disk image, ISO or OVA under home; default: a generated blank disk')
     p.add_argument('--connection', default='qemu:///session', choices=('qemu:///session', 'qemu:///system'))
     p.add_argument('--deadline', type=int, default=150, help='seconds allowed for preparation, creation and start')
+    p.add_argument('--expect-serial', help='text the guest prints on its serial console after a reset')
     p.add_argument('--self-test', action='store_true')
     a = p.parse_args()
     if a.self_test:
         unittest.main(argv=['one_approval_import_probe'], exit=True)
     require(a.execute_disposable and a.root, '--execute-disposable --root STAGE required')
-    execute(a.root, a.connection, a.source, a.deadline)
+    execute(a.root, a.connection, a.source, a.deadline, a.expect_serial)
 
 
 if __name__ == '__main__':

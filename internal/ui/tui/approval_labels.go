@@ -26,6 +26,7 @@ func acknowledgementLabel(id string) string {
 		"watchdog-reset":                 "Allow the configured watchdog to reset the guest",
 		"start-selected-vm":              "Start this selected VM",
 		"start-vm":                       "Start the VM as soon as it is created",
+		"delete-prepared-copy":           "Delete the prepared copy and its work folder; the original source is kept",
 		"attach-readonly-media":          "Attach the installer media read-only",
 		"review-network-exposure":        "Accept the reviewed network access",
 	}[id]

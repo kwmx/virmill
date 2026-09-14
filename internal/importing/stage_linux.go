@@ -119,6 +119,9 @@ func Register(appService *app.Service) {
 	appService.Extensions["import.prepare-disks"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return disks.Plan(ctx, uid, r) }
 	appService.Engine.Handlers["import.prepare"] = s
 	appService.Extensions["import.prepare"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.Plan(ctx, uid, r) }
+	discard := &DiscardService{Store: s.Store, Engine: s.Engine}
+	appService.Engine.Handlers["import.discard"] = discard
+	appService.Extensions["import.discard"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return discard.Plan(ctx, uid, r) }
 	appService.Extensions["import.result"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) {
 		job, err := s.Store.Job(r.ID)
 		if err != nil {

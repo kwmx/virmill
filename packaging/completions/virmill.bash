@@ -1835,6 +1835,50 @@ _virmill_import_describe()
     noun_aliases=()
 }
 
+_virmill_import_discard()
+{
+    last_command="virmill_import_discard"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--keep-images")
+    local_nonpersistent_flags+=("--keep-images")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_import_inspect()
 {
     last_command="virmill_import_inspect"
@@ -2202,6 +2246,7 @@ _virmill_import()
 
     commands=()
     commands+=("describe")
+    commands+=("discard")
     commands+=("inspect")
     commands+=("prepare")
     commands+=("prepare-disks")

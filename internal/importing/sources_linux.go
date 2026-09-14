@@ -39,6 +39,12 @@ func registerSources(s *app.Service) {
 			if p.ActorUID != uid || (p.Operation != "import.prepare" && p.Operation != "import.prepare-disks" && p.Operation != "import.prepare-install") {
 				continue
 			}
+			// Removed prepared images are never offered again (ADR 0058).
+			if removed, err := s.Engine.Store.MetadataBytes(discardedKind, job.ID); err != nil {
+				return nil, err
+			} else if len(removed) != 0 {
+				continue
+			}
 			var in struct {
 				Destination string `json:"destination"`
 			}

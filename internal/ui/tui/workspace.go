@@ -694,6 +694,11 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Error = ""
 				delete(m.Errors, v.Kind)
 			}
+			if v.Kind == "plan" && m.Chain != nil && m.Chain.Discarding {
+				// A refused removal keeps the prepared copy; nothing else changes.
+				m.Chain = nil
+				m.Error = "The prepared copy was kept: " + text
+			}
 			if v.Kind == "creation-pool-job" || v.Kind == "creation-pools" {
 				m.CreationPool = nil
 				m.Notice = ""
@@ -924,12 +929,15 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if cmd := m.chainAfterCreation(); cmd != nil {
 				return m, cmd
 			}
+			if cmd := m.chainAfterStart(); cmd != nil {
+				return m, cmd
+			}
 		case "job-open-vm":
 			return m, m.receiveJobVM(v.Response.Data)
 		case "job-update":
 			if m.Section == 8 && resourceID(m.Detail) != "" && resourceID(m.Detail) == resourceID(data) {
 				m.Detail = m.withJobSummary(data)
-				if c := m.Chain; c != nil && c.CreateJob == resourceID(data) && domain.Terminal(field(data, "state")) && field(data, "state") != "succeeded" {
+				if c := m.Chain; c != nil && (c.CreateJob == resourceID(data) || c.StartJob == resourceID(data)) && domain.Terminal(field(data, "state")) && field(data, "state") != "succeeded" {
 					m.Chain = nil
 				}
 				if m.canAutoReturnCreationNetwork() && field(data, "state") == "succeeded" {

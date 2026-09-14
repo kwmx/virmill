@@ -138,7 +138,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		var input string
 		var deleteDisks []string
 		var poolName, poolPath string
-		var noAutostart bool
+		var noAutostart, keepImages bool
 		var after int64
 		var hard, planOnly, follow bool
 		pluginFlags := map[string]*string{}
@@ -165,6 +165,9 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		if a.Command == "storage pool start" {
 			cmd.Flags().BoolVar(&noAutostart, "no-autostart", false, "Leave automatic start with the host unchanged")
+		}
+		if a.Command == "import discard" {
+			cmd.Flags().BoolVar(&keepImages, "keep-images", false, "Remove only the work folder; keep the prepared images for more VMs")
 		}
 		if a.Command == "vm remove" {
 			cmd.Flags().StringArrayVar(&deleteDisks, "delete-disk", nil, "Permanently delete selected guest disk targets (vda,vdb); repeatable; omitted keeps all disks")
@@ -264,6 +267,12 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 					}
 					r.Input[key] = value
 				}
+			}
+			if a.Command == "import discard" && keepImages {
+				if _, exists := r.Input["keepImages"]; exists {
+					return domain.Fail("INVALID_INPUT", "parameter supplied by both flag and JSON: keepImages")
+				}
+				r.Input["keepImages"] = true
 			}
 			if a.Command == "vm guest-agent enable" {
 				if _, exists := r.Input["enableGuestAgent"]; exists {

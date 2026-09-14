@@ -13,6 +13,11 @@
   your settings and, with **After creation: Start the VM** (the default),
   starting it. Later steps run by themselves only if they ask for nothing you
   did not check; otherwise their own review opens (ADR 0057).
+- Free the space an import used: `virmill import discard OPERATION_ID
+  [--keep-images]` removes a finished preparation's work folder and prepared
+  images, never the original source or created VMs. VM setup's **Prepared copy:
+  Remove after creation** (the default) does this as the last step of the one
+  approval (ADR 0058).
 - Import problems stay on the import page: Preview checks the import before
   opening VM settings, and a problem found later returns there with the VM
   settings kept. Unset import choices read "Choose…".

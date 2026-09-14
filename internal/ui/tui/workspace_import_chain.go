@@ -20,17 +20,18 @@ import (
 const startVMAck = "start-vm"
 
 type chainOffer struct {
-	Settings string
-	Extras   []string
-	Start    bool
-	Summary  []string
+	Settings       string
+	Extras         []string
+	Start, Cleanup bool
+	Summary        []string
 }
 
 type importChain struct {
 	Connection, Settings, Sent string
 	Approved                   []string
-	Start                      bool
+	Start, Cleanup, Discarding bool
 	PrepJob, CreateJob, VMID   string
+	StartJob, Source           string // Source: the preparation to remove
 }
 
 func canonicalInput(v map[string]any) string {
@@ -78,7 +79,7 @@ func (m Workspace) chainOfferFor(p domain.Plan) *chainOffer {
 	switch {
 	case preparationOperation(p.Operation) && m.Import != nil && m.Import.VM != nil && m.Import.VMBinding == creationDraftBinding(m.Import.Draft):
 		f = *m.Import.VM
-	case creationOperation(p.Operation) && m.Creation != nil && m.Creation.StartAfter:
+	case creationOperation(p.Operation) && m.Creation != nil && (m.Creation.StartAfter || m.Creation.RemovePrepared):
 		f = *m.Creation
 	default:
 		return nil
@@ -98,6 +99,10 @@ func (m Workspace) chainOfferFor(p domain.Plan) *chainOffer {
 	}
 	if f.StartAfter {
 		o.Extras = append(o.Extras, startVMAck)
+	}
+	if f.RemovePrepared {
+		o.Extras = append(o.Extras, "delete-prepared-copy")
+		o.Cleanup = true
 	}
 	o.Summary = chainSummary(f, prepare)
 	return o
@@ -138,6 +143,9 @@ func chainSummary(f CreationForm, create bool) []string {
 	}
 	if f.StartAfter {
 		lines = append(lines, "- starts the VM once it is created")
+	}
+	if f.RemovePrepared {
+		lines = append(lines, "- then removes the prepared copy to free disk space; the VM keeps its own disks")
 	}
 	return append(lines, "Each later step runs only if it asks for nothing beyond the items you check; otherwise it stops at its own review.")
 }
@@ -186,18 +194,27 @@ func (m *Workspace) startChain(data any) {
 		}
 		// Preparation plans are host-local; later steps use this session's
 		// libvirt connection, which chosen settings were validated against.
-		c := &importChain{Connection: m.Connection, Settings: offer.Settings, Approved: approved, Start: offer.Start}
+		c := &importChain{Connection: m.Connection, Settings: offer.Settings, Approved: approved, Start: offer.Start, Cleanup: offer.Cleanup}
 		if preparationOperation(m.Plan.Operation) {
-			c.PrepJob = job.ID
+			c.PrepJob, c.Source = job.ID, job.ID
 		} else {
 			c.CreateJob = job.ID
+			if m.Creation != nil {
+				c.Source = m.Creation.OperationID
+			}
 		}
 		m.Chain = c
 		return
 	}
-	if c := m.Chain; c != nil && creationOperation(m.Plan.Operation) && c.CreateJob == "" {
+	switch c := m.Chain; {
+	case c != nil && creationOperation(m.Plan.Operation) && c.CreateJob == "":
 		c.CreateJob = job.ID
-	} else if c != nil && m.Plan.Operation == "vm.start" {
+	case c != nil && m.Plan.Operation == "vm.start":
+		c.StartJob = job.ID
+		if !c.Cleanup {
+			m.Chain = nil
+		}
+	case c != nil && m.Plan.Operation == "import.discard":
 		m.Chain = nil
 	}
 }
@@ -208,7 +225,8 @@ func (m *Workspace) chainPlanArrived() (tea.Cmd, bool) {
 	if c == nil || p == nil {
 		return nil, false
 	}
-	next := creationOperation(p.Operation) && c.PrepJob != "" && c.CreateJob == "" || p.Operation == "vm.start" && c.VMID != ""
+	discard := p.Operation == "import.discard" && c.Discarding
+	next := creationOperation(p.Operation) && c.PrepJob != "" && c.CreateJob == "" || p.Operation == "vm.start" && c.VMID != "" || discard
 	if !next {
 		return nil, false
 	}
@@ -217,7 +235,8 @@ func (m *Workspace) chainPlanArrived() (tea.Cmd, bool) {
 		m.Notice = "This step needs your review: " + reason + "."
 		return nil, false
 	}
-	if p.ConnectionID != c.Connection {
+	// Removing a prepared copy is host-local, like preparation.
+	if !discard && p.ConnectionID != c.Connection {
 		return stop("the connection changed")
 	}
 	for _, ack := range p.Acknowledgements {
@@ -225,7 +244,11 @@ func (m *Workspace) chainPlanArrived() (tea.Cmd, bool) {
 			return stop("it asks to " + strings.ToLower(strings.TrimSuffix(acknowledgementLabel(ack), " ["+ack+"]")) + ", which was not approved")
 		}
 	}
-	if creationOperation(p.Operation) {
+	if discard {
+		if fmt.Sprint(p.Review["sourceOperationID"]) != c.Source || p.Review["sourceFilesChanged"] != false {
+			return stop("it removes a different preparation")
+		}
+	} else if creationOperation(p.Operation) {
 		if fmt.Sprint(p.Review["sourceOperationID"]) != c.PrepJob {
 			return stop("it uses different prepared images")
 		}
@@ -267,6 +290,9 @@ func (m *Workspace) chainAfterCreation() tea.Cmd {
 		return nil
 	}
 	if !c.Start {
+		if c.Cleanup {
+			return m.requestChainDiscard()
+		}
 		m.Chain = nil
 		return nil
 	}
@@ -277,6 +303,32 @@ func (m *Workspace) chainAfterCreation() tea.Cmd {
 		m.Chain = nil
 	}
 	return cmd
+}
+
+// chainAfterStart removes the prepared copy once the VM has started.
+func (m *Workspace) chainAfterStart() tea.Cmd {
+	c, o := m.Chain, m.currentJobOutcome()
+	if c == nil || c.StartJob == "" || c.Discarding || o == nil || o.JobID != c.StartJob || o.Loading {
+		return nil
+	}
+	if o.Error != "" || !c.Cleanup {
+		m.Chain = nil
+		return nil
+	}
+	return m.requestChainDiscard()
+}
+
+// requestChainDiscard asks for the removal plan of the approved preparation.
+func (m *Workspace) requestChainDiscard() tea.Cmd {
+	c := m.Chain
+	if c == nil || !guidedUUID.MatchString(c.Source) {
+		m.Chain = nil
+		return nil
+	}
+	c.Discarding = true
+	m.Busy = true
+	m.Notice = "Removing the prepared copy…"
+	return m.request("plan", "import.discard", app.Request{ID: c.Source, Action: "discard", Input: map[string]any{}})
 }
 
 // previewPreparationWith keeps VM settings f with the import and requests the
