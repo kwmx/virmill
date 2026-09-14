@@ -7,7 +7,7 @@ package file timestamps default to the commit time, so a commit rebuilds identic
 a different native toolchain is not claimed byte-identical. No static binary claim.
 
 `make packages` creates separate core and helper RPM/DEB files under `dist/`, plus
-SHA-256 metadata. Version is `1.0.0-beta.3` for owner testing; the artifacts are unsigned and
+SHA-256 metadata. Version is `1.0.0-beta.4` for owner testing; the artifacts are unsigned and
 not release-qualified. DEBs are checked with dpkg and lintian by installing, running
 and purging them in Debian 13 and Ubuntu 24.04 containers
 (`tests/fixtures/release/deb_container_check.sh`); that is not a host install

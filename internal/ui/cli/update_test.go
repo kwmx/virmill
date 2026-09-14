@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"virmill.local/core/internal/app"
+	"virmill.local/core/internal/buildinfo"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/update"
 )
@@ -98,7 +99,7 @@ func runUpdate(t *testing.T, client jobsClient, stdin string, args ...string) (s
 func TestUpdateCheckReportsNewerRelease(t *testing.T) {
 	_, paths := useFakeUpdater(t, true)
 	out, err := runUpdate(t, jobsClient{}, "", "update", "check")
-	if err != nil || !strings.Contains(out, "Virmill 1.0.0-beta.99 is available (you have 1.0.0-beta.3).") ||
+	if err != nil || !strings.Contains(out, "Virmill 1.0.0-beta.99 is available (you have "+buildinfo.Version+").") ||
 		!strings.Contains(out, "releases/tag/"+newerTag) || !strings.Contains(out, "Install it with: virmill update") {
 		t.Fatalf("check: %v\n%s", err, out)
 	}

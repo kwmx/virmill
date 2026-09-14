@@ -1,6 +1,6 @@
 # Owner beta testing
 
-Virmill `1.0.0-beta.3` is an owner-test development beta, not a certified
+Virmill `1.0.0-beta.4` is an owner-test development beta, not a certified
 Virmill 1.0 release.
 All 71 acceptance scenarios remain required. This guide supports documentation
 parity (REL-03) and the install/release evidence handoff (REL-01, REL-04); it
@@ -24,14 +24,14 @@ that the complete Fedora or Debian/Ubuntu install matrix has passed.
 
 | Variant | Local install command |
 | --- | --- |
-| RPM core | `sudo dnf install ./virmill-1.0.0-0.beta.3.x86_64.rpm` |
-| RPM helper, when needed | `sudo dnf install ./virmill-host-helper-1.0.0-0.beta.3.x86_64.rpm` |
-| DEB core | `sudo apt install ./virmill_1.0.0~beta.3_amd64.deb` |
-| DEB helper, when needed | `sudo apt install ./virmill-host-helper_1.0.0~beta.3_amd64.deb` |
+| RPM core | `sudo dnf install ./virmill-1.0.0-0.beta.4.x86_64.rpm` |
+| RPM helper, when needed | `sudo dnf install ./virmill-host-helper-1.0.0-0.beta.4.x86_64.rpm` |
+| DEB core | `sudo apt install ./virmill_1.0.0~beta.4_amd64.deb` |
+| DEB helper, when needed | `sudo apt install ./virmill-host-helper_1.0.0~beta.4_amd64.deb` |
 
 Downloads from a GitHub release use `.` instead of `~` in the DEB file names
-(for example `virmill_1.0.0.beta.3_amd64.deb`), because GitHub does not allow `~`
-in asset names. The package version inside is still `1.0.0~beta.3`; use the
+(for example `virmill_1.0.0.beta.4_amd64.deb`), because GitHub does not allow `~`
+in asset names. The package version inside is still `1.0.0~beta.4`; use the
 release's `SHA256SUMS`, which lists the downloaded names.
 
 Versions after 1.0.0-beta.3 can install newer releases with `virmill update`;

@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-beta.4 — owner-test pre-release
+
+Unsigned development beta; not a certified 1.0. See the
+[beta guide](docs/beta-testing.md) for installation and known limitations.
+The first beta with `virmill update`: install it by hand once, and later
+betas can be installed with `virmill update`.
 
 - `virmill update` installs the newest release from GitHub. It downloads the
   RPM or DEB packages this host uses, checks each against the release's

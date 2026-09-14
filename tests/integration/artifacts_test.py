@@ -30,12 +30,12 @@ class Artifacts(unittest.TestCase):
             self.assertEqual(preserve.read_bytes(), b'synthetic user-owned data; never touched')
 
     def test_debian_archive_structure_and_rpm_metadata(self):
-        for filename in ('virmill_1.0.0~beta.3_amd64.deb','virmill-host-helper_1.0.0~beta.3_amd64.deb'):
+        for filename in ('virmill_1.0.0~beta.4_amd64.deb','virmill-host-helper_1.0.0~beta.4_amd64.deb'):
             names = subprocess.check_output(['ar','t',str(ROOT/'dist'/filename)],text=True).splitlines()
             self.assertEqual(names,['debian-binary','control.tar.xz','data.tar.xz'])
-        for filename in ('virmill-1.0.0-0.beta.3.x86_64.rpm','virmill-host-helper-1.0.0-0.beta.3.x86_64.rpm'):
+        for filename in ('virmill-1.0.0-0.beta.4.x86_64.rpm','virmill-host-helper-1.0.0-0.beta.4.x86_64.rpm'):
             result = subprocess.run(['rpm','-qp','--queryformat','%{NAME} %{VERSION} %{RELEASE}\n',str(ROOT/'dist'/filename)],check=True,capture_output=True,text=True)
-            self.assertIn(' 1.0.0 0.beta.3\n',result.stdout)
+            self.assertIn(' 1.0.0 0.beta.4\n',result.stdout)
 
     def test_private_daemon_cli_and_lab_validation(self):
         if os.environ.get('VIRMILL_TEST_REQUIRE_IPC') != '1':

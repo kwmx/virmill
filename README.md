@@ -10,7 +10,7 @@ remain required. See [implementation status](docs/implementation-status.md),
 An executable build or simulated test does not establish hardware support.
 
 Build and run the current development tools using [getting started](docs/getting-started.md).
-The owner-test `1.0.0-beta.3` installation and test sequence is in the
+The owner-test `1.0.0-beta.4` installation and test sequence is in the
 [beta guide](docs/beta-testing.md). The [installed beta handoff](docs/owner-beta-handoff.md)
 contains the exact revision, artifact hashes and known gaps.
 The [OVA preparation workflow](docs/import-preparation.md) converts complete disk
