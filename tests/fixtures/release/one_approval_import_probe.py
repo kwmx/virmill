@@ -88,6 +88,21 @@ def walkthrough(runner, uri, source, deadline_seconds):
         if 'Source images are not in use' in disks:
             focus_row(terminal, 'Source images are not in use', 'offline')
             wait('Offline confirmed', lambda text: re.search(r'\[x\] Source images are not in use', text) is not None, b' ')
+        # An OVA that declares no disk format needs the user's choice per disk.
+        count = re.search(r'Disk: < 1/(\d+)', disks)
+        report['formatsChosen'] = 0
+        for index in range(int(count.group(1)) if count else 1):
+            if 'Source format: < Choose' in terminal.screen.text():
+                focus_row(terminal, 'Source format', 'format')
+                for _ in range(8):
+                    if 'Source format: < vmdk >' in terminal.screen.text():
+                        break
+                    wait('format choice', lambda text: True, b'\x1b[C')
+                require('Source format: < vmdk >' in terminal.screen.text(), 'vmdk format not offered')
+                report['formatsChosen'] += 1
+            if count and index + 1 < int(count.group(1)):
+                focus_row(terminal, 'Disk:', 'disk selector')
+                wait('next disk', lambda text, n=index + 2: f'Disk: < {n}/' in text, b'\x1b[C')
         focus_button(terminal, 'Preview image preparation', 'disks')
         settings = wait('Preview opens VM settings first', lambda text: 'Create a VM' in text and 'Storage pool' in text, b'\r')
         report['poolPreselected'] = 'Storage pool: < Choose' not in settings
@@ -102,7 +117,16 @@ def walkthrough(runner, uri, source, deadline_seconds):
         networks = wait('Networks page', lambda text: 'Network adapters' in text and 'After creation: < Start the VM >' in text, b'\r')
         report['networkPreselected'] = 'Network: < Choose' not in networks
         focus_button(terminal, 'Review import', 'networks page')
-        review = wait('One review covers creation and start', lambda text: 'Nothing has been applied' in text and 'After approval, Virmill also:' in text, b'\r')
+        # Planning hashes the whole source, which takes minutes for large media.
+        terminal.send(b'\r')
+        started = time.monotonic()
+        while 'After approval, Virmill also:' not in terminal.screen.text():
+            require(time.monotonic() - started < deadline_seconds, 'combined review did not appear')
+            require('Your VM settings are kept' not in terminal.screen.text(), 'import was refused: ' + terminal.screen.text()[-400:])
+            terminal.started = time.monotonic()
+            terminal.read(1)
+        review = terminal.wait('One review covers creation and start', lambda text: 'Nothing has been applied' in text and 'After approval, Virmill also:' in text)
+        report['reviewSeconds'] = round(time.monotonic() - started)
         created_line = (re.search(r'- creates VM [^\n]*(?:\n\s+[^\n-][^\n]*)*', review) or [''])[0]
         report['reviewedVM'] = re.sub(r'\s+', ' ', created_line)
         report['reviewListsStart'] = 'starts the VM once it is created' in review

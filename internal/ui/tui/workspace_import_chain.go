@@ -288,12 +288,14 @@ func (m *Workspace) previewPreparationWith(f CreationForm) tea.Cmd {
 		}
 		return nil
 	}
+	m.Import.VM = &f
+	m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
+	m.Creation = nil
+	m.CreationPicking = false
+	// An import problem is fixed on the import page; the VM settings are kept.
 	fail := func(err error) tea.Cmd {
-		if m.Creation != nil {
-			m.Creation.Error = err.Error()
-		} else {
-			m.Import.Error = err.Error()
-		}
+		m.Import.Error = err.Error() + " Your VM settings are kept."
+		m.Notice = ""
 		return nil
 	}
 	if err := m.ensureImportStaging(); err != nil {
@@ -303,10 +305,8 @@ func (m *Workspace) previewPreparationWith(f CreationForm) tea.Cmd {
 	if err != nil {
 		return fail(err)
 	}
-	m.Import.VM = &f
-	m.Import.VMBinding = creationDraftBinding(m.Import.Draft)
-	m.Creation = nil
-	m.CreationPicking = false
+	m.Import.Error = ""
 	m.Busy = true
+	m.Notice = "Preparing the import review. Large sources take a while to check…"
 	return m.request("plan", method, prep)
 }

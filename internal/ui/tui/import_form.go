@@ -61,7 +61,7 @@ func (f ImportForm) View(width, height int) string {
 	purpose := []string{"Choose an image to prepare. Your original stays untouched.", "Save the prepared images in a new folder. VM setup follows.", "First prepare the images. CPU, RAM, firmware and networks come next.", "Read from appliance metadata. Files are verified during preparation."}
 	if f.Draft.Kind == "ova" || f.Draft.HasSourceDescription() {
 		purpose[1] = "Choose a destination. Your VM settings stay with this import."
-		purpose[2] = "Review disk conversion, then confirm the VM before creation."
+		purpose[2] = "Review the disks. One review then covers creating and starting the VM."
 	}
 	if page == 3 {
 		if f.Draft.Kind != "ova" {
@@ -451,7 +451,7 @@ func (f ImportForm) controls() []importControl {
 		if d.Kind != "ova" {
 			controls = append(controls, importControl{id: "offline", label: "Source images are not in use", kind: "toggle", value: fmt.Sprint(d.Offline), help: "Space toggles. Stop any VM or program using these source images first."})
 		}
-		controls = append(controls, importButton("hardware", "CPU, RAM and VM settings", "Set up the VM before copying images. Preparation and creation each have a review."), importButton("back", "Back: Destination", "Choose another folder with enough space for the prepared images."), importButton("export", "Export settings", "Save these image-preparation options for reuse; no import starts."), importButton("preview", "Preview image preparation", "Review image copies and storage needs. Create and configure the VM afterward."))
+		controls = append(controls, importButton("hardware", "CPU, RAM and VM settings", "Check CPU, memory, storage and network before the one review of the whole import."), importButton("back", "Back: Destination", "Choose another folder with enough space for the prepared images."), importButton("export", "Export settings", "Save these image-preparation options for reuse; no import starts."), importButton("preview", "Preview image preparation", "Opens the VM settings, then one review covers preparing the images, creating the VM and starting it."))
 	}
 	return controls
 }

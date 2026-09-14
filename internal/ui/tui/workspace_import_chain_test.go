@@ -233,6 +233,26 @@ func TestCreationWithoutStartHasNoLaterSteps(t *testing.T) {
 	}
 }
 
+// Import problems are fixed on the import page; VM settings are never lost.
+func TestImportProblemsShowOnTheImportPage(t *testing.T) {
+	m := importWorkspace(t)
+	m.Import.Draft.DestinationName = ""
+	f := importFocus(t, *m.Import, "preview")
+	m.Import = &f
+	m, cmd := wk(m, "enter")
+	if cmd != nil || m.ImportAutoPreview || m.Creation != nil || m.Import == nil || m.Import.Error == "" {
+		t.Fatal("invalid import left the import page", m.Import)
+	}
+	m = importWorkspace(t)
+	m.Import.Draft.DestinationName = ""
+	vm := creationComplete(creationFormFixture())
+	vm.BeforePreparation, vm.OperationID = true, ""
+	m.Creation = &vm
+	if cmd := m.previewPreparationWith(vm); cmd != nil || m.Creation != nil || m.Import.VM == nil || m.Import.VM.Spec.Name != vm.Spec.Name || !strings.Contains(m.Import.Error, "Your VM settings are kept") {
+		t.Fatal("import problem from VM settings did not return to the import page", m.Import.Error)
+	}
+}
+
 func TestImportPreviewLoadsVMSettingsFirst(t *testing.T) {
 	m := importWorkspace(t)
 	f := importFocus(t, *m.Import, "preview")

@@ -269,6 +269,11 @@ func (m Workspace) updateImport(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		// Preview first loads VM settings, so one review covers preparation,
 		// creation and start (ADR 0057).
 		if intent.Kind == "preview" && (m.Import.VM == nil || m.Import.VMBinding != creationDraftBinding(m.Import.Draft)) {
+			// Check the import itself first, so its problems show on this page.
+			if _, _, err := f.Draft.Request(m.Connection); err != nil {
+				m.Import.Error = err.Error()
+				return m, nil
+			}
 			m.ImportAutoPreview = true
 			return m, m.configureImportHardware()
 		}
