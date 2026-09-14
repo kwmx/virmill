@@ -17,6 +17,9 @@
 - When image preparation finishes and the VM settings are complete, the VM review
   opens directly instead of the settings form. A created VM's result offers
   **Start VM**.
+- VMs made from your own disk images or installer ISOs get one e1000e network
+  adapter on libvirt's active `default` NAT network, connected and labelled
+  *Suggested*. Appliance (OVA) adapters still start disconnected.
 
 - `virmill update` also requires each download, and `SHA256SUMS` itself, to
   match the SHA-256 digest GitHub recorded for the upload, as the install script

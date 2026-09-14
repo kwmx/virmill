@@ -136,7 +136,10 @@ to boot from it again. These choices appear in the final review.
 **Continue to networks** configures each adapter separately. Original
 adapters remain represented. Choose a network and a compatible adapter model;
 **Disconnected** keeps the cable down on first boot. Connecting multiple networks
-can bypass isolation through the guest. No network exposure is enabled silently.
+can bypass isolation through the guest. No network exposure is enabled silently:
+your own disk images and installers start with one e1000e adapter on libvirt's
+active `default` NAT network, connected and labelled *Suggested*, and shown in
+the review. Appliance adapters start disconnected.
 
 If the network you need is missing, choose **Create network** on this step.
 Your VM settings stay saved while you choose the network's purpose and review

@@ -367,6 +367,50 @@ func TestCreationFormSuggestedDefaults(t *testing.T) {
 	}
 }
 
+// The user's own images start on libvirt's default NAT network; appliances
+// keep their mapped adapters, disconnected.
+func TestCreationFormConnectsOwnImagesToDefaultNAT(t *testing.T) {
+	base := creationFormFixture()
+	nat := domain.VirtualNetwork{Key: domain.ResourceKey{ProviderID: "libvirt", ConnectionID: "qemu:///system", Kind: "network", UUID: creationFormNetwork}, Name: "default", Active: true, PersistentXML: "<network><name>default</name><forward mode='nat'/></network>"}
+	pools := []domain.StoragePool{{Key: domain.ResourceKey{ProviderID: "libvirt", ConnectionID: "qemu:///system", Kind: "storage-pool", UUID: creationFormPool}, Name: "default", Type: "dir", Active: true}}
+	boot := []CreationSourceDisk{{SourceID: "boot"}}
+	want := domain.CreationNIC{ID: "nic1", SourceIndex: -1, NetworkID: creationFormNetwork, Model: "e1000e", Link: "up"}
+	for _, source := range []CreationSource{{Kind: "PreparedDiskSet", Disks: boot}, {Kind: "PreparedInstallation", Disks: boot, Media: []CreationSourceMedia{{SourceID: "installer"}}}} {
+		f := NewCreationForm(creationFormOperation, source, base.Options, pools, []domain.VirtualNetwork{nat})
+		if len(f.Spec.NICs) != 1 || f.Spec.NICs[0] != want {
+			t.Fatal("own image not connected to default NAT", source.Kind, f.Spec.NICs)
+		}
+		if _, err := f.Request("qemu:///system"); err != nil {
+			t.Fatal("defaulted setup is not complete", source.Kind, err)
+		}
+		f.Page = 2
+		f = creationFocus(t, f, "network")
+		if !strings.Contains(f.controls()[f.Focus].help, "default NAT network") {
+			t.Fatal("network suggestion not labeled")
+		}
+	}
+	inactive, isolated, other := nat, nat, nat
+	inactive.Active = false
+	isolated.PersistentXML = "<network><name>default</name></network>"
+	other.Name = "lab"
+	for name, tt := range map[string]struct {
+		source  CreationSource
+		network domain.VirtualNetwork
+	}{
+		"appliance": {CreationSource{Kind: "PreparedImport", Disks: boot}, nat},
+		"inactive":  {CreationSource{Kind: "PreparedDiskSet", Disks: boot}, inactive},
+		"isolated":  {CreationSource{Kind: "PreparedDiskSet", Disks: boot}, isolated},
+		"not-named": {CreationSource{Kind: "PreparedDiskSet", Disks: boot}, other},
+	} {
+		if f := NewCreationForm(creationFormOperation, tt.source, base.Options, pools, []domain.VirtualNetwork{tt.network}); len(f.Spec.NICs) != 0 || f.NetworkOrigin != "" {
+			t.Fatal(name, "adapter added", f.Spec.NICs)
+		}
+	}
+	if f := creationFormFixture(); len(f.Spec.NICs) != 2 || f.Spec.NICs[0].Link != "down" || f.Spec.NICs[0].NetworkID != "" {
+		t.Fatal("appliance adapters changed", f.Spec.NICs)
+	}
+}
+
 func TestCreationFormBeforePreparationAllowsOnlyUnboundValidDraft(t *testing.T) {
 	f := creationComplete(creationFormFixture())
 	f.OperationID = ""

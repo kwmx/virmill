@@ -42,6 +42,13 @@ source declares. Without a declaration BIOS is preselected and labelled
 the review shows the final choice. With several pools and no `default`, the user
 chooses. This supersedes the earlier rule that unknown firmware is left unset.
 
+Disk sets and installers, the user's own images, also get one new e1000e
+adapter on libvirt's active `default` network when that network uses NAT,
+connected and labelled *Suggested*; e1000e has in-box drivers in common Linux
+and Windows guests. Appliance adapters keep their mapping and start disconnected,
+as specification document 05 requires for untrusted appliances. Without an active
+default NAT network no adapter is added and the user chooses.
+
 Import follows the same approach. Prepared copies default to a new folder under
 `$XDG_DATA_HOME/virmill/imports` (normally `~/.local/share/virmill/imports`),
 named after the VM and the time. The TUI creates only that private parent, mode

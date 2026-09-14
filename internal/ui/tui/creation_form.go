@@ -3,6 +3,7 @@ package tui
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -44,6 +45,7 @@ type CreationForm struct {
 	CPUText, MemoryText     string
 	CPUOrigin, MemoryOrigin string
 	FirmwareOrigin          string
+	NetworkOrigin           string
 	Page, Focus, Disk, NIC  int
 	Error                   string
 	cursor                  int
@@ -85,6 +87,7 @@ func NewCreationForm(operationID string, source CreationSource, options domain.C
 			f.Spec.NICs = append(f.Spec.NICs, domain.CreationNIC{ID: fmt.Sprintf("nic%d", i+1), SourceIndex: i, Link: "down"})
 		}
 	}
+	f.addDefaultNIC()
 	f.Spec.DevicePolicy, _ = domain.DefaultCreationDevices(f.Spec.Machine)
 	f.Spec.PoolID = defaultCreationPool(f.Pools)
 	f.Spec.Firmware, f.FirmwareOrigin = defaultCreationFirmware(options, source.System.Firmware)
@@ -233,7 +236,7 @@ func (f CreationForm) controls() []importControl {
 			}
 			choice("boot", "Boot priority", bootHelp, bootValue, creationBootOrderChoices(f.Spec, index))
 		}
-		c = append(c, importButton("back", "Back", "Return to CPU, memory and storage."), importButton("next", "Continue to networks", "Choose network access for each adapter; cables start disconnected."))
+		c = append(c, importButton("back", "Back", "Return to CPU, memory and storage."), importButton("next", "Continue to networks", "Check network access. Your own images start on the default NAT network; appliance adapters start disconnected."))
 	case 2:
 		if len(f.Spec.NICs) > 0 {
 			i := max(0, min(f.NIC, len(f.Spec.NICs)-1))
@@ -268,6 +271,8 @@ func (f CreationForm) controls() []importControl {
 			if nic.NetworkID != "" && selected == "" {
 				selected = "Unavailable: " + nic.NetworkID
 				networkHelp = "This network is unavailable. Refresh networks or choose another; your selection is retained."
+			} else if f.NetworkOrigin != "" && i == 0 && nic.SourceIndex == -1 && selected != "" {
+				networkHelp = f.NetworkOrigin
 			}
 			choice("network", "Network", networkHelp, selected, networks)
 			choice("nicModel", "Adapter model", "Guest drivers must support this model; host support is rechecked in the plan.", nic.Model, []string{"virtio", "e1000e", "rtl8139"})
@@ -808,6 +813,28 @@ func (f CreationForm) View(width, height int) string {
 
 func creationUsablePool(p domain.StoragePool) bool {
 	return p.Active && slices.Contains([]string{"dir", "fs", "netfs"}, p.Type)
+}
+
+var natForward = regexp.MustCompile(`<forward\b[^>]*\bmode=['"]nat['"]`)
+
+// addDefaultNIC connects the user's own images (disk sets and installers) to
+// libvirt's active default NAT network with a widely supported adapter model.
+// Appliance adapters keep their mapping and start disconnected (spec 05).
+func (f *CreationForm) addDefaultNIC() {
+	if len(f.Spec.NICs) != 0 || (f.Source.Kind != "PreparedDiskSet" && f.Source.Kind != "PreparedInstallation" && f.Source.Kind != "installation-media") {
+		return
+	}
+	for _, n := range f.Networks {
+		xml := n.LiveXML
+		if xml == "" {
+			xml = n.PersistentXML
+		}
+		if n.Name == "default" && n.Active && guidedUUID.MatchString(n.Key.UUID) && natForward.MatchString(xml) {
+			f.Spec.NICs = append(f.Spec.NICs, domain.CreationNIC{ID: "nic1", SourceIndex: -1, NetworkID: n.Key.UUID, Model: "e1000e", Link: "up"})
+			f.NetworkOrigin = "Suggested: libvirt's default NAT network, so the guest can reach the internet. Set Cable to Disconnected to keep it offline."
+			return
+		}
+	}
 }
 
 // defaultCreationPool preselects libvirt's "default" pool, or the only usable
