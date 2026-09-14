@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/onestep-254ca33/one_approval_import_probe.py", line 229, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/onestep-254ca33/one_approval_import_probe.py", line 225, in main
+    execute(a.root, a.connection, a.source, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-254ca33/one_approval_import_probe.py", line 186, in execute
+    report = walkthrough(runner, uri, source, deadline_seconds)
+  File "<test-vm-home>/virmill-tests/onestep-254ca33/one_approval_import_probe.py", line 107, in walkthrough
+    settings = wait('Preview opens VM settings first', lambda text: 'Create a VM' in text and 'Storage pool' in text, b'\r')
+  File "<test-vm-home>/virmill-tests/onestep-254ca33/one_approval_import_probe.py", line 67, in wait
+    return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-254ca33/tui_workspace_probe.py", line 411, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy Preview opens VM settings first

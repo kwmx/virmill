@@ -644,7 +644,8 @@
         "internal/ui/tui/creation_boot_order.go",
         "docs/adr/0052-creation-boot-order-controls.md",
         "docs/evidence/creation-boot-order-run.md",
-        "internal/ui/tui/workspace_import_chain.go"
+        "internal/ui/tui/workspace_import_chain.go",
+        "docs/evidence/one-approval-import-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-01",
@@ -710,7 +711,9 @@
         "tests/fixtures/release/spice_creation_probe.py",
         "internal/ui/tui/creation_boot_order_test.go",
         "tests/fixtures/release/boot_order_tui_probe.py",
-        "internal/ui/tui/workspace_import_chain_test.go"
+        "internal/ui/tui/workspace_import_chain_test.go",
+        "tests/fixtures/release/one_approval_import_probe.py",
+        "internal/ui/tui/import_format_test.go"
       ],
       "evidence": [
         "disk-set-core-001",
@@ -912,7 +915,8 @@
         "internal/ui/tui/source_summary.go",
         "docs/import-source-review.md",
         "docs/evidence/general-sources-run.md",
-        "docs/evidence/beta-ux-flow-run.md"
+        "docs/evidence/beta-ux-flow-run.md",
+        "docs/evidence/one-approval-import-run.md"
       ],
       "plannedImplementation": "internal/app/importer",
       "plannedTest": "tests/integration/import/IMP-03",
@@ -949,7 +953,9 @@
         "internal/backend/image/describe_linux_test.go",
         "internal/importing/source_description_linux_test.go",
         "internal/ui/tui/source_summary_test.go",
-        "tests/fixtures/release/general_sources_probe.py"
+        "tests/fixtures/release/general_sources_probe.py",
+        "tests/fixtures/release/one_approval_import_probe.py",
+        "internal/ui/tui/import_format_test.go"
       ],
       "evidence": [
         "core-tests-001",

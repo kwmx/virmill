@@ -13,6 +13,12 @@
   your settings and, with **After creation: Start the VM** (the default),
   starting it. Later steps run by themselves only if they ask for nothing you
   did not check; otherwise their own review opens (ADR 0057).
+- Import problems stay on the import page: Preview checks the import before
+  opening VM settings, and a problem found later returns there with the VM
+  settings kept. Unset import choices read "Choose…".
+- An OVA disk whose format the appliance does not declare keeps its format
+  choice visible and gets a labelled suggestion from the file name (`.vmdk`,
+  `.qcow2`, `.vdi`, `.vhdx`, `.vhd`).
 - Start a stopped storage pool from Virmill: `virmill storage pool start UUID`,
   **Start pool** on a stopped pool's details, and **Start pool NAME** in VM
   setup when your only pools are stopped. It also starts with the host unless

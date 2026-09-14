@@ -1,0 +1,25 @@
+{
+  "busPreselected": true,
+  "connection": "qemu:///system",
+  "firmware": "BIOS",
+  "folderStepSkipped": true,
+  "formatsChosen": 0,
+  "itemsChecked": 9,
+  "networkPreselected": true,
+  "otherResourcesUnchanged": true,
+  "poolPreselected": false,
+  "result": "passed",
+  "retainedStoppedVM": "Kali Linux amd64 1",
+  "reviewListsStart": true,
+  "reviewSeconds": 12,
+  "reviewedVM": "- creates VM Kali Linux amd64 1: 2 CPU, 2048 MiB memory, pool virmill-multidisk-12d7bba, 3 Networks \u2502BIOS firmware, network default (connected) 4 Storage \u2502- starts the VM once it is created 5 Templates not ready \u2502Each later step runs only if it asks for nothing beyond the items you check; otherwise it 6 Labs validate only \u2502stops at its own review. 7 Protection \u2502 8 Devices discovery only \u2502ISO installer 9 Jobs \u2502Choose an installer and add blank disks for a fresh installation. 0 Plugins preview \u2502Nothing has been applied. Review the changes and warnings below. , Settings \u2502 \u2502Save to: <test-vm-home>/virmill-tests/onestep-254ca33/onestep- \u2502491dcdb9/data/virmill/imports/Kali-Linux-amd64-1-20260914-221725 \u2502Affected resources: \u2502 - disk-source:local:64512:9332188 \u2502 - import-artifact:local:<test-vm-home>/virmill-tests/onestep-254ca33/onestep- \u2502 491dcdb9/data/virmill/imports/Kali-Linux-amd64-1-20260914-221725 \u2502 - local-file|<test-vm-home>/images/<owner-media-4>.iso \u2502 \u2502Warnings and effects to review: \u2502 - Copies selected media and creates empty independent qcow2 disks; no VM is defined or \u2502 started \u2502 - Volume identifiers and SHA-256 do not prove publisher authenticity, bootability or \u2502 guest compatibility \u2502 - Keep source media offline; OFD guards exclude cooperating QEMU writers only \u2502 - No filesystem, partition, unattended credentials or guest configuration is inferred; \u2502 review explicit hardware, boot order and media mapping in a separate creation plan \u2502 \u2502Complete plan details \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+  "seconds": 85,
+  "sourceUnchanged": true,
+  "succeededOperations": [
+    "import.prepare",
+    "vm.create.devices-v1",
+    "vm.start"
+  ],
+  "summary": "source",
+  "vm": "Kali Linux amd64 1"
+}

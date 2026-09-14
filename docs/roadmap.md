@@ -15,9 +15,11 @@ A disk image, ISO or OVA becomes a running VM in one review.
   passed ([record](evidence/one-approval-import-run.md)).
 - Done: Custom pool (name, folder, autostart) and Start pool for a stopped pool,
   in software tests.
-- Remaining: native walk-throughs from OVA and ISO sources to a booted guest,
-  including in-setup pool creation and start and the NAT default; reclaiming the
-  prepared copy's space.
+- Done: native one-approval walk-throughs from a disk image, an installer ISO
+  (with the connected NAT default) and a generated two-disk OVA, each to a
+  started VM.
+- Remaining: guest boot verification; in-setup Create and Start pool natively;
+  a real owner OVA with a declared format; reclaiming the prepared copy's space.
 
 Scenarios: IMP-01, IMP-02, IMP-03, IMP-04, IMP-07, IMP-08, STO-01 (creation).
 

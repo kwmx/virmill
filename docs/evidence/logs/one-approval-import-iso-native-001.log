@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/onestep-c61ffc3/one_approval_import_probe.py", line 205, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/onestep-c61ffc3/one_approval_import_probe.py", line 201, in main
+    execute(a.root, a.connection, a.source, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-c61ffc3/one_approval_import_probe.py", line 162, in execute
+    report = walkthrough(runner, uri, source, deadline_seconds)
+  File "<test-vm-home>/virmill-tests/onestep-c61ffc3/one_approval_import_probe.py", line 105, in walkthrough
+    review = wait('One review covers creation and start', lambda text: 'Nothing has been applied' in text and 'After approval, Virmill also:' in text, b'\r')
+  File "<test-vm-home>/virmill-tests/onestep-c61ffc3/one_approval_import_probe.py", line 67, in wait
+    return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-c61ffc3/tui_workspace_probe.py", line 411, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy One review covers creation and start

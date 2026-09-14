@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/onestep-ef8af6d/one_approval_import_probe.py", line 237, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/onestep-ef8af6d/one_approval_import_probe.py", line 233, in main
+    execute(a.root, a.connection, a.source, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-ef8af6d/one_approval_import_probe.py", line 192, in execute
+    report = walkthrough(runner, uri, source, deadline_seconds)
+  File "<test-vm-home>/virmill-tests/onestep-ef8af6d/one_approval_import_probe.py", line 104, in walkthrough
+    wait('format choice', lambda text: True, b'\x1b[C')
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-ef8af6d/one_approval_import_probe.py", line 67, in wait
+    return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/onestep-ef8af6d/tui_workspace_probe.py", line 411, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy format choice
