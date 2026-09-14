@@ -1,0 +1,4 @@
+ok  	virmill.local/core/internal/app	1.555s
+ok  	virmill.local/core/internal/backend/libvirt	1.169s
+ok  	virmill.local/core/internal/ui/tui	0.779s
+ok  	virmill.local/core/internal/ui/cli	0.510s
