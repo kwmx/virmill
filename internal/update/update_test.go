@@ -60,9 +60,10 @@ type release struct {
 }
 
 type testAsset struct {
-	Name string `json:"name"`
-	Size int64  `json:"size"`
-	URL  string `json:"browser_download_url"`
+	Name   string `json:"name"`
+	Size   int64  `json:"size"`
+	URL    string `json:"browser_download_url"`
+	Digest string `json:"digest,omitempty"`
 }
 
 // fakeGitHub serves a release list and the files under /files/.
@@ -101,17 +102,19 @@ func (f *fakeGitHub) client() Client {
 
 func (f *fakeGitHub) asset(name string, body []byte) testAsset {
 	f.files[name] = body
-	return testAsset{Name: name, Size: int64(len(body)), URL: f.server.URL + "/files/" + name}
+	return testAsset{Name: name, Size: int64(len(body)), URL: f.server.URL + "/files/" + name, Digest: "sha256:" + sum(body)}
 }
 
 func TestCheckFindsNewestRelevantRelease(t *testing.T) {
 	f := newFakeGitHub(t)
 	f.releases = []release{
-		{Tag: "v1.0.0-beta.3", Prerelease: true}, {Tag: "v1.0.0-beta.5", Draft: true}, {Tag: "v1.0.0-beta.4", Prerelease: true, Page: "https://github.com/kwmx/virmill/releases/tag/v1.0.0-beta.4"},
+		{Tag: "v1.0.0-beta.3", Prerelease: true}, {Tag: "v1.0.0-beta.5", Draft: true}, {Tag: "v1.0.0-beta.4", Prerelease: true, Page: "https://github.com/kwmx/virmill/releases/tag/v1.0.0-beta.4",
+			Assets: []testAsset{{Name: "SHA256SUMS", Size: 1, URL: "https://github.com/x", Digest: "sha256:" + strings.Repeat("a", 64)}}},
 		{Tag: "nightly"}, {Tag: "v0.9.0"},
 	}
 	res, err := f.client().Check(context.Background(), "1.0.0-beta.3")
-	if err != nil || !res.Available() || res.Latest.Version != "1.0.0-beta.4" || res.Latest.Page == "" {
+	if err != nil || !res.Available() || res.Latest.Version != "1.0.0-beta.4" || res.Latest.Page == "" ||
+		len(res.Latest.Assets) != 1 || res.Latest.Assets[0].Digest != "sha256:"+strings.Repeat("a", 64) {
 		t.Fatalf("beta user: %+v %v", res, err)
 	}
 	if res, err = f.client().Check(context.Background(), "1.0.0-beta.4"); err != nil || res.Available() {
@@ -209,10 +212,10 @@ func betaFour(f *fakeGitHub, sums func(map[string][]byte) string) Release {
 	r := Release{Version: "1.0.0-beta.4"}
 	for name, b := range files {
 		a := f.asset(name, b)
-		r.Assets = append(r.Assets, Asset{Name: a.Name, URL: a.URL, Size: a.Size})
+		r.Assets = append(r.Assets, Asset{Name: a.Name, URL: a.URL, Size: a.Size, Digest: a.Digest})
 	}
 	a := f.asset("SHA256SUMS", []byte(sums(files)))
-	return Release{Version: r.Version, Assets: append(r.Assets, Asset{Name: a.Name, URL: a.URL, Size: a.Size})}
+	return Release{Version: r.Version, Assets: append(r.Assets, Asset{Name: a.Name, URL: a.URL, Size: a.Size, Digest: a.Digest})}
 }
 
 func goodSums(files map[string][]byte) string {
@@ -268,27 +271,40 @@ func TestPrepareDownloadsAndVerifiesPackages(t *testing.T) {
 }
 
 func TestPrepareRefusesFilesThatDoNotMatch(t *testing.T) {
+	core := "virmill-1.0.0-0.beta.4.x86_64.rpm"
+	setDigest := func(r *Release, name, digest string) {
+		for i := range r.Assets {
+			if r.Assets[i].Name == name {
+				r.Assets[i].Digest = digest
+			}
+		}
+	}
 	for name, tc := range map[string]struct {
 		sums  func(map[string][]byte) string
-		edit  func(*Release)
+		edit  func(*fakeGitHub, *Release)
 		info  Runner
 		fails string
 	}{
-		"wrong checksum": {sums: func(files map[string][]byte) string {
-			return strings.Replace(goodSums(files), sum(files["virmill-1.0.0-0.beta.4.x86_64.rpm"]), strings.Repeat("0", 64), 1)
-		}, fails: "does not match its SHA-256"},
+		"sums disagree with GitHub": {sums: func(files map[string][]byte) string {
+			return strings.Replace(goodSums(files), sum(files[core]), strings.Repeat("0", 64), 1)
+		}, fails: "disagree"},
+		"tampered download": {edit: func(f *fakeGitHub, r *Release) { f.files[core] = []byte("core rpX") }, fails: "does not match its SHA-256"},
+		"no GitHub digest":  {edit: func(f *fakeGitHub, r *Release) { setDigest(r, core, "") }, fails: "lists no SHA-256 digest"},
+		"odd GitHub digest": {edit: func(f *fakeGitHub, r *Release) { setDigest(r, core, "md5:abc") }, fails: "lists no SHA-256 digest"},
+		"sums file altered": {edit: func(f *fakeGitHub, r *Release) { setDigest(r, "SHA256SUMS", "sha256:"+strings.Repeat("0", 64)) },
+			fails: "SHA256SUMS does not match the digest GitHub recorded"},
 		"unlisted file":  {sums: func(map[string][]byte) string { return strings.Repeat("a", 64) + "  other.rpm\n" }, fails: "does not list"},
 		"malformed sums": {sums: func(map[string][]byte) string { return "not a checksum line\n" }, fails: "is not a checksum"},
-		"size differs": {edit: func(r *Release) {
+		"size differs": {edit: func(f *fakeGitHub, r *Release) {
 			for i := range r.Assets {
 				r.Assets[i].Size++
 			}
 		}, fails: "bytes, but the release lists"},
-		"no sums file": {edit: func(r *Release) { r.Assets = r.Assets[:len(r.Assets)-1] }, fails: "no SHA256SUMS"},
-		"two core packages": {edit: func(r *Release) {
+		"no sums file": {edit: func(f *fakeGitHub, r *Release) { r.Assets = r.Assets[:len(r.Assets)-1] }, fails: "no SHA256SUMS"},
+		"two core packages": {edit: func(f *fakeGitHub, r *Release) {
 			r.Assets = append(r.Assets, Asset{Name: "virmill-1.0.0-0.beta.4.x86_64.rpm.bak.x86_64.rpm", Size: 1})
 		}, fails: "expected one"},
-		"unsafe name": {edit: func(r *Release) {
+		"unsafe name": {edit: func(f *fakeGitHub, r *Release) {
 			for i := range r.Assets {
 				if strings.HasPrefix(r.Assets[i].Name, "virmill-1.0.0") {
 					r.Assets[i].Name = "../virmill-1.0.0-0.beta.4.x86_64.rpm"
@@ -306,7 +322,7 @@ func TestPrepareRefusesFilesThatDoNotMatch(t *testing.T) {
 			}
 			r := betaFour(f, sums)
 			if tc.edit != nil {
-				tc.edit(&r)
+				tc.edit(f, &r)
 			}
 			info := packageInfo
 			if tc.info != nil {

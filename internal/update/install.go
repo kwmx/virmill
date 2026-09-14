@@ -2,6 +2,7 @@ package update
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -76,8 +77,9 @@ func packageAsset(r Release, name, format string) (Asset, error) {
 }
 
 // Prepare downloads the packages this host needs from release r into
-// cache/updates/VERSION. Each file must match the release's SHA256SUMS and the
-// size GitHub reports, and must name itself as the expected package and version.
+// cache/updates/VERSION. Each file must match the release's SHA256SUMS, the
+// SHA-256 digest GitHub recorded for the upload and the size it reports, and
+// must name itself as the expected package and version.
 func (c Client) Prepare(ctx context.Context, r Release, inst Installed, cache string, run Runner) ([]string, error) {
 	v, err := ParseVersion(r.Version)
 	if err != nil {
@@ -113,6 +115,13 @@ func (c Client) Prepare(ctx context.Context, r Release, inst Installed, cache st
 		if !ok {
 			return nil, fmt.Errorf("SHA256SUMS of release %s does not list %s", r.Version, a.Name)
 		}
+		recorded, err := githubDigest(a)
+		if err != nil {
+			return nil, err
+		}
+		if recorded != want {
+			return nil, fmt.Errorf("SHA256SUMS and the digest GitHub recorded for %s disagree; it was not downloaded", a.Name)
+		}
 		files[i] = filepath.Join(dir, a.Name)
 		if err := c.download(ctx, a, want, files[i]); err != nil {
 			return nil, err
@@ -138,13 +147,27 @@ func (c Client) checksums(ctx context.Context, r Release) (map[string]string, er
 	if asset == nil {
 		return nil, fmt.Errorf("release %s has no SHA256SUMS file", r.Version)
 	}
+	recorded, err := githubDigest(*asset)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := c.get(ctx, asset.URL, "application/octet-stream")
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxChecksums+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(body) > maxChecksums {
+		return nil, errors.New("SHA256SUMS is larger than expected")
+	}
+	if h := sha256.Sum256(body); hex.EncodeToString(h[:]) != recorded {
+		return nil, errors.New("SHA256SUMS does not match the digest GitHub recorded for it")
+	}
 	sums := map[string]string{}
-	scanner := bufio.NewScanner(io.LimitReader(resp.Body, maxChecksums))
+	scanner := bufio.NewScanner(bytes.NewReader(body))
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
 		if len(fields) == 0 {
@@ -157,6 +180,15 @@ func (c Client) checksums(ctx context.Context, r Release) (map[string]string, er
 		sums[name] = fields[0]
 	}
 	return sums, scanner.Err()
+}
+
+// githubDigest is the SHA-256 GitHub recorded when the file was uploaded.
+func githubDigest(a Asset) (string, error) {
+	digest, ok := strings.CutPrefix(a.Digest, "sha256:")
+	if !ok || len(digest) != 64 || strings.Trim(digest, "0123456789abcdef") != "" {
+		return "", fmt.Errorf("GitHub lists no SHA-256 digest for %s, so it cannot be checked", a.Name)
+	}
+	return digest, nil
 }
 
 // download writes a to path only when its size and SHA-256 match.

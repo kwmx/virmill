@@ -32,9 +32,11 @@ password prompt.
 `virmill update` installs only the package format that owns `/usr/bin/virmill`
 (`rpm -qf` or `dpkg-query -S`), and the host helper only when it is installed.
 Source builds are refused. Downloads use HTTPS to GitHub's API and download hosts
-only, with size limits. Each file must match the release's `SHA256SUMS` and the
-size GitHub reports, and must name itself as the expected package, version and
-architecture (`rpm -qp` or `dpkg-deb --show`). Files are kept in
+only, with size limits. Each file must match the release's `SHA256SUMS`, the
+SHA-256 digest GitHub recorded when it was uploaded and the size GitHub reports,
+and must name itself as the expected package, version and architecture
+(`rpm -qp` or `dpkg-deb --show`). `SHA256SUMS` must match its own recorded
+digest, and a file without a recorded SHA-256 digest is refused. Files are kept in
 `$XDG_CACHE_HOME/virmill/updates/VERSION` with private permissions.
 
 The install asks first, unless `--yes` is given, and refuses while any job is
@@ -46,7 +48,9 @@ verification and prints the command.
 ## Limits
 
 Checksums from the same release catch damaged downloads, not a tampered
-release or a compromised GitHub account. A release signing key remains possible
+release or a compromised GitHub account. GitHub's recorded digests (required
+after 1.0.0-beta.4, as in the site's install script) also catch a checksum file
+that does not match the uploaded files, but they come from GitHub too. A release signing key remains possible
 later without changing the commands. Package versions are defined for betas
 only (`scripts/package.py`), so a future release without a beta suffix is
 reported but must be installed by hand. Installations of 1.0.0-beta.3 and older

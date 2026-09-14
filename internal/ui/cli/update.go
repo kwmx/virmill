@@ -85,7 +85,8 @@ func updateCommands(o *Options, out io.Writer, emit func(app.Response) error, jo
 	var yes, downloadOnly bool
 	cmd := &cobra.Command{Use: "update", Short: "Install the newest Virmill release from GitHub",
 		Long: "Checks GitHub for a newer release, downloads the RPM or DEB packages this host uses, checks them against the release's " +
-			"SHA256SUMS and their own package name and version, then installs them with dnf or apt, which asks for your password. " +
+			"SHA256SUMS, the digest GitHub recorded for each upload and their own package name and version, then installs them with " +
+			"dnf or apt, which asks for your password. " +
 			"It refuses while jobs are running and restarts your coordinator afterwards. Checksums catch damaged downloads, not a " +
 			"tampered release.",
 		Args: cobra.NoArgs, RunE: func(c *cobra.Command, args []string) error {
@@ -141,7 +142,7 @@ func updateCommands(o *Options, out io.Writer, emit func(app.Response) error, jo
 			if err != nil {
 				return domain.Fail("OPERATION_FAILED", "The update was not installed: "+err.Error())
 			}
-			fmt.Fprintln(out, "Verified: each file matches SHA256SUMS and is the expected package and version.")
+			fmt.Fprintln(out, "Verified: each file matches SHA256SUMS and the digest GitHub recorded, and is the expected package and version.")
 			argv := update.InstallCommand(inst.Format, files)
 			if downloadOnly {
 				fmt.Fprintf(out, "Install it with:\n  %s\n", strings.Join(argv, " "))

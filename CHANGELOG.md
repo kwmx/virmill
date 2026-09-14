@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- `virmill update` also requires each download, and `SHA256SUMS` itself, to
+  match the SHA-256 digest GitHub recorded for the upload, as the install script
+  does. It refuses a checksum file that disagrees with the uploaded files, and a
+  file GitHub lists without a SHA-256 digest.
+
 ## 1.0.0-beta.4 — owner-test pre-release
 
 Unsigned development beta; not a certified 1.0. See the

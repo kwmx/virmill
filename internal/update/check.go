@@ -21,6 +21,8 @@ type Asset struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 	Size int64  `json:"size"`
+	// Digest is the "sha256:HEX" GitHub recorded when the file was uploaded.
+	Digest string `json:"digest,omitempty"`
 }
 
 type Release struct {
@@ -116,9 +118,10 @@ func (c Client) Check(ctx context.Context, current string) (Result, error) {
 		Page       string    `json:"html_url"`
 		Published  time.Time `json:"published_at"`
 		Assets     []struct {
-			Name string `json:"name"`
-			Size int64  `json:"size"`
-			URL  string `json:"browser_download_url"`
+			Name   string `json:"name"`
+			Size   int64  `json:"size"`
+			URL    string `json:"browser_download_url"`
+			Digest string `json:"digest"`
 		} `json:"assets"`
 	}
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 4<<20)).Decode(&list); err != nil {
@@ -132,7 +135,7 @@ func (c Client) Check(ctx context.Context, current string) (Result, error) {
 		}
 		rel := Release{Version: v.String(), Tag: r.Tag, Prerelease: r.Prerelease, Page: r.Page, Published: r.Published, Assets: []Asset{}}
 		for _, a := range r.Assets {
-			rel.Assets = append(rel.Assets, Asset{Name: a.Name, URL: a.URL, Size: a.Size})
+			rel.Assets = append(rel.Assets, Asset{Name: a.Name, URL: a.URL, Size: a.Size, Digest: a.Digest})
 		}
 		res.Latest, best = &rel, v
 	}

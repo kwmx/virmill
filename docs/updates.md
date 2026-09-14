@@ -34,7 +34,8 @@ It shows the new version and its release notes, then asks before continuing.
 It downloads the RPM or DEB packages matching how Virmill is installed here,
 including the host helper if you have it. Before installing it checks that:
 
-- each file matches the release's `SHA256SUMS` and the size GitHub lists;
+- each file matches the release's `SHA256SUMS`, the SHA-256 digest GitHub
+  recorded when it was uploaded, and the size GitHub lists;
 - `rpm` or `dpkg-deb` reports the expected package name, version and
   architecture.
 
@@ -58,8 +59,9 @@ The verified packages are kept in `~/.cache/virmill/updates/VERSION`.
 - a release without a beta suffix. Package versions are defined for betas only
   so far, so install those by hand.
 
-Checksums catch damaged downloads. They cannot detect a tampered release,
-because the checksum file comes from the same release.
+Checksums catch damaged downloads, and the recorded digests catch a checksum
+file that does not match the uploads. Neither can detect a tampered release,
+because both come from GitHub.
 
 ## Turn checks off or on
 

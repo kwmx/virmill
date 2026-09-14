@@ -45,7 +45,9 @@ func useFakeUpdater(t *testing.T, packaged bool) (*[][]string, update.Paths) {
 		if r.URL.Path == "/repos/kwmx/virmill/releases" {
 			assets := []map[string]any{}
 			for name, b := range files {
-				assets = append(assets, map[string]any{"name": name, "size": len(b), "browser_download_url": srv.URL + "/files/" + name})
+				d := sha256.Sum256(b)
+				assets = append(assets, map[string]any{"name": name, "size": len(b), "browser_download_url": srv.URL + "/files/" + name,
+					"digest": "sha256:" + hex.EncodeToString(d[:])})
 			}
 			json.NewEncoder(w).Encode([]map[string]any{{"tag_name": newerTag, "prerelease": true,
 				"html_url": "https://github.com/kwmx/virmill/releases/tag/" + newerTag, "assets": assets}})
