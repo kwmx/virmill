@@ -54,6 +54,7 @@ preparing and copying it would need more than the 93 GB free.
 | `one-approval-import-ova-native-002` | `254ca33` | failed: the format problem now showed on the import page as intended, but the unset choice was drawn blank (`<  >`), which the probe did not recognise and which does not tell a user a choice is needed. Unset import choices now read "Choose…" |
 | `one-approval-import-ova-native-003` | `ef8af6d` | failed: **product defect**. The first Right press on the undeclared format chose `qcow2`, and the choice then disappeared behind Advanced disk options, so it could not be corrected to `vmdk`. Only a declared format now moves behind Advanced, and an undeclared one is suggested from the file name with a label |
 | `one-approval-import-ova-native-004` | `d401a67` | **passed** |
+| `one-approval-import-ova-native-005` | `38a249e` | stopped by hand: **product defect**. Preparation succeeded, but the suggested VM name was already used by the stopped VM from run 4, so creation was refused and the chain waited. VM settings now suggest the next free name (for example "… 2") with a label |
 
 In the OVA pass both undeclared disk formats were suggested from their file
 names (`vmdk`), SATA was suggested in place of the VMware LSI SCSI controller, and
