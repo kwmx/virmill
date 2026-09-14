@@ -106,7 +106,8 @@ def walkthrough(runner, stage, source, name):
             checked += 1
         report['itemsChecked'] = checked
         before = domains()
-        terminal.send(b'\r')
+        # The confirmation stays visible until the coordinator accepts the job.
+        wait('Preparation accepted', lambda text: 'Confirm reviewed changes' not in text, b'\r')
         deadline = time.monotonic() + 150
         created = None
         while time.monotonic() < deadline:
