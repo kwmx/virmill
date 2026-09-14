@@ -34,6 +34,9 @@ Downloads from a GitHub release use `.` instead of `~` in the DEB file names
 in asset names. The package version inside is still `1.0.0~beta.3`; use the
 release's `SHA256SUMS`, which lists the downloaded names.
 
+Versions after 1.0.0-beta.3 can install newer releases with `virmill update`;
+see [updates](updates.md). 1.0.0-beta.3 and older are updated by hand.
+
 The core contains `virmill`, `virmilld`, the user service, documentation under
 `/usr/share/doc/virmill`, and examples under `/usr/share/virmill/examples`.
 The separate helper contains the privileged executable and system units.

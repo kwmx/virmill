@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- `virmill update` installs the newest release from GitHub. It downloads the
+  RPM or DEB packages this host uses, checks each against the release's
+  `SHA256SUMS` and its own package name and version, installs them with dnf or
+  apt (which asks for your password) and restarts your coordinator. It refuses
+  while jobs are unfinished. Virmill checks for a newer release at most once a
+  day and says so in the TUI and after interactive commands;
+  `virmill update checks off` or `VIRMILL_UPDATE_CHECK=0` turns that off. See
+  [updates](docs/updates.md) and ADR 0055.
 - The TUI frame is simpler. The header shows the page, running or failed jobs
   and the connection; one line lists the keys for the current page; buttons
   wrap onto a second row instead of hiding behind `>`. Empty lists say what

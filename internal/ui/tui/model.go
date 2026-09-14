@@ -602,6 +602,7 @@ func Run(c ui.Client, connection string) error {
 func RunOptions(c ui.Client, connection string, noColor bool) error {
 	m := NewWorkspace(c, connection)
 	m.NoColor = m.NoColor || noColor
+	m.updateCheck, m.updatesOff = updateChecker()
 	store, storeErr := NewDraftStore()
 	if storeErr == nil {
 		defer store.Close()

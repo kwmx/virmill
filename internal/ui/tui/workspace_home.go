@@ -78,6 +78,9 @@ func (m Workspace) homeSummary() []string {
 			lines = append(lines, row("Host", "Ready"))
 		}
 	}
+	if text := m.updateNotice(); text != "" {
+		lines = append(lines, m.color(row("Update", text), "32"))
+	}
 	if err := m.Errors["jobs"]; err != "" {
 		lines = append(lines, row("Jobs", "Unavailable: "+err))
 	} else {
@@ -116,8 +119,8 @@ func (m Workspace) settingsLines(width int) []string {
 		"Display: colors " + colors + ", " + symbols + " symbols",
 		"  Set NO_COLOR=1 to turn colors off, or VIRMILL_ASCII=1 for plain symbols",
 		"Version: " + buildinfo.Version,
-		"",
 	}
+	lines = append(append(lines, m.updateLines()...), "")
 	checks, ok := m.doctorChecks()
 	if !ok {
 		return append(lines, "Checking this host...")

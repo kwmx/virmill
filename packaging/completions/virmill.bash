@@ -4384,6 +4384,110 @@ _virmill_tui()
     noun_aliases=()
 }
 
+_virmill_update_check()
+{
+    last_command="virmill_update_check"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_virmill_update_checks()
+{
+    last_command="virmill_update_checks"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    must_have_one_noun+=("off")
+    must_have_one_noun+=("on")
+    noun_aliases=()
+}
+
+_virmill_update()
+{
+    last_command="virmill_update"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("check")
+    commands+=("checks")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--download-only")
+    local_nonpersistent_flags+=("--download-only")
+    flags+=("--yes")
+    local_nonpersistent_flags+=("--yes")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_version()
 {
     last_command="virmill_version"
@@ -5918,6 +6022,7 @@ _virmill_root_command()
     commands+=("snapshot")
     commands+=("storage")
     commands+=("tui")
+    commands+=("update")
     commands+=("version")
     commands+=("vm")
 

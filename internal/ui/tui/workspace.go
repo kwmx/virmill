@@ -17,6 +17,7 @@ import (
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/operations"
 	"virmill.local/core/internal/ui"
+	"virmill.local/core/internal/update"
 	"virmill.local/core/internal/validation"
 )
 
@@ -111,6 +112,10 @@ type Workspace struct {
 	Reviewing                                                 bool
 	Busy                                                      bool
 	legacy                                                    Model
+	// Updates is the last update check; updateCheck is set only by RunOptions.
+	Updates     *update.Result
+	updateCheck func(context.Context) update.Result
+	updatesOff  bool
 }
 type workspaceReply struct {
 	Kind     string
@@ -127,7 +132,7 @@ func NewWorkspace(c ui.Client, connection string) Workspace {
 	return Workspace{Client: c, Connection: connection, Width: 80, Height: 24, NoColor: os.Getenv("NO_COLOR") != "" || os.Getenv("VIRMILL_NO_COLOR") == "1" || os.Getenv("TERM") == "dumb", ASCII: os.Getenv("VIRMILL_ASCII") == "1" || os.Getenv("TERM") == "dumb", Data: map[string]any{}, Errors: map[string]string{}, Pending: map[string]uint64{}, legacy: New(c, connection)}
 }
 func (m Workspace) Init() tea.Cmd {
-	return tea.Batch(func() tea.Msg { return workspaceTick{} }, jobRefreshTick(), m.loadSetup())
+	return tea.Batch(func() tea.Msg { return workspaceTick{} }, jobRefreshTick(), m.loadSetup(), m.checkUpdates())
 }
 func (m *Workspace) request(kind, method string, r app.Request) tea.Cmd {
 	m.sequence++
@@ -551,6 +556,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		return m, m.request("preparation-job", "operation.get", app.Request{ID: v.OperationID})
+	case updateReply:
+		m.Updates = &v.Result
+		return m, nil
 	case workspaceTick:
 		return m, m.refresh()
 	case jobRefreshPulse:

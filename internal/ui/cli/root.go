@@ -103,6 +103,11 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 		}
 		return tui.RunOptions(client, o.Connection, o.NoColor)
 	}})
+	root.AddCommand(updateCommands(o, out, emit, activeJobs(client, o)))
+	root.PersistentPostRunE = func(c *cobra.Command, args []string) error {
+		notifyUpdate(c, o, out, errOut)
+		return nil
+	}
 	parents := map[string]*cobra.Command{"": root}
 	add := func(path string, leaf *cobra.Command) {
 		parts := strings.Split(path, " ")

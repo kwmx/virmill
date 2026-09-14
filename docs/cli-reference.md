@@ -29,6 +29,7 @@ Available Commands:
   snapshot    Manage snapshot
   storage     Manage storage
   tui         Open the keyboard interface
+  update      Install the newest Virmill release from GitHub
   version     Show application and build contracts
   vm          Manage vm
 
@@ -1779,6 +1780,74 @@ Open the keyboard interface
 ```text
 Usage:
   virmill tui [flags]
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill update`
+
+Install the newest Virmill release from GitHub
+
+```text
+Usage:
+  virmill update [flags]
+  virmill update [command]
+
+Available Commands:
+  check       Check GitHub for a newer Virmill release (read-only)
+  checks      Show or change the daily update check
+
+Flags:
+      --download-only   Download and verify the packages, then print the install command instead of running it
+      --yes             Do not ask before downloading and installing (dnf or apt may still ask for your password)
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+
+Use "virmill update [command] --help" for more information about a command.
+```
+
+## `virmill update check`
+
+Check GitHub for a newer Virmill release (read-only)
+
+```text
+Usage:
+  virmill update check [flags]
+
+Global Flags:
+      --config string       Configuration path (reserved; nonempty input is rejected)
+      --connection string   Explicit local libvirt connection (default "qemu:///system")
+      --no-color            Disable color (output is plain by default)
+      --non-interactive     Never prompt
+      --output string       table, json or ndjson (default "table")
+      --quiet               Suppress human output
+      --timeout duration    Client wait timeout (import checks and plan submission default to 20m); accepted jobs survive detach (default 30s)
+      --verbose             Verbose diagnostics
+```
+
+## `virmill update checks`
+
+Show or change the daily update check
+
+```text
+Usage:
+  virmill update checks [on|off] [flags]
 
 Global Flags:
       --config string       Configuration path (reserved; nonempty input is rejected)
