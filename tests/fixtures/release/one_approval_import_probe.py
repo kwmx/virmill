@@ -48,7 +48,7 @@ def focus_button(terminal, label, wait_label, limit=40):
 
 
 def focus_row(terminal, label, wait_label, limit=40):
-    marker = re.compile(r'^\s*>\s*' + re.escape(label), re.MULTILINE)
+    marker = re.compile(r'^\s*>\s*(?:\[[ x]\]\s*)?' + re.escape(label), re.MULTILINE)
     screen = terminal.screen.text()
     for _ in range(limit):
         if marker.search(screen):
@@ -78,10 +78,11 @@ def walkthrough(runner, stage, source, name):
         choose(source.name, 'disk image')
         wait('Source summary after inspection', lambda text: 'Review source' in text and not picker(text), b'\r')
         focus_button(terminal, 'Continue', 'summary')
-        disks = wait('Folder step skipped with the private default', lambda text: 'Saved in' in text and str(stage / 'data' / 'virmill' / 'imports') in text, b'\r')
-        report['folderStepSkipped'] = 'Save in' not in disks
+        # The long private path is shown shortened with a leading ellipsis.
+        disks = wait('Folder step skipped with the private default', lambda text: 'Saved in:' in text and 'data/virmill/imports/' in text and 'Prepare disk images' in text, b'\r')
+        report['folderStepSkipped'] = 'Save in:' not in disks
         focus_row(terminal, 'Source images are not in use', 'offline')
-        wait('Offline confirmed', lambda text: re.search(r'Source images are not in use: \[x\]', text) is not None, b' ')
+        wait('Offline confirmed', lambda text: re.search(r'\[x\] Source images are not in use', text) is not None, b' ')
         focus_button(terminal, 'Preview image preparation', 'disks')
         settings = wait('Preview opens VM settings first', lambda text: 'Create a VM' in text and 'Storage pool' in text, b'\r')
         if 'Storage pool: < Choose' in settings:
