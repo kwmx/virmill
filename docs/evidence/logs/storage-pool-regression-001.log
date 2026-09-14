@@ -1,0 +1,5 @@
+ok  	virmill.local/core/internal/backend/poolxml	0.002s
+ok  	virmill.local/core/internal/backend/libvirt	1.258s
+ok  	virmill.local/core/internal/app	1.679s
+ok  	virmill.local/core/internal/ui/tui	0.748s
+ok  	virmill.local/core/internal/ui/cli	0.489s
