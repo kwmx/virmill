@@ -28,7 +28,9 @@
   **Start VM**.
 - VMs made from your own disk images or installer ISOs get one e1000e network
   adapter on libvirt's active `default` NAT network, connected and labelled
-  *Suggested*. Appliance (OVA) adapters still start disconnected.
+  *Suggested*. Appliance (OVA) adapters still start disconnected, now with the
+  default NAT network and e1000e suggested, and appliance disks on controllers
+  QEMU cannot offer (VMware SCSI, IDE) get SATA as a labelled suggestion.
 
 - `virmill update` also requires each download, and `SHA256SUMS` itself, to
   match the SHA-256 digest GitHub recorded for the upload, as the install script

@@ -46,6 +46,7 @@ type CreationForm struct {
 	CPUOrigin, MemoryOrigin string
 	FirmwareOrigin          string
 	NetworkOrigin           string
+	SuggestedNetworkID      string
 	StartAfter              bool // start the VM once creation succeeds (ADR 0057)
 	Page, Focus, Disk, NIC  int
 	Error                   string
@@ -231,6 +232,9 @@ func (f CreationForm) controls() []importControl {
 			if (f.Source.Kind == "PreparedInstallation" || f.Source.Kind == "installation-media") && slices.Contains(choices, "sata") {
 				busHelp = "Suggested: SATA for installation media. Choose another bus only if the guest supports it."
 			}
+			if f.Source.Kind == "PreparedImport" && slices.Contains(choices, "sata") {
+				busHelp = "Suggested: SATA unless the appliance names a SATA controller itself; it boots on nearly every guest. Choose VirtIO only if the guest has its drivers."
+			}
 			if f.Source.Kind == "PreparedDiskSet" && slices.Contains(choices, "sata") {
 				busHelp = "Suggested: SATA, which nearly every guest boots from. Choose VirtIO for speed if the guest has its drivers."
 			}
@@ -280,7 +284,7 @@ func (f CreationForm) controls() []importControl {
 			if nic.NetworkID != "" && selected == "" {
 				selected = "Unavailable: " + nic.NetworkID
 				networkHelp = "This network is unavailable. Refresh networks or choose another; your selection is retained."
-			} else if f.NetworkOrigin != "" && i == 0 && nic.SourceIndex == -1 && selected != "" {
+			} else if f.NetworkOrigin != "" && nic.NetworkID == f.SuggestedNetworkID && selected != "" {
 				networkHelp = f.NetworkOrigin
 			}
 			choice("network", "Network", networkHelp, selected, networks)
@@ -842,20 +846,45 @@ var natForward = regexp.MustCompile(`<forward\b[^>]*\bmode=['"]nat['"]`)
 // libvirt's active default NAT network with a widely supported adapter model.
 // Appliance adapters keep their mapping and start disconnected (spec 05).
 func (f *CreationForm) addDefaultNIC() {
+	nat, ok := defaultNATNetwork(f.Networks)
+	if !ok {
+		return
+	}
+	if f.Source.Kind == "PreparedImport" {
+		// Appliance adapters keep their mapping and start disconnected (spec 05);
+		// only the unset network and model get labelled suggestions.
+		for i := range f.Spec.NICs {
+			if f.Spec.NICs[i].NetworkID == "" {
+				f.Spec.NICs[i].NetworkID = nat
+				f.NetworkOrigin = "Suggested: libvirt's default NAT network. The cable stays disconnected; connect it only if you trust this appliance."
+			}
+			if f.Spec.NICs[i].Model == "" {
+				f.Spec.NICs[i].Model = "e1000e"
+			}
+		}
+		f.SuggestedNetworkID = nat
+		return
+	}
 	if len(f.Spec.NICs) != 0 || (f.Source.Kind != "PreparedDiskSet" && f.Source.Kind != "PreparedInstallation" && f.Source.Kind != "installation-media") {
 		return
 	}
-	for _, n := range f.Networks {
+	f.Spec.NICs = append(f.Spec.NICs, domain.CreationNIC{ID: "nic1", SourceIndex: -1, NetworkID: nat, Model: "e1000e", Link: "up"})
+	f.NetworkOrigin = "Suggested: libvirt's default NAT network, so the guest can reach the internet. Set Cable to Disconnected to keep it offline."
+	f.SuggestedNetworkID = nat
+}
+
+// defaultNATNetwork is libvirt's active "default" network when it uses NAT.
+func defaultNATNetwork(networks []domain.VirtualNetwork) (string, bool) {
+	for _, n := range networks {
 		xml := n.LiveXML
 		if xml == "" {
 			xml = n.PersistentXML
 		}
 		if n.Name == "default" && n.Active && guidedUUID.MatchString(n.Key.UUID) && natForward.MatchString(xml) {
-			f.Spec.NICs = append(f.Spec.NICs, domain.CreationNIC{ID: "nic1", SourceIndex: -1, NetworkID: n.Key.UUID, Model: "e1000e", Link: "up"})
-			f.NetworkOrigin = "Suggested: libvirt's default NAT network, so the guest can reach the internet. Set Cable to Disconnected to keep it offline."
-			return
+			return n.Key.UUID, true
 		}
 	}
+	return "", false
 }
 
 // startablePool is a stopped persistent file-based pool, preferring "default".
@@ -912,6 +941,12 @@ func creationSourceBus(source CreationSource, diskID string, options domain.Crea
 	if source.Kind == "PreparedInstallation" || source.Kind == "installation-media" || source.Kind == "PreparedDiskSet" {
 		return "sata"
 	}
+	// Appliances often name controllers QEMU cannot offer (VMware SCSI, IDE on
+	// Q35). SATA is then the labelled suggestion rather than a required choice.
+	fallback := ""
+	if source.Kind == "PreparedImport" {
+		fallback = "sata"
+	}
 	attachments := []importer.Item{}
 	for _, item := range source.System.Items {
 		if item.ResourceType == "17" && slices.Contains(item.HostResources, "ovf:/disk/"+diskID) {
@@ -919,7 +954,7 @@ func creationSourceBus(source CreationSource, diskID string, options domain.Crea
 		}
 	}
 	if len(attachments) != 1 || attachments[0].Parent == "" {
-		return ""
+		return fallback
 	}
 	controllers := []importer.Item{}
 	for _, item := range source.System.Items {
@@ -930,7 +965,7 @@ func creationSourceBus(source CreationSource, diskID string, options domain.Crea
 	if len(controllers) == 1 && controllers[0].ResourceType == "20" {
 		return "sata"
 	}
-	return ""
+	return fallback
 }
 
 // FocusError returns users to the option named by local validation, without

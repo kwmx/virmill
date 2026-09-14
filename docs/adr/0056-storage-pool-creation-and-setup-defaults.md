@@ -55,7 +55,10 @@ adapter on libvirt's active `default` network when that network uses NAT,
 connected and labelled *Suggested*; e1000e has in-box drivers in common Linux
 and Windows guests. Appliance adapters keep their mapping and start disconnected,
 as specification document 05 requires for untrusted appliances. Without an active
-default NAT network no adapter is added and the user chooses.
+default NAT network no adapter is added and the user chooses. An appliance
+adapter with no network is suggested the active default NAT network, still
+disconnected, with the e1000e model. An appliance disk on a controller QEMU cannot
+offer, such as VMware SCSI or IDE on Q35, gets SATA as a labelled suggestion.
 
 Import follows the same approach. Prepared copies default to a new folder under
 `$XDG_DATA_HOME/virmill/imports` (normally `~/.local/share/virmill/imports`),

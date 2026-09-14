@@ -411,6 +411,42 @@ func TestCreationFormConnectsOwnImagesToDefaultNAT(t *testing.T) {
 	}
 }
 
+// Appliances keep their adapters disconnected; only the unset network, model
+// and an unsupported disk controller get labelled suggestions.
+func TestCreationFormSuggestsApplianceNetworkAndBus(t *testing.T) {
+	base := creationFormFixture()
+	nat := domain.VirtualNetwork{Key: domain.ResourceKey{ProviderID: "libvirt", ConnectionID: "qemu:///system", Kind: "network", UUID: creationFormNetwork}, Name: "default", Active: true, PersistentXML: "<network><forward mode='nat'/></network>"}
+	items := []importer.Item{{ResourceType: "10"}, {ResourceType: "10"}, {InstanceID: "3", ResourceType: "6"}, {ResourceType: "17", Parent: "3", HostResources: []string{"ovf:/disk/boot"}}, {InstanceID: "5", ResourceType: "20"}, {ResourceType: "17", Parent: "5", HostResources: []string{"ovf:/disk/data"}}}
+	source := CreationSource{Kind: "PreparedImport", System: importer.System{Name: "appliance", Items: items}, Disks: []CreationSourceDisk{{SourceID: "boot"}, {SourceID: "data"}, {SourceID: "orphan"}}}
+	f := NewCreationForm(creationFormOperation, source, base.Options, nil, []domain.VirtualNetwork{nat})
+	if len(f.Spec.NICs) != 2 {
+		t.Fatal("appliance adapters not kept", f.Spec.NICs)
+	}
+	for i, nic := range f.Spec.NICs {
+		if nic.SourceIndex != i || nic.NetworkID != creationFormNetwork || nic.Link != "down" || nic.Model != "e1000e" {
+			t.Fatal("appliance adapter suggestion", nic)
+		}
+	}
+	for _, d := range f.Spec.Disks {
+		if d.Bus != "sata" {
+			t.Fatal("appliance disk has no suggested bus", d)
+		}
+	}
+	f.Page = 2
+	f = creationFocus(t, f, "network")
+	if !strings.Contains(f.controls()[f.Focus].help, "cable stays disconnected") {
+		t.Fatal("appliance network suggestion not labelled")
+	}
+	f.Page = 1
+	f = creationFocus(t, f, "bus")
+	if !strings.Contains(f.controls()[f.Focus].help, "Suggested: SATA") {
+		t.Fatal("appliance bus suggestion not labelled")
+	}
+	if g := NewCreationForm(creationFormOperation, source, base.Options, nil, nil); g.Spec.NICs[0].NetworkID != "" || g.Spec.NICs[0].Model != "" || g.NetworkOrigin != "" {
+		t.Fatal("network suggested without an active default NAT network", g.Spec.NICs)
+	}
+}
+
 func TestCreationFormBeforePreparationAllowsOnlyUnboundValidDraft(t *testing.T) {
 	f := creationComplete(creationFormFixture())
 	f.OperationID = ""
