@@ -96,7 +96,17 @@ func (m Workspace) jobDetails(width int) []string {
 			status, next = o.Title, o.Summary
 		}
 	}
-	lines := []string{"Job / " + status, "", next, "", "Operation ID: " + resourceID(j), "Status: " + state}
+	lines := []string{"Job / " + status, "", next, ""}
+	if label := operationLabel(field(j, "operation")); label != "" {
+		lines = append(lines, "Task: "+label)
+		if target := m.jobTarget(j); target != "" {
+			lines = append(lines, "For: "+target)
+		}
+	}
+	if t, err := time.Parse(time.RFC3339Nano, field(j, "createdAt")); err == nil {
+		lines = append(lines, "Started: "+t.Local().Format("Jan 2 15:04")+" ("+ago(field(j, "createdAt"), clock())+")")
+	}
+	lines = append(lines, "Operation ID: "+resourceID(j), "Status: "+state)
 
 	if o := m.currentJobOutcome(); o != nil && o.Error != "" {
 		lines = append(lines, "", "Result issue: "+o.Error)
@@ -117,7 +127,6 @@ func (m Workspace) jobDetails(width int) []string {
 	} else {
 		lines = append(lines, "", "Updates automatically. Activity shows recorded progress and errors.")
 	}
-	lines = append(lines, "Press x for complete technical details.")
 	out := []string{}
 	for _, line := range lines {
 		out = append(out, wrap(strings.TrimSpace(line), width)...)

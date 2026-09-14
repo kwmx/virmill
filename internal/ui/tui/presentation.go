@@ -62,11 +62,10 @@ func PlanDetails(p domain.Plan, width int) []string {
 	return f.lines
 }
 
-// The summary is an introduction, never a replacement for the frozen review.
-// It reads only named non-secret fields and does not execute custom formatters.
-func planSummary(f *details, p domain.Plan) {
-	command := strings.ReplaceAll(p.Operation, ".", " ")
-	switch p.Operation {
+// operationCommand maps a plan operation to the CLI command whose menu label names it.
+func operationCommand(op string) string {
+	command := strings.ReplaceAll(op, ".", " ")
+	switch op {
 	case "vm.remove-definition-v1", "vm.remove-disks-v1":
 		command = "vm remove"
 	case "vm.create.devices-v1":
@@ -94,6 +93,13 @@ func planSummary(f *details, p domain.Plan) {
 	case "backup.local-restore-v1":
 		command = "backup restore"
 	}
+	return command
+}
+
+// The summary is an introduction, never a replacement for the frozen review.
+// It reads only named non-secret fields and does not execute custom formatters.
+func planSummary(f *details, p domain.Plan) {
+	command := operationCommand(p.Operation)
 	if p.Operation == "guest.recipe.run" {
 		f.line("Run guest setup", 0)
 		f.line("Run the reviewed setup steps inside the selected VM over SSH.", 0)

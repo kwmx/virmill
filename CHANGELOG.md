@@ -9,6 +9,14 @@
   details pages offer More and Back instead of list buttons. Unfinished
   sections are labeled: Templates (not ready), Labs (validate only), Devices
   (discovery only) and Plugins (preview).
+- TUI lists show more than name and state: CPU and RAM for VMs, type and
+  address for networks, size and free space for storage pools, and for jobs
+  the task, its VM or resource, and when it started ("Start VM · web01 ·
+  2 h ago") instead of an operation ID. Network and storage details are
+  written in plain language, and `x` shows every field with libvirt XML as
+  XML instead of escaped JSON.
+- `operation.list` and `operation.get` add each job's plan `operation`,
+  `resourceIDs` and, when known, `targetName`. Existing fields are unchanged.
 - `virmill doctor` prints a readable report: what is ready, what is missing and
   why, and the exact `dnf` or `apt` command to install it. It now checks that
   libvirt is installed and running and that you can open `/dev/kvm`, checks

@@ -162,6 +162,15 @@ type Job struct {
 	RecoveryOperationID string    `json:"recoveryOperationID,omitempty"`
 }
 
+// JobSummary is a job with what its plan changes, for job lists and details.
+// The plan fields are read when listing; the journal stores only the Job.
+type JobSummary struct {
+	Job
+	Operation   string   `json:"operation,omitempty"`
+	ResourceIDs []string `json:"resourceIDs,omitempty"`
+	TargetName  string   `json:"targetName,omitempty"`
+}
+
 func Terminal(s string) bool {
 	switch s {
 	case "succeeded", "failed", "partial", "canceled", "recovery-required":

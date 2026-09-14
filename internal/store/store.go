@@ -183,6 +183,52 @@ func (s *Store) Job(id string) (domain.Job, error) {
 	e = json.Unmarshal(b, &j)
 	return j, e
 }
+
+// jobSummaryQuery reads plan fields with json_extract so large plan reviews are
+// not decoded for job lists.
+const jobSummaryQuery = `SELECT j.body, json_extract(p.body,'$.operation'), json_extract(p.body,'$.resourceIDs'),
+	json_extract(p.body,'$.review.vmName') FROM jobs j LEFT JOIN plans p ON p.id=j.plan_id`
+
+func scanJobSummary(scan func(...any) error) (domain.JobSummary, error) {
+	var out domain.JobSummary
+	var body []byte
+	var operation, resources, name sql.NullString
+	if e := scan(&body, &operation, &resources, &name); e != nil {
+		return out, e
+	}
+	if e := json.Unmarshal(body, &out.Job); e != nil {
+		return out, e
+	}
+	out.Operation, out.TargetName = operation.String, name.String
+	if resources.Valid && json.Unmarshal([]byte(resources.String), &out.ResourceIDs) != nil {
+		out.ResourceIDs = nil
+	}
+	return out, nil
+}
+
+// JobSummary is Job plus what its plan changes.
+func (s *Store) JobSummary(id string) (domain.JobSummary, error) {
+	return scanJobSummary(s.DB.QueryRow(jobSummaryQuery+" WHERE j.id=?", id).Scan)
+}
+
+// JobSummaries lists recent jobs, newest first, with what each plan changes.
+func (s *Store) JobSummaries() ([]domain.JobSummary, error) {
+	rows, e := s.DB.Query(jobSummaryQuery + " ORDER BY j.rowid DESC LIMIT 1000")
+	if e != nil {
+		return nil, e
+	}
+	defer rows.Close()
+	out := []domain.JobSummary{}
+	for rows.Next() {
+		j, e := scanJobSummary(rows.Scan)
+		if e != nil {
+			return nil, e
+		}
+		out = append(out, j)
+	}
+	return out, rows.Err()
+}
+
 func (s *Store) Jobs() ([]domain.Job, error) {
 	rows, e := s.DB.Query("SELECT body FROM jobs ORDER BY rowid DESC LIMIT 1000")
 	if e != nil {

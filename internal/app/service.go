@@ -260,9 +260,9 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		}
 		return p, nil
 	case "operation.get":
-		return s.Engine.Store.Job(r.ID)
+		return s.Engine.Store.JobSummary(r.ID)
 	case "operation.list":
-		return s.Engine.Store.Jobs()
+		return s.Engine.Store.JobSummaries()
 	case "operation.watch":
 		return s.Engine.Store.Events(r.ID, r.After)
 	case "operation.cancel":

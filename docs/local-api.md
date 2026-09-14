@@ -24,8 +24,9 @@ JSON-RPC error codes. Successful submission is queued/accepted, not completed.
 | vm.creation.resume | connection, id (uncertain creation/recovery operation) | fresh reviewed definition-only recovery plan |
 | plan.show | id | the immutable plan |
 | operation.apply | apply: planID, planDigest, idempotencyKey, acknowledgements | durable Job |
-| operation.list | none | durable jobs |
-| operation.get, cancel, reconcile | id | Job with state/error |
+| operation.list | none | durable jobs, newest first, each with its plan's `operation`, `resourceIDs` and `targetName` (VM name) when known |
+| operation.get | id | Job with state/error, plus `operation`, `resourceIDs` and `targetName` |
+| operation.cancel, reconcile | id | Job with state/error |
 | operation.watch | id, after | ordered events after cursor |
 | import.inspect | path | bounded OVA inspection report |
 | import.prepare | path, input.destination/systemID/disks | immutable all-disk preparation plan |

@@ -292,7 +292,7 @@ func array(v any) []any {
 func (m Workspace) rows() []any {
 	out := []any{}
 	for _, row := range array(m.Data[workspaceKinds[m.Section]]) {
-		if m.Search == "" || strings.Contains(strings.ToLower(validation.SafeText(rowName(row)+" "+resourceID(row)+" "+rowState(row))), strings.ToLower(m.Search)) {
+		if m.Search == "" || strings.Contains(strings.ToLower(validation.SafeText(m.nameCell(row)+" "+resourceID(row)+" "+rowState(row))), strings.ToLower(m.Search)) {
 			out = append(out, row)
 		}
 	}
@@ -1882,10 +1882,10 @@ func (m Workspace) content(width, height int) []string {
 			return pageLines(lines, width, height, m.Offset)
 		}
 		if m.Raw {
-			b, _ := json.MarshalIndent(m.Detail, "", "  ")
-			lines = append(lines, strings.Split(validation.SafeText(string(b)), "\n")...)
+			lines[0] += m.separator() + "technical details"
+			lines = append(lines, technicalLines(m.Detail, width)...)
 		} else {
-			lines = append(lines, HumanDetails(m.Detail, width)...)
+			lines = append(lines, m.readableDetails(width)...)
 		}
 		return pageLines(lines, width, height, m.Offset)
 	}
@@ -1954,22 +1954,9 @@ func (m Workspace) content(width, height int) []string {
 		}
 		return append(append(lines, ""), emptyState(m.Section)...)
 	}
-	left := max(20, width-26)
-	lines = append(lines, m.color("  "+padCell("NAME", left)+"  "+padCell("STATE", 18), "2"))
-	count := max(1, height-len(lines)-2)
+	count := max(1, height-len(lines)-3)
 	selected := max(0, min(m.Selected, len(rows)-1))
-	start := max(0, selected-count+1)
-	for i := start; i < min(len(rows), start+count); i++ {
-		marker := "  "
-		if i == m.Selected {
-			marker = "> "
-		}
-		line := marker + padCell(rowName(rows[i]), left) + "  " + clipCell(rowState(rows[i]), 18)
-		if i == m.Selected {
-			line = m.color(line, "1;30;46")
-		}
-		lines = append(lines, line)
-	}
+	lines = append(lines, m.tableLines(rows, selected, width, count)...)
 	if m.Selected < 0 {
 		lines = append(lines, "", "No resource selected. Use arrows to choose.")
 	} else {
