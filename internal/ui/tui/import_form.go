@@ -419,11 +419,20 @@ func (f ImportForm) controls() []importControl {
 				label, help = "Maximum size (MiB)", "Safety limit for the source disk's virtual capacity. This does not resize it."
 			}
 			controls = append(controls, importText("size", label, help, disk.SizeMiB))
-			if d.Kind == "ova" && disk.Format != "" {
+			// Only a format the appliance declares moves behind Advanced; an
+			// undeclared one stays visible after the user or a suggestion sets it.
+			// A missing format is always visible, even if the appliance
+			// declared one Virmill does not recognise.
+			declared := d.Kind == "ova" && d.ovaDeclaredFormat(disk.ID) != "" && disk.Format != ""
+			if declared {
 				controls = append(controls, importButton("advanced", "Advanced disk options", "Review or correct the source format declared by this appliance."))
 			}
-			if d.Kind != "iso" && (d.Kind != "ova" || disk.Format == "" || f.advanced) {
-				controls = append(controls, importControl{id: "format", label: "Source format", kind: "choice", value: disk.Format, choices: []string{"qcow2", "raw", "vmdk", "vdi", "vpc", "vhdx"}, help: "Left/Right chooses the existing format. VPC means VHD; this is not auto-detection."})
+			if d.Kind != "iso" && (d.Kind != "ova" || !declared || f.advanced) {
+				help := "Left/Right chooses the existing format. VPC means VHD; this is not auto-detection."
+				if d.Kind == "ova" && !declared && disk.Format != "" && disk.Format == formatFromName(disk.Path) {
+					help = "Suggested from the file name; the appliance does not declare a format. Check it before continuing."
+				}
+				controls = append(controls, importControl{id: "format", label: "Source format", kind: "choice", value: disk.Format, choices: []string{"qcow2", "raw", "vmdk", "vdi", "vpc", "vhdx"}, help: help})
 			}
 		}
 		if d.Kind != "ova" {

@@ -80,6 +80,11 @@ func (d *ImportDraft) SelectSystem(id string) error {
 							break
 						}
 					}
+					// An undeclared format gets a labelled suggestion from the file
+					// name; a declared but unrecognised one still needs a choice.
+					if format == "" && disk.Format == "" {
+						format = formatFromName(disk.Path)
+					}
 					row := ImportDisk{ID: disk.ID, Path: disk.Path, Format: format}
 					if disk.CapacityBytes > 0 && disk.CapacityBytes <= 512<<30 {
 						// Round the verified unit conversion up; never lower a capacity

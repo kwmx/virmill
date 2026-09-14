@@ -45,6 +45,38 @@ func defaultImportFolder(d ImportDraft) string {
 	return name + "-" + time.Now().Format("20060102-150405")
 }
 
+// ovaDeclaredFormat is the format the appliance itself declares for a disk.
+func (d ImportDraft) ovaDeclaredFormat(id string) string {
+	if d.Report == nil {
+		return ""
+	}
+	for _, disk := range d.Report.Disks {
+		if disk.ID == id {
+			return disk.Format
+		}
+	}
+	return ""
+}
+
+// formatFromName suggests a disk format from a file extension only. It never
+// reads the file; a wrong suggestion makes conversion fail, it cannot be
+// mistaken for guest data.
+func formatFromName(path string) string {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".vmdk":
+		return "vmdk"
+	case ".qcow2":
+		return "qcow2"
+	case ".vdi":
+		return "vdi"
+	case ".vhdx":
+		return "vhdx"
+	case ".vhd":
+		return "vpc"
+	}
+	return ""
+}
+
 // suggestedVMName drops a disk or installer file extension from a source name.
 func suggestedVMName(name string) string {
 	switch strings.ToLower(filepath.Ext(name)) {
