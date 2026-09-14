@@ -79,7 +79,8 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 	settings := *m.Import.VM
 	m.Busy = true
 	m.Pending = map[string]uint64{"plan": 7}
-	prep := chainPlan(t, chainPrepPlan, "import.prepare-install", m.Connection, []string{"write-import-artifacts", "offline-source-files"}, map[string]any{}, nil)
+	// Preparation plans are host-local ("local"), unlike creation and start.
+	prep := chainPlan(t, chainPrepPlan, "import.prepare-install", "local", []string{"write-import-artifacts", "offline-source-files"}, map[string]any{}, nil)
 	m, _ = deliver(t, m, "plan", prep)
 	if m.ChainOffer == nil || !m.ChainOffer.Start {
 		t.Fatal("preparation review does not cover creation and start")
@@ -109,7 +110,7 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 	c.response = app.Response{Data: domain.Job{ID: chainPrepJob, PlanID: chainPrepPlan, State: "queued"}}
 	next, _ := m.Update(apply())
 	m = next.(Workspace)
-	if m.Chain == nil || m.Chain.PrepJob != chainPrepJob || !m.Chain.Start || m.ChainOffer != nil || slices.Contains(m.Chain.Approved, startVMAck) {
+	if m.Chain == nil || m.Chain.PrepJob != chainPrepJob || m.Chain.Connection != m.Connection || !m.Chain.Start || m.ChainOffer != nil || slices.Contains(m.Chain.Approved, startVMAck) {
 		t.Fatal("approval not bound to the preparation job", m.Chain)
 	}
 

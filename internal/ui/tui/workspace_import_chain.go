@@ -184,7 +184,9 @@ func (m *Workspace) startChain(data any) {
 				approved = append(approved, ack)
 			}
 		}
-		c := &importChain{Connection: m.Plan.ConnectionID, Settings: offer.Settings, Approved: approved, Start: offer.Start}
+		// Preparation plans are host-local; later steps use this session's
+		// libvirt connection, which chosen settings were validated against.
+		c := &importChain{Connection: m.Connection, Settings: offer.Settings, Approved: approved, Start: offer.Start}
 		if preparationOperation(m.Plan.Operation) {
 			c.PrepJob = job.ID
 		} else {
