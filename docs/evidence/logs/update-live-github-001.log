@@ -1,0 +1,5 @@
+=== RUN   TestLiveGitHubRelease
+    live_test.go:37: verified 1.0.0-beta.3 rpm packages from https://github.com/kwmx/virmill/releases/tag/v1.0.0-beta.3
+--- PASS: TestLiveGitHubRelease (2.32s)
+PASS
+ok  	virmill.local/core/internal/update	2.329s
