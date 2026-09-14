@@ -253,6 +253,13 @@ func TestImportProblemsShowOnTheImportPage(t *testing.T) {
 	}
 }
 
+func TestUnsetImportChoiceSaysChoose(t *testing.T) {
+	f := ImportForm{Draft: ImportDraft{Kind: "disks", Disks: []ImportDisk{{ID: "disk1", Path: "disk.img"}}}, Page: 2}
+	if view := f.View(100, 30); !strings.Contains(view, "Source format: < Choose… >") {
+		t.Fatal("unset format is not marked as a required choice", view)
+	}
+}
+
 func TestImportPreviewLoadsVMSettingsFirst(t *testing.T) {
 	m := importWorkspace(t)
 	f := importFocus(t, *m.Import, "preview")

@@ -91,8 +91,12 @@ def walkthrough(runner, uri, source, deadline_seconds):
         # An OVA that declares no disk format needs the user's choice per disk.
         count = re.search(r'Disk: < 1/(\d+)', disks)
         report['formatsChosen'] = 0
+        unset_format = re.compile(r'Source format: <\s*(?:Choose…)?\s*>')
+        if count and 'Disk: < 1/' not in disks:
+            focus_row(terminal, 'Disk:', 'disk selector')
+            wait('first disk', lambda text: 'Disk: < 1/' in text, b'\x1b[C')
         for index in range(int(count.group(1)) if count else 1):
-            if 'Source format: < Choose' in terminal.screen.text():
+            if unset_format.search(terminal.screen.text()):
                 focus_row(terminal, 'Source format', 'format')
                 for _ in range(8):
                     if 'Source format: < vmdk >' in terminal.screen.text():
@@ -127,8 +131,9 @@ def walkthrough(runner, uri, source, deadline_seconds):
             terminal.read(1)
         review = terminal.wait('One review covers creation and start', lambda text: 'Nothing has been applied' in text and 'After approval, Virmill also:' in text)
         report['reviewSeconds'] = round(time.monotonic() - started)
-        created_line = (re.search(r'- creates VM [^\n]*(?:\n\s+[^\n-][^\n]*)*', review) or [''])[0]
-        report['reviewedVM'] = re.sub(r'\s+', ' ', created_line)
+        created_line = (re.search(r'- creates VM [^│\n]*', review) or [''])[0]
+        report['reviewedVM'] = created_line.strip()
+        report['reviewNetwork'] = (re.search(r'network [^,│\n]*\((?:dis)?connected\)', review) or [None])[0]
         report['reviewListsStart'] = 'starts the VM once it is created' in review
         require(created_line and report['reviewListsStart'], 'combined review lacks later steps')
         wait('Confirmation', lambda text: 'Confirm reviewed changes' in text, b'\r')
@@ -183,10 +188,13 @@ def execute(root, uri, source, deadline_seconds):
     fd = os.open('/usr/bin/virmill', os.O_RDONLY | os.O_CLOEXEC)
     args = SimpleNamespace(binary='/usr/bin/virmill', connection=uri)
     runner = Runner(args, run, fd)
+    jobs_before = {j['operationID'] for j in runner.cli('operation', 'list')}
     report = walkthrough(runner, uri, source, deadline_seconds)
-    ops = {j.get('operation'): j['state'] for j in reversed(runner.cli('operation', 'list')) if j.get('operation')}
+    # Only jobs this run created count; earlier history is ignored.
+    new = [j for j in runner.cli('operation', 'list') if j['operationID'] not in jobs_before]
+    ops = {j.get('operation'): j['state'] for j in new}
     prepared = [op for op in PREPARE if ops.get(op) == 'succeeded']
-    require(prepared and ops.get('vm.create.devices-v1') == 'succeeded' and ops.get('vm.start') == 'succeeded', 'expected prepare, create and start jobs')
+    require(len(new) == 3 and len(prepared) == 1 and ops.get('vm.create.devices-v1') == 'succeeded' and ops.get('vm.start') == 'succeeded', 'expected exactly prepare, create and start jobs')
     report['succeededOperations'] = [prepared[0], 'vm.create.devices-v1', 'vm.start']
     vm = next(v for v in runner.cli('vm', 'list') if v['name'] == report['vm'])
     plan = runner.cli('vm', 'stop', vm['key']['resourceUUID'], '--hard')

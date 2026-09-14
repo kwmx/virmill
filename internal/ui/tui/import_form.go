@@ -199,6 +199,9 @@ func (f ImportForm) View(width, height int) string {
 			}
 			row = "[" + mark + "] " + c.label
 		case "choice":
+			if value == "" {
+				value = "Choose…"
+			}
 			row = c.label + ": < " + value + " >"
 		case "path":
 			if value == "" {
