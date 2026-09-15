@@ -188,7 +188,11 @@ func (p *Provider) Execute(ctx context.Context, uri, id, action string, input ma
 			case <-ctx.Done():
 				return ctx.Err()
 			case <-deadline.C:
-				return domain.Fail("RECOVERY_REQUIRED", "graceful shutdown timed out; no hard power-off attempted")
+				// The service decides from the observed state whether this job
+				// needs recovery; an unanswered request itself changes nothing.
+				failure := domain.Fail("WAIT_TIMEOUT", "the guest did not shut down within 60 seconds; nothing was forced. Shut it down inside the guest, try again, or force it off (Force off VM, or virmill vm stop --hard)")
+				failure.Retryable = true
+				return failure
 			case <-tick.C:
 				state, _, e := d.GetState()
 				if e != nil {

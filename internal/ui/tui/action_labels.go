@@ -106,8 +106,16 @@ var actionText = map[string]struct{ label, description string }{
 	"plan show":                     {"Review saved plan", "Open the exact saved plan and its approval requirements."},
 }
 
+// TUI entries that reuse a registered request with other parameters.
+var tuiActionText = map[string]struct{ label, description string }{
+	forceOff.Command: {"Force off VM", "Cut power at once, like pulling the plug; unsaved guest data may be lost."},
+}
+
 func actionLabel(a ui.Action) string {
 	if text, ok := actionText[a.Command]; ok {
+		return text.label
+	}
+	if text, ok := tuiActionText[a.Command]; ok {
 		return text.label
 	}
 	return "Unrecognized action"
@@ -115,6 +123,9 @@ func actionLabel(a ui.Action) string {
 
 func actionDescription(a ui.Action) string {
 	if text, ok := actionText[a.Command]; ok {
+		return text.description
+	}
+	if text, ok := tuiActionText[a.Command]; ok {
 		return text.description
 	}
 	return "This action needs a display description."

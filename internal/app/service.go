@@ -4,6 +4,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"virmill.local/core/contracts"
 	"virmill.local/core/internal/app/importer"
@@ -624,7 +625,11 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "VM has no managed save image to restore")
 	}
 	required := map[string]string{"start": "stopped", "restore-saved": "stopped", "stop": "running", "hard-stop": "running", "pause": "running", "resume": "paused", "save": "running", "set": "stopped"}
-	if expected, ok := required[h.action]; ok && v.State != expected {
+	expected, ok := required[h.action]
+	if h.action == "hard-stop" && v.State == "paused" {
+		ok = false // force off is also the way out of a paused VM that cannot resume
+	}
+	if ok && v.State != expected {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", fmt.Sprintf("%s requires %s state, observed %s", h.action, expected, v.State))
 	}
 	return nil
@@ -635,7 +640,21 @@ func (h *vmHandler) Execute(ctx context.Context, p domain.Plan, b []byte, step d
 		return e
 	}
 	id, _ := input["vmID"].(string)
-	return h.s.Provider.Execute(ctx, p.ConnectionID, id, h.action, input)
+	err := h.s.Provider.Execute(ctx, p.ConnectionID, id, h.action, input)
+	var de *domain.Error
+	if h.action == "stop" && errors.As(err, &de) && de.Code == "WAIT_TIMEOUT" {
+		// An unanswered shutdown request leaves nothing unsafe in flight. While
+		// the guest still runs, the job fails and frees the VM for Force off.
+		if v, e := h.s.GetVM(ctx, p.ConnectionID, id); e == nil {
+			switch v.State {
+			case "stopped":
+				return nil
+			case "running":
+				return operations.NotDone(err)
+			}
+		}
+	}
+	return err
 }
 func (h *vmHandler) Reconcile(ctx context.Context, p domain.Plan, b []byte, step domain.Step) (bool, error) {
 	var input map[string]any

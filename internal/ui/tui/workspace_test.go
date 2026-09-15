@@ -198,7 +198,8 @@ func TestWorkspaceHelpAndSmallTerminalNeverSubmitHiddenActions(t *testing.T) {
 func TestWorkspaceEveryRegisteredActionIsSelectable(t *testing.T) {
 	m := fixtureWorkspace()
 	m, _ = wk(m, ":")
-	if len(m.catalog()) != len(ui.Actions) {
+	// The TUI adds one entry: Force off, the CLI's `vm stop --hard`.
+	if len(m.catalog()) != len(ui.Actions)+1 {
 		t.Fatal("missing registered action")
 	}
 	for _, a := range ui.Actions {

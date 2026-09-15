@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -18,7 +19,7 @@ func actionGroup(a ui.Action) (int, string) {
 		return 70, "Remove"
 	case strings.HasPrefix(c, "vm creation "), strings.HasPrefix(c, "network creation "), c == "operation reconcile":
 		return 80, "Recovery and troubleshooting"
-	case c == "vm start" || c == "vm stop" || c == "vm reboot" || c == "vm pause" || c == "vm resume" || c == "vm save" || c == "vm restore-saved":
+	case c == "vm start" || c == "vm stop" || c == forceOff.Command || c == "vm reboot" || c == "vm pause" || c == "vm resume" || c == "vm save" || c == "vm restore-saved":
 		return 10, "Power"
 	case strings.HasPrefix(c, "import ") || c == "vm create":
 		return 30, "Create and import"
@@ -96,8 +97,11 @@ func (m Workspace) powerFits(a ui.Action) bool {
 		return vm.State == "running"
 	case "vm resume":
 		return vm.State == "paused"
-	case "vm save":
+	case forceOff.Command:
 		return vm.State == "running" || vm.State == "paused"
+	case "vm save":
+		// The service saves only a running VM; resume a paused one first.
+		return vm.State == "running"
 	case "vm restore-saved":
 		return stopped && vm.HasManagedSave
 	}
@@ -114,10 +118,15 @@ func (m Workspace) catalogCount() int {
 	return n
 }
 
+// forceOff is the TUI entry for the CLI's `vm stop --hard`: the same vm.plan
+// request with the hard-stop action, whose review asks for its own data-loss
+// acknowledgement. It is not a separate registry command.
+var forceOff = ui.Action{Command: "vm stop --hard", Method: "vm.plan", Section: "VMs", Summary: "Plan abrupt power-off, requiring data-loss acknowledgement", Argument: "id", Mutation: "hard-stop"}
+
 func (m Workspace) catalog() []ui.Action {
 	out := []ui.Action{}
 	scoped := m.CatalogSection >= 0 && m.CatalogMode != "all" && m.CatalogSearch == ""
-	for _, a := range ui.Actions {
+	for _, a := range append(slices.Clip(ui.Actions), forceOff) {
 		if scoped && !m.CatalogExpert && !m.commonAction(a) {
 			continue
 		}
@@ -147,7 +156,7 @@ func (m Workspace) catalog() []ui.Action {
 			return gi < gj
 		}
 		// Power tasks follow their familiar operational order, not alphabetic CLI order.
-		priority := map[string]int{"vm start": 1, "vm stop": 2, "vm reboot": 3, "vm pause": 4, "vm resume": 5, "vm save": 6, "vm restore-saved": 7,
+		priority := map[string]int{"vm start": 1, "vm stop": 2, "vm reboot": 3, "vm pause": 4, "vm resume": 5, "vm save": 6, "vm restore-saved": 7, forceOff.Command: 8,
 			"import prepare": 1, "import prepare-install": 2, "import prepare-disks": 3, "import inspect": 4, "import verify": 5, "import result": 6}
 		if priority[out[i].Command] != priority[out[j].Command] {
 			return priority[out[i].Command] < priority[out[j].Command]

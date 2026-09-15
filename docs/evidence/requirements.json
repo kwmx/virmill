@@ -95,7 +95,11 @@
         "internal/backend/libvirt/disk_removal_linux.go",
         "internal/ui/tui/removal_disks.go",
         "docs/adr/0054-explicit-selected-disk-removal.md",
-        "docs/evidence/disk-removal-run.md"
+        "docs/evidence/disk-removal-run.md",
+        "docs/vm-power.md",
+        "internal/operations/cancellation.go",
+        "internal/ui/tui/action_menu.go",
+        "internal/ui/tui/approval_labels.go"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -129,7 +133,12 @@
         "internal/backend/libvirt/disk_removal_linux_test.go",
         "internal/ui/tui/removal_disks_test.go",
         "internal/ui/cli/removal_disks_test.go",
-        "tests/fixtures/release/disk_removal_native_cycle.py"
+        "tests/fixtures/release/disk_removal_native_cycle.py",
+        "internal/operations/engine_not_done_test.go",
+        "internal/app/vm_stop_timeout_test.go",
+        "internal/ui/tui/action_menu_test.go",
+        "internal/ui/tui/workspace_menus_test.go",
+        "tests/fixtures/release/power_native_cycle.py"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -176,7 +185,8 @@
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native 1c54175 start/reboot passed for a new independent Kali disk copy with original disk and nine prior definitions preserved; cleanup required force-stop of the copy after graceful timeout. Full lifecycle/state/OS coverage, removal and guest readiness remain required.",
         "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
-        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required.",
+        "Force off is in the TUI (Advanced) and works on paused VMs; Save is offered only for running VMs, as the service requires. A shutdown the guest ignores now fails with WAIT_TIMEOUT and frees the VM for force off instead of leaving a recovery-required lock. Software tests pass; tests/fixtures/release/power_native_cycle.py qualifies pause, resume, save, restore-saved, force off, stale-plan refusal and graceful stop/reboot natively on system and session connections."
       ],
       "hardwareVerified": false,
       "released": false

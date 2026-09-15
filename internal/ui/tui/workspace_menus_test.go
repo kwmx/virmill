@@ -42,10 +42,10 @@ func TestVMMenusOfferOnlyPowerTasksTheStateAllows(t *testing.T) {
 		want, hide []string
 	}{
 		{"stopped", false, []string{"vm start", "vm remove", "vm creation cleanup", "vm creation resume"},
-			[]string{"vm stop", "vm reboot", "vm pause", "vm resume", "vm save", "vm restore-saved"}},
+			[]string{"vm stop", "vm reboot", "vm pause", "vm resume", "vm save", "vm restore-saved", "vm stop --hard"}},
 		{"stopped", true, []string{"vm start", "vm restore-saved"}, []string{"vm stop", "vm resume"}},
-		{"running", false, []string{"vm stop", "vm reboot", "vm pause", "vm save", "vm remove"}, []string{"vm start", "vm resume", "vm restore-saved"}},
-		{"paused", false, []string{"vm resume", "vm save"}, []string{"vm start", "vm stop", "vm pause"}},
+		{"running", false, []string{"vm stop", "vm stop --hard", "vm reboot", "vm pause", "vm save", "vm remove"}, []string{"vm start", "vm resume", "vm restore-saved"}},
+		{"paused", false, []string{"vm resume", "vm stop --hard"}, []string{"vm start", "vm stop", "vm pause", "vm save"}},
 		{"crashed", false, []string{"vm start", "vm stop", "vm resume"}, nil},
 	} {
 		common, advanced := vmMenus(t, tc.state, tc.saved)

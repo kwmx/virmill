@@ -33,6 +33,7 @@ identifiers; example domains in the specification are not publication destinatio
 
 CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-configuration.md).
 Remove a stopped VM while retaining disks: [removal guide](docs/vm-removal.md).
+Start, shut down, force off, pause, save and resume VMs: [power guide](docs/vm-power.md).
 Graceful reboot with durable event verification: [reboot guide](docs/vm-reboot.md).
 Backup declarations and timezone-aware occurrence previews:
 [backup policy guide](docs/backup-policy-validation.md).

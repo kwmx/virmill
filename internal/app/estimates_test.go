@@ -63,6 +63,28 @@ func TestVMPlansReportInterruptionAndStoppedEditRequirement(t *testing.T) {
 			t.Fatal("estimated plan violates existing schema", err)
 		}
 	}
+	// Force off also ends a paused VM, but a stopped one has nothing to force.
+	for state, allowed := range map[string]bool{"running": true, "paused": true, "stopped": false} {
+		s, p, _ := configService(t)
+		p.vm.State = state
+		plan, err := s.planVM(context.Background(), 1000, Request{Connection: "fixture", ID: "vm-fixture", Action: "hard-stop", Input: map[string]any{}})
+		if !allowed {
+			if err == nil || !strings.Contains(err.Error(), "hard-stop requires running state, observed stopped") {
+				t.Fatal("stopped VM was offered a force off", err)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatal(state, err)
+		}
+		stored, input, err := s.Engine.Store.Plan(plan.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = (&vmHandler{s: s, action: "hard-stop"}).Validate(context.Background(), stored, input); err != nil {
+			t.Fatal(state, err)
+		}
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := (&vmHandler{action: "stop"}).Estimate(ctx, domain.Plan{}, nil); err == nil {

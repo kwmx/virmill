@@ -3,6 +3,7 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/x/ansi"
+	"slices"
 	"strings"
 	"testing"
 	"virmill.local/core/internal/ui"
@@ -54,6 +55,33 @@ func TestPowerTaskUsesSelectedVMWithoutAnotherIDForm(t *testing.T) {
 		t.Fatal(c.calls, c.requests)
 	}
 }
+func TestForceOffIsAnAdvancedPowerTaskThatPlansAHardStop(t *testing.T) {
+	for _, state := range []string{"running", "paused"} {
+		m := fixtureWorkspace()
+		m.Section = 1
+		object(m.rows()[0])["state"] = state
+		vm := m.selectedVM().Key.UUID
+		m, _ = wk(m, "a")
+		m, _ = wk(m, "A")
+		index := slices.IndexFunc(m.catalog(), func(a ui.Action) bool { return a.Command == forceOff.Command })
+		if index < 0 || !strings.Contains(m.View(), "Force off VM") {
+			t.Fatal(state, "Force off missing from Advanced")
+		}
+		m.CatalogIndex = index
+		m, cmd := wk(m, "enter")
+		if cmd == nil || m.ActionForm != nil || !m.Busy {
+			t.Fatal(state, "force off must go straight to preview")
+		}
+		cmd()
+		c := m.Client.(*workspaceClient)
+		if len(c.calls) != 1 || c.calls[0] != "vm.plan" || c.requests[0].ID != vm || c.requests[0].Action != "hard-stop" || c.requests[0].Input != nil {
+			t.Fatal(state, c.calls, c.requests)
+		}
+	}
+	if !strings.HasPrefix(acknowledgementLabel("data-loss-hard-stop"), "Cut power without a shutdown") {
+		t.Fatal(acknowledgementLabel("data-loss-hard-stop"))
+	}
+}
 func TestTaskMenuEveryRowAndFocusedButtonVisibleWhenNarrow(t *testing.T) {
 	for _, size := range [][2]int{{60, 18}, {80, 24}, {120, 36}} {
 		m := fixtureWorkspace()
@@ -85,7 +113,7 @@ func TestTaskMenuEveryRowAndFocusedButtonVisibleWhenNarrow(t *testing.T) {
 func TestAllToolsCategoriesAndImportSources(t *testing.T) {
 	m := fixtureWorkspace()
 	m, _ = wk(m, ":")
-	if len(m.catalog()) != len(ui.Actions) {
+	if len(m.catalog()) != len(ui.Actions)+1 {
 		t.Fatal("lost registry coverage")
 	}
 	n, _ := m.Update(tea.KeyMsg{Type: tea.KeyRight})

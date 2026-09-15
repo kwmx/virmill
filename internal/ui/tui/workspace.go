@@ -442,7 +442,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		return m.openImport("iso")
 	case "import prepare-disks":
 		return m.openImport("disks")
-	case "vm start", "vm stop", "vm reboot", "vm pause", "vm resume":
+	case "vm start", "vm stop", "vm reboot", "vm pause", "vm resume", "vm save", "vm restore-saved", forceOff.Command:
 		if vm.Key.UUID != "" {
 			m.Advanced = false
 			return m.preview(a.Mutation)
