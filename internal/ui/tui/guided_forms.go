@@ -95,15 +95,13 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		field("autostart", "Start with the host", "Keeps VM disks available after a restart.", 5)
 		f.Fields[2].Value, f.Fields[2].Toggle = "true", true
 	case "disk-grow":
-		disks := removalDiskFields(vm.PersistentXML)
+		disks := growDiskChoices(vm.PersistentXML)
 		if len(disks) == 0 {
 			return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "This VM has no writable disk that can be grown.")
 		}
 		field("target", "Disk", "Left/Right chooses the disk.", 32)
-		for _, d := range disks {
-			f.Fields[0].Choices = append(f.Fields[0].Choices, d.Label)
-		}
-		f.Fields[0].Value = f.Fields[0].Choices[0]
+		f.Fields[0].Choices = disks
+		f.Fields[0].Value = disks[0]
 		field("sizeGiB", "New size (GiB)", "The disk's new total size, larger than now. Partitions inside the guest keep their size.", 5)
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")

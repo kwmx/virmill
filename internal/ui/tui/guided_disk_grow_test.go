@@ -8,13 +8,13 @@ import (
 
 func TestDiskGrowFormPlansTheChosenDiskAndSize(t *testing.T) {
 	vm := domain.VM{Key: domain.ResourceKey{ProviderID: "libvirt", ConnectionID: "qemu:///system", Kind: "vm", UUID: workspaceVMID}, Name: "app", State: "stopped",
-		PersistentXML: `<domain><devices><disk type='file' device='disk'><source file='/var/lib/libvirt/images/app.qcow2'/><target dev='vda'/></disk><disk type='file' device='disk'><source file='/var/lib/libvirt/images/data.qcow2'/><target dev='vdb'/></disk><disk type='file' device='cdrom'><source file='/iso/install.iso'/><target dev='sda'/><readonly/></disk></devices></domain>`}
+		PersistentXML: `<domain><devices><disk type='file' device='disk'><source file='/var/lib/libvirt/images/app.qcow2'/><target dev='vda'/></disk><disk type='volume' device='disk'><source pool='default' volume='data.qcow2'/><target dev='vdb'/></disk><disk type='volume' device='cdrom'><source pool='default' volume='install.iso'/><target dev='sda'/><readonly/></disk></devices></domain>`}
 	f, err := NewGuidedForm("disk-grow", vm)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got := f.Fields[0].Choices; len(got) != 2 || got[0] != "vda" || got[1] != "vdb" {
-		t.Fatal("expected the two writable disks, not the installer", got)
+		t.Fatal("expected the file and pool-volume disks, not the installer", got)
 	}
 	f.Fields[0].Value, f.Fields[1].Value = "vdb", "40"
 	method, r, err := f.Request("qemu:///system")

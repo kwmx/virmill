@@ -48,11 +48,11 @@ func (p *Provider) InspectDiskGrow(ctx context.Context, uri, id, target string, 
 	if vm.Key != key {
 		return out, domain.Fail("SOURCE_CHANGED", "VM identity changed during disk inspection")
 	}
-	sources, err := removalDiskSources(vm.PersistentXML, []string{target})
+	source, err := growDiskSource(vm.PersistentXML, target)
 	if err != nil {
 		return out, err
 	}
-	volume, err := c.LookupStorageVolByPath(sources[0].path)
+	volume, err := lookupGrowVolume(c, source)
 	if err != nil {
 		return out, err
 	}
@@ -61,14 +61,18 @@ func (p *Provider) InspectDiskGrow(ctx context.Context, uri, id, target string, 
 	if err != nil {
 		return out, err
 	}
-	if disk.Path != sources[0].path || disk.Format != sources[0].format {
-		return out, domain.Fail("SOURCE_CHANGED", "the disk's volume differs from the VM's disk declaration")
-	}
 	pool, err := volume.LookupPoolByVolume()
 	if err != nil {
 		return out, err
 	}
 	defer pool.Free()
+	poolName, err := pool.GetName()
+	if err != nil {
+		return out, err
+	}
+	if disk.Format != source.format || source.file != "" && disk.Path != source.file || source.pool != "" && (poolName != source.pool || disk.VolumeName != source.volume) {
+		return out, domain.Fail("SOURCE_CHANGED", "the disk's volume differs from the VM's disk declaration")
+	}
 	if err = diskSharedElsewhere(ctx, c, id, disk, pool); err != nil {
 		return out, err
 	}
@@ -80,6 +84,66 @@ func (p *Provider) InspectDiskGrow(ctx context.Context, uri, id, target string, 
 	out.ResourceIDs = append([]string{key.String()}, diskRemovalResources(uri, disk)...)
 	sort.Strings(out.ResourceIDs)
 	return out, nil
+}
+
+// growSource is a disk's declared source: a file path, or a pool volume as
+// Virmill itself creates them.
+type growSource struct{ target, file, pool, volume, format string }
+
+func growDiskSource(raw, target string) (growSource, error) {
+	var out growSource
+	if !coldDiskTarget.MatchString(target) || len(target) > 128 {
+		return out, domain.Fail("INVALID_INPUT", "an exact disk target such as vda is required")
+	}
+	source, err := InspectColdSourceXML(raw)
+	if err != nil {
+		return out, err
+	}
+	same := func(a, b domain.ColdStorageSource) bool {
+		return a.Type == "file" && b.Type == "file" && a.File != "" && a.File == b.File || a.Type == "volume" && b.Type == "volume" && a.Pool != "" && a.Pool == b.Pool && a.Volume == b.Volume
+	}
+	for _, disk := range source.Disks {
+		if disk.Target != target {
+			continue
+		}
+		s := disk.Source
+		declared := s.Type == "file" && s.File != "" || s.Type == "volume" && s.Pool != "" && s.Volume != ""
+		if disk.Device != "disk" || disk.ReadOnly || disk.Empty || !declared || (s.Format != "raw" && s.Format != "qcow2") {
+			return out, domain.Fail("UNSUPPORTED_CAPABILITY", "only a writable raw or qcow2 disk in a storage pool can be grown; installer media and read-only disks cannot")
+		}
+		if len(disk.Backing) != 0 {
+			return out, domain.Fail("UNSUPPORTED_CAPABILITY", "this disk has a backing file; growing layered disks is not supported")
+		}
+		for _, dep := range source.External {
+			if dep.Target == disk.Target || strings.HasPrefix(dep.Target, disk.Target+"/") {
+				return out, domain.Fail("UNSUPPORTED_CAPABILITY", "this disk has shared, encrypted or external state; it cannot be grown")
+			}
+		}
+		for _, other := range source.Disks {
+			if other.Target != disk.Target && same(other.Source, s) {
+				return out, domain.Fail("RESOURCE_BUSY", "another disk of this VM uses the same image")
+			}
+			for _, parent := range other.Backing {
+				if same(parent, s) {
+					return out, domain.Fail("RESOURCE_BUSY", "this disk is a backing file of another disk")
+				}
+			}
+		}
+		return growSource{target, s.File, s.Pool, s.Volume, s.Format}, nil
+	}
+	return out, domain.Fail("INVALID_INPUT", "this VM has no disk "+target)
+}
+
+func lookupGrowVolume(c *native.Connect, s growSource) (*native.StorageVol, error) {
+	if s.file != "" {
+		return c.LookupStorageVolByPath(s.file)
+	}
+	pool, err := c.LookupStoragePoolByName(s.pool)
+	if err != nil {
+		return nil, err
+	}
+	defer pool.Free()
+	return pool.LookupStorageVolByName(s.volume)
 }
 
 // growableVM requires a stopped persistent VM without saved, snapshot or
