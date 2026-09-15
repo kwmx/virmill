@@ -230,8 +230,11 @@ def walkthrough(runner, uri, source, deadline_seconds, imports, cloud=None):
         while time.monotonic() - started < deadline_seconds:
             terminal.started = time.monotonic()  # long copies keep the session open
             terminal.read(1)
-            # A chain that stops shows that step's review with this notice.
-            require('needs your review' not in terminal.screen.text(), 'a later step stopped for another review')
+            # A chain that stops shows that step's review with this notice, and a
+            # refused step (for example a busy source) an error line.
+            screen = terminal.screen.text()
+            require('needs your review' not in screen, 'a later step stopped for another review')
+            require('Error:' not in screen, 'a step was refused: ' + next((line.strip() for line in screen.splitlines() if 'Error:' in line), ''))
             new = domains(uri) - before
             if new:
                 created = sorted(new)[0]

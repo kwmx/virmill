@@ -1,0 +1,23 @@
+virbr0 zone: libvirt
+Virmill host check (read-only; nothing was changed)
+
+Needs attention
+  ! libvirt access    Lets you manage system VMs (qemu:///system) without root
+                      You are not in the libvirt group, so system VMs may ask for a password or be refused
+                      sudo usermod -aG libvirt $USER, then sign out and back in
+
+Ready
+  ✓ KVM               Hardware acceleration for VMs
+  ✓ libvirt           Runs and manages VMs; Virmill talks to it
+  ✓ qemu-img          Converts and checks disk images for import and VM creation
+  ✓ bwrap             Sandboxes the tools that read untrusted image files
+  ✓ prlimit           Limits memory and time for those sandboxed tools
+  ✓ xorriso           Builds installer and cloud-init media for ISO and cloud-image VMs
+  ✓ virt-viewer       Opens a VM's graphical console
+  ✓ swtpm             Provides virtual TPM chips for UEFI/TPM guests
+  ✓ restic            Stores encrypted backups
+  ✓ Network firewall  Lets VMs on libvirt networks get an address and DNS from this host
+
+Note: This host (linux/amd64) is not in a certified support matrix yet
+
+network-firewall: NETWORK_BRIDGE_ZONE_READY - firewalld: virbr0 (network default) is in zone libvirt

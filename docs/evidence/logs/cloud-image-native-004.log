@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 340, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 336, in main
+    execute(a.root, a.connection, a.source, a.deadline, a.expect_serial, a.cloud_source)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 278, in execute
+    report = walkthrough(runner, uri, source, deadline_seconds, run / 'data' / 'virmill' / 'imports', cloud)
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 241, in walkthrough
+    require(created is not None and virsh(uri, 'domstate', created).strip() == 'running', 'VM was not created and started')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: VM was not created and started
