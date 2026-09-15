@@ -1,0 +1,3 @@
+ok  	virmill.local/core/internal/ui	0.008s
+ok  	virmill.local/core/internal/ui/tui	0.723s
+ok  	virmill.local/core/internal/ui/cli	0.493s

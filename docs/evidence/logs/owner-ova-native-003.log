@@ -1,0 +1,2 @@
+free at start 66.8 GiB, lowest during import 54.6 GiB, peak use 12.2 GiB
+Terminated                 python3 -B one_approval_import_probe.py --execute-disposable --root $HOME/virmill-tests/onecopy --connection qemu:///system --deadline 7200 --source "$ova"

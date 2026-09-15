@@ -73,7 +73,7 @@ func New(client ui.Client, out, errOut io.Writer) *cobra.Command {
 			return err
 		}
 		wait := o.Timeout
-		if ui.ImportRead(method) && !root.PersistentFlags().Changed("timeout") {
+		if ui.LongWait(method) && !root.PersistentFlags().Changed("timeout") {
 			wait = ui.ImportWait
 		}
 		ctx, cancel := context.WithTimeout(c.Context(), wait)

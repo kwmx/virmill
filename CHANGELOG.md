@@ -42,6 +42,11 @@
   Conversion no longer waits for the disk after every write: it writes through
   the host's cache and is flushed once before it is recorded. Large disks also
   get time in proportion to their size, instead of a flat 30 minutes.
+- Creating a VM from a large prepared disk no longer times out. Planning checks
+  every prepared image, which took about 80 seconds for a 34 GiB disk; the TUI
+  and `vm create` now wait as long as they do for imports. If an automatic step
+  of the one approval still fails, VM setup says "The VM was not created" with
+  the reason, instead of staying on "Working…".
 - After a setup has created its VM, the next import or Create VM starts
   directly instead of stopping at "A setup was submitted". That page still
   appears while the submitted job is unfinished or failed, and a submitted

@@ -16,6 +16,7 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
 import stat
 import subprocess
 import time
@@ -25,6 +26,7 @@ import uuid
 from tui_workspace_probe import Runner, Terminal, require, canonical_path, authorized_test_host
 
 PREPARE = ('import.prepare', 'import.prepare-disks', 'import.prepare-install')
+STOPPED = ('failed', 'recovery-required', 'partial', 'canceled')
 
 
 def virsh(uri, *args):
@@ -235,13 +237,20 @@ def walkthrough(runner, uri, source, deadline_seconds, imports, cloud=None):
             checked += 1
         report['itemsChecked'] = checked
         before = domains(uri)
+        jobs_before = {j['operationID'] for j in runner.cli('operation', 'list')}
         # The confirmation stays visible until the coordinator accepts the job.
         wait('Preparation accepted', lambda text: 'Confirm reviewed changes' not in text, b'\r')
         started = time.monotonic()
+        checked = started
         created = None
         while time.monotonic() - started < deadline_seconds:
             terminal.started = time.monotonic()  # long copies keep the session open
             terminal.read(1)
+            # A failed job shows no error line on this page; stop at once.
+            if time.monotonic() - checked > 30:
+                checked = time.monotonic()
+                stopped = [j for j in runner.cli('operation', 'list') if j['operationID'] not in jobs_before and j['state'] in STOPPED]
+                require(not stopped, 'a job stopped: ' + '; '.join(f"{j.get('operation')} {j['state']}: {(j.get('error') or {}).get('message', '')}" for j in stopped))
             # A chain that stops shows that step's review with this notice, and a
             # refused step (for example a busy source) an error line.
             screen = terminal.screen.text()
@@ -258,6 +267,16 @@ def walkthrough(runner, uri, source, deadline_seconds, imports, cloud=None):
         report['vm'] = created
         report['seconds'] = round(time.monotonic() - started)
         return report
+    except BaseException:
+        # A stalled TUI explains itself: SIGQUIT makes Go print every goroutine's
+        # stack to the terminal, which the saved transcript then holds.
+        if terminal.process.poll() is None:
+            terminal.process.send_signal(signal.SIGQUIT)
+            terminal.started = time.monotonic()
+            until = time.monotonic() + 3
+            while time.monotonic() < until and terminal.read(.2):
+                pass
+        raise
     finally:
         terminal.close()
 

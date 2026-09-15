@@ -149,7 +149,7 @@ func (m *Workspace) request(kind, method string, r app.Request) tea.Cmd {
 	r.Connection = m.Connection
 	wait := 30 * time.Second
 	importRead := ui.ImportRead(method)
-	if importRead || kind == "apply" {
+	if ui.LongWait(method) || kind == "apply" {
 		wait = ui.ImportWait
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
@@ -718,9 +718,21 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Notice = "Could not refresh the import. Open Jobs to check its status."
 			}
 			if v.Kind == "plan" && m.Creation != nil {
-				m.Creation.FocusError(fmt.Errorf("%s", importError(err)))
+				message := importError(err)
+				if m.Chain != nil {
+					// Import wording ("the appliance check") does not fit a VM plan.
+					message = strings.TrimRight(text, ".")
+				}
+				m.Creation.FocusError(fmt.Errorf("%s", message))
 				m.Error = ""
 				delete(m.Errors, v.Kind)
+				// An automatic step that fails must say so: the one approval
+				// covered a VM that was not created, so the chain ends here.
+				if m.Chain != nil {
+					m.Chain = nil
+					m.Busy = false
+					m.Error = "The VM was not created: " + message + ". Your settings are kept; choose Preview VM creation to try again."
+				}
 			}
 			if v.Kind == "apply" {
 				// Preserve the exact review and request identity when the reply
