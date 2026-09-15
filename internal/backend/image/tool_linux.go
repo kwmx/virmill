@@ -117,25 +117,31 @@ func (b *boundedBuffer) Bytes() []byte {
 var workerSlots = make(chan struct{}, 2)
 
 func run(ctx context.Context, source, workspace string, bound int64, args ...string) ([]byte, error) {
-	return runCommand(ctx, args, func(worker context.Context) (*exec.Cmd, func(), error) {
+	return runCommand(ctx, bound, args, func(worker context.Context) (*exec.Cmd, func(), error) {
 		return platform.ConfinedDiskCommand(worker, source, workspace, args, bound)
 	})
 }
 
 func runFiles(ctx context.Context, sources []platform.DiskSourceFile, workspace string, bound int64, args ...string) ([]byte, error) {
-	return runCommand(ctx, args, func(worker context.Context) (*exec.Cmd, func(), error) {
+	return runCommand(ctx, bound, args, func(worker context.Context) (*exec.Cmd, func(), error) {
 		return platform.ConfinedDiskFilesCommand(worker, sources, workspace, args, bound)
 	})
 }
 
-func runCommand(ctx context.Context, args []string, makeCommand func(context.Context) (*exec.Cmd, func(), error)) ([]byte, error) {
+// workerTimeout is 30 minutes plus a second for every 4 MiB the worker may
+// write, so a large disk on slow storage is not stopped half converted (ADR 0060).
+func workerTimeout(bound int64) time.Duration {
+	return 30*time.Minute + time.Duration(bound/(4<<20))*time.Second
+}
+
+func runCommand(ctx context.Context, bound int64, args []string, makeCommand func(context.Context) (*exec.Cmd, func(), error)) ([]byte, error) {
 	select {
 	case workerSlots <- struct{}{}:
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
 	defer func() { <-workerSlots }()
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, workerTimeout(bound))
 	defer cancel()
 	cmd, cleanup, err := makeCommand(ctx)
 	if err != nil {
@@ -303,7 +309,8 @@ func convert(workspace, filename, format string, virtualSize, maxOutput int64, r
 // convertSource converts one confined source to /work/disk.qcow2 and checks the
 // result against it. An empty format means the source name carries its driver.
 // maxOutput is the measured budget or the worst case, which can be smaller than
-// the virtual size (ADR 0060).
+// the virtual size (ADR 0060). Writeback caching keeps slow disks from syncing
+// every write; callers flush the output before any receipt or publication.
 func convertSource(workspace, format, source string, virtualSize, maxOutput int64, runTool func(...string) ([]byte, error)) error {
 	if virtualSize <= 0 || maxOutput <= 0 || maxOutput > 1<<40 {
 		return domain.Fail("INVALID_INPUT", "invalid conversion mapping or bound")
@@ -315,7 +322,7 @@ func convertSource(workspace, format, source string, virtualSize, maxOutput int6
 	if format != "" {
 		from = []string{"-f", format, source}
 	}
-	args := append(append([]string{"convert"}, from[:len(from)-1]...), "-O", "qcow2", "-o", "compat=1.1", "-t", "writethrough", source, "/work/disk.qcow2")
+	args := append(append([]string{"convert"}, from[:len(from)-1]...), "-O", "qcow2", "-o", "compat=1.1", "-t", "writeback", source, "/work/disk.qcow2")
 	if _, err := runTool(args...); err != nil {
 		return err
 	}

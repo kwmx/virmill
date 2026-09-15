@@ -209,10 +209,12 @@ func confinedCommand(ctx context.Context, executable, workspace string, args []s
 			argv = append(argv, "--ro-bind-fd", fmt.Sprint(4+i), "/source/"+source.Path)
 		}
 	}
-	cpuSeconds := 60
+	cpuSeconds := int64(60)
 	openFiles := 64
 	if sourceDirectory != "" || len(sourceFiles) > 0 {
-		cpuSeconds = 1800
+		// Large images get a CPU second for every 16 MiB they may write on top of
+		// the base 30 minutes (ADR 0060).
+		cpuSeconds = 1800 + maximumFileBytes/(16<<20)
 		openFiles = 1024 // split-image descriptors may hold hundreds of extents
 	}
 	argv = append(argv, "--bind", workspace, "/work", "--chdir", "/work", "--setenv", "PATH", "/usr/bin", "--setenv", "LANG", "C.UTF-8", "--setenv", "GOMEMLIMIT", "256MiB", "--seccomp", "3", "--", limit, "--as=2147483648", "--nproc=256", fmt.Sprintf("--cpu=%d", cpuSeconds), fmt.Sprintf("--fsize=%d", maximumFileBytes), fmt.Sprintf("--nofile=%d", openFiles), "--", command)

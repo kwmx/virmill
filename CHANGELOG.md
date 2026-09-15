@@ -39,6 +39,9 @@
   shares the pool's filesystem: it frees each disk's prepared file as it copies
   it (`preparedCopy: "hand-over"`, acknowledgement `hand-over-prepared-copy`).
   If copying then stops, import the original again; it is never modified.
+  Conversion no longer waits for the disk after every write: it writes through
+  the host's cache and is flushed once before it is recorded. Large disks also
+  get time in proportion to their size, instead of a flat 30 minutes.
 - After a setup has created its VM, the next import or Create VM starts
   directly instead of stopping at "A setup was submitted". That page still
   appears while the submitted job is unfinished or failed, and a submitted

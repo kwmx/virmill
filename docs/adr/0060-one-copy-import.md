@@ -89,6 +89,13 @@ the original again; the original is never modified.
   prepared copy. To create several VMs from one import, choose **Keep**.
 - Measured budgets trust `qemu-img`'s allocation map. The output-file limit
   enforces it.
+- Conversion writes with `-t writeback` instead of `-t writethrough`. Both
+  preparations already flush the converted file before its receipt and
+  publication, so nothing unflushed is ever recorded. On the test VM,
+  writethrough wrote the owner's disk at about 18 MiB/s.
+- Each confined `qemu-img` call may run for 30 minutes plus one second per
+  4 MiB of allowed output. Disk workers get 1,800 CPU seconds plus one per
+  16 MiB. The flat 30 minutes stopped a 34 GiB conversion partway through.
 - In-place conversion keeps the archive open and read-guarded for the whole
   conversion. Changing the archive during preparation fails the preparation, as
   it does for disk sets (ADR 0008).
