@@ -54,6 +54,8 @@ def authorized_test_host():
 class Cycle:
     def __init__(self, runner, stage, uri, original):
         self.r, self.stage, self.uri, self.original = runner, stage, uri, original
+        # Idempotency keys name this run's own folder: runs share the stage.
+        self.key = runner.directory.name
         self.vm = original['key']['resourceUUID']
         self.resource = f'libvirt|{uri}|vm|{self.vm}'
         self.steps, self.jobs, self.count = [], [], 0
@@ -82,7 +84,7 @@ class Cycle:
         self.r.save(label + '-plan.json', plan)
         acks = [part for ack in plan['acknowledgements'] for part in ('--ack', ack)]
         job = self.r.cli('plan', 'apply', plan['planID'], '--digest', plan['planDigest'], *acks,
-                         '--detach', '--idempotency-key', f'{self.stage.name}-{label}')
+                         '--detach', '--idempotency-key', f'{self.key}-{label}')
         job = self.wait(job)
         self.r.save(label + '-job.json', job)
         return job
@@ -127,7 +129,7 @@ class Cycle:
         label = self.label('stale-pause')
         acks = [part for ack in held['acknowledgements'] for part in ('--ack', ack)]
         code, envelope = self.attempt('plan', 'apply', held['planID'], '--digest', held['planDigest'], *acks,
-                                      '--detach', '--idempotency-key', f'{self.stage.name}-{label}')
+                                      '--detach', '--idempotency-key', f'{self.key}-{label}')
         self.r.save(label + '.json', {'exitCode': code, 'envelope': envelope})
         if code == 0:
             job = self.wait(envelope['data'])
