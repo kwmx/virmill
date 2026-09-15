@@ -17,7 +17,9 @@
   create my user with cloud-init**, suggested when the name looks like a cloud
   image. It asks for a user name, your SSH public key file and the image's https
   download address, and builds the reviewed NoCloud seed; passwordless sudo is
-  the default (ADR 0059).
+  the default (ADR 0059). Checked on the test host with Ubuntu 24.04's cloud
+  image: the guest took a NAT address, and the reviewed key logged in with
+  passwordless sudo after cloud-init finished.
 - `virmill doctor` and the TUI host check say when firewalld holds a libvirt
   network's bridge in no zone. Its default zone then usually drops DHCP and DNS,
   so VMs on that network get no address. This happens when the network starts

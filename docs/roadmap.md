@@ -21,8 +21,13 @@ A disk image, ISO or OVA becomes a running VM in one review.
 - Done: removing the prepared copy after import (ADR 0058), natively for OVA and
   ISO; guest boot and disk order shown on the serial console for the generated
   BIOS OVA.
+- Done: guided cloud-image setup (ADR 0059), natively with Ubuntu 24.04's cloud
+  image: one approval to a running guest that took a NAT address and accepted
+  the reviewed SSH key, with passwordless sudo and cloud-init done.
+- Done: `virmill doctor` says when firewalld blocks a NAT network's DHCP, which
+  had kept the first cloud guest offline on the test host.
 - Remaining: in-setup Create and Start pool natively (needs a host without a
-  usable pool); a real owner OVA with a declared format; cloud images.
+  usable pool); a real owner OVA with a declared format.
 
 Scenarios: IMP-01, IMP-02, IMP-03, IMP-04, IMP-07, IMP-08, STO-01 (creation).
 

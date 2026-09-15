@@ -1,6 +1,7 @@
 # ADR 0059: Guided cloud-image setup in VM setup
 
-Status: accepted; native evidence with a real cloud image is pending.
+Status: accepted. Native evidence: `cloud-image-native-005` (Ubuntu 24.04 cloud
+image).
 
 Cloud images (Ubuntu cloud images, Fedora Cloud Base, Debian genericcloud) have
 no password: they expect cloud-init to create a user with an SSH key. The service
@@ -40,5 +41,8 @@ address and network intent, must match what was approved. The combined review
 lists the user and the added acknowledgements: `guest-root-provisioning`,
 `rotate-guest-host-keys` and, when chosen, `guest-passwordless-sudo`.
 
-Cloud-init completion, guest login and connectivity remain unverified by this
-change (GUEST-01, IMP-01).
+The service still does not report cloud-init completion, guest login or
+connectivity (GUEST-01, IMP-01). A native walk-through checked them once from
+outside: Ubuntu 24.04's cloud image took a DHCP address on the default NAT
+network, accepted the reviewed key over SSH, allowed passwordless sudo and
+reported cloud-init done ([run record](../evidence/one-approval-import-run.md#cloud-image)).

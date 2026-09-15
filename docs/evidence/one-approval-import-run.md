@@ -90,11 +90,60 @@ lists the preparation as `import.prepare` because the probe then read the whole
 job history; the job for an ISO is `import.prepare-install`. The probe now counts
 only the jobs its own run creates.
 
+## Cloud image
+
+The same probe with `--cloud-source` imported Ubuntu 24.04's cloud image
+(`noble-server-cloudimg-amd64.img`, 625 MB) on `qemu:///system`. The owner approved
+the download to the test VM; its SHA-256 matched Ubuntu's `SHA256SUMS`. The typed
+https address is recorded as declared provenance only
+([ADR 0059](../adr/0059-guided-cloud-image-setup.md)). The probe generated a
+throwaway Ed25519 key for each run and then logged in over SSH with it.
+
+| Evidence | Build | Result |
+| --- | --- | --- |
+| `cloud-image-native-001` | `f83ef85` | failed: probe check. Clearing the key file field with Ctrl+U on an already empty field did not redraw, and the probe waited for one. The probe no longer waits |
+| `cloud-image-native-002` | `f83ef85` | failed: **test host problem**. One approval ran preparation, creation, start and removal of the prepared copy. The guest booted and cloud-init finished from the NoCloud seed, but it got no DHCP address |
+| `cloud-image-native-003` | `f83ef85` | stopped: the evidence recorder's default 120 s limit ended the ssh session; the probe was stopped by hand on the test VM |
+| `cloud-image-native-004` | `f83ef85` | failed: probe check. Apply was refused with `RESOURCE_BUSY` because run 3's preparation of the same file was still running. The TUI kept the settings and the reviewed plan and said so; the probe did not read error lines and waited out its deadline. It now stops at the first error |
+| `cloud-image-native-005` | `302e80d` | **passed**, with SSH login |
+
+Run 2's guest reached its login prompt, and its serial console showed
+`DataSourceNoCloud [seed=/dev/sr0]`. Its DHCP requests reached the `default`
+network's bridge but got no answer. On the test host that network had started
+before firewalld at boot, so libvirt never put `virbr0` in firewalld's `libvirt`
+zone, and the default `public` zone dropped DHCP. Restarting the network, with no
+guest attached, restored the zone. Virmill made no firewall change. `virmill
+doctor` now reports this condition as **Network firewall**, with the
+`firewall-cmd` command that fixes it (`network-firewall-native-001` shows it
+ready on the test host).
+
+In run 5, VM setup suggested **Cloud image: Yes** from the file name and
+preselected BIOS, SATA and one connected e1000e adapter on `default`. Only the pool
+needed a choice. The suggested name was `noble-server-cloudimg-amd64 2`, because
+run 2's VM kept the first. One review of 13 items, including
+`guest-root-provisioning`, `rotate-guest-host-keys` and `guest-passwordless-sudo`,
+ran `import.prepare-disks`, `vm.create.devices-v1`, `vm.start` and
+`import.discard` with no further review. The VM was running and the private
+imports folder was empty 339 s after the review opened. The guest then took a
+DHCP lease on `default`. The test key logged in as the reviewed cloud user,
+`sudo -n true` succeeded, and `cloud-init status --wait` reported `status: done`.
+The VM was hard-stopped through a reviewed plan and left defined. The image, other
+pools, networks and VMs were unchanged.
+
+Installs for these builds passed (`cloud-f83ef85-install-native-001`,
+`doctor-302e80d-install-native-001`).
+
+Left for review on `qemu:///system`: stopped VMs `noble-server-cloudimg-amd64`
+(run 2) and `noble-server-cloudimg-amd64 2` (run 5) with their volumes and seed
+media, and the downloaded image on the test VM.
+
 ## Not covered
 
 - Create or Start pool inside VM setup.
 - Closing the TUI mid-chain (the design stops the chain; not exercised natively).
-- Guest boot, which a blank disk cannot show.
+- Guest boot from the blank disk runs, which a blank disk cannot show. The OVA run
+  showed guest boot on its serial console; the cloud-image run showed login.
+- Cloud images other than Ubuntu 24.04, and cloud images on `qemu:///session`.
 
 The software tests had used a preparation plan with a libvirt connection. They
 now use the real host-local value.

@@ -130,8 +130,16 @@ the reported private stage for future explicit cache disposition. The managed
 read-only seed is retained; safe post-provision seed detachment/removal is still a
 required lifecycle workflow.
 
-Actual tests use generated files and a synthetic storage backend, with separate
-native test-driver XML evidence. Cloud-init is not installed in this build host,
-and no real cloud image was supplied or booted. `guestBootVerified`,
-`setupVerified` and `connectivityVerified` remain false. Do not treat successful
-seed or domain creation as a successfully provisioned guest.
+Software tests use generated files and a synthetic storage backend, with separate
+native test-driver XML evidence. One native walk-through on the test host booted
+a real image through the TUI: Ubuntu 24.04's cloud image took a DHCP address on
+the default NAT network, accepted the reviewed key over SSH, allowed passwordless
+sudo and reported cloud-init done
+([run record](evidence/one-approval-import-run.md#cloud-image)). That check ran
+outside Virmill. The service still reports `guestBootVerified`, `setupVerified`
+and `connectivityVerified` as false, and other images and distributions are not
+qualified. Do not treat successful seed or domain creation as a successfully
+provisioned guest.
+
+If a guest gets no address on a NAT network, run `virmill doctor`. Its **Network
+firewall** item says when firewalld is dropping that network's DHCP.
