@@ -790,6 +790,11 @@ func (f CreationForm) Request(connection string) (app.Request, error) {
 	if provisioning != nil {
 		r.Input["provisioning"] = provisioning
 	}
+	// Removing the prepared copy afterwards lets creation hand it over while
+	// copying, which halves the peak space when both share a filesystem (ADR 0060).
+	if f.RemovePrepared {
+		r.Input["preparedCopy"] = "hand-over"
+	}
 	b, err = json.Marshal(r.Input)
 	if err != nil {
 		return app.Request{}, err

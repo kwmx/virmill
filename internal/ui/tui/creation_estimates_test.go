@@ -155,7 +155,8 @@ func TestCreationEstimateTUIShowsPagedSharedReviewAndReusesDigest(t *testing.T) 
 	client := creationEstimateFixture(t)
 	m := creationEstimateTUIAction(t, New(client, "qemu:///session"), "vm create", `{"id":"prepared-fixture","input":`+creationEstimateInput+`}`)
 	p := creationEstimateTUIPlan(t, m)
-	if p.Estimates.AdditionalBytes != 125829120 || p.Review["requiredFreeBytes"] != float64(125829120) || p.Estimates.RequiresDowntime {
+	// A 64 MiB reserve plus the 64 KiB prepared disk and its 16 MiB headroom (ADR 0060).
+	if p.Estimates.AdditionalBytes != 83951616 || p.Review["requiredFreeBytes"] != float64(83951616) || p.Estimates.RequiresDowntime {
 		t.Fatal("TUI changed shared estimate", p.Estimates)
 	}
 	// At the default 80x24 size, every wrapped detail must be reachable using
@@ -169,7 +170,7 @@ func TestCreationEstimateTUIShowsPagedSharedReviewAndReusesDigest(t *testing.T) 
 			t.Fatal("paging dispatched a request")
 		}
 	}
-	for _, text := range []string{`"additionalBytes": 125829120`, `"requiredFreeBytes": 125829120`, "Target-pool worst-case", "Copied volume payload: 65536 bytes", "Initial physical allocation", "elapsed time is not estimated"} {
+	for _, text := range []string{`"additionalBytes": 83951616`, `"requiredFreeBytes": 83951616`, "Target-pool disk/media free-space budget", "Copied volume payload: 65536 bytes", "Initial physical allocation", "elapsed time is not estimated"} {
 		// Terminal wrapping can split a phrase across adjacent rows.
 		if !strings.Contains(strings.ReplaceAll(pages, "\n", ""), text) {
 			t.Fatalf("80x24 paging hid estimate detail %q", text)
@@ -236,7 +237,7 @@ func TestCreationEstimateTUIFailuresClearStaleBudgetAndApproval(t *testing.T) {
 			}
 			m.Offset = 50
 			m = creationEstimateTUIAction(t, m, command, input)
-			if m.Plan != nil || m.Confirm || m.Busy || m.Offset != 0 || strings.Contains(m.Output, "125829120") || strings.Contains(m.Output, p.Estimates.Notes) || strings.Contains(m.View(), "Plan is a preview") {
+			if m.Plan != nil || m.Confirm || m.Busy || m.Offset != 0 || strings.Contains(m.Output, "83951616") || strings.Contains(m.Output, p.Estimates.Notes) || strings.Contains(m.View(), "Plan is a preview") {
 				t.Fatal("failed request retained successful estimate or approval", m.Output)
 			}
 			if mode != "transport-error" {

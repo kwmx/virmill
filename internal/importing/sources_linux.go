@@ -45,6 +45,12 @@ func registerSources(s *app.Service) {
 			} else if len(removed) != 0 {
 				continue
 			}
+			// A prepared copy handed over to a VM's disks is gone too (ADR 0060).
+			if _, handed, err := HandedOver(s.Engine.Store, job.ID); err != nil {
+				return nil, err
+			} else if handed {
+				continue
+			}
 			var in struct {
 				Destination string `json:"destination"`
 			}

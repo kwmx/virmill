@@ -57,9 +57,12 @@ func TestCreationPlansPublishPoolBudgetDistinctFromCopiedPayload(t *testing.T) {
 				t.Fatal(err)
 			}
 			in, encoded := estimateRecipe(t, s, p)
-			// Two 1 MiB virtual disks require 98.5 MiB of reviewed pool headroom,
-			// independently of their tiny synthetic copied payloads.
-			want := uint64(103284736)
+			// Two tiny prepared disks need a 64 MiB reserve, 16 MiB headroom each and
+			// their own sizes; their 1 MiB virtual size no longer counts (ADR 0060).
+			want := uint64(64<<20+2*(16<<20)) + 78
+			if in.SpaceBudget != spaceBudgetFileBytes || in.HandOver != nil {
+				t.Fatalf("new plans use the file-size budget and keep the prepared copy: %q %+v", in.SpaceBudget, in.HandOver)
+			}
 			if mode != "ordinary" {
 				want += 40 * 2048
 			}
@@ -130,6 +133,8 @@ func TestCreationEstimateNativeReportedBudgetRegression(t *testing.T) {
 	in.Target.Spec.Disks, in.Artifact.Disks, in.Volumes = in.Target.Spec.Disks[:1], in.Artifact.Disks[:1], in.Volumes[:1]
 	in.Artifact.Disks[0].VirtualBytes = 32 << 20
 	in.Volumes[0].VirtualBytes = 32 << 20
+	// Recipes written before ADR 0060 keep the virtual-size budget.
+	in.SpaceBudget = ""
 	in.RequiredBytes = 125829120
 	encoded, err := operations.Canonical(in)
 	if err != nil {

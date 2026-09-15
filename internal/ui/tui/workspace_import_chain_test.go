@@ -60,11 +60,12 @@ func TestExpectedCreationAcksFollowSettings(t *testing.T) {
 	f.Spec.GuestAgent = true
 	f.Spec.Firmware = domain.CreationFirmware{Mode: "uefi"}
 	f.Spec.DevicePolicy.WatchdogAction = "reset"
-	want := []string{"host-mutation", "copy-managed-volumes", "new-vm-identity", "guest-agent-channel", "new-firmware-state", "network-attachment", "attach-readonly-media", "creation-device-policy", "watchdog-reset"}
+	// Removing the prepared copy afterwards (the default) hands it over while copying.
+	want := []string{"host-mutation", "copy-managed-volumes", "new-vm-identity", "hand-over-prepared-copy", "guest-agent-channel", "new-firmware-state", "network-attachment", "attach-readonly-media", "creation-device-policy", "watchdog-reset"}
 	if got := expectedCreationAcks(f); !slices.Equal(got, want) {
 		t.Fatal(got)
 	}
-	f.Spec.NICs, f.Spec.Media, f.Spec.GuestAgent = nil, nil, false
+	f.Spec.NICs, f.Spec.Media, f.Spec.GuestAgent, f.RemovePrepared = nil, nil, false, false
 	f.Spec.Firmware = domain.CreationFirmware{Mode: "bios"}
 	f.Spec.DevicePolicy.WatchdogAction = "none"
 	if got := expectedCreationAcks(f); !slices.Equal(got, []string{"host-mutation", "copy-managed-volumes", "new-vm-identity", "creation-device-policy"}) {

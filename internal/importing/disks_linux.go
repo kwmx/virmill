@@ -29,6 +29,7 @@ type FilesDiskTool interface {
 	Identity(context.Context) (image.Identity, error)
 	InspectFiles(context.Context, []platform.DiskSourceFile, string, string, string, int64) ([]image.Info, error)
 	ConvertFiles(context.Context, []platform.DiskSourceFile, string, string, string, int64, int64) error
+	MeasureFiles(context.Context, []platform.DiskSourceFile, string, string, string) (int64, error)
 }
 type DiskSetService struct {
 	*Service
@@ -68,6 +69,17 @@ type diskSetInput struct {
 	Chains             [][]image.Info   `json:"chains"`
 	Tool               image.Identity   `json:"tool"`
 	RequiredFreeBytes  int64            `json:"requiredFreeBytes"`
+	// OutputBytes is each disk's measured conversion limit (ADR 0060). Plans
+	// from older builds omit it and keep the worst case.
+	OutputBytes []int64 `json:"outputBytes,omitempty"`
+}
+
+// diskOutputBytes is the output limit for converting disk i.
+func diskOutputBytes(in diskSetInput, i int) int64 {
+	if len(in.OutputBytes) == len(in.Disks) {
+		return in.OutputBytes[i]
+	}
+	return outputBound(in.Disks[i].MaximumVirtualBytes)
 }
 
 func diskSetStage(p domain.Plan) string { return ".virmill-disks-" + p.ID }
@@ -237,10 +249,6 @@ func (s *DiskSetService) Plan(ctx context.Context, uid uint32, r app.Request) (d
 		}
 		ids[disk.ID] = true
 		paths[disk.Path] = true
-		in.RequiredFreeBytes += outputBound(disk.MaximumVirtualBytes)
-	}
-	if err = available(parent, in.RequiredFreeBytes); err != nil {
-		return empty, err
 	}
 	in.Tool, err = s.FilesTool.Identity(ctx)
 	if err != nil {
@@ -257,6 +265,17 @@ func (s *DiskSetService) Plan(ctx context.Context, uid uint32, r app.Request) (d
 			return empty, e
 		}
 		in.Chains = append(in.Chains, chain)
+		// Budget what the conversion measurably writes, not the worst case (ADR 0060).
+		size, e := s.FilesTool.MeasureFiles(ctx, sources, workspace, disk.Path, disk.Format)
+		if e != nil {
+			return empty, e
+		}
+		budget := image.OutputBudget(size, chain[0].VirtualSize)
+		in.OutputBytes = append(in.OutputBytes, budget)
+		in.RequiredFreeBytes += budget
+	}
+	if err = available(parent, in.RequiredFreeBytes); err != nil {
+		return empty, err
 	}
 	// Reopening also detects path replacements while held FDs were inspected.
 	currentFiles, currentID, current, err := openDiskFiles(ctx, r.Path, files)
@@ -296,7 +315,7 @@ func (s *DiskSetService) Review(ctx context.Context, p domain.Plan, b []byte) (m
 	if err := wire.Decode(b, &in); err != nil {
 		return nil, err
 	}
-	return map[string]any{"sourceKind": "existing-disk-set", "sourceLockProtocol": in.SourceLockProtocol, "sourceDirectory": in.SourceDirectory, "files": in.Files, "diskMappings": in.Disks, "backingChains": in.Chains, "destination": in.Destination, "stagingDirectory": diskSetStagePath(p, in), "requiredFreeBytes": in.RequiredFreeBytes, "tool": in.Tool, "sourceHardware": "unknown; explicit creation assumptions required", "vmDefined": false, "guestBootVerified": false}, nil
+	return map[string]any{"sourceKind": "existing-disk-set", "sourceLockProtocol": in.SourceLockProtocol, "sourceDirectory": in.SourceDirectory, "files": in.Files, "diskMappings": in.Disks, "backingChains": in.Chains, "destination": in.Destination, "stagingDirectory": diskSetStagePath(p, in), "requiredFreeBytes": in.RequiredFreeBytes, "outputBytes": in.OutputBytes, "tool": in.Tool, "sourceHardware": "unknown; explicit creation assumptions required", "vmDefined": false, "guestBootVerified": false}, nil
 }
 func (s *DiskSetService) Validate(ctx context.Context, p domain.Plan, b []byte) error {
 	return s.validate(ctx, p, b, true)
@@ -442,7 +461,7 @@ func (s *DiskSetService) Execute(ctx context.Context, p domain.Plan, b []byte, s
 			return err
 		}
 		if err = s.cancelableDiskWork(ctx, func(worker context.Context) error {
-			return s.FilesTool.ConvertFiles(worker, sources, workspace, mapping.Path, mapping.Format, chain[0].VirtualSize, outputBound(mapping.MaximumVirtualBytes))
+			return s.FilesTool.ConvertFiles(worker, sources, workspace, mapping.Path, mapping.Format, chain[0].VirtualSize, diskOutputBytes(in, i))
 		}); err != nil {
 			return err
 		}

@@ -92,6 +92,18 @@ func (p phaseTool) Convert(ctx context.Context, source, work, name, format strin
 	return nil
 }
 
+// The phase fixture has no real images, so it never reads a disk in place;
+// preparation then unpacks every member as before.
+func (phaseTool) InspectArchive(context.Context, *os.File, string, string, image.ArchiveWindow, int64) ([]image.Info, error) {
+	return nil, errors.New("synthetic phase fixture reads no archive in place")
+}
+func (phaseTool) MeasureArchive(context.Context, *os.File, string, string, image.ArchiveWindow) (int64, error) {
+	return 0, errors.New("synthetic phase fixture reads no archive in place")
+}
+func (phaseTool) ConvertArchive(context.Context, *os.File, string, string, image.ArchiveWindow, int64, int64) error {
+	return errors.New("synthetic phase fixture reads no archive in place")
+}
+
 func serviceFixture(t *testing.T, tool DiskTool) *Service {
 	t.Helper()
 	db, err := store.Open(filepath.Join(t.TempDir(), "state", "journal.db"))

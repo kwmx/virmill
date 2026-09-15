@@ -16,6 +16,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -33,6 +34,9 @@ type DiskTool interface {
 	Identity(context.Context) (image.Identity, error)
 	Inspect(context.Context, string, string, string, string, int64, map[string]bool) ([]image.Info, error)
 	Convert(context.Context, string, string, string, string, int64, int64) error
+	InspectArchive(context.Context, *os.File, string, string, image.ArchiveWindow, int64) ([]image.Info, error)
+	MeasureArchive(context.Context, *os.File, string, string, image.ArchiveWindow) (int64, error)
+	ConvertArchive(context.Context, *os.File, string, string, image.ArchiveWindow, int64, int64) error
 }
 type Service struct {
 	Engine *operations.Engine
@@ -64,7 +68,93 @@ type stageInput struct {
 	Mappings          []Mapping       `json:"mappings"`
 	Tool              image.Identity  `json:"tool"`
 	RequiredFreeBytes int64           `json:"requiredFreeBytes"`
+	// Layouts has one entry per mapping (ADR 0060). Plans from older builds
+	// omit it: every disk is then unpacked and may use the worst-case output.
+	Layouts []DiskLayout `json:"layouts,omitempty"`
 }
+
+// DiskLayout says how one disk is converted: in place from its reviewed archive
+// range when Window is set, otherwise from the unpacked member. OutputBytes is
+// the converter's output limit.
+type DiskLayout struct {
+	Window      *image.ArchiveWindow `json:"window,omitempty"`
+	OutputBytes int64                `json:"outputBytes"`
+}
+
+func stageLayout(in stageInput, i int) DiskLayout {
+	if len(in.Layouts) == len(in.Mappings) {
+		return in.Layouts[i]
+	}
+	return DiskLayout{OutputBytes: outputBound(in.Mappings[i].MaximumVirtualBytes)}
+}
+
+// inPlaceWindows maps each disk member read in place to its reviewed range.
+func inPlaceWindows(in stageInput) map[string]image.ArchiveWindow {
+	paths, out := map[string]string{}, map[string]image.ArchiveWindow{}
+	for _, d := range in.Source.Disks {
+		paths[d.ID] = d.Path
+	}
+	for i, mapping := range in.Mappings {
+		if l := stageLayout(in, i); l.Window != nil {
+			out[paths[mapping.ID]] = *l.Window
+		}
+	}
+	return out
+}
+
+// selfContained reports whether an OVF disk can be one image read in place: a
+// streamOptimized VMDK or a single-file format. Inspection still decides.
+func selfContained(format, declared string) bool {
+	switch format {
+	case "qcow2", "vdi", "vhdx", "vpc", "raw":
+		return true
+	case "vmdk":
+		return strings.HasSuffix(strings.ToLower(declared), "#streamoptimized")
+	}
+	return false
+}
+
+// planLayouts decides, disk by disk, whether to convert in place and how much
+// output to allow. A disk whose in-place inspection or measurement fails is
+// unpacked and converted as before, with the worst-case limit.
+func (s *Service) planLayouts(ctx context.Context, archive *os.File, in *stageInput) (map[string]bool, error) {
+	members, disks := map[string]importer.Member{}, map[string]importer.Disk{}
+	for _, m := range in.Source.Members {
+		members[m.Path] = m
+	}
+	for _, d := range in.Source.Disks {
+		disks[d.ID] = d
+	}
+	workspace, err := os.MkdirTemp("", "virmill-archive-preview-")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(workspace)
+	inPlace := map[string]bool{}
+	for _, mapping := range in.Mappings {
+		layout := DiskLayout{OutputBytes: outputBound(mapping.MaximumVirtualBytes)}
+		disk := disks[mapping.ID]
+		if member, ok := members[disk.Path]; ok && member.Offset > 0 && selfContained(mapping.Format, disk.Format) {
+			w := image.ArchiveWindow{Offset: member.Offset, Size: member.Size}
+			chain, e := s.Tool.InspectArchive(ctx, archive, workspace, mapping.Format, w, mapping.MaximumVirtualBytes)
+			var size int64
+			if e == nil {
+				size, e = s.Tool.MeasureArchive(ctx, archive, workspace, mapping.Format, w)
+			}
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			if e == nil && len(chain) == 1 {
+				layout = DiskLayout{Window: &w, OutputBytes: image.OutputBudget(size, chain[0].VirtualSize)}
+				inPlace[disk.Path] = true
+			}
+		}
+		in.Layouts = append(in.Layouts, layout)
+		in.RequiredFreeBytes += layout.OutputBytes
+	}
+	return inPlace, nil
+}
+
 type PreparedDisk struct {
 	SourceID     string       `json:"sourceID"`
 	SourcePath   string       `json:"sourcePath"`
@@ -344,16 +434,22 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		}
 		seen[id] = true
 		in.Mappings = append(in.Mappings, d)
-		in.RequiredFreeBytes += outputBound(d.MaximumVirtualBytes)
-	}
-	for _, member := range report.Members {
-		in.RequiredFreeBytes += member.Size
-	}
-	if err = available(f, in.RequiredFreeBytes); err != nil {
-		return empty, err
 	}
 	in.Tool, err = s.Tool.Identity(ctx)
 	if err != nil {
+		return empty, err
+	}
+	inPlace, err := s.planLayouts(ctx, source, &in)
+	if err != nil {
+		return empty, err
+	}
+	// Only unpacked members need room; disks read in place stay in the archive.
+	for _, member := range report.Members {
+		if !inPlace[member.Path] {
+			in.RequiredFreeBytes += member.Size
+		}
+	}
+	if err = available(f, in.RequiredFreeBytes); err != nil {
 		return empty, err
 	}
 	step := domain.Step{ID: "prepare", Action: "import.prepare", Preconditions: []string{"unchanged archive identity and SHA-256", "explicit complete disk mapping", "pinned qemu-img executable", "private staging, absent destination and sufficient space"}, Idempotency: "reconcile-before-retry", Compensation: "Keep original archive and uncommitted job staging; never resume partial conversion files", Reconciliation: "Verify the published artifact against the durable receipt without conversion replay", CompletionPredicate: "Every selected disk is independently converted, size-checked, compared and durably published with its descriptor"}
@@ -365,7 +461,13 @@ func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[stri
 	if err := wire.Decode(b, &in); err != nil {
 		return nil, err
 	}
-	return map[string]any{"source": in.Source.Source, "sourceSHA256": in.Source.SHA256, "system": in.System, "mappings": in.Mappings, "destination": in.Destination, "stagingDirectory": stagePath(p, in), "requiredFreeBytes": in.RequiredFreeBytes, "tool": in.Tool, "vmDefined": false, "guestBootVerified": false}, nil
+	inPlace := []string{}
+	for i, mapping := range in.Mappings {
+		if stageLayout(in, i).Window != nil {
+			inPlace = append(inPlace, mapping.ID)
+		}
+	}
+	return map[string]any{"source": in.Source.Source, "sourceSHA256": in.Source.SHA256, "system": in.System, "mappings": in.Mappings, "destination": in.Destination, "stagingDirectory": stagePath(p, in), "requiredFreeBytes": in.RequiredFreeBytes, "disksReadInPlace": inPlace, "tool": in.Tool, "vmDefined": false, "guestBootVerified": false}, nil
 }
 func (s *Service) Validate(ctx context.Context, p domain.Plan, b []byte) error {
 	return s.validate(ctx, p, b, true)
@@ -426,6 +528,19 @@ func (r contextReader) Read(b []byte) (int, error) {
 	}
 	return r.r.Read(b)
 }
+
+// countingReader counts the bytes consumed below the tar reader; after Next
+// that is the offset of the entry's data.
+type countingReader struct {
+	r io.Reader
+	n int64
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	return n, err
+}
 func hashFile(ctx context.Context, f *os.File, maximum int64) (string, int64, error) {
 	h := sha256.New()
 	n, err := io.Copy(h, io.LimitReader(contextReader{ctx, f}, maximum+1))
@@ -460,7 +575,9 @@ func syncRoot(r *os.Root) error {
 	return f.Sync()
 }
 
-func (s *Service) extract(ctx context.Context, in stageInput, dest *os.Root) error {
+// extract checks the whole archive in one pass. It unpacks every member except
+// the disks read in place, whose range and digest it checks without writing.
+func (s *Service) extract(ctx context.Context, in stageInput, dest *os.Root, inPlace map[string]image.ArchiveWindow) error {
 	f, id, err := sourceFile(in.Source.Source)
 	if err != nil {
 		return err
@@ -474,7 +591,8 @@ func (s *Service) extract(ctx context.Context, in stageInput, dest *os.Root) err
 		members[m.Path] = m
 	}
 	h := sha256.New()
-	reader := io.TeeReader(io.LimitReader(contextReader{ctx, f}, id.Size+1), h)
+	counted := &countingReader{r: io.LimitReader(contextReader{ctx, f}, id.Size+1)}
+	reader := io.TeeReader(counted, h)
 	tr := tar.NewReader(reader)
 	seen := map[string]bool{}
 	for {
@@ -499,26 +617,18 @@ func (s *Service) extract(ctx context.Context, in stageInput, dest *os.Root) err
 			return domain.Fail("SOURCE_CHANGED", "archive inventory changed")
 		}
 		seen[header.Name] = true
-		if err = dest.MkdirAll(filepath.Dir(header.Name), 0700); err != nil {
+		if w, ok := inPlace[header.Name]; ok {
+			offset := counted.n
+			sum := sha256.New()
+			n, copyErr := io.Copy(sum, contextReader{ctx, tr})
+			if copyErr != nil {
+				return copyErr
+			}
+			if offset != w.Offset || n != w.Size || n != m.Size || hex.EncodeToString(sum.Sum(nil)) != m.SHA256 {
+				return domain.Fail("SOURCE_CHANGED", "in-place disk range or digest differs")
+			}
+		} else if err = extractMember(ctx, dest, header.Name, tr, m); err != nil {
 			return err
-		}
-		out, err := dest.OpenFile(header.Name, os.O_WRONLY|os.O_CREATE|os.O_EXCL|unix.O_NOFOLLOW, 0600)
-		if err != nil {
-			return err
-		}
-		sum := sha256.New()
-		n, copyErr := io.Copy(io.MultiWriter(out, sum), contextReader{ctx, tr})
-		if copyErr == nil {
-			copyErr = out.Sync()
-		}
-		if closeErr := out.Close(); copyErr == nil {
-			copyErr = closeErr
-		}
-		if copyErr != nil {
-			return copyErr
-		}
-		if n != m.Size || hex.EncodeToString(sum.Sum(nil)) != m.SHA256 {
-			return domain.Fail("SOURCE_CHANGED", "extracted member digest differs")
 		}
 		canceled, err := operations.CancellationRequested(ctx, s.Store)
 		if err != nil {
@@ -543,6 +653,77 @@ func (s *Service) extract(ctx context.Context, in stageInput, dest *os.Root) err
 		return domain.Fail("SOURCE_CHANGED", "source identity changed during extraction")
 	}
 	return syncRoot(dest)
+}
+
+func extractMember(ctx context.Context, dest *os.Root, name string, tr io.Reader, m importer.Member) error {
+	if err := dest.MkdirAll(filepath.Dir(name), 0700); err != nil {
+		return err
+	}
+	out, err := dest.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL|unix.O_NOFOLLOW, 0600)
+	if err != nil {
+		return err
+	}
+	sum := sha256.New()
+	n, copyErr := io.Copy(io.MultiWriter(out, sum), contextReader{ctx, tr})
+	if copyErr == nil {
+		copyErr = out.Sync()
+	}
+	if closeErr := out.Close(); copyErr == nil {
+		copyErr = closeErr
+	}
+	if copyErr != nil {
+		return copyErr
+	}
+	if n != m.Size || hex.EncodeToString(sum.Sum(nil)) != m.SHA256 {
+		return domain.Fail("SOURCE_CHANGED", "extracted member digest differs")
+	}
+	return nil
+}
+
+// convertDisk inspects and converts one mapped disk, from its unpacked member
+// or, when planned, in place from the held archive (ADR 0060).
+func (s *Service) convertDisk(ctx context.Context, in stageInput, i int, sourcePath, workspace, diskPath string, members map[string]bool) ([]image.Info, error) {
+	mapping, layout := in.Mappings[i], stageLayout(in, i)
+	var archive *os.File
+	if layout.Window != nil {
+		f, id, err := sourceFile(in.Source.Source)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		if id != in.SourceIdentity {
+			return nil, domain.Fail("SOURCE_CHANGED", "archive changed before in-place conversion")
+		}
+		archive = f
+	}
+	if err := operations.Note(ctx, s.Store, "Inspecting backing files and extents for disk "+mapping.ID); err != nil {
+		return nil, err
+	}
+	var chain []image.Info
+	err := s.cancelableDiskWork(ctx, func(worker context.Context) error {
+		var e error
+		if archive != nil {
+			chain, e = s.Tool.InspectArchive(worker, archive, workspace, mapping.Format, *layout.Window, mapping.MaximumVirtualBytes)
+		} else {
+			chain, e = s.Tool.Inspect(worker, sourcePath, workspace, diskPath, mapping.Format, mapping.MaximumVirtualBytes, members)
+		}
+		return e
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(chain) == 0 {
+		return nil, errors.New("image inspector returned no image")
+	}
+	if err = operations.Note(ctx, s.Store, "Converting and comparing disk "+mapping.ID+" to independent qcow2"); err != nil {
+		return nil, err
+	}
+	return chain, s.cancelableDiskWork(ctx, func(worker context.Context) error {
+		if archive != nil {
+			return s.Tool.ConvertArchive(worker, archive, workspace, mapping.Format, *layout.Window, chain[0].VirtualSize, layout.OutputBytes)
+		}
+		return s.Tool.Convert(worker, sourcePath, workspace, diskPath, mapping.Format, chain[0].VirtualSize, layout.OutputBytes)
+	})
 }
 
 // cancelableDiskWork waits for the confined process to exit before reporting a
@@ -621,7 +802,7 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 			}
 		}
 	}()
-	if err = operations.Note(ctx, s.Store, "Extracting approved source members into private job staging"); err != nil {
+	if err = operations.Note(ctx, s.Store, "Checking the archive and unpacking the members that are not read in place"); err != nil {
 		return err
 	}
 	if err = root.Mkdir("source", 0700); err != nil {
@@ -632,7 +813,7 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		return err
 	}
 	defer source.Close()
-	if err = s.extract(ctx, in, source); err != nil {
+	if err = s.extract(ctx, in, source, inPlaceWindows(in)); err != nil {
 		return err
 	}
 	if err = root.Mkdir("artifact", 0700); err != nil {
@@ -669,27 +850,8 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		}
 		workspace := filepath.Join(stagePath(p, in), workspaceName)
 		sourcePath := filepath.Join(stagePath(p, in), "source")
-		if err = operations.Note(ctx, s.Store, "Inspecting backing files and extents for disk "+mapping.ID); err != nil {
-			return err
-		}
-		var chain []image.Info
-		err = s.cancelableDiskWork(ctx, func(worker context.Context) error {
-			var e error
-			chain, e = s.Tool.Inspect(worker, sourcePath, workspace, diskPaths[mapping.ID], mapping.Format, mapping.MaximumVirtualBytes, members)
-			return e
-		})
+		chain, err := s.convertDisk(ctx, in, i, sourcePath, workspace, diskPaths[mapping.ID], members)
 		if err != nil {
-			return err
-		}
-		if len(chain) == 0 {
-			return errors.New("image inspector returned no image")
-		}
-		if err = operations.Note(ctx, s.Store, "Converting and comparing disk "+mapping.ID+" to independent qcow2"); err != nil {
-			return err
-		}
-		if err = s.cancelableDiskWork(ctx, func(worker context.Context) error {
-			return s.Tool.Convert(worker, sourcePath, workspace, diskPaths[mapping.ID], mapping.Format, chain[0].VirtualSize, outputBound(mapping.MaximumVirtualBytes))
-		}); err != nil {
 			return err
 		}
 		output := workspaceName + "/disk.qcow2"

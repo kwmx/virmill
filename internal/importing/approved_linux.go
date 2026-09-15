@@ -15,6 +15,22 @@ import (
 // its coordinator receipt. An arbitrary user-supplied hash manifest is not proof
 // that untrusted images passed the production confined conversion adapter.
 func Approved(ctx context.Context, db *store.Store, uid uint32, operationID string) (Artifact, string, error) {
+	if _, handed, err := HandedOver(db, operationID); err != nil {
+		return Artifact{}, "", err
+	} else if handed {
+		return Artifact{}, "", domain.Fail("SOURCE_CHANGED", "this prepared copy was handed over to a new VM; import the original again")
+	}
+	return approved(ctx, db, uid, operationID, true)
+}
+
+// Receipt returns a preparation's durable receipt without re-reading its files.
+// Only the creation its prepared copy was handed over to may rely on it, because
+// that creation verifies every new volume against the same digests (ADR 0060).
+func Receipt(ctx context.Context, db *store.Store, uid uint32, operationID string) (Artifact, string, error) {
+	return approved(ctx, db, uid, operationID, false)
+}
+
+func approved(ctx context.Context, db *store.Store, uid uint32, operationID string, verify bool) (Artifact, string, error) {
 	var empty Artifact
 	j, err := db.Job(operationID)
 	if err != nil {
@@ -50,10 +66,6 @@ func Approved(ctx context.Context, db *store.Store, uid uint32, operationID stri
 		destination = in.Destination
 		kind = "PreparedImport"
 	}
-	actual, err := Verify(ctx, destination)
-	if err != nil {
-		return empty, "", err
-	}
 	var expected Artifact
 	stored, err := db.MetadataBytes("import-artifact", p.ID)
 	if err != nil {
@@ -61,6 +73,12 @@ func Approved(ctx context.Context, db *store.Store, uid uint32, operationID stri
 	}
 	if err = wire.Decode(stored, &expected); err != nil {
 		return empty, "", err
+	}
+	actual := expected
+	if verify {
+		if actual, err = Verify(ctx, destination); err != nil {
+			return empty, "", err
+		}
 	}
 	a, err := operations.Canonical(actual)
 	if err != nil {

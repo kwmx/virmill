@@ -230,44 +230,8 @@ func CheckChain(chain []Info, format, sourcePath string, maxVirtual int64, membe
 		} else if v.Backing != "" || v.FullBacking != "" {
 			return domain.Fail("INVALID_INPUT", "incomplete backing chain")
 		}
-		if len(v.Specific) > 0 {
-			var specific any
-			if err := wire.Decode(v.Specific, &specific); err != nil {
-				return err
-			}
-			var walk func(any) error
-			walk = func(value any) error {
-				switch n := value.(type) {
-				case map[string]any:
-					for k, child := range n {
-						if k == "corrupt" && child != false {
-							return domain.Fail("INVALID_INPUT", "source image reports corruption")
-						}
-						if k == "data-file" || k == "data-file-raw" {
-							return domain.Fail("UNSUPPORTED_CAPABILITY", "external qcow2 data files require a dedicated dependency adapter")
-						}
-						if k == "filename" {
-							name, ok := child.(string)
-							if !ok || !approvedFile(name, members) {
-								return domain.Fail("PERMISSION_DENIED", "image extent references an unapproved file")
-							}
-						}
-						if err := walk(child); err != nil {
-							return err
-						}
-					}
-				case []any:
-					for _, child := range n {
-						if err := walk(child); err != nil {
-							return err
-						}
-					}
-				}
-				return nil
-			}
-			if err := walk(specific); err != nil {
-				return err
-			}
+		if err := checkSpecific(v.Specific, func(name string) bool { return approvedFile(name, members) }); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -330,13 +294,29 @@ func (Tool) ConvertFiles(ctx context.Context, sources []platform.DiskSourceFile,
 }
 
 func convert(workspace, filename, format string, virtualSize, maxOutput int64, runTool func(...string) ([]byte, error)) error {
-	if !Format(format) || importer.SafePath(filename) != nil || virtualSize <= 0 || maxOutput < virtualSize {
+	if !Format(format) || importer.SafePath(filename) != nil {
+		return domain.Fail("INVALID_INPUT", "invalid conversion mapping or bound")
+	}
+	return convertSource(workspace, format, "/source/"+filename, virtualSize, maxOutput, runTool)
+}
+
+// convertSource converts one confined source to /work/disk.qcow2 and checks the
+// result against it. An empty format means the source name carries its driver.
+// maxOutput is the measured budget or the worst case, which can be smaller than
+// the virtual size (ADR 0060).
+func convertSource(workspace, format, source string, virtualSize, maxOutput int64, runTool func(...string) ([]byte, error)) error {
+	if virtualSize <= 0 || maxOutput <= 0 || maxOutput > 1<<40 {
 		return domain.Fail("INVALID_INPUT", "invalid conversion mapping or bound")
 	}
 	if _, err := os.Lstat(workspace + "/disk.qcow2"); !os.IsNotExist(err) {
 		return domain.Fail("STALE_PLAN", "conversion destination already exists")
 	}
-	if _, err := runTool("convert", "-f", format, "-O", "qcow2", "-o", "compat=1.1", "-t", "writethrough", "/source/"+filename, "/work/disk.qcow2"); err != nil {
+	from := []string{source}
+	if format != "" {
+		from = []string{"-f", format, source}
+	}
+	args := append(append([]string{"convert"}, from[:len(from)-1]...), "-O", "qcow2", "-o", "compat=1.1", "-t", "writethrough", source, "/work/disk.qcow2")
+	if _, err := runTool(args...); err != nil {
 		return err
 	}
 	b, err := runTool("info", "--output=json", "-f", "qcow2", "/work/disk.qcow2")
@@ -353,6 +333,6 @@ func convert(workspace, filename, format string, virtualSize, maxOutput int64, r
 	if _, err = runTool("check", "--output=json", "-f", "qcow2", "/work/disk.qcow2"); err != nil {
 		return err
 	}
-	_, err = runTool("compare", "-f", format, "-F", "qcow2", "/source/"+filename, "/work/disk.qcow2")
+	_, err = runTool(append(append([]string{"compare"}, from[:len(from)-1]...), "-F", "qcow2", source, "/work/disk.qcow2")...)
 	return err
 }

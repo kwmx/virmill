@@ -339,6 +339,13 @@
     },
     "provisioning": {
       "$ref": "nocloud-config.schema.json"
+    },
+    "preparedCopy": {
+      "enum": [
+        "keep",
+        "hand-over"
+      ],
+      "description": "hand-over releases the prepared copy while its disks are copied into the pool, when both share a filesystem; if copying stops, import the original again (ADR 0060). keep, the default, leaves it for more VMs."
     }
   }
 }

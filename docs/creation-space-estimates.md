@@ -2,18 +2,26 @@
 
 New `vm.create` and `vm.create.devices-v1` plans use the same creation estimator.
 `plan.estimates.additionalBytes` reports the target-pool free-space budget already
-published as `plan.review.requiredFreeBytes`. It is the existing conservative
-disk/media headroom policy, not a measurement of initial physical allocation:
+published as `plan.review.requiredFreeBytes`. New plans record
+`spaceBudget: "file-bytes-v1"` and reserve each disk's prepared size
+([ADR 0060](adr/0060-one-copy-import.md)):
 
 ```text
 pool budget = 64 MiB
-            + sum(virtual disk bytes + floor(virtual disk bytes / 4) + 16 MiB)
+            + sum(prepared disk file bytes + 16 MiB)
             + sum(exact read-only ISO bytes)
 ```
 
-For example, one 32 MiB virtual disk requires a reviewed pool budget of
-125,829,120 bytes (120 MiB). A small sparse QCOW2 file can have a much smaller
-copied payload while retaining that same virtual capacity and pool budget.
+For example, one 64 KiB prepared disk requires 83,951,616 bytes. A disk can
+later grow up to its virtual size as the guest writes; the review says so, and
+that growth is not reserved. When the prepared copy is handed over
+(`preparedCopy: "hand-over"`, on the pool's filesystem), each disk needs only its
+16 MiB headroom, because its prepared file is released as it is copied.
+
+Plans saved before ADR 0060 have no `spaceBudget`. They keep the earlier rule of
+each disk's virtual bytes plus a quarter plus 16 MiB: one 32 MiB virtual disk
+needs 125,829,120 bytes (120 MiB).
+
 The estimate notes separately report `sum(volume.fileBytes)` as copied payload.
 They do not label either figure as measured physical allocation. Filesystem
 overhead and firmware/TPM state are not separately measured, and the estimate is

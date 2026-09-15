@@ -31,6 +31,10 @@ type filesPhaseTool struct {
 	after   func()
 }
 
+// MeasureFiles reports 1 MiB, well under the synthetic 8 MiB virtual size.
+func (f *filesPhaseTool) MeasureFiles(context.Context, []platform.DiskSourceFile, string, string, string) (int64, error) {
+	return 1 << 20, nil
+}
 func (f *filesPhaseTool) InspectFiles(ctx context.Context, sources []platform.DiskSourceFile, work, name, format string, bound int64) ([]image.Info, error) {
 	return f.phaseTool.Inspect(ctx, "", work, name, format, bound, nil)
 }

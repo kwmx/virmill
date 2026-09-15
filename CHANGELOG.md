@@ -29,6 +29,16 @@
   libvirt event loop, which releases closed connections, only started with the
   first VM reboot; until then every VM, pool or network list and host check
   left one socket and two descriptors behind.
+- Importing needs about one copy of disk space instead of up to three
+  (ADR 0060). An OVA disk that is a streamOptimized VMDK or a single-file image
+  is converted straight from the archive instead of being unpacked first.
+  Preparation budgets what `qemu-img measure` says the conversion writes, and
+  enforces it as the converter's output limit. Creation reserves each disk's
+  prepared size, not its virtual size plus 25%. With **Prepared copy: Remove
+  after creation** (the default), creation hands the prepared copy over when it
+  shares the pool's filesystem: it frees each disk's prepared file as it copies
+  it (`preparedCopy: "hand-over"`, acknowledgement `hand-over-prepared-copy`).
+  If copying then stops, import the original again; it is never modified.
 - After a setup has created its VM, the next import or Create VM starts
   directly instead of stopping at "A setup was submitted". That page still
   appears while the submitted job is unfinished or failed, and a submitted

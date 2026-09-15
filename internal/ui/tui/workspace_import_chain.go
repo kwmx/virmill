@@ -68,6 +68,9 @@ func creationOperation(op string) bool { return op == "vm.create" || op == "vm.c
 // settings. A difference only stops the chain at creation's own review.
 func expectedCreationAcks(f CreationForm) []string {
 	acks := []string{"host-mutation", "copy-managed-volumes", "new-vm-identity"}
+	if f.RemovePrepared {
+		acks = append(acks, "hand-over-prepared-copy")
+	}
 	if f.Spec.GuestAgent {
 		acks = append(acks, "guest-agent-channel")
 	}

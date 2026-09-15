@@ -34,6 +34,7 @@ type fixtureBackend struct {
 	target                            domain.CreationTarget
 	binding                           string
 	started, release                  chan struct{}
+	poolPath                          string // the pool's folder in its XML, for hand-over tests
 }
 
 const poolID = "11111111-1111-4111-8111-111111111111"
@@ -143,7 +144,11 @@ func (f *fixtureBackend) ObserveCreatedVM(ctx context.Context, uri string, targe
 }
 func (f *fixtureBackend) GetStoragePool(ctx context.Context, uri, id string) (domain.StoragePool, error) {
 	free := uint64(1 << 30)
-	return domain.StoragePool{Key: domain.ResourceKey{UUID: id}, Active: true, State: "running", AvailableBytes: &free}, nil
+	pool := domain.StoragePool{Key: domain.ResourceKey{UUID: id}, Active: true, State: "running", AvailableBytes: &free}
+	if f.poolPath != "" {
+		pool.XML = "<pool type='dir'><target><path>" + f.poolPath + "</path></target></pool>"
+	}
+	return pool, nil
 }
 func (f *fixtureBackend) ListStoragePools(context.Context, string) ([]domain.StoragePool, error) {
 	return nil, errors.New("unused fixture path")

@@ -33,5 +33,5 @@ requests removal of exactly the approved preparation and applies it only if
 that plan names it and asks for nothing else. Otherwise it stops and the copy is
 kept. The CLI offers `virmill import discard OPERATION_ID [--keep-images]`.
 
-Peak space during an import is unchanged: creation still copies the prepared
+Peak space during an import was unchanged ([ADR 0060](0060-one-copy-import.md) later lowers it to about one copy): creation still copies the prepared
 images. This contributes to IMP-06 and UX-01 without claiming them.

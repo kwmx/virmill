@@ -40,8 +40,17 @@ or TUI client's working directory. The destination must not exist. Its parent
 must be user-owned, not writable by other users, and contain no symlink components.
 
 Review the selected system, disk order, source digest, converter version/digest,
-destination, staging path and worst-case free-space requirement in the plan.
+destination, staging path and free-space requirement in the plan.
 Preview reads and hashes the archive but does not create output or run guest code.
+
+When the descriptor declares a streamOptimized VMDK or a single-file format, the
+disk is converted in place from the archive
+([ADR 0060](adr/0060-one-copy-import.md)). The plan lists it under
+`disksReadInPlace`, and only the other members are unpacked into the staging
+folder. Preview measures such disks with `qemu-img measure` in the sandbox. The
+free-space requirement counts that measured output and the unpacked members,
+and the measurement becomes the converter's output limit. Other disks are
+unpacked, converted and budgeted at their virtual size plus a quarter, as before.
 Apply the actual returned values:
 
 ```sh

@@ -14,6 +14,7 @@ func acknowledgementLabel(id string) string {
 		"exclusive-lifecycle-writer":     "No other administrator is changing or starting these VMs",
 		"exclusive-storage-writer":       "No other administrator or tool is changing this storage",
 		"copy-managed-volumes":           "Create independent managed copies of the disks",
+		"hand-over-prepared-copy":        "Release the prepared copy as its disks are copied, when it shares the pool's filesystem; if copying stops, import the original again",
 		"new-vm-identity":                "Give the new VM its own identity",
 		"network-attachment":             "Connect the VM to the reviewed networks",
 		"new-firmware-state":             "Create new firmware state; existing guest keys are not restored",

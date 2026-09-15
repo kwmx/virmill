@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync/atomic"
@@ -32,13 +33,17 @@ type Service struct {
 	Backend    domain.CreationBackend
 	Inventory  domain.ResourceInventory
 	LoadSource SourceLoader
-	SeedTool   SeedTool
-	SeedCache  string
+	// LoadReceipt reads a preparation's receipt without its files, for the
+	// creation its prepared copy was handed over to (ADR 0060).
+	LoadReceipt SourceLoader
+	SeedTool    SeedTool
+	SeedCache   string
 }
 type request struct {
 	IdentityMode string              `json:"identityMode"`
 	Provisioning *provision.Config   `json:"provisioning,omitempty"`
 	Hardware     domain.CreationSpec `json:"hardware"`
+	PreparedCopy string              `json:"preparedCopy,omitempty"`
 }
 type input struct {
 	NVRAMDeclarationVersion int                   `json:"nvramDeclarationVersion,omitempty"`
@@ -49,6 +54,10 @@ type input struct {
 	Target                  domain.CreationTarget `json:"target"`
 	Volumes                 []domain.VolumeIntent `json:"volumes"`
 	RequiredBytes           uint64                `json:"requiredBytes"`
+	// SpaceBudget and HandOver are absent from recipes written by older builds,
+	// which keep the virtual-size budget and the prepared copy (ADR 0060).
+	SpaceBudget string    `json:"spaceBudget,omitempty"`
+	HandOver    *handOver `json:"handOver,omitempty"`
 }
 type volumeProgress struct {
 	Intent    domain.VolumeIntent   `json:"intent"`
@@ -77,7 +86,7 @@ func Register(service *app.Service, seedCacheDirectory string) {
 	if !ok {
 		return
 	}
-	s := &Service{Engine: service.Engine, Store: service.Engine.Store, Backend: backend, Inventory: inventory, LoadSource: importing.Approved, SeedTool: seed.Tool{}, SeedCache: seedCacheDirectory}
+	s := &Service{Engine: service.Engine, Store: service.Engine.Store, Backend: backend, Inventory: inventory, LoadSource: importing.Approved, LoadReceipt: importing.Receipt, SeedTool: seed.Tool{}, SeedCache: seedCacheDirectory}
 	service.InventoryVM = s.Ownership
 	service.Engine.Handlers["vm.create"] = s
 	service.Engine.Handlers["vm.create.devices-v1"] = s
@@ -169,14 +178,21 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		byID[d.SourceID] = d
 	}
 	seen := map[string]bool{}
-	in := input{SourceOperationID: r.ID, Artifact: artifact, Directory: directory, RequiredBytes: 64 << 20, Volumes: []domain.VolumeIntent{}}
+	in := input{SourceOperationID: r.ID, Artifact: artifact, Directory: directory, RequiredBytes: 64 << 20, Volumes: []domain.VolumeIntent{}, SpaceBudget: spaceBudgetFileBytes}
+	if in.HandOver, err = s.planHandOver(ctx, r.Connection, spec.PoolID, directory, req.PreparedCopy); err != nil {
+		return empty, err
+	}
 	for i, d := range spec.Disks {
 		source, ok := byID[d.SourceID]
 		if !ok || seen[d.SourceID] {
 			return empty, domain.Fail("INVALID_INPUT", "source disk selection is incomplete or duplicated")
 		}
 		seen[d.SourceID] = true
-		in.RequiredBytes += bound(uint64(source.VirtualBytes))
+		reserve, ok := diskReserve(in, uint64(source.VirtualBytes), uint64(source.FileBytes))
+		if !ok {
+			return empty, domain.Fail("INVALID_INPUT", "prepared disk size is out of range")
+		}
+		in.RequiredBytes += reserve
 		in.Volumes = append(in.Volumes, domain.VolumeIntent{PoolID: spec.PoolID, Name: fmt.Sprintf("virmill-%s-disk-%03d.qcow2", spec.UUID, i), SourceID: d.SourceID, VirtualBytes: uint64(source.VirtualBytes), FileBytes: uint64(source.FileBytes), SHA256: source.SHA256})
 	}
 	preparedSeed, err := s.planSeed(ctx, req.Provisioning, spec, artifact)
@@ -247,6 +263,11 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 	step := domain.Step{ID: "create", Action: "vm.create", Preconditions: []string{"unchanged successful local preparation receipt", "complete disk/NIC/boot mapping", "pinned hardware, firmware and active pool/network settings", "all target volume names and VM identity absent"}, Idempotency: "reconcile-before-retry", Compensation: "Retain original artifacts and clearly identified partial new volumes; no automatic disk deletion", Reconciliation: "Match created definition and durable verified-volume receipt; never replay allocation or upload", CompletionPredicate: "All independent new volumes verified before an exact persistent VM definition is observed"}
 	acks := []string{"host-mutation", "copy-managed-volumes", "new-vm-identity"}
 	risks := []string{"Creates new independent managed volumes and defines a powered-off VM; original source remains unchanged", "Guest drivers, boot, provisioning, routes and isolation are not verified by definition", "Failed allocation/upload/definition retains partial resources and the journal; no automatic deletion", "New UUID and MAC identities; guest OS identities/credentials remain in copied disks and need explicit guest adaptation"}
+	risks = append(risks, "Reserves each disk's current size in the pool; disks grow up to their virtual size as the guest writes")
+	if in.HandOver != nil {
+		acks = append(acks, "hand-over-prepared-copy")
+		risks = append(risks, "Hands the prepared copy over to the new disks: its space is released as each disk is copied. If copying stops, the prepared copy is incomplete; import the original again, which is never modified")
+	}
 	if spec.Graphics == "spice-unix" {
 		risks = append(risks, "Adds a private SPICE display with clipboard and file transfer disabled. Opening it requires the supported viewer and a desktop session on this host")
 	}
@@ -301,7 +322,7 @@ func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[stri
 	if in.Seed != nil {
 		staging = filepath.Join(in.Seed.CacheDirectory, seedStage(p))
 	}
-	return map[string]any{"nvramDeclarationVersion": in.NVRAMDeclarationVersion, "nvramInitializationVerified": false, "seedStagingDirectory": staging, "provisioning": in.Seed, "sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
+	return map[string]any{"nvramDeclarationVersion": in.NVRAMDeclarationVersion, "nvramInitializationVerified": false, "seedStagingDirectory": staging, "provisioning": in.Seed, "sourceOperationID": in.SourceOperationID, "sourceDirectory": in.Directory, "sourceSHA256": in.Artifact.SourceSHA256, "sourceHardware": in.Artifact.System, "target": in.Target, "volumes": in.Volumes, "requiredFreeBytes": in.RequiredBytes, "spaceBudget": in.SpaceBudget, "handOver": in.HandOver, "identityMode": "clone", "startsVM": false, "guestBootVerified": false, "serialConsole": true, "diskCache": "writethrough", "guestAdaptation": "not-run"}, nil
 }
 
 // Estimate describes the existing pool-space policy, without measuring physical
@@ -326,7 +347,14 @@ func (s *Service) Estimate(ctx context.Context, p domain.Plan, b []byte) (domain
 	if err := ctx.Err(); err != nil {
 		return empty, err
 	}
-	notes := fmt.Sprintf("Target-pool worst-case disk/media free-space budget: %d bytes, including a 64 MiB reserve, each disk's virtual capacity plus 25%% and 16 MiB headroom, and exact ISO bytes. Copied volume payload: %d bytes. Initial physical allocation, filesystem overhead and firmware/TPM state are not separately measured. Existing prepared source files are already present and are excluded. Creates a new stopped VM without interrupting an existing guest; elapsed time is not estimated.", required, copied)
+	rule := "each disk's virtual capacity plus 25% and 16 MiB headroom"
+	if in.SpaceBudget == spaceBudgetFileBytes {
+		rule = "each disk's prepared size plus 16 MiB headroom (disks grow up to their virtual size as the guest writes)"
+		if in.HandOver != nil {
+			rule = "16 MiB headroom per disk, because the prepared copy on the same filesystem is released as each disk is copied"
+		}
+	}
+	notes := fmt.Sprintf("Target-pool disk/media free-space budget: %d bytes, including a 64 MiB reserve, %s, and exact ISO bytes. Copied volume payload: %d bytes. Initial physical allocation, filesystem overhead and firmware/TPM state are not separately measured. Existing prepared source files are already present and are excluded. Creates a new stopped VM without interrupting an existing guest; elapsed time is not estimated.", required, rule, copied)
 	if in.Seed != nil {
 		cacheBudget := uint64(seed.MaxISOBytes + 3*seed.MaxContentBytes + (1 << 20))
 		notes += fmt.Sprintf(" Provisioning also requires a %d-byte free-space budget at the private seed-cache location, excluded from the target-pool figure. The seed ISO is counted once in the pool budget and copied payload; pool and cache locations may share a filesystem.", cacheBudget)
@@ -339,6 +367,9 @@ func creationSpaceBudget(in input) (uint64, uint64, error) {
 		return 0, 0, domain.Fail("RECOVERY_REQUIRED", "creation space recipe has missing, contradictory or excessive size accounting")
 	}
 	spec := in.Target.Spec
+	if (in.SpaceBudget != "" && in.SpaceBudget != spaceBudgetFileBytes) || (in.HandOver != nil && in.SpaceBudget == "") {
+		return invalid()
+	}
 	if spec.UUID == "" || spec.PoolID == "" || len(spec.Disks) < 1 || len(spec.Disks) > 64 || len(spec.Media) > 4 || len(in.Artifact.Media) > 4 || len(in.Artifact.Disks) != len(spec.Disks) || len(in.Volumes) != len(spec.Disks)+len(spec.Media) {
 		return invalid()
 	}
@@ -380,7 +411,11 @@ func creationSpaceBudget(in input) (uint64, uint64, error) {
 		if !ok || uint64(source.FileBytes) > budget || v.ContentType != "" || v.SourceID != source.SourceID || v.PoolID != spec.PoolID || v.Name != fmt.Sprintf("virmill-%s-disk-%03d.qcow2", spec.UUID, i) || v.VirtualBytes != uint64(source.VirtualBytes) || v.FileBytes != uint64(source.FileBytes) || v.SHA256 != source.SHA256 {
 			return invalid()
 		}
-		if required, ok = creationAddBytes(required, budget); !ok {
+		reserve, ok := diskReserve(in, uint64(source.VirtualBytes), uint64(source.FileBytes))
+		if !ok {
+			return invalid()
+		}
+		if required, ok = creationAddBytes(required, reserve); !ok {
 			return invalid()
 		}
 		if copied, ok = creationAddBytes(copied, v.FileBytes); !ok {
@@ -427,7 +462,22 @@ func creationDiskBudget(size uint64) (uint64, bool) {
 }
 
 func (s *Service) checkSource(ctx context.Context, p domain.Plan, in input) error {
-	artifact, directory, err := s.LoadSource(ctx, s.Store, p.ActorUID, in.SourceOperationID)
+	load := s.LoadSource
+	if in.HandOver != nil {
+		handed, present, err := importing.HandedOver(s.Store, in.SourceOperationID)
+		if err != nil {
+			return err
+		}
+		// Once handed over, the prepared files may be partly released. Only the
+		// creation that took them relies on the receipt; it verifies every volume.
+		if present {
+			if handed.CreationPlanID != p.ID || s.LoadReceipt == nil {
+				return domain.Fail("SOURCE_CHANGED", "the prepared copy was handed over to another VM")
+			}
+			load = s.LoadReceipt
+		}
+	}
+	artifact, directory, err := load(ctx, s.Store, p.ActorUID, in.SourceOperationID)
 	if err != nil {
 		return err
 	}
@@ -480,6 +530,9 @@ func (s *Service) Validate(ctx context.Context, p domain.Plan, b []byte) error {
 		return err
 	}
 	if err := s.checkSpace(ctx, p, in, 0); err != nil {
+		return err
+	}
+	if err := checkHandOver(in); err != nil {
 		return err
 	}
 	for _, v := range in.Volumes {
@@ -569,6 +622,7 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		}
 	}()
 	var written uint64
+	handedOver := false
 	for i, v := range in.Volumes {
 		cancel, err := operations.CancellationRequested(ctx, s.Store)
 		if err != nil {
@@ -613,7 +667,26 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 		if in.Seed != nil && v.SourceID == in.Seed.Config.MediaID {
 			sourceRoot, sourcePath = seedRoot, in.Seed.Artifact.Path
 		}
-		f, err := sourceRoot.OpenFile(sourcePath, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+		// A handed-over disk is released behind the upload (ADR 0060). The record
+		// comes first, so the preparation is never offered again after this point.
+		release := in.HandOver != nil && v.ContentType == ""
+		flags := os.O_RDONLY | syscall.O_NOFOLLOW | syscall.O_NONBLOCK
+		if release {
+			if !handedOver {
+				if err = operations.Note(ctx, s.Store, "Intent persisted: hand the prepared copy over to the new volumes"); err != nil {
+					return err
+				}
+				if err = importing.RecordHandOver(s.Store, in.SourceOperationID, importing.HandOver{Version: 1, CreationPlanID: p.ID, CreationOperationID: r.OperationID}); err != nil {
+					return err
+				}
+				handedOver = true
+			}
+			if err = sourceRoot.Chmod(sourcePath, 0600); err != nil {
+				return err
+			}
+			flags = os.O_RDWR | syscall.O_NOFOLLOW | syscall.O_NONBLOCK
+		}
+		f, err := sourceRoot.OpenFile(sourcePath, flags, 0)
 		if err != nil {
 			return err
 		}
@@ -626,9 +699,17 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 			f.Close()
 			return domain.Fail("SOURCE_CHANGED", "prepared disk is no longer the approved ordinary file")
 		}
+		var upload io.Reader = f
+		releasing := &releasingReader{f: f}
+		if release {
+			upload = releasing
+		}
 		err = s.cancellable(ctx, func(worker context.Context) error {
-			return s.Backend.PopulateVolume(worker, p.ConnectionID, allocated, f)
+			return s.Backend.PopulateVolume(worker, p.ConnectionID, allocated, upload)
 		})
+		if err == nil && release {
+			err = releasing.release(int64(v.FileBytes))
+		}
 		f.Close()
 		if err != nil {
 			return err
@@ -642,7 +723,7 @@ func (s *Service) Execute(ctx context.Context, p domain.Plan, b []byte, step dom
 			return err
 		}
 		r.Volumes[i].Verified = true
-		written += v.FileBytes
+		written += writtenReserve(in, v)
 		if err = s.save(r, &previous); err != nil {
 			return err
 		}

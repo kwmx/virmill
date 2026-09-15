@@ -138,7 +138,7 @@ func TestCreationEstimateCLIShowsAndReusesPersistedReview(t *testing.T) {
 				t.Fatal(err)
 			}
 			p := creationEstimatePlan(t, response)
-			if p.Estimates.AdditionalBytes != 125829120 || p.Review["requiredFreeBytes"] != float64(125829120) || !strings.Contains(text, p.Estimates.Notes) || !strings.Contains(text, "Copied volume payload: 65536 bytes") || !strings.Contains(text, "Initial physical allocation") {
+			if p.Estimates.AdditionalBytes != 83951616 || p.Review["requiredFreeBytes"] != float64(83951616) || !strings.Contains(text, p.Estimates.Notes) || !strings.Contains(text, "Copied volume payload: 65536 bytes") || !strings.Contains(text, "Initial physical allocation") {
 				t.Fatal("CLI omitted shared pool budget or its interpretation", text)
 			}
 			if output == "ndjson" && strings.Count(text, "\n") != 1 {
@@ -201,7 +201,7 @@ func TestCreationEstimateCLIFailuresDoNotPrintSuccessfulEstimate(t *testing.T) {
 				args = []string{"plan", "show", "absent-plan", "--output", "json"}
 			}
 			response, text, err := creationEstimateCLI(t, client, ctx, args...)
-			if err == nil || response.Error == nil || domain.ExitCode(err) == 0 || strings.Contains(text, "125829120") || strings.Contains(text, p.Estimates.Notes) {
+			if err == nil || response.Error == nil || domain.ExitCode(err) == 0 || strings.Contains(text, "83951616") || strings.Contains(text, p.Estimates.Notes) {
 				t.Fatal("failure retained successful estimates", response, err)
 			}
 			if mode == "canceled-plan-show" && response.Data != nil {

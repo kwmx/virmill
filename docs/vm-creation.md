@@ -114,6 +114,15 @@ a reset watchdog adds `watchdog-reset`; NICs add `network-attachment` and
 UEFI adds `new-firmware-state`; media adds `attach-readonly-media`.
 Apply repeats preflight. No VM starts automatically.
 
+Add `"preparedCopy": "hand-over"` to the input to release the prepared copy
+while its disks are copied ([ADR 0060](adr/0060-one-copy-import.md)). It applies
+only when the pool's folder is on the prepared copy's filesystem and that
+filesystem can free parts of a file. The plan then asks for
+`hand-over-prepared-copy`, and its pool budget no longer counts the disks' size.
+Afterwards the preparation cannot create another VM. If copying stops, import
+the original again; it is never modified. VM setup in the TUI sends this choice
+with **Prepared copy: Remove after creation**, the default.
+
 In the TUI, open **VMs → vm create** and enter
 `{"id":"PREPARATION_OPERATION_ID","input":{...the same JSON parameters...}}`.
 The shared service returns the same plan. Press `a`, review the acknowledgement

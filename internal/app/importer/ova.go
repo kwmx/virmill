@@ -36,11 +36,28 @@ type Limits struct {
 func DefaultLimits() Limits { return Limits{Bytes: 64 << 30, Members: MaxMembers} }
 
 type Member struct {
-	Path    string `json:"path"`
-	Size    int64  `json:"size"`
-	SHA256  string `json:"sha256"`
+	Path   string `json:"path"`
+	Size   int64  `json:"size"`
+	SHA256 string `json:"sha256"`
+	// Offset is where the member's data starts in the archive, so a disk can
+	// be read in place (ADR 0060). Reports from older builds omit it.
+	Offset  int64 `json:"offset,omitempty"`
 	digests map[string]string
 }
+
+// countingReader counts the bytes the tar reader has consumed, which after
+// Next is the offset of the entry's data.
+type countingReader struct {
+	r io.Reader
+	n int64
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	return n, err
+}
+
 type Disk struct {
 	ID                      string `json:"id"`
 	FileRef                 string `json:"fileRef"`
@@ -145,7 +162,8 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 	bounded := &io.LimitedReader{R: r, N: limits.Bytes + int64(limits.Members)*2048 + 2*DescriptorLimit}
 	r = bounded
 	h := sha256.New()
-	tr := tar.NewReader(io.TeeReader(r, h))
+	counted := &countingReader{r: r}
+	tr := tar.NewReader(io.TeeReader(counted, h))
 	seen := map[string]bool{}
 	regularPaths := map[string]bool{}
 	parents := map[string]bool{}
@@ -222,7 +240,8 @@ func InspectTar(ctx context.Context, r io.Reader, limits Limits) (Report, error)
 		if e != nil || n != entry.Size {
 			return out, errors.New("truncated archive member")
 		}
-		m := Member{Path: name, Size: n, digests: map[string]string{}}
+		// The entry's data has just been read to its end, before any padding.
+		m := Member{Path: name, Size: n, Offset: counted.n - n, digests: map[string]string{}}
 		for alg, hh := range hashers {
 			m.digests[alg] = hex.EncodeToString(hh.Sum(nil))
 		}
