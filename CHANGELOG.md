@@ -18,6 +18,11 @@
   image. It asks for a user name, your SSH public key file and the image's https
   download address, and builds the reviewed NoCloud seed; passwordless sudo is
   the default (ADR 0059).
+- `virmill doctor` and the TUI host check say when firewalld holds a libvirt
+  network's bridge in no zone. Its default zone then usually drops DHCP and DNS,
+  so VMs on that network get no address. This happens when the network starts
+  before firewalld at boot. The check shows the `firewall-cmd` command that
+  puts the bridge back in libvirt's zone; it changes nothing itself.
 - VM setup suggests a free name ("… 2") when the suggested VM name is taken.
 - Free the space an import used: `virmill import discard OPERATION_ID
   [--keep-images]` removes a finished preparation's work folder and prepared

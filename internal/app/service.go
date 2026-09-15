@@ -41,6 +41,9 @@ type Service struct {
 	Extensions        map[string]func(context.Context, uint32, Request) (any, error)
 	InventoryVM       func(context.Context, domain.VM) (domain.VM, error)
 	NetworkFirewall   NetworkFirewall
+	// BridgeZones asks firewalld which zone holds each network bridge; ok is
+	// false when it cannot tell.
+	BridgeZones func(context.Context, []string) (domain.FirewallZones, bool)
 }
 
 func New(p domain.ComputeProvider, e *operations.Engine) *Service {
@@ -85,7 +88,11 @@ func (s *Service) dispatch(ctx context.Context, uid uint32, method string, r Req
 		if s.Inspector == nil {
 			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "host inspection adapter unavailable")
 		}
-		return s.Inspector(), nil
+		checks := s.Inspector()
+		if c, ok := s.networkFirewallCheck(ctx, r.Connection); ok {
+			checks = append(checks, c)
+		}
+		return checks, nil
 	case "host.pci.list":
 		inventory, ok := s.Provider.(domain.PCIInventoryProvider)
 		if !ok {

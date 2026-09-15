@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 338, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 334, in main
+    execute(a.root, a.connection, a.source, a.deadline, a.expect_serial, a.cloud_source)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 276, in execute
+    report = walkthrough(runner, uri, source, deadline_seconds, run / 'data' / 'virmill' / 'imports', cloud)
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 191, in walkthrough
+    replace_text(terminal, 'SSH public key file', str(cloud['key']), 'key file')
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 65, in replace_text
+    terminal.wait(wait_label + ' cleared', lambda screen: True, terminal.send(b'\x15'))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/tui_workspace_probe.py", line 411, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy key file cleared

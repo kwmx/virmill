@@ -60,6 +60,12 @@ virmill vm list --output json
 virmill tui
 ```
 
+If a VM on a NAT network gets no address, run `virmill doctor`. Its **Network
+firewall** item says when firewalld holds that network's bridge in no zone, so
+the default zone drops DHCP and DNS. That happens when the network starts before
+firewalld at boot. The item shows the `firewall-cmd` command that puts the bridge
+back in libvirt's zone; the check itself changes nothing.
+
 Alternatively, run `virmilld` in a foreground terminal and the CLI/TUI in another
 with the same user and XDG environment; do not also start the service. These
 examples use the default local `qemu:///system`. Some VM workflows also accept

@@ -34,7 +34,7 @@ func GroupDoctor(checks []domain.Capability) DoctorGroups {
 	return g
 }
 
-var doctorNames = map[string]string{"kvm": "KVM", "libvirt-access": "libvirt access", "host": "Host"}
+var doctorNames = map[string]string{"kvm": "KVM", "libvirt-access": "libvirt access", "network-firewall": "Network firewall", "host": "Host"}
 
 // DoctorReport explains host checks with the commands that fix them, problems
 // first. It is shared by virmill doctor and the TUI Settings page; ascii swaps

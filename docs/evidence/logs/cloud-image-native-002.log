@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 340, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 336, in main
+    execute(a.root, a.connection, a.source, a.deadline, a.expect_serial, a.cloud_source)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/one_approval_import_probe.py", line 281, in execute
+    require(address is not None, 'guest never took a DHCP lease on the NAT network')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/cloud-f83ef85/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: guest never took a DHCP lease on the NAT network
