@@ -29,11 +29,13 @@ A disk image, ISO or OVA becomes a running VM in one review.
 - Done: Create storage pool and Start pool inside VM setup, natively on a
   private session with no pools, each followed by one approval to a started VM
   ([record](evidence/streamlined-setup-run.md#pools-inside-vm-setup)).
-- Done: one-copy import (ADR 0060), in software tests. OVA disks are converted
-  in place, space budgets are measured, and the prepared copy is handed over to
-  the pool while copying.
-- Remaining: a real owner OVA with a declared format, natively. Its one 34 GiB
-  disk now needs about one copy of free space instead of three.
+- Done: one-copy import (ADR 0060). OVA disks are converted in place, space
+  budgets are measured, and the prepared copy is handed over to the pool while
+  copying. Natively, the owner's UEFI appliance with a 34 GiB disk imported in one
+  approval to a started VM with a peak use of 34.4 GiB
+  ([record](evidence/one-approval-import-run.md#owner-appliance-in-one-copy-of-space)).
+
+Phase 1 is complete.
 
 Scenarios: IMP-01, IMP-02, IMP-03, IMP-04, IMP-07, IMP-08, STO-01 (creation).
 

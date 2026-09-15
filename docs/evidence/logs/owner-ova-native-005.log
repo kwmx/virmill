@@ -1,0 +1,30 @@
+{
+  "busPreselected": true,
+  "cloudSuggested": false,
+  "connection": "qemu:///system",
+  "firmware": "UEFI (OVMF_CODE_4M.qcow2)",
+  "folderStepSkipped": true,
+  "formatsChosen": 0,
+  "itemsChecked": 10,
+  "networkPreselected": true,
+  "otherResourcesUnchanged": true,
+  "poolPreselected": false,
+  "preparedCopyRemoved": true,
+  "result": "passed",
+  "retainedStoppedVM": "<owner-media-1>",
+  "reviewListsStart": true,
+  "reviewNetwork": "network default (disconnected)",
+  "reviewSeconds": 182,
+  "reviewedVM": "- creates VM <owner-media-1>: 2 CPU, 8192 MiB memory, pool virmill-multidisk-12d7bba, UEFI",
+  "seconds": 1075,
+  "sourceUnchanged": true,
+  "succeededOperations": [
+    "import.prepare",
+    "vm.create.devices-v1",
+    "vm.start",
+    "import.discard"
+  ],
+  "summary": "appliance",
+  "vm": "<owner-media-1>"
+}
+free at start 54.6 GiB, lowest during import 20.2 GiB, peak use 34.4 GiB

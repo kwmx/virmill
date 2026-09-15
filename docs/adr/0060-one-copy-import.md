@@ -1,6 +1,8 @@
 # ADR 0060: Import in about one copy of disk space
 
-Status: accepted; native evidence pending.
+Status: accepted. Native evidence: `owner-ova-native-005`, where the owner's
+appliance with a 34 GiB disk imported with a peak use of 34.4 GiB
+([run record](../evidence/one-approval-import-run.md#owner-appliance-in-one-copy-of-space)).
 
 ## Context
 

@@ -137,6 +137,52 @@ Left for review on `qemu:///system`: stopped VMs `noble-server-cloudimg-amd64`
 (run 2) and `noble-server-cloudimg-amd64 2` (run 5) with their volumes and seed
 media, and the downloaded image on the test VM.
 
+## Owner appliance in one copy of space
+
+The owner's 35 GB appliance has one streamOptimized VMDK with a 120 GiB virtual
+disk and 34 GiB of data, and UEFI firmware. Before
+[ADR 0060](../adr/0060-one-copy-import.md), importing it held about 102 GiB at
+once: the unpacked member, the converted copy and the pool copy. Its space checks
+asked for about 184 GiB. The test VM had about 62 GiB free. The same probe ran on
+`qemu:///system` with the appliance as `--source`, sampling free space every
+15 seconds. The appliance's name is redacted in the logs.
+
+| Evidence | Build | Result |
+| --- | --- | --- |
+| `owner-ova-native-001` | `3422b40` | not run: the launch command put its source lookup in a background shell, so the probe got no source |
+| `owner-ova-native-002` | `3422b40` | stopped: the test VM went down about 3 minutes in, before planning. Its log shows no cause inside the VM, and it stayed off until the owner restarted it |
+| `owner-ova-native-003` | `3422b40` | failed: the disk converted in place, with peak use of 12.2 GiB, but only at about 18 MiB/s. qemu-img's writethrough cache made each write wait for the disk, and the flat 30-minute worker limit stopped the conversion. Fixed in `d3f8edf` |
+| `owner-ova-native-004` | `d3f8edf` | failed: preparation took 7 minutes and the creation plan included the hand-over. VM setup waited only 30 seconds for that plan, which hashes the prepared disk twice (about 80 seconds), and stayed on "Working…". Fixed in `53c11e8` |
+| `owner-ova-native-005` | `53c11e8` | **passed** |
+
+In run 5:
+
+- **Review.** Preview hashed the archive and inspected and measured the disk in
+  place; the review opened after 182 s. VM setup preselected UEFI, the controller
+  and the `default` network, with the adapter disconnected as for every appliance.
+  Only the pool needed a choice.
+- **Preparation.** One review of 10 items ran preparation. It read the disk
+  straight from the archive, unpacked only the small members, and wrote the
+  34 GiB qcow2 in 8.5 minutes.
+- **Creation.** The creation plan took 2 minutes. It reserved 80 MiB instead of
+  34 GiB, because the prepared copy was handed over on the same filesystem.
+  Creation copied and verified the disk in 6.5 minutes while releasing the
+  prepared file. Start and removal of the prepared copy followed with no further
+  review.
+- **Space.** Free space fell from 54.6 to 20.2 GiB: a peak use of 34.4 GiB, one
+  copy of the disk.
+- **Afterwards.** The VM was hard-stopped and left defined. The appliance, other
+  pools, networks and VMs were unchanged.
+
+Installs for these builds passed (`onecopy-3422b40-install-native-001`,
+`limits-d3f8edf-install-native-001`, `chainfix-53c11e8-install-native-001`).
+
+Left for review on `qemu:///system`:
+
+- the stopped VM from run 5, with its 34 GiB disk;
+- run 3's `recovery-required` preparation, with 13 GiB of partial conversion
+  output in its stage. `import.discard` removes only finished preparations.
+
 ## Not covered
 
 - Create or Start pool inside VM setup, covered separately in the
