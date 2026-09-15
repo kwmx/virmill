@@ -38,22 +38,34 @@ def domains(uri):
     return {name.strip() for name in virsh(uri, 'list', '--all', '--name').splitlines() if name.strip()}
 
 
+# A focused control starts its line, or its pane after the section column, with
+# "> ". Matching stays on one line: the ">" closing a choice such as
+# "Storage pool: < Choose… >" must not make the button below it look focused.
+FOCUS = r'(?:^|[│|])[ \t]*>[ \t]*'
+
+
+def button_focused(screen, label):
+    return re.search(FOCUS + r'\[ ' + re.escape(label) + r' \]', screen, re.MULTILINE) is not None
+
+
+def row_focused(screen, label):
+    return re.search(FOCUS + r'(?:\[[ x]\][ \t]*)?' + re.escape(label), screen, re.MULTILINE) is not None
+
+
 def focus_button(terminal, label, wait_label, limit=40):
     """Tab until the named control is focused; never activates anything."""
-    marker = re.compile(r'>\s*\[ ' + re.escape(label) + r' \]')
     screen = terminal.screen.text()
     for _ in range(limit):
-        if marker.search(screen):
+        if button_focused(screen, label):
             return screen
         screen = terminal.wait(wait_label + ': Tab', lambda text: True, terminal.send(b'\t'))
     raise RuntimeError('control not reachable: ' + label)
 
 
 def focus_row(terminal, label, wait_label, limit=40):
-    marker = re.compile(r'^\s*>\s*(?:\[[ x]\]\s*)?' + re.escape(label), re.MULTILINE)
     screen = terminal.screen.text()
     for _ in range(limit):
-        if marker.search(screen):
+        if row_focused(screen, label):
             return screen
         screen = terminal.wait(wait_label + ': Tab', lambda text: True, terminal.send(b'\t'))
     raise RuntimeError('control not reachable: ' + label)
@@ -317,8 +329,19 @@ def execute(root, uri, source, deadline_seconds, marker=None, cloud_source=None)
 
 class ProbeTests(unittest.TestCase):
     def test_focus_marker_matches_focused_button_only(self):
-        self.assertIsNotNone(re.search(r'>\s*\[ ' + re.escape('Review import') + r' \]', '  > [ Review import ]'))
-        self.assertIsNone(re.search(r'>\s*\[ ' + re.escape('Review import') + r' \]', '    [ Review import ]'))
+        self.assertTrue(button_focused('  > [ Review import ]', 'Review import'))
+        self.assertFalse(button_focused('    [ Review import ]', 'Review import'))
+        # Buttons in a pane follow the section column.
+        self.assertTrue(button_focused(' 9  Jobs    │> [ Apply reviewed plan ]', 'Apply reviewed plan'))
+
+    def test_a_choice_above_a_button_does_not_focus_it(self):
+        # pool-setup-native-002: the ">" closing the choice ended one line and the
+        # button began the next, so the old pattern pressed Enter on the choice.
+        screen = '> Storage pool: < Choose… >\n  [ Create storage pool ]\n  Firmware: < BIOS >'
+        self.assertFalse(button_focused(screen, 'Create storage pool'))
+        self.assertTrue(row_focused(screen, 'Storage pool'))
+        self.assertFalse(row_focused(screen, 'Firmware'))
+        self.assertTrue(row_focused('  > [x] Source images are not in use', 'Source images are not in use'))
 
 
 def main():

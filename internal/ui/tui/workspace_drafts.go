@@ -101,9 +101,27 @@ func (m *Workspace) offerSetup(kind string) bool {
 	if m.draftSaved == nil {
 		return false
 	}
+	// A submitted creation, or a later step, that already succeeded leaves
+	// nothing to resume or check, so the next setup starts directly; the next
+	// autosave replaces the old file. A submitted preparation still offers
+	// Continue prepared setup, and unfinished or failed jobs still stop here.
+	if d := m.draftSaved; d.State == "submitted" && d.Import == nil && d.OperationID != "" && m.listedJobState(d.OperationID) == "succeeded" {
+		m.draftSaved = nil
+		return false
+	}
 	m.draftModal = kind
 	m.draftChoice = 0
 	return true
+}
+
+// listedJobState is a job's state in the latest job list, or "" if unlisted.
+func (m Workspace) listedJobState(id string) string {
+	for _, j := range array(m.Data["jobs"]) {
+		if field(j, "operationID") == id {
+			return rowState(j)
+		}
+	}
+	return ""
 }
 func (m Workspace) setupView(width, height int) []string {
 	lines := []string{"Continue your saved setup?", "", "Your image and hardware choices were saved on this computer.", "Sources and available hardware are checked again before review.", ""}

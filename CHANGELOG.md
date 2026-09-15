@@ -29,6 +29,10 @@
   libvirt event loop, which releases closed connections, only started with the
   first VM reboot; until then every VM, pool or network list and host check
   left one socket and two descriptors behind.
+- After a setup has created its VM, the next import or Create VM starts
+  directly instead of stopping at "A setup was submitted". That page still
+  appears while the submitted job is unfinished or failed, and a submitted
+  preparation still offers **Continue prepared setup**.
 - VM setup suggests a free name ("… 2") when the suggested VM name is taken.
 - Free the space an import used: `virmill import discard OPERATION_ID
   [--keep-images]` removes a finished preparation's work folder and prepared

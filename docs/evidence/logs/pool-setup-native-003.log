@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/poolsetup-b2d5662/pool_setup_probe.py", line 314, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/poolsetup-b2d5662/pool_setup_probe.py", line 310, in main
+    execute(a.root, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/poolsetup-b2d5662/pool_setup_probe.py", line 250, in execute
+    scenario = walkthrough(runner, source, imports, mode, deadline_seconds)
+  File "<test-vm-home>/virmill-tests/poolsetup-b2d5662/pool_setup_probe.py", line 135, in walkthrough
+    wait('Import opens the file browser', picker, b'i')
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/poolsetup-b2d5662/pool_setup_probe.py", line 111, in wait
+    return terminal.wait(label, predicate, terminal.send(key) if key is not None else -1)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/poolsetup-b2d5662/tui_workspace_probe.py", line 411, in wait
+    raise RuntimeError('current screen did not satisfy ' + label)
+RuntimeError: current screen did not satisfy Import opens the file browser

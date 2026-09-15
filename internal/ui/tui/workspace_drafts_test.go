@@ -247,6 +247,48 @@ func TestSetupSubmittedPreparationContinuesAdvancedChoices(t *testing.T) {
 	}
 }
 
+// pool-setup-native-003: after one approval had created and started a VM, the
+// next import stopped at "A setup was submitted" with nothing left to check.
+func TestSetupFinishedSubmissionDoesNotBlockTheNextImport(t *testing.T) {
+	for name, tc := range map[string]struct {
+		state    string
+		prepared bool
+		blocks   bool
+	}{
+		"creation succeeded":             {"succeeded", false, false},
+		"creation still running":         {"running", false, true},
+		"creation failed":                {"failed", false, true},
+		"job not listed yet":             {"", false, true},
+		"preparation offers to continue": {"succeeded", true, true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			m := setupTestWorkspace(t)
+			f := creationFormFixture()
+			m.Creation = &f
+			if tc.prepared {
+				imp := NewImportForm("iso")
+				imp.Draft.Source = "/tmp/installer.iso"
+				m.Creation, m.Import = nil, &imp
+			}
+			d := m.setupDocument()
+			d.State, d.OperationID = "submitted", creationFormOperation
+			m.Creation, m.Import = nil, nil
+			m.draftSaved = d
+			m.Data["jobs"] = []any{}
+			if tc.state != "" {
+				m.Data["jobs"] = []any{map[string]any{"operationID": creationFormOperation, "state": tc.state}}
+			}
+			m.openImport("iso")
+			if blocked := m.draftModal != ""; blocked != tc.blocks {
+				t.Fatalf("saved-setup page shown = %v, want %v", blocked, tc.blocks)
+			}
+			if !tc.blocks && (m.draftSaved != nil || m.Import == nil) {
+				t.Fatal("finished submission kept, or the new import did not open")
+			}
+		})
+	}
+}
+
 func TestSetupApplyUpdateRetainsDurableBarrierState(t *testing.T) {
 	m := setupTestWorkspace(t)
 	f := creationFormFixture()
