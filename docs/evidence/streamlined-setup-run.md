@@ -47,12 +47,55 @@ The pool probe, on `qemu:///session`:
 The probe leaves its two session pools, `virmill-pool-62e06457` and
 `virmill-pool-62e06457n`, with their folders in its stage for review.
 
+## Pools inside VM setup
+
+`pool_setup_probe.py` checks **Create storage pool** and **Start pool** inside VM
+setup, which need a host without a usable pool. It makes one without touching
+the test VM's own. Every XDG folder points to private folders, so
+`qemu:///session` starts private libvirt daemons with no pools, networks or VMs,
+and the probe runs its own coordinator there. Libvirt keeps session sockets under
+`XDG_CONFIG_HOME`, and a Unix socket path must be shorter than 108 bytes, so the
+runtime and libvirt configuration folders live in a short private folder in the
+user's `/run/user` folder. The host's own pools, networks and VMs are listed
+before and after.
+
+| Evidence | Build | Result |
+| --- | --- | --- |
+| `pool-setup-native-001` | `b2d5662` | failed: probe environment. The private configuration folder was deep in the stage, so libvirt's QEMU probe socket exceeded 108 bytes and VM setup reported no KVM machine. The probe now keeps those folders short |
+| `pool-setup-native-002` | `b2d5662` | failed: probe check. Its focus test matched a choice's closing `>` together with the button on the next line, so it pressed Enter on the pool field; VM setup correctly said to choose Create storage pool. The shared probe helpers now match within one line |
+| `pool-setup-native-003` | `b2d5662` | failed: **product defect**. Create storage pool and the first VM passed, but the second import stopped at "A setup was submitted" although the first setup had finished. Fixed in `1d7d1ae` |
+| `pool-setup-native-004` | `1d7d1ae` | **passed** |
+
+In run 4:
+
+- **Create storage pool.** VM setup selected no pool, said "No storage pool yet",
+  and offered Create storage pool. Its review had one item (`host-mutation`) and
+  named libvirt's `default` pool. VM setup stayed open with "Creating storage pool
+  default…", then "Storage pool default is ready and selected." One review of 8
+  items ran `import.prepare-disks`, `vm.create.devices-v1`, `vm.start` and
+  `import.discard`. The VM was running 8 s after that review was applied, and the
+  imports folder was empty.
+- **Start pool.** The probe stopped the pool in the private session. VM setup said
+  "Your storage pools are stopped" and offered Start pool default next to Create
+  storage pool. One review item started it, the form showed "Starting storage pool
+  default…" and selected it, and one approval reached a running VM in 9 s.
+- The pool is active, starts with the host, and uses libvirt's session default
+  folder, `$XDG_DATA_HOME/libvirt/images`. The private coordinator ran exactly
+  `storage.pool.create` and `storage.pool.start` once and `import.prepare-disks`,
+  `vm.create.devices-v1`, `vm.start`, `import.discard` and `vm.hard-stop` twice,
+  all succeeded. Both VMs were hard-stopped through reviewed plans. The host's
+  own pools, networks and VMs were unchanged.
+
+The install `drafts-1d7d1ae-install-native-001` passed. Left for review: the
+private pool and the two stopped VMs. Their images stay in the probe's stage;
+their libvirt definitions are in the private `/run/user` folder, which the test
+VM clears when it restarts.
+
 ## Not covered
 
-- Creating a pool from inside VM setup, and selecting it automatically, were
-  checked by TUI state tests only.
 - The system default pool at `/var/lib/libvirt/images` was not created: the test
-  VM already has pools inside that folder. A host with no pools is the target
-  case.
+  VM already has pools inside that folder. The in-setup runs used the session
+  default instead.
 - The default import folder, the direct VM review after preparation and Start VM
-  were checked by software tests only. A native import walk-through remains.
+  are covered natively by the
+  [one-approval import record](one-approval-import-run.md).

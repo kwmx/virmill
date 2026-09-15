@@ -139,7 +139,8 @@ media, and the downloaded image on the test VM.
 
 ## Not covered
 
-- Create or Start pool inside VM setup.
+- Create or Start pool inside VM setup, covered separately in the
+  [streamlined setup record](streamlined-setup-run.md#pools-inside-vm-setup).
 - Closing the TUI mid-chain (the design stops the chain; not exercised natively).
 - Guest boot from the blank disk runs, which a blank disk cannot show. The OVA run
   showed guest boot on its serial console; the cloud-image run showed login.

@@ -1,0 +1,57 @@
+{
+  "hostInventoryUnchanged": true,
+  "jobs": {
+    "import.discard": 2,
+    "import.prepare-disks": 2,
+    "storage.pool.create": 1,
+    "storage.pool.start": 1,
+    "vm.create.devices-v1": 2,
+    "vm.hard-stop": 2,
+    "vm.start": 2
+  },
+  "privateRuntime": "/run/user/1000/vp-1cc244c3",
+  "privateSessionEmptyAtStart": true,
+  "result": "passed",
+  "scenarios": [
+    {
+      "alsoOffersCreate": true,
+      "itemsChecked": 8,
+      "mode": "create",
+      "pool": {
+        "active": true,
+        "autostart": true,
+        "inPrivateDataFolder": true,
+        "names": [
+          "default"
+        ]
+      },
+      "poolHelp": "No storage pool yet",
+      "poolItemsChecked": 1,
+      "poolReviewNamesDefault": true,
+      "progressShown": true,
+      "readyNoticeShown": true,
+      "seconds": 8,
+      "vm": "poolcreate-1cc244c3"
+    },
+    {
+      "alsoOffersCreate": true,
+      "itemsChecked": 8,
+      "mode": "start",
+      "pool": {
+        "active": true,
+        "autostart": true,
+        "inPrivateDataFolder": true,
+        "names": [
+          "default"
+        ]
+      },
+      "poolHelp": "Your storage pools are stopped",
+      "poolItemsChecked": 1,
+      "poolReviewNamesDefault": true,
+      "progressShown": true,
+      "readyNoticeShown": true,
+      "seconds": 9,
+      "vm": "poolstart-1cc244c3"
+    }
+  ]
+}

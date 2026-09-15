@@ -26,8 +26,12 @@ A disk image, ISO or OVA becomes a running VM in one review.
   the reviewed SSH key, with passwordless sudo and cloud-init done.
 - Done: `virmill doctor` says when firewalld blocks a NAT network's DHCP, which
   had kept the first cloud guest offline on the test host.
-- Remaining: in-setup Create and Start pool natively (needs a host without a
-  usable pool); a real owner OVA with a declared format.
+- Done: Create storage pool and Start pool inside VM setup, natively on a
+  private session with no pools, each followed by one approval to a started VM
+  ([record](evidence/streamlined-setup-run.md#pools-inside-vm-setup)).
+- Remaining: a real owner OVA with a declared format. Its one 34 GiB disk needs
+  about three times that free space while importing (unpacked, converted and
+  pool copies), more than the test VM has.
 
 Scenarios: IMP-01, IMP-02, IMP-03, IMP-04, IMP-07, IMP-08, STO-01 (creation).
 
