@@ -62,7 +62,9 @@ def focus_row(terminal, label, wait_label, limit=40):
 def replace_text(terminal, label, text, wait_label):
     """Clear a focused text field with Ctrl+U and type the new value."""
     focus_row(terminal, label, wait_label)
-    terminal.wait(wait_label + ' cleared', lambda screen: True, terminal.send(b'\x15'))
+    # Clearing an already empty field does not redraw, so do not wait for it.
+    terminal.send(b'\x15')
+    terminal.read(.3)
     tail = text[-16:]
     terminal.wait(wait_label + ' typed', lambda screen: tail in screen.replace('\n', ''), terminal.send(text.encode()))
 
