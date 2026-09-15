@@ -23,6 +23,10 @@
   so VMs on that network get no address. This happens when the network starts
   before firewalld at boot. The check shows the `firewall-cmd` command that
   puts the bridge back in libvirt's zone; it changes nothing itself.
+- The coordinator no longer keeps a socket open after each libvirt call. Its
+  libvirt event loop, which releases closed connections, only started with the
+  first VM reboot; until then every VM, pool or network list and host check
+  left one socket and two descriptors behind.
 - VM setup suggests a free name ("… 2") when the suggested VM name is taken.
 - Free the space an import used: `virmill import discard OPERATION_ID
   [--keep-images]` removes a finished preparation's work folder and prepared

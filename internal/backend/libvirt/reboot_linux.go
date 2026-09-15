@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	native "libvirt.org/go/libvirt"
@@ -17,16 +18,25 @@ const rebootEventWait = 60 * time.Second
 var _ domain.RebootProvider = (*Provider)(nil)
 
 // Libvirt requires event registration before any connection is opened. Keep
-// initialization failure local to reboot; ordinary provider calls retain their
-// existing behavior. The one process-lifetime loop starts on the first reboot.
+// initialization failure local to reboot; ordinary provider calls then work
+// without events.
+//
+// Once a default implementation is registered, libvirt releases a closed
+// connection's socket only on a later loop iteration. The one process-lifetime
+// loop therefore starts with the process: when it waited for the first reboot,
+// every connection closed before then kept its socket open.
 var rebootEvents = struct {
 	initialization error
 	start          sync.Once
+	running        atomic.Bool
 	failed         chan struct{}
 }{failed: make(chan struct{})}
 
 func init() {
 	rebootEvents.initialization = native.EventRegisterDefaultImpl()
+	if rebootEvents.initialization == nil {
+		_ = startRebootEvents()
+	}
 }
 
 func startRebootEvents() error {
@@ -34,6 +44,7 @@ func startRebootEvents() error {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "native reboot event implementation is unavailable")
 	}
 	rebootEvents.start.Do(func() {
+		rebootEvents.running.Store(true)
 		go func() {
 			for {
 				if err := native.EventRunDefaultImpl(); err != nil {

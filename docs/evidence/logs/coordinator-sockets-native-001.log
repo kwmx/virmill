@@ -1,0 +1,95 @@
+{
+  "commands": {
+    "device usb list": {
+      "descriptorsAdded": 10,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 5
+    },
+    "doctor": {
+      "descriptorsAdded": 10,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 5
+    },
+    "host capabilities": {
+      "descriptorsAdded": 10,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 5
+    },
+    "network list": {
+      "descriptorsAdded": 10,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 5
+    },
+    "operation list": {
+      "descriptorsAdded": 0,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 0
+    },
+    "storage pool list": {
+      "descriptorsAdded": 10,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 5
+    },
+    "vm list": {
+      "descriptorsAdded": 10,
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "orphanedSocketsAdded": 5
+    }
+  },
+  "coordinatorUptimeSeconds": 707,
+  "descriptorsAtStart": 186,
+  "failedCommands": [],
+  "leakingCommands": [
+    "device usb list",
+    "doctor",
+    "host capabilities",
+    "network list",
+    "storage pool list",
+    "vm list"
+  ],
+  "orphanedSocketsAtStart": 87,
+  "repeat": 5,
+  "result": "failed"
+}

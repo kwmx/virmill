@@ -1,0 +1,33 @@
+{
+  "busPreselected": true,
+  "cloudInitStatus": "status: done",
+  "cloudSuggested": true,
+  "cloudUser": "<test-vm-login>",
+  "connection": "qemu:///system",
+  "firmware": "BIOS",
+  "folderStepSkipped": true,
+  "formatsChosen": 0,
+  "itemsChecked": 13,
+  "networkPreselected": true,
+  "otherResourcesUnchanged": true,
+  "passwordlessSudo": true,
+  "poolPreselected": false,
+  "preparedCopyRemoved": true,
+  "result": "passed",
+  "retainedStoppedVM": "noble-server-cloudimg-amd64 2",
+  "reviewListsStart": true,
+  "reviewNetwork": "network default (connected)",
+  "reviewSeconds": 2,
+  "reviewedVM": "- creates VM noble-server-cloudimg-amd64 2: 2 CPU, 2048 MiB memory, pool virmill-",
+  "seconds": 339,
+  "sourceUnchanged": true,
+  "sshLoginWithTestKey": true,
+  "succeededOperations": [
+    "import.prepare-disks",
+    "vm.create.devices-v1",
+    "vm.start",
+    "import.discard"
+  ],
+  "summary": "source",
+  "vm": "noble-server-cloudimg-amd64 2"
+}
