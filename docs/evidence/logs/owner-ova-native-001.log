@@ -1,0 +1,17 @@
+find: ‘<test-vm-home>/virmill-tests/network-22846d4/network-packet-af696f9a-7662-4a7b-8594-b1a5863596ef’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/network-native-003/network-packet-a0cdad29-0f51-461f-85df-44a517b46100’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/network-native-004/network-packet-aad8707f-8306-429b-86bd-3c57d38de820’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/network-native-005/network-packet-7a26cc44-aa49-4a13-a9d2-93037c03158e’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/network-native-005/network-packet-025aa76f-bf63-4c22-b8cb-c69316cbc66c’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/protected-network-native-001/network-packet-5c404531-d9ca-4560-95c0-1f34867ec089’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/protected-network-native-002/network-packet-c55fa324-fc75-4ce9-a00d-f2b8d5b82a1a’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/protected-network-native-002/network-packet-36b7f693-b078-4bef-9044-5c87f02741bb’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/protected-network-native-003/network-packet-847e0b5e-fd1a-4e34-9a50-768953117c4f’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/protected-network-native-003/network-packet-ded3955a-d9aa-4389-863a-568a0572aa55’: Permission denied
+find: ‘<test-vm-home>/virmill-tests/automatic-allocation-native-001/network-packet-05c66acb-1b38-4155-ab3f-6f72f7a5c0fb’: Permission denied
+python3: can't open file '<test-vm-home>/one_approval_import_probe.py': [Errno 2] No such file or directory
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys; v=[int(l) for l in open("free.log") if l.strip()]; s=int(sys.argv[1]); m=min(v+[s]); g=1<<30; print("free at start %.1f GiB, lowest during import %.1f GiB, peak use %.1f GiB" % (s/g, m/g, (s-m)/g))
+                                   ~~~~^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'free.log'
