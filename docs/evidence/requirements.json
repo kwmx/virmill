@@ -236,7 +236,8 @@
         "schemas/vm-resources-view.schema.json",
         "schemas/vm-resources-show-request.schema.json",
         "docs/adr/0045-observed-resource-settings.md",
-        "docs/evidence/observed-resources-run.md"
+        "docs/evidence/observed-resources-run.md",
+        "docs/adr/0061-next-boot-edits-while-running.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-03",
@@ -264,7 +265,10 @@
         "internal/app/resource_view_test.go",
         "internal/ui/cli/resource_view_test.go",
         "internal/ui/tui/workspace_resources_test.go",
-        "tests/fixtures/release/resource_settings_probe.py"
+        "tests/fixtures/release/resource_settings_probe.py",
+        "internal/app/resource_edit_running_test.go",
+        "internal/backend/libvirt/configuration_running_linux_test.go",
+        "internal/ui/tui/workspace_resources_running_test.go"
       ],
       "evidence": [
         "core-tests-001",
@@ -304,7 +308,8 @@
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "New VM plans now carry action-specific downtime estimates with explicit unknown sizing/duration notes. Old immutable plans retain original fields; exact capacity estimates and the complete workflow matrix remain required.",
         "Guided existing-VM channel enablement and credential-free backup receipt recovery are implemented with shared durable services and tested failure/navigation paths. Native channel normalization, installed-beta walkthrough and real guest-tools package installation require separate evidence; no acceptance promotion.",
-        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough."
+        "Installed 96532cb passed one real stopped diskless i440fx channel edit with opaque XML preservation and before/after 80x24 TUI guidance. This does not prove guest boot, package installation or agent response; new receipt recovery still needs a real repository walkthrough.",
+        "ADR 0061: next-boot CPU/RAM edits are allowed on running and paused VMs, checked against the saved definition only, with the running values kept and the review saying the change applies after shutdown and start. Service, libvirt in-memory driver and TUI tests pass; native qualification and live (now/both) hot-plug remain open."
       ],
       "hardwareVerified": false,
       "released": false

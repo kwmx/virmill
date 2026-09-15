@@ -28,18 +28,56 @@ func (p *Provider) CheckConfiguration(ctx context.Context, uri, id string, input
 	defer d.Free()
 	return checkConfiguration(c, d, uri, input)
 }
+
+// persistentEdit marks a next-boot CPU/RAM edit reviewed while the VM ran or
+// was paused. It is checked against the saved definition alone, because the
+// live one changes as the guest runs (ADR 0061).
+func persistentEdit(input map[string]any) bool {
+	return input["editPrecondition"] == "persistent-xml-v1"
+}
+
+// editBaseMatches reports whether the VM still matches what the edit was
+// reviewed against.
+func editBaseMatches(v domain.VM, input map[string]any) bool {
+	if persistentEdit(input) {
+		return !v.HasManagedSave && xmlpatch.Digest(v.PersistentXML) == input["editBeforePersistentSHA256"]
+	}
+	return v.Fingerprint == input["editBeforeFingerprint"]
+}
+
+// editableState reports whether the VM's power state allows this edit.
+func editableState(v domain.VM, input map[string]any) bool {
+	if persistentEdit(input) {
+		return v.State == "stopped" || v.State == "running" || v.State == "paused"
+	}
+	return v.State == "stopped"
+}
+
+// liveResourcesKept reports whether defining the saved definition left a
+// running guest's CPU count and memory maximum alone. Current memory is not
+// compared: a balloon moves it as the guest runs.
+func liveResourcesKept(before, after domain.VM) bool {
+	if before.LiveXML == "" || after.LiveXML == "" {
+		return true
+	}
+	a, errA := xmlpatch.ReadResourceValues(before.LiveXML)
+	b, errB := xmlpatch.ReadResourceValues(after.LiveXML)
+	same := func(x, y *uint64) bool { return x == nil && y == nil || x != nil && y != nil && *x == *y }
+	return errA == nil && errB == nil && same(a.VCPUs, b.VCPUs) && same(a.MaximumMemoryBytes, b.MaximumMemoryBytes)
+}
+
 func checkConfiguration(c *native.Connect, d *native.Domain, uri string, input map[string]any) error {
-	if (input["editVersion"] != float64(1) && input["editVersion"] != float64(2) && input["editVersion"] != float64(3)) || input["applyMode"] != "next-boot" {
+	if (input["editVersion"] != float64(1) && input["editVersion"] != float64(2) && input["editVersion"] != float64(3)) || input["applyMode"] != "next-boot" || persistentEdit(input) && input["editVersion"] != float64(1) {
 		return domain.Fail("STALE_PLAN", "fresh preservation-aware next-boot edit preview required")
 	}
 	v, err := observe(d, uri)
 	if err != nil {
 		return err
 	}
-	if v.State != "stopped" || v.PersistentXML == "" || v.HasManagedSave {
-		return domain.Fail("STALE_PLAN", "configuration editing requires a stopped persistent VM without managed-save state")
+	if !editableState(v, input) || v.PersistentXML == "" || v.HasManagedSave {
+		return domain.Fail("STALE_PLAN", "configuration editing requires a persistent VM without managed-save state, stopped unless the edit was reviewed while it ran")
 	}
-	if v.Fingerprint != input["editBeforeFingerprint"] {
+	if !editBaseMatches(v, input) {
 		return domain.Fail("STALE_PLAN", "domain changed immediately before configuration effect")
 	}
 	edit, _, err := configurationXML(v.PersistentXML, input)
@@ -74,7 +112,7 @@ func checkConfiguration(c *native.Connect, d *native.Domain, uri string, input m
 	if err != nil {
 		return err
 	}
-	if latest.Fingerprint != v.Fingerprint {
+	if !editBaseMatches(latest, input) || !editableState(latest, input) {
 		return domain.Fail("STALE_PLAN", "domain changed during configuration preservation checks")
 	}
 	return nil
@@ -93,7 +131,7 @@ func executeConfiguration(c *native.Connect, d *native.Domain, uri string, input
 	if err != nil {
 		return err
 	}
-	if before.Fingerprint != input["editBeforeFingerprint"] {
+	if !editBaseMatches(before, input) {
 		return domain.Fail("STALE_PLAN", "domain changed before definition")
 	}
 	_, expected, err := configurationXML(before.PersistentXML, input)
@@ -117,7 +155,7 @@ func executeConfiguration(c *native.Connect, d *native.Domain, uri string, input
 	if err != nil {
 		return err
 	}
-	if v.State != "stopped" || v.HasManagedSave || !match {
+	if !editableState(v, input) || v.HasManagedSave || !match || !liveResourcesKept(before, v) {
 		return domain.Fail("RECOVERY_REQUIRED", "persistent configuration readback differs; inspect the operation without replaying it")
 	}
 	secure, err := defined.GetXMLDesc(native.DOMAIN_XML_INACTIVE | native.DOMAIN_XML_SECURE)
@@ -159,7 +197,7 @@ func observeConfiguration(d *native.Domain, uri string, input map[string]any) (b
 	if err != nil {
 		return false, err
 	}
-	if v.State != "stopped" || v.HasManagedSave || !match {
+	if !editableState(v, input) || v.HasManagedSave || !match {
 		return false, nil
 	}
 	secure, err := d.GetXMLDesc(native.DOMAIN_XML_INACTIVE | native.DOMAIN_XML_SECURE)

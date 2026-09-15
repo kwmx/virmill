@@ -415,7 +415,11 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 		if _, ok := input["applyMode"]; !ok {
 			input["applyMode"] = "next-boot"
 		}
-		if e = editableVM(v); e != nil {
+		check := editableVM
+		if !guestAgentRequest(input) && !hardwareRequest(input) {
+			check = resourcesEditable
+		}
+		if e = check(v); e != nil {
 			return empty, e
 		}
 		if guestAgentRequest(input) {
@@ -471,6 +475,11 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 			}
 			input["xmlSHA256"] = xmlpatch.Digest(x)
 			input["editVersion"] = float64(1)
+			if v.State != "stopped" {
+				input["editPrecondition"] = persistentPrecondition
+				input["editBeforePersistentSHA256"] = xmlpatch.Digest(v.PersistentXML)
+				risks = append(risks, "The VM keeps its current CPU and memory until it is shut down; the change applies when it next starts, not after a restart inside the guest")
+			}
 		}
 		input["editBeforeFingerprint"] = v.Fingerprint
 		acks = append(acks, "exclusive-configuration-writer")
@@ -526,7 +535,7 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		if err != nil {
 			return nil, err
 		}
-		if v.Fingerprint != input["editBeforeFingerprint"] {
+		if !editBaseUnchanged(v, input) {
 			return nil, domain.Fail("STALE_PLAN", "VM changed during CPU/RAM review; refresh settings")
 		}
 		edit, err := resourceEdit(input)
@@ -588,7 +597,10 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 	if e != nil {
 		return e
 	}
-	if p.Before[v.Key.String()] != v.Fingerprint {
+	// A next-boot edit reviewed while the VM ran is checked against the saved
+	// definition below; the live one changes as the guest runs (ADR 0061).
+	persistent := h.action == "set" && input["editPrecondition"] == persistentPrecondition
+	if p.Before[v.Key.String()] != v.Fingerprint && !persistent {
 		return domain.Fail("STALE_PLAN", "domain changed since the preview")
 	}
 	if h.action == "autostart" {
@@ -600,10 +612,14 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 		}
 	}
 	if h.action == "set" {
-		if !configurationVersion(p.Operation, input) || input["editBeforeFingerprint"] != v.Fingerprint {
+		if !configurationVersion(p.Operation, input) || !editBaseUnchanged(v, input) {
 			return domain.Fail("STALE_PLAN", "configuration plan requires a fresh preservation-aware preview")
 		}
-		if e = editableVM(v); e != nil {
+		check := editableVM
+		if persistent {
+			check = resourcesEditable
+		}
+		if e = check(v); e != nil {
 			return e
 		}
 		digest, err := configurationPreviewDigest(v.PersistentXML, input)
@@ -628,6 +644,9 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 	expected, ok := required[h.action]
 	if h.action == "hard-stop" && v.State == "paused" {
 		ok = false // force off is also the way out of a paused VM that cannot resume
+	}
+	if persistent {
+		ok = false // resourcesEditable checked the state above
 	}
 	if ok && v.State != expected {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", fmt.Sprintf("%s requires %s state, observed %s", h.action, expected, v.State))

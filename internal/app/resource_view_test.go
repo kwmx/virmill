@@ -40,7 +40,8 @@ func TestResourcesViewCurrentValuesAndReadOnlyContract(t *testing.T) {
 		t.Fatal(out.Error)
 	}
 	v = out.Data.(domain.VMResourceView)
-	if v.CanEditCPU || v.CanEditMemory || !v.RequiresShutdown || *v.Live.VCPUs != 1 || *v.Live.MemoryBytes != 128<<20 || *v.Persistent.VCPUs != 2 {
+	// ADR 0061: a running VM's next-boot values are editable; they apply after shutdown.
+	if !v.CanEditCPU || !v.CanEditMemory || !v.RequiresShutdown || *v.Live.VCPUs != 1 || *v.Live.MemoryBytes != 128<<20 || *v.Persistent.VCPUs != 2 {
 		t.Fatal(v)
 	}
 	p.vm.HasManagedSave = true

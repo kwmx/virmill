@@ -67,7 +67,7 @@ func decodeResources(data any, vm domain.VM) (domain.VMResourceView, error) {
 	if r.CanEditCPU && (r.Persistent.VCPUs == nil || *r.Persistent.VCPUs == 0) || r.CanEditMemory && (r.Persistent.MemoryBytes == nil || *r.Persistent.MemoryBytes == 0) {
 		return r, fmt.Errorf("Editable resource values are incomplete. Refresh to try again")
 	}
-	if (r.CanEditCPU || r.CanEditMemory) && (r.State != "stopped" || r.HasManagedSave || !slices.Contains(r.ApplyModes, "next-boot")) {
+	if (r.CanEditCPU || r.CanEditMemory) && (r.HasManagedSave || !slices.Contains(r.ApplyModes, "next-boot")) {
 		return r, fmt.Errorf("Resource edit availability is inconsistent. Refresh before making changes")
 	}
 	return r, nil
@@ -324,6 +324,8 @@ func (m Workspace) resourcesView(width, height int) []string {
 		}
 		if r.HasManagedSave {
 			lines = append(lines, "Saved runtime exists. Resume it, then shut down before editing.")
+		} else if r.RequiresShutdown && (r.CanEditCPU || r.CanEditMemory) {
+			lines = append(lines, "The VM keeps its current values until it shuts down; a restart inside the guest is not enough.")
 		} else if r.RequiresShutdown {
 			lines = append(lines, "Shut down first; then return here to change these values.")
 		}

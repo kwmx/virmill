@@ -155,13 +155,14 @@ func awaitConfig(t *testing.T, s *Service, id string) domain.Job {
 	return domain.Job{}
 }
 func TestResourcePlanRefusesLiveSavedAdvancedAndSensitiveInputsBeforeJournal(t *testing.T) {
-	for _, test := range []string{"running", "saved", "transient", "topology", "preflight", "now", "secret", "fraction", "empty"} {
+	// A running VM's next-boot values are editable (ADR 0061); a crashed one is not.
+	for _, test := range []string{"crashed", "saved", "transient", "topology", "preflight", "now", "secret", "fraction", "empty"} {
 		t.Run(test, func(t *testing.T) {
 			s, p, _ := configService(t)
 			input := map[string]any{"vcpus": float64(4), "memoryMiB": float64(512), "applyMode": "next-boot"}
 			switch test {
-			case "running":
-				p.vm.State = "running"
+			case "crashed":
+				p.vm.State = "crashed"
 			case "saved":
 				p.vm.HasManagedSave = true
 			case "transient":

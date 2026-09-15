@@ -83,9 +83,8 @@ func (s *Service) resourceView(ctx context.Context, r Request) (domain.VMResourc
 	if out.CanEditCPU || out.CanEditMemory {
 		out.ApplyModes = []string{"next-boot"}
 	}
-	if err := editableVM(v); err != nil {
-		out.RequiresShutdown = v.State == "running" && !v.HasManagedSave && (out.CanEditCPU || out.CanEditMemory)
-		reason := "Shut down the VM before changing next-boot settings"
+	if err := resourcesEditable(v); err != nil {
+		reason := "Wait until the VM is stopped, running or paused before changing next-boot settings"
 		if v.HasManagedSave {
 			reason = "Restore the saved VM, then shut it down before editing hardware"
 		}
@@ -100,5 +99,7 @@ func (s *Service) resourceView(ctx context.Context, r Request) (domain.VMResourc
 		}
 		out.CanEditCPU, out.CanEditMemory = false, false
 	}
+	// Edits to a VM that is not stopped apply only after it shuts down (ADR 0061).
+	out.RequiresShutdown = v.State != "stopped" && (out.CanEditCPU || out.CanEditMemory)
 	return out, ctx.Err()
 }

@@ -2,6 +2,8 @@
 
 Status: accepted routine implementation decision. Full configuration scope and
 CORE-03/04/05 remain required. No host mutation or reduced release is authorized.
+Amended by [ADR 0061](0061-next-boot-edits-while-running.md): next-boot CPU/RAM
+edits are also allowed on running and paused VMs.
 
 The original vCPU span edit preserved unrelated bytes but did not check topology,
 per-vCPU allocation, pinning, NUMA or managed-save dependencies. RAM was refused.

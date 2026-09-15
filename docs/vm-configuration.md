@@ -1,7 +1,8 @@
 # VM resources, boot order and installation media
 
-`vm set` provides preservation-checked CPU/RAM edits for a powered-off persistent
-VM. Use its stable UUID and explicit local connection. The CLI and TUI share the
+`vm set` provides preservation-checked next-boot CPU/RAM edits for a persistent
+VM that is stopped, running or paused ([ADR 0061](adr/0061-next-boot-edits-while-running.md)).
+Use its stable UUID and explicit local connection. The CLI and TUI share the
 same plan, permission, execution and reconciliation services. This development
 adapter has synthetic, libvirt in-memory and one narrow native test: a Q35/BIOS
 Kali guest booted after a combined 3-CPU/3072-MiB, boot-order and media edit. See
@@ -22,8 +23,15 @@ host can allocate that much RAM or that a guest can boot with the requested size
 
 `applyMode` supports `next-boot` only in this adapter; an omitted mode is reported
 as `next-boot` for compatibility with the old count-only input. `now` and `both`
-are explicitly refused. The guest must already be stopped. A shutdown, managed-save
-restore or saved-state disposition is a separate approved workflow.
+are explicitly refused.
+
+A running or paused VM keeps its current CPU and memory; the change applies after
+it is shut down and started again. A restart inside the guest keeps the old
+values. Such a plan is checked against the saved definition only, so it stays
+valid while the guest runs and after it stops; a change to the saved definition,
+or saved (managed-save) state, makes it stale. The TUI offers a reviewed graceful
+shutdown next to the edit. Boot order, media ejection and the guest-agent channel
+still require a stopped VM. Restoring saved state is a separate approved workflow.
 
 In the TUI choose **VMs → vm set**, then enter:
 
