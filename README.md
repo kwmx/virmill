@@ -35,6 +35,7 @@ CPU/RAM, boot-order and retained-media editing: [configuration guide](docs/vm-co
 Remove a stopped VM while retaining disks: [removal guide](docs/vm-removal.md).
 Start, shut down, force off, pause, save and resume VMs: [power guide](docs/vm-power.md).
 Graceful reboot with durable event verification: [reboot guide](docs/vm-reboot.md).
+Grow a stopped VM's disk: [disk guide](docs/vm-disks.md).
 Backup declarations and timezone-aware occurrence previews:
 [backup policy guide](docs/backup-policy-validation.md).
 Encrypted local repositories and independent recovery:

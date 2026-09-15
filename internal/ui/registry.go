@@ -89,6 +89,7 @@ var Actions = []Action{
 	{"vm save", "vm.plan", "VMs", "Plan managed save (not an independent backup)", "id", "save"},
 	{"vm restore-saved", "vm.plan", "VMs", "Plan restoration of saved state", "id", "restore-saved"},
 	{"vm remove", "vm.remove", "VMs", "Plan removal of a stopped VM; keep disks by default or explicitly select disks for deletion; backups are retained", "id", "remove"},
+	{"vm disk grow", "vm.plan", "VMs", "Plan growing one disk of a stopped VM; partitions inside the guest are not changed", "id", "grow-disk"},
 	{"vm autostart", "vm.plan", "VMs", "Plan autostart policy", "id", "autostart"},
 	{"vm set", "vm.plan", "VMs", "Plan next-boot CPU/RAM, boot order or retained-media ejection on a powered-off VM", "id", "set"},
 	{"import source describe", "import.source.describe", "VMs", "Detect supported appliance, disk or ISO metadata without importing", "path", ""},

@@ -2207,7 +2207,13 @@
         "docs/adr/0056-storage-pool-creation-and-setup-defaults.md",
         "internal/app/storage_pool_start.go",
         "internal/backend/libvirt/storage_pool_start_linux.go",
-        "internal/ui/tui/guided_forms.go"
+        "internal/ui/tui/guided_forms.go",
+        "docs/adr/0062-disk-grow-add-move.md",
+        "docs/vm-disks.md",
+        "internal/domain/disk_grow.go",
+        "internal/app/disk_grow.go",
+        "internal/backend/libvirt/disk_grow_linux.go",
+        "schemas/vm-disk-grow-input.schema.json"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -2236,7 +2242,11 @@
         "internal/ui/tui/creation_form_test.go",
         "internal/app/storage_pool_start_test.go",
         "internal/backend/libvirt/storage_pool_start_linux_test.go",
-        "internal/ui/tui/guided_pool_test.go"
+        "internal/ui/tui/guided_pool_test.go",
+        "internal/app/disk_grow_test.go",
+        "internal/backend/libvirt/disk_grow_linux_test.go",
+        "internal/ui/tui/guided_disk_grow_test.go",
+        "tests/fixtures/release/disk_grow_native.py"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -2262,7 +2272,8 @@
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill directory-pool creation (ADR 0056) has software regressions; its native run, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
-        "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required."
+        "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
+        "ADR 0062 Grow: a stopped VM's writable raw/qcow2 pool disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Software tests pass; native qualification, and Add and Move, remain open."
       ],
       "hardwareVerified": false,
       "released": false

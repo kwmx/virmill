@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-disk-grow-input.schema.json",
+  "title": "Grow one disk of a stopped VM",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "sizeGiB"],
+  "properties": {
+    "target": {"type": "string", "pattern": "^[a-z][a-z0-9]{0,31}$"},
+    "sizeGiB": {"type": "integer", "minimum": 1, "maximum": 65536}
+  }
+}

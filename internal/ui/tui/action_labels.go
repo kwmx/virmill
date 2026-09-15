@@ -78,6 +78,7 @@ var actionText = map[string]struct{ label, description string }{
 	"vm save":                       {"Save VM state and stop", "Save managed runtime state; this is not an independent backup."},
 	"vm restore-saved":              {"Resume saved VM", "Restore the VM's previously saved runtime state."},
 	"vm remove":                     {"Remove VM", "Remove a stopped VM. Keep disks by default, or select disks to delete; backups are kept."},
+	"vm disk grow":                  {"Grow VM disk", "Make a stopped VM's disk larger; partitions inside the guest are not changed."},
 	"vm autostart":                  {"Change VM automatic startup", "Choose whether libvirt starts this VM automatically."},
 	"vm set":                        {"Edit VM hardware", "Review next-boot CPU and memory, boot order or media changes."},
 	"import source describe":        {"Inspect image or folder", "Detect the image format and settings before import."},

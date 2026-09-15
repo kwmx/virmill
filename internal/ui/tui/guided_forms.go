@@ -94,10 +94,21 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		field("folder", "Folder", "Leave empty for libvirt's standard folder, or choose an existing or new folder (Ctrl+O).", 1024)
 		field("autostart", "Start with the host", "Keeps VM disks available after a restart.", 5)
 		f.Fields[2].Value, f.Fields[2].Toggle = "true", true
+	case "disk-grow":
+		disks := removalDiskFields(vm.PersistentXML)
+		if len(disks) == 0 {
+			return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "This VM has no writable disk that can be grown.")
+		}
+		field("target", "Disk", "Left/Right chooses the disk.", 32)
+		for _, d := range disks {
+			f.Fields[0].Choices = append(f.Fields[0].Choices, d.Label)
+		}
+		f.Fields[0].Value = f.Fields[0].Choices[0]
+		field("sizeGiB", "New size (GiB)", "The disk's new total size, larger than now. Partitions inside the guest keep their size.", 5)
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
-	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" {
+	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" {
 		if vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "select an exact local VM before opening this form")
 		}
@@ -113,6 +124,9 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "This VM's name cannot be confirmed safely in the removal form.")
 		}
 	}
+	if kind == "disk-grow" && (vm.State != "stopped" || vm.HasManagedSave) {
+		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before growing its disk.")
+	}
 	return f, nil
 }
 
@@ -124,6 +138,8 @@ func (f GuidedForm) Title() string {
 		return "Start automatically"
 	case "resources":
 		return "Edit CPU and memory for next boot"
+	case "disk-grow":
+		return "Grow a VM disk"
 	case "capture":
 		return "Create a cold recovery point"
 	case "guest-tools":
@@ -155,6 +171,8 @@ func (f GuidedForm) note() string {
 		return "Applies when the system libvirt service starts, usually during host startup."
 	case "resources":
 		return "VM must be stopped and persistent. Changes apply next boot."
+	case "disk-grow":
+		return "VM must be stopped. The disk gets larger; partitions inside the guest are not changed."
 	case "capture":
 		return "VM must be stopped. Save a private recovery point."
 	case "guest-tools":
@@ -415,6 +433,21 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 			return fail("enabled", "No change selected. Toggle the requested setting or go back.")
 		}
 		r.ID, r.Action, r.Input["enabled"] = f.VM.Key.UUID, "autostart", enabled
+		return "vm.plan", r, -1, nil
+	case "disk-grow":
+		known := false
+		for _, choice := range f.Fields[0].Choices {
+			known = known || choice == values["target"]
+		}
+		if !known {
+			return fail("target", "Choose one of this VM's disks.")
+		}
+		n, ok := guidedNumber(values["sizeGiB"], 65536)
+		if !ok {
+			return fail("sizeGiB", "New size must be a whole number of GiB from 1 to 65536.")
+		}
+		r.ID, r.Action = f.VM.Key.UUID, "grow-disk"
+		r.Input["target"], r.Input["sizeGiB"] = values["target"], float64(n)
 		return "vm.plan", r, -1, nil
 	case "resources":
 		for _, field := range []struct {
