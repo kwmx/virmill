@@ -59,6 +59,45 @@ def focus_row(terminal, label, wait_label, limit=40):
     raise RuntimeError('control not reachable: ' + label)
 
 
+def replace_text(terminal, label, text, wait_label):
+    """Clear a focused text field with Ctrl+U and type the new value."""
+    focus_row(terminal, label, wait_label)
+    terminal.wait(wait_label + ' cleared', lambda screen: True, terminal.send(b'\x15'))
+    tail = text[-16:]
+    terminal.wait(wait_label + ' typed', lambda screen: tail in screen.replace('\n', ''), terminal.send(text.encode()))
+
+
+def guest_address(uri, name, seconds):
+    """The guest's IPv4 address from the libvirt DHCP lease, if any."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        out = subprocess.run(['virsh', '-c', uri, 'domifaddr', name, '--source', 'lease'], stdin=subprocess.DEVNULL,
+                             capture_output=True, text=True, timeout=30).stdout
+        found = re.search(r'ipv4\s+(\d+\.\d+\.\d+\.\d+)/', out)
+        if found:
+            return found.group(1)
+        time.sleep(5)
+    return None
+
+
+def ssh_login(key, known_hosts, user, address, seconds):
+    """Log in with the test key, check sudo and wait for cloud-init to finish.
+    The disposable guest's new host key is accepted into a private file."""
+    command = ['ssh', '-i', str(key), '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5',
+               '-o', 'UserKnownHostsFile=' + str(known_hosts), '-o', 'StrictHostKeyChecking=accept-new', '-o', 'LogLevel=ERROR',
+               user + '@' + address, 'id -un; sudo -n true && echo SUDO-OK; cloud-init status --wait']
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        try:
+            out = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=420)
+        except subprocess.TimeoutExpired:
+            continue
+        if out.stdout.splitlines()[:1] == [user]:
+            return out.stdout
+        time.sleep(10)
+    return None
+
+
 def serial_marker(uri, name, marker, seconds=30):
     """Attach to the serial console, reset the disposable VM, look for marker."""
     import pty
@@ -88,7 +127,7 @@ def serial_marker(uri, name, marker, seconds=30):
         os.close(master)
 
 
-def walkthrough(runner, uri, source, deadline_seconds, imports):
+def walkthrough(runner, uri, source, deadline_seconds, imports, cloud=None):
     terminal = Terminal(runner, 'one-approval-import', 120, 36)
     report = {}
     try:
@@ -143,6 +182,15 @@ def walkthrough(runner, uri, source, deadline_seconds, imports):
             focus_row(terminal, 'Storage pool', 'pool')
             wait('Existing active pool chosen', lambda text: 'Storage pool: < Choose' not in text, b'\x1b[C')
         report['firmware'] = (re.search(r'Firmware: < ([^>]+) >', terminal.screen.text()) or [None, None])[1]
+        report['cloudSuggested'] = 'Cloud image: < Yes' in terminal.screen.text()
+        if cloud:
+            require(report['cloudSuggested'], 'cloud image setup was not suggested for a cloud image')
+            user = re.search(r'Cloud user name: \[([a-z0-9_-]+)\|?\]', terminal.screen.text())
+            require(user is not None, 'suggested cloud user not shown')
+            cloud['user'] = user.group(1)
+            replace_text(terminal, 'SSH public key file', str(cloud['key']), 'key file')
+            replace_text(terminal, 'Downloaded from', cloud['source'], 'download address')
+            report['cloudUser'] = cloud['user']
         focus_button(terminal, 'Continue to disks', 'settings')
         disks_page = wait('Disks page', lambda text: 'Disks and boot' in text, b'\r')
         report['busPreselected'] = 'Controller bus: < Choose' not in disks_page
@@ -197,7 +245,7 @@ def walkthrough(runner, uri, source, deadline_seconds, imports):
         terminal.close()
 
 
-def execute(root, uri, source, deadline_seconds, marker=None):
+def execute(root, uri, source, deadline_seconds, marker=None, cloud_source=None):
     require(authorized_test_host() and os.getuid() == 1000 and os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(root.absolute()))
     require(stage.is_relative_to(Path.home() / 'virmill-tests') and stage != Path.home() / 'virmill-tests' and
@@ -220,7 +268,21 @@ def execute(root, uri, source, deadline_seconds, marker=None):
     args = SimpleNamespace(binary='/usr/bin/virmill', connection=uri)
     runner = Runner(args, run, fd)
     jobs_before = {j['operationID'] for j in runner.cli('operation', 'list')}
-    report = walkthrough(runner, uri, source, deadline_seconds, run / 'data' / 'virmill' / 'imports')
+    cloud = None
+    if cloud_source:
+        key = run / 'cloud-test-key'
+        subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', '', '-f', str(key)], check=True, timeout=30)
+        cloud = {'key': Path(str(key) + '.pub'), 'source': cloud_source}
+    report = walkthrough(runner, uri, source, deadline_seconds, run / 'data' / 'virmill' / 'imports', cloud)
+    if cloud:
+        address = guest_address(uri, report['vm'], 300)
+        require(address is not None, 'guest never took a DHCP lease on the NAT network')
+        login = ssh_login(key, run / 'known_hosts', cloud['user'], address, 600)
+        require(login is not None, 'could not log in to the guest with the test key')
+        report['sshLoginWithTestKey'] = True
+        report['passwordlessSudo'] = 'SUDO-OK' in login
+        report['cloudInitStatus'] = next((line.strip() for line in login.splitlines() if line.strip().startswith('status:')), None)
+        require(report['passwordlessSudo'] and report['cloudInitStatus'] == 'status: done', 'cloud-init did not finish with the reviewed sudo access')
     # Only jobs this run created count; earlier history is ignored.
     new = [j for j in runner.cli('operation', 'list') if j['operationID'] not in jobs_before]
     ops = {j.get('operation'): j['state'] for j in new}
@@ -262,12 +324,14 @@ def main():
     p.add_argument('--connection', default='qemu:///session', choices=('qemu:///session', 'qemu:///system'))
     p.add_argument('--deadline', type=int, default=150, help='seconds allowed for preparation, creation and start')
     p.add_argument('--expect-serial', help='text the guest prints on its serial console after a reset')
+    p.add_argument('--cloud-source', help='https address typed as the cloud image source; enables the SSH login check')
     p.add_argument('--self-test', action='store_true')
     a = p.parse_args()
     if a.self_test:
         unittest.main(argv=['one_approval_import_probe'], exit=True)
     require(a.execute_disposable and a.root, '--execute-disposable --root STAGE required')
-    execute(a.root, a.connection, a.source, a.deadline, a.expect_serial)
+    require(a.cloud_source is None or a.cloud_source.startswith('https://'), '--cloud-source must be an https address')
+    execute(a.root, a.connection, a.source, a.deadline, a.expect_serial, a.cloud_source)
 
 
 if __name__ == '__main__':
