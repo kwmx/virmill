@@ -44,11 +44,19 @@ Scenarios: IMP-01, IMP-02, IMP-03, IMP-04, IMP-07, IMP-08, STO-01 (creation).
 Running, changing and removing VMs is dependable on system and session
 connections.
 
-- Native qualification of start, stop, force stop, reboot, pause, save, restore,
-  autostart and delete, and of live versus next-boot CPU, memory and boot edits.
-- Refusal of stale plans after external edits; unknown XML kept after edits.
-- Disk management: add, grow and move disks; full clones.
-- Console access (SPICE and serial) on supported desktops.
+- Done: native start, graceful stop, force off (also from paused), restart,
+  pause, resume, save and restore-saved on system and session connections, with
+  stale plans refused ([record](evidence/power-run.md)). A shutdown the guest
+  ignores fails plainly and leaves the VM free for Force off, now also in the TUI.
+- Done: next-boot CPU and memory edits while a VM runs (ADR 0061), natively
+  ([record](evidence/running-edits-run.md)).
+- Done: growing a stopped VM's disk (ADR 0062), natively on both connections
+  ([record](evidence/disk-grow-run.md)).
+- Next: removing the VMs Virmill creates and UEFI VMs (ADR 0063, proposed);
+  adding and moving disks; full clones; live CPU and memory changes and boot
+  edits while running; stale plans after external edits and unknown XML kept
+  after edits on adopted VMs; autostart across a host restart; console access
+  (SPICE and serial) on supported desktops.
 
 Scenarios: CORE-01…06, STO-01, STO-02, DEV-04 (console part), UX-02, UX-03.
 

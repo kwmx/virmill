@@ -1,6 +1,8 @@
 # ADR 0062: Grow, add and move a VM's disks
 
-Status: accepted for Grow, which is implemented; Add and Move are proposed.
+Status: accepted for Grow, which is implemented, with native evidence
+`disk-grow-session-native-002` and `disk-grow-system-native-002`
+([run record](../evidence/disk-grow-run.md)); Add and Move are proposed.
 
 ## Context
 

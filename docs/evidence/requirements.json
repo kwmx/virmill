@@ -499,7 +499,11 @@
         "power-session-native-001",
         "power-system-native-001",
         "power-system-native-002",
-        "resources-running-native-001"
+        "resources-running-native-001",
+        "disk-grow-session-native-001",
+        "disk-grow-system-native-001",
+        "disk-grow-session-native-002",
+        "disk-grow-system-native-002"
       ],
       "outstanding": [
         "Virmill locks, fingerprint checks and immediate native rechecks refuse observed drift. Full libvirt definition has no atomic external compare-and-swap; exclusive-writer acknowledgement is required. Actual concurrent external libvirt edit safety remains unqualified.",
@@ -507,7 +511,8 @@
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
         "Native a2f470b on system and session: a pause plan made stale by another Virmill plan was refused with STALE_PLAN before a job (power-session-native-001, power-system-native-002). A stale plan after an external XML edit is not yet qualified natively.",
-        "Native 0c686ce (resources-running-native-001): a CPU/RAM plan made while the VM ran was refused with STALE_PLAN after another plan changed the saved definition."
+        "Native 0c686ce (resources-running-native-001): a CPU/RAM plan made while the VM ran was refused with STALE_PLAN after another plan changed the saved definition.",
+        "Native bdffe06: a disk grow plan made against the old size was refused with STALE_PLAN before a job after another plan grew the disk (disk-grow-*-native-002)."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2213,7 +2218,8 @@
         "internal/domain/disk_grow.go",
         "internal/app/disk_grow.go",
         "internal/backend/libvirt/disk_grow_linux.go",
-        "schemas/vm-disk-grow-input.schema.json"
+        "schemas/vm-disk-grow-input.schema.json",
+        "docs/evidence/disk-grow-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -2267,13 +2273,17 @@
         "helper-access-native-auth-preserve-001",
         "cold-fixes-core-001",
         "cold-fixes-vet-001",
-        "cold-fixes-estimate-tui-001"
+        "cold-fixes-estimate-tui-001",
+        "disk-grow-session-native-001",
+        "disk-grow-system-native-001",
+        "disk-grow-session-native-002",
+        "disk-grow-system-native-002"
       ],
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill directory-pool creation (ADR 0056) has software regressions; its native run, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
-        "ADR 0062 Grow: a stopped VM's writable raw/qcow2 pool disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Software tests pass; native qualification, and Add and Move, remain open."
+        "ADR 0062 Grow: a stopped VM's writable raw/qcow2 file or pool-volume disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Native bdffe06: disk-grow-session-native-002 (qemu:///session, 1 to 3 GiB) and disk-grow-system-native-002 (qemu:///system Ubuntu guest, 5 to 7 GiB, booted afterwards) passed with capacities confirmed in the volume XML, stale plans refused and definitions unchanged. The -001 runs grew the disks but refused a stale plan with SOURCE_CHANGED (fixed in bdffe06). Guest partition growth, Add and Move remain open."
       ],
       "hardwareVerified": false,
       "released": false
