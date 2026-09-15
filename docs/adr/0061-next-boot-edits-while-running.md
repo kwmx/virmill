@@ -1,7 +1,7 @@
 # ADR 0061: Change next-boot CPU and memory while a VM runs
 
-Status: accepted. Software tests cover the service, the libvirt in-memory driver
-and the TUI; native evidence is pending.
+Status: accepted. Native evidence: `resources-running-native-001`
+([run record](../evidence/running-edits-run.md)).
 
 ## Context
 
