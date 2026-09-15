@@ -390,14 +390,28 @@ func checkDiskGrow(ctx context.Context, c *native.Connect, g domain.DiskGrow) (s
 		volume.Free()
 		return "", nil, err
 	}
-	switch {
-	case reflect.DeepEqual(disk, g.Disk):
-		return "before", volume, nil
-	case sameGrowVolume(disk, g.Disk) && disk.CapacityBytes == g.CapacityBytes:
-		return "grown", volume, nil
+	state, err := growState(disk, g.Disk, g.CapacityBytes)
+	if err != nil {
+		volume.Free()
+		return "", nil, err
 	}
-	volume.Free()
-	return "", nil, domain.Fail("SOURCE_CHANGED", "the disk changed since the review")
+	return state, volume, nil
+}
+
+// growState compares the observed volume with the reviewed one: "before" while
+// unchanged and "grown" once the same volume has the requested capacity. Any
+// other change to the same volume makes the plan stale; another volume is a
+// changed source.
+func growState(current, reviewed domain.RemovalDisk, capacity uint64) (string, error) {
+	switch {
+	case reflect.DeepEqual(current, reviewed):
+		return "before", nil
+	case !sameGrowVolume(current, reviewed):
+		return "", domain.Fail("SOURCE_CHANGED", "the disk's volume changed since the review")
+	case current.CapacityBytes == capacity:
+		return "grown", nil
+	}
+	return "", domain.Fail("STALE_PLAN", "the disk changed since the review; review again")
 }
 
 func (p *Provider) CheckDiskGrow(ctx context.Context, g domain.DiskGrow) (string, error) {
