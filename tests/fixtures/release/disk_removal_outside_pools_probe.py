@@ -80,7 +80,8 @@ def cli_raw(*args):
 def define(out, name, xml):
     path = out / (name + '.xml')
     path.write_text(xml)
-    virsh(URI, 'define', str(path))
+    process = subprocess.run(['virsh', '-c', URI, 'define', str(path)], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30)
+    require(process.returncode == 0, 'virsh define ' + name + ' failed: ' + process.stderr.strip()[-400:])
 
 
 def execute(root):
