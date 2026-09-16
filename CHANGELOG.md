@@ -24,6 +24,10 @@ From an image to a VM you can use, in one page and one confirmation.
   list. A VM's only graphical display
   opens straight away, in its own window, and Virmill stays usable while it is
   open. A viewer that cannot attach says why.
+- Removing a VM with its disks no longer refuses just because other VMs use
+  disk files outside storage pools; each such file, and its backing files, is
+  compared with the disks being deleted, and a match is refused. Where those
+  files or the pool images cannot be read as your user, removal still refuses.
 - The installer disk defaults to a size whose preparation fits the free space,
   with a note, and a refused preview is shown on the New VM page.
 - Your own VMs start without a manual libvirt step (ADR 0064). The packages now

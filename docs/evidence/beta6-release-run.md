@@ -16,6 +16,9 @@ dependencies. Since beta.5 (`cdcd095`) it adds:
 - the display in its own window, opened after start, and the Display button
   (`25d2dba`);
 - New VM (`85a1c09`, `9a2f6dd`, `c5a5290`);
+- removal with disks beside guests that use files outside pools, compared by
+  device and inode (`3657212`, ADR 0054 amendment;
+  [record](disk-removal-outside-pools-run.md));
 - the walkthrough probe and its fixes.
 
 `make verify` passed before the bump commit: the full suite, `go vet`, the
@@ -59,9 +62,9 @@ Failed runs in these series are listed in their records:
 
 ## Ships unfixed
 
-- On `qemu:///system`, removing a VM together with its disks is refused when
-  other guests on the host use disk files outside storage pools
-  (`RECOVERY_REQUIRED: disk source outside reconciled storage pools`). Removing
-  the definition and keeping the disks works.
+- On a `qemu:///system` host whose pool images are readable only by root or
+  qemu, removing a VM together with its disks is still refused, now with
+  `OPERATION_FAILED: permission denied`, because the safety check cannot read
+  those images as the user. Removing the definition and keeping the disks works.
 - Not walked natively: the system connection with no pool, a real desktop
   session, and appliances whose adapters need a network on a host with none.
