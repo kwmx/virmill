@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-beta.6 — owner-test pre-release
+
+From an image to a VM you can use, in one page and one confirmation.
 
 - **New VM** (press `n`) replaces Create VM and Import (ADR 0065). Choose an
   ISO, disk image or OVA and Virmill reads it by itself. One settings page shows
