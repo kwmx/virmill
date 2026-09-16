@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-beta.7 — owner-test pre-release
+
+- Every VM button shows the key that presses it. **Display** is `v` and
+  **Boot / installer** is now `o`, alongside `t`, `e`, `g`, `c` and `a`.
+- A running VM's details no longer show **Display** twice.
+- Where a button has no key of its own, such as **Create network**, the key line
+  shows **Tab Buttons**: press Tab, choose the button with Left/Right, then
+  Enter. The keyboard guide (`?`) explains the same.
+
 ## 1.0.0-beta.6 — owner-test pre-release
 
 From an image to a VM you can use, in one page and one confirmation.
