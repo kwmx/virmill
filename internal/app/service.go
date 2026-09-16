@@ -85,6 +85,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	e.Handlers["vm.remove-definition-v1"] = &removalHandler{s: s}
 	e.Handlers["vm.remove-disks-v1"] = &diskRemovalHandler{s: s}
 	e.Handlers[diskGrowOperation] = &diskGrowHandler{s: s}
+	e.Handlers[diskMoveOperation] = &diskMoveHandler{s: s}
 	e.Handlers["network.create"] = &networkCreationHandler{s: s}
 	e.Handlers["network.creation.resume"] = &networkResumeHandler{networkCreationHandler{s: s}}
 	e.Handlers["storage.pool.create"] = &storagePoolCreationHandler{s: s}
@@ -394,6 +395,9 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 	}
 	if r.Action == "grow-disk" {
 		return s.planDiskGrow(ctx, uid, r)
+	}
+	if r.Action == "move-disk" {
+		return s.planDiskMove(ctx, uid, r)
 	}
 	var empty domain.Plan
 	if r.ID == "" {

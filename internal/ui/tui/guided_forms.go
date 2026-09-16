@@ -114,10 +114,21 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		field("bus", "Connection", "Left/Right chooses how the disk attaches. Automatic follows this VM's disks.", 16)
 		f.Fields[1].Value = "automatic"
 		f.Fields[1].Choices = []string{"automatic", "sata", "scsi", "virtio"}
+	case "disk-move":
+		disks := movableDiskChoices(vm.PersistentXML)
+		if len(disks) == 0 {
+			return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "This VM has no disk in a storage pool that can be moved.")
+		}
+		field("target", "Disk", "Left/Right chooses the disk to move.", 32)
+		f.Fields[0].Choices = disks
+		f.Fields[0].Value = disks[0]
+		field("pool", "Destination pool", "The storage pool to copy the disk into. It must not be the disk's own pool.", 64)
+		field("keepOldCopy", "Keep the original", "Off deletes the original once the VM uses the copy. On keeps both.", 5)
+		f.Fields[2].Value, f.Fields[2].Toggle = "false", true
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
-	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" || kind == "disk-add" {
+	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" || kind == "disk-add" || kind == "disk-move" {
 		if vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "select an exact local VM before opening this form")
 		}
@@ -135,6 +146,9 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	}
 	if kind == "disk-grow" && (vm.State != "stopped" || vm.HasManagedSave) {
 		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before growing its disk.")
+	}
+	if kind == "disk-move" && (vm.State != "stopped" || vm.HasManagedSave) {
+		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before moving its disk.")
 	}
 	if kind == "disk-add" && (vm.State != "stopped" || vm.HasManagedSave) {
 		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before adding a disk.")
@@ -154,6 +168,8 @@ func (f GuidedForm) Title() string {
 		return "Grow a VM disk"
 	case "disk-add":
 		return "Add a VM disk"
+	case "disk-move":
+		return "Move a VM disk"
 	case "disk-add-dispose":
 		return "Close an unfinished disk addition"
 	case "capture":
@@ -191,6 +207,8 @@ func (f GuidedForm) note() string {
 		return "VM must be stopped. The disk gets larger; partitions inside the guest are not changed."
 	case "disk-add":
 		return "VM must be stopped. The new disk is empty; format it inside the guest."
+	case "disk-move":
+		return "VM must be stopped. Both copies exist until the move finishes, so the destination needs room for one more."
 	case "disk-add-dispose":
 		return "Frees the VM this unfinished addition holds. Deleting is offered only for a volume no VM uses."
 	case "capture":
@@ -491,6 +509,20 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		}
 		r.ID, r.Action = f.VM.Key.UUID, "grow-disk"
 		r.Input["target"], r.Input["sizeGiB"] = values["target"], float64(n)
+		return "vm.plan", r, -1, nil
+	case "disk-move":
+		if !slices.Contains(f.Fields[0].Choices, values["target"]) {
+			return fail("target", "Choose one of this VM's disks.")
+		}
+		pool := strings.TrimSpace(values["pool"])
+		if pool == "" || len(pool) > 255 {
+			return fail("pool", "Name the storage pool to move the disk into.")
+		}
+		r.ID, r.Action = f.VM.Key.UUID, "move-disk"
+		r.Input["target"], r.Input["pool"] = values["target"], pool
+		if values["keepOldCopy"] == "true" {
+			r.Input["keepOldCopy"] = true
+		}
 		return "vm.plan", r, -1, nil
 	case "resources":
 		for _, field := range []struct {

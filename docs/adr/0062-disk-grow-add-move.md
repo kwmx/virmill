@@ -88,6 +88,33 @@ They are built in this order, smallest first.
   cannot be checked byte for byte.
 - Peak space is two copies until the old one is deleted; the review says so.
 - Deletion is never replayed during recovery.
+- Only a writable qcow2 data disk already in a pool can move, and only to a
+  different active file-based pool. Installer media, read-only and shareable
+  disks, plain file disks, layered disks and a source carrying attributes this
+  editor does not model are refused rather than reinterpreted.
+- The copy's digest is taken at review, by reading the whole disk once. That is
+  what lets the copy be verified by read-back against a reviewed intent, and it
+  makes a disk that changes between review and copy a refusal instead of a
+  silent difference. The cost is a review proportional to the disk's size, which
+  the review text states.
+- The copy runs as one bounded read-then-write loop over a single connection: a
+  chunk is received from the source stream, hashed, and sent to the destination
+  stream before the next is read, so no whole disk is held in memory. Either
+  stream failing aborts both.
+- The copy is verified before the definition changes, and only then. Volume
+  verification refuses a volume any definition names, so once the disk is
+  retargeted the same read-back would be refused as busy.
+- Unlike adding a disk, the edit replaces the disk's source in place, so child
+  ordering is preserved and the result *is* confirmed by the same
+  normalisation-tolerant digest cold restore uses, plus the definition naming
+  the copy and no longer the original.
+- A failure before the definition changes has written at most a new,
+  unreferenced volume, so the job fails plainly, releases this VM's locks and
+  names the unused copy, exactly as a failed addition does.
+- If the original cannot be deleted, the move still completes: the VM already
+  uses the verified copy. The receipt records that the original was kept and
+  why, so a leftover file is auditable rather than silent, and it can be removed
+  later with selected-disk removal.
 
 ## Consequences
 

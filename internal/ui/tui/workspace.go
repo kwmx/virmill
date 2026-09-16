@@ -517,6 +517,10 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		m.guided("disk-add")
 		m.Advanced = false
 		return nil
+	case "vm disk move":
+		m.guided("disk-move")
+		m.Advanced = false
+		return nil
 	case "operation dispose-disk-addition":
 		// This acts on the selected unfinished job, not on a VM.
 		if m.Section != 8 || resourceID(m.Detail) == "" && m.Selected < 0 {

@@ -10,6 +10,7 @@ func acknowledgementLabel(id string) string {
 		"exclusive-configuration-writer": "No other administrator is changing this VM configuration",
 		"host-mutation":                  "Allow the reviewed changes on this host",
 		"data-loss-delete-disks":         "Permanently delete only the listed disk files; this cannot be undone",
+		"data-loss-delete-old-copy":      "Delete the disk's original copy once the VM uses the new one; this cannot be undone",
 		"data-loss-hard-stop":            "Cut power without a shutdown; unsaved guest data may be lost",
 		"remove-vm-definition":           "Remove this VM's saved definition",
 		"exclusive-lifecycle-writer":     "No other administrator is changing or starting these VMs",

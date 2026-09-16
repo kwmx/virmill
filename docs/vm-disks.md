@@ -50,6 +50,37 @@ plus `pool-overcommit` when the disk's full size is larger than the pool's free
 space — its file grows only as the guest writes. The new disk is empty:
 partition and format it inside the guest.
 
+## Move a disk to another pool
+
+Copy one disk of a stopped VM into another storage pool and point the VM at the
+copy. In the TUI, select the VM, open its tasks, choose **Advanced → Move VM
+disk**, pick the disk and name the destination pool, or from the CLI:
+
+```bash
+virmill vm disk move VM_UUID --connection qemu:///system \
+  --input '{"target":"sdb","pool":"archive"}'
+```
+
+The guest sees the same disk at the same place with the same contents: only
+where its image is stored changes.
+
+**What can be moved.** A writable qcow2 data disk that already lives in a
+storage pool, to a different active pool. Installer media, read-only and
+shared disks, plain file disks and layered disks with a backing file are
+refused.
+
+**Space and time.** Both copies exist until the move finishes, so the
+destination needs room for the whole disk; the review says how much and asks
+for `pool-overcommit` when the pool reports less free space than that. The disk
+is read once when the plan is reviewed, to record the digest the copy is checked
+against, and again while copying, so a review takes as long as reading the disk.
+
+**The original.** It is deleted once the VM uses the verified copy, which the
+review asks you to acknowledge. Add `"keepOldCopy":true` to keep both. If the
+original cannot be deleted — because something still refers to it, say — the
+move still completes and the receipt records that the original was kept, so you
+can remove it later with disk removal.
+
 ## Close an unfinished disk addition
 
 If an addition stops before it finishes, its job keeps this VM and its pool
