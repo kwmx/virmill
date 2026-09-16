@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 299, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 295, in main
+    execute(a.root, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 232, in execute
+    case, vm_uuid = walkthrough(runner, kind, sources[kind], imports, deadline_seconds)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 139, in walkthrough
+    require(time.monotonic() - started < 120, 'the settings page did not appear')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: the settings page did not appear

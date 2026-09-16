@@ -133,6 +133,7 @@ def walkthrough(runner, kind, source, imports, deadline_seconds):
             choose(part, 'folder ' + part)
             wait('open ' + part, lambda text, part=part: picker(text) and part in text, terminal.send(b'\r'), False)
         choose(source.name, 'source file')
+        terminal.send(b'\r')  # Select the filtered file; choosing it is not counted.
         started = time.monotonic()
         settings = None
         while settings is None:
