@@ -57,7 +57,7 @@ locked so nothing else can change them. Close it from **Jobs**: select the
 unfinished addition and choose **Close disk addition**, or from the CLI:
 
 ```sh
-virmill vm disk add dispose OPERATION_UUID \
+virmill operation dispose-disk-addition OPERATION_UUID \
   --input '{"disposition":"accept"}' --plan
 ```
 
