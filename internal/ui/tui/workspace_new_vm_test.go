@@ -270,3 +270,47 @@ func TestDisplayIsOneKeyFromTheVMList(t *testing.T) {
 		t.Fatal("v did not open the display")
 	}
 }
+
+// Every VM button shows the key that presses it, a running VM's Display appears
+// once, and a page whose buttons lack keys says to use Tab.
+func TestVMButtonsShowTheirKeys(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Width, m.Height = 120, 30
+	m.Section = 1
+	vms := []domain.VM{workspaceVM(workspaceVMID, "lab")}
+	vms[0].State = "running"
+	m.Data["vms"] = generic(vms)
+	m.Selected = 0
+	for _, detail := range []bool{false, true} {
+		if detail {
+			m.Detail = m.rows()[0]
+			m.DetailTitle = "VM details"
+		}
+		joined := strings.Join(m.footerButtons(), " ")
+		if strings.Count(joined, "Display ]") != 1 || !strings.Contains(joined, "[ v Display ]") {
+			t.Fatalf("display button: %s", joined)
+		}
+		for _, b := range m.buttons() {
+			if buttonKey(b.key) == "" {
+				t.Fatalf("VM button %q has no key: %s", b.label, joined)
+			}
+		}
+		if strings.Contains(m.View(), "Tab Buttons") {
+			t.Fatal("no Tab hint is needed when every button has a key")
+		}
+	}
+	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'o'}})
+	if cmd == nil && next.(Workspace).Boot == nil && !next.(Workspace).BootLoading {
+		t.Fatal("o did not open boot and installer settings")
+	}
+	m = fixtureWorkspace()
+	m.Width, m.Height = 120, 30
+	m.Section = 2
+	m.Data["networks"] = []any{}
+	if !strings.Contains(m.View(), "Create network") {
+		t.Skip("networks page shows no buttons in this fixture")
+	}
+	if !strings.Contains(m.View(), "Tab Buttons") {
+		t.Fatal("a page with unlabeled buttons does not say how to reach them:\n" + m.View())
+	}
+}

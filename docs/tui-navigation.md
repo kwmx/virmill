@@ -19,7 +19,11 @@ lists them all. Buttons wrap onto a second row when they do not fit.
 ## Find an action
 
 - **Tab / Shift-Tab** moves between content, action buttons and navigation.
-  Use arrows to select a row or button, then **Enter** to open it.
+  Use arrows to select a row or button, then **Enter** to open it. A button
+  shows the key that presses it, such as `[ v Display ]`. A button without a
+  key is reached with Tab, then Left/Right and Enter; the key line then shows
+  **Tab Buttons**. VM buttons all have keys: `v` Display, `o` Boot / installer,
+  `e` CPU / RAM, `g` Guest tools, `c` Capture, `a` More.
 - **1–9** opens Overview, VMs, Networks, Storage, Templates, Labs, Protection,
   Devices and Jobs. **0** opens Plugins; **,** opens Settings.
 - **Enter** on a resource opens its details. **/** filters names, states and IDs;

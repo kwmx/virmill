@@ -1596,6 +1596,14 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if !m.Busy && (m.Section == 0 || m.Section == 1) {
 				return m, m.openResources()
 			}
+		case "o":
+			if !m.Busy && (m.Section == 0 || m.Section == 1) {
+				for _, a := range ui.Actions {
+					if a.Command == "vm boot set" {
+						return m, m.openAction(a)
+					}
+				}
+			}
 		case "c":
 			if !m.Busy && (m.Section == 0 || m.Section == 1) {
 				m.guided("capture")
@@ -1724,25 +1732,49 @@ func (m Workspace) navLine() string {
 }
 
 // screenHints lists the keys that matter on the current list or details page.
+// buttonKey is the key shown on a button, or "" when it has none and is
+// reached with Tab.
+func buttonKey(key string) string {
+	switch {
+	case strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") || strings.HasPrefix(key, "connection-") || strings.HasPrefix(key, "creation-"):
+		return ""
+	case key == "enter":
+		return "Enter"
+	case key == "esc":
+		return "Esc"
+	}
+	return key
+}
+
+// tabButtonsHint says how to reach buttons that have no key of their own.
+func (m Workspace) tabButtonsHint() string {
+	for _, b := range m.buttons() {
+		if buttonKey(b.key) == "" {
+			return "   Tab Buttons"
+		}
+	}
+	return ""
+}
+
 func (m Workspace) screenHints() string {
 	switch {
 	case m.Detail != nil && m.selectedVM().State == "running":
-		return "v Display   x Technical details   PgUp/PgDn Scroll   Esc Back   ? Help"
+		return "v Display   x Technical details   PgUp/PgDn Scroll" + m.tabButtonsHint() + "   Esc Back   ? Help"
 	case m.Detail != nil:
-		return "x Technical details   PgUp/PgDn Scroll   Esc Back   ? Help"
+		return "x Technical details   PgUp/PgDn Scroll" + m.tabButtonsHint() + "   Esc Back   ? Help"
 	case m.Section == 10:
-		return "PgUp/PgDn Scroll   : All tools   ? Help"
+		return "PgUp/PgDn Scroll" + m.tabButtonsHint() + "   : All tools   ? Help"
 	case workspaceKinds[m.Section] == "" || len(m.rows()) == 0:
-		return ": All tools   ? Help"
+		return strings.TrimPrefix(m.tabButtonsHint()+"   : All tools   ? Help", "   ")
 	}
 	arrows := "↑/↓"
 	if m.ASCII {
 		arrows = "Up/Down"
 	}
 	if m.selectedVM().State == "running" {
-		return arrows + " Select   v Display   Enter Open   / Search   : All tools   ? Help"
+		return arrows + " Select   v Display   Enter Open   / Search" + m.tabButtonsHint() + "   : All tools   ? Help"
 	}
-	return arrows + " Select   Enter Open   / Search   : All tools   ? Help"
+	return arrows + " Select   Enter Open   / Search" + m.tabButtonsHint() + "   : All tools   ? Help"
 }
 
 func (m Workspace) separator() string {
@@ -2294,7 +2326,7 @@ func (m Workspace) buttons() []workspaceButton {
 		if vm.Key.UUID != "" {
 			switch vm.State {
 			case "running":
-				out = append(out, workspaceButton{"Display", "action:vm console show"}, workspaceButton{"Shut down", "t"})
+				out = append(out, workspaceButton{"Display", "v"}, workspaceButton{"Shut down", "t"})
 			case "paused":
 				out = append(out, workspaceButton{"Resume", "u"})
 			case "stopped", "shut off":
@@ -2302,7 +2334,8 @@ func (m Workspace) buttons() []workspaceButton {
 			}
 		}
 		if m.Detail != nil {
-			return append(out[1:], workspaceButton{"Display", "action:vm console show"}, workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
+			// A running VM's Display is already among the state buttons above.
+			return append(out[1:], workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "o"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
 		return m.withoutEmptyDetails(append(out, workspaceButton{"New VM", "n"}, workspaceButton{"More", "a"}))
 	}
@@ -2343,16 +2376,7 @@ func (m Workspace) footerButtons() []string {
 	buttons := m.buttons()
 	labels := make([]string, len(buttons))
 	for i, b := range buttons {
-		key := b.key
-		switch {
-		case strings.HasPrefix(key, "action:") || strings.HasPrefix(key, "job-") || strings.HasPrefix(key, "connection-"):
-			key = ""
-		case key == "enter":
-			key = "Enter"
-		case key == "esc":
-			key = "Esc"
-		}
-		labels[i] = "[ " + strings.TrimSpace(key+" "+b.label) + " ]"
+		labels[i] = "[ " + strings.TrimSpace(buttonKey(b.key)+" "+b.label) + " ]"
 	}
 	selected := min(m.ButtonIndex, len(buttons)-1)
 	render := func(i int) string {
