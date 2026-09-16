@@ -41,12 +41,14 @@ type DiskAdditionBackend interface {
 
 // AddedDiskDisposal is what an unresolved disk addition looks like now: whether
 // the VM's saved definition names the reviewed disk, whether its volume exists,
-// and the dependency digest that deletion is bound to.
+// and the dependency digest that deletion is bound to. GraphDigest is empty
+// when the disk is referenced or its volume is gone, because nothing can be
+// deleted then and a deletion-grade graph is not required.
 type AddedDiskDisposal struct {
 	Referenced  bool     `json:"referenced"`
 	VolumeState string   `json:"volumeState"` // present, absent; unknown is an error
 	Disk        *Disk    `json:"disk,omitempty"`
-	GraphDigest string   `json:"graphDigest"`
+	GraphDigest string   `json:"graphDigest,omitempty"`
 	ResourceIDs []string `json:"resourceIDs"`
 }
 

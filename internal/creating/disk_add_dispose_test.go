@@ -25,7 +25,11 @@ type disposeFixtureBackend struct {
 func (f *disposeFixtureBackend) InspectAddedDiskDisposal(_ context.Context, in domain.DiskAdditionPlan) (domain.AddedDiskDisposal, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	out := domain.AddedDiskDisposal{Referenced: f.referenced, VolumeState: f.state, GraphDigest: strings.Repeat("e", 64), ResourceIDs: in.Target.ResourceIDs}
+	out := domain.AddedDiskDisposal{Referenced: f.referenced, VolumeState: f.state, ResourceIDs: in.Target.ResourceIDs}
+	// The deletion-grade graph exists only when deletion is possible.
+	if !f.referenced && f.state == "present" {
+		out.GraphDigest = strings.Repeat("e", 64)
+	}
 	if f.state == "present" {
 		out.Disk = &domain.RemovalDisk{Target: in.Target.Target, Path: "/synthetic/" + in.Target.VolumeName, PoolID: in.Target.PoolID,
 			VolumeName: in.Target.VolumeName, VolumeKey: "fixture:" + in.Target.VolumeName, Generation: "linux-statx-v1:1:1:1:1:000000000",

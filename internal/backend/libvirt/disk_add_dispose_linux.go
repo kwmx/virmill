@@ -72,13 +72,18 @@ func (p *Provider) InspectAddedDiskDisposal(ctx context.Context, in domain.DiskA
 		out.Disk = &observed
 	}
 	resources := append([]string{}, in.Target.ResourceIDs...)
-	candidates := []domain.CleanupCandidate{{Intent: in.Volume}}
-	if out.Disk != nil {
-		candidates[0].Allocated = &domain.CreatedVolume{Intent: in.Volume, BackendKey: out.Disk.VolumeKey, Path: out.Disk.Path, Generation: out.Disk.Generation}
-	}
-	out.GraphDigest, err = cleanupGraphExceptOwner(ctx, c, in.Target.VM.ConnectionID, candidates, &resources, in.Target.VM.UUID)
-	if err != nil {
-		return out, err
+	// The host-wide dependency graph is the precondition for deleting a file,
+	// so it is built only when deletion is possible. Accepting a disk the
+	// definition already names deletes nothing, and must not be blocked by
+	// unrelated firmware state elsewhere on the connection that the deletion
+	// graph cannot account for.
+	if !out.Referenced && out.Disk != nil {
+		candidates := []domain.CleanupCandidate{{Intent: in.Volume,
+			Allocated: &domain.CreatedVolume{Intent: in.Volume, BackendKey: out.Disk.VolumeKey, Path: out.Disk.Path, Generation: out.Disk.Generation}}}
+		out.GraphDigest, err = cleanupGraphExceptOwner(ctx, c, in.Target.VM.ConnectionID, candidates, &resources, in.Target.VM.UUID)
+		if err != nil {
+			return out, err
+		}
 	}
 	sort.Strings(resources)
 	out.ResourceIDs = slices.Compact(resources)
