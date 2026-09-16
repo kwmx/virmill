@@ -57,25 +57,38 @@ func NoNewPrivileges() bool {
 	return false
 }
 
-// SessionBootReady reports whether a guest started on the per-user connection
-// could reach QEMU at all, and what to advise when it could not. A libvirt
-// socket already present for this user means some other program started the
-// daemon, so it carries no restriction from here. With no such socket, the
-// first program to use the connection forks the daemon itself, and that is
-// only safe while this process may still transition SELinux domains on exec.
-func SessionBootReady() (bool, string) {
-	runtime := os.Getenv("XDG_RUNTIME_DIR")
-	if runtime != "" {
+// SessionBootProbe decides once whether guests started on the per-user
+// connection can reach QEMU, and returns that fixed verdict.
+//
+// It must be called before this process connects to libvirt, and the verdict
+// must not be recomputed afterwards. With no per-user socket, the first program
+// to use the connection forks the daemon as its own child; started from a
+// service with no-new-privileges the daemon can never transition SELinux
+// domains on exec, so it can never execute QEMU. Asking later always answers
+// "a socket exists", because the unusable daemon just created it: the very
+// situation to refuse looks identical to a healthy one. A socket present
+// beforehand means some other program owns the daemon, which carries no
+// restriction from here.
+func SessionBootProbe() func() (bool, string) {
+	return sessionBootProbe(os.Getenv("XDG_RUNTIME_DIR"), NoNewPrivileges())
+}
+
+func sessionBootProbe(runtime string, restricted bool) func() (bool, string) {
+	ready := !restricted
+	if runtime != "" && !ready {
 		for _, name := range []string{"libvirt/virtqemud-sock", "libvirt/libvirt-sock"} {
 			if _, e := os.Stat(filepath.Join(runtime, name)); e == nil {
-				return true, ""
+				ready = true
+				break
 			}
 		}
 	}
-	if NoNewPrivileges() {
+	return func() (bool, string) {
+		if ready {
+			return true, ""
+		}
 		return false, "systemctl --user enable --now virtqemud.socket"
 	}
-	return true, ""
 }
 func PrivateDir(path string) error {
 	if e := os.MkdirAll(path, 0700); e != nil {

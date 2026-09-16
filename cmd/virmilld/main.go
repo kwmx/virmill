@@ -46,7 +46,9 @@ func run() error {
 	defer engine.Close()
 	service := app.New(&backend.Provider{}, engine)
 	service.Inspector = platform.Doctor
-	service.SessionBoot = platform.SessionBootReady
+	// Decided here, before anything connects to libvirt: once this process has
+	// connected it may have forked the very daemon that cannot start guests.
+	service.SessionBoot = platform.SessionBootProbe()
 	service.BridgeZones = platform.BridgeFirewallZones
 	service.HostPrefixes = platform.ObserveHostNetworkPrefixes
 	service.NetworkAllocation = func(ctx context.Context) (network.AllocationConfig, error) {
