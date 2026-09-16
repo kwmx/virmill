@@ -353,7 +353,9 @@ def remove_created(runner, uri, name, vm_uuid, key):
 def pool_volumes(uri):
     out = {}
     for pool in virsh(uri, 'pool-list', '--name').split():
-        out[pool] = sorted(virsh(uri, 'vol-list', pool, '--name').split())
+        # A pool this user cannot read is compared as unreadable, not skipped.
+        process = subprocess.run(['virsh', '-c', uri, 'vol-list', pool, '--name'], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30)
+        out[pool] = sorted(process.stdout.split()) if process.returncode == 0 else ['<unreadable>']
     return out
 
 

@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/newvm4-c5a5290/new_vm_walkthrough_probe.py", line 452, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/newvm4-c5a5290/new_vm_walkthrough_probe.py", line 448, in main
+    (execute_system if a.system else execute)(a.root, a.deadline)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm4-c5a5290/new_vm_walkthrough_probe.py", line 371, in execute_system
+    host_before, volumes_before = host_inventory(regular), pool_volumes(uri)
+                                                           ~~~~~~~~~~~~^^^^^
+  File "<test-vm-home>/virmill-tests/newvm4-c5a5290/new_vm_walkthrough_probe.py", line 356, in pool_volumes
+    out[pool] = sorted(virsh(uri, 'vol-list', pool, '--name').split())
+                       ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm4-c5a5290/one_approval_import_probe.py", line 34, in virsh
+    require(process.returncode == 0, 'virsh ' + args[0] + ' failed')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm4-c5a5290/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: virsh vol-list failed
