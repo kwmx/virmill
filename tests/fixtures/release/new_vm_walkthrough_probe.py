@@ -102,7 +102,7 @@ def viewers(vm_uuid):
 
 
 def walkthrough(runner, kind, source, imports, deadline_seconds):
-    terminal = Terminal(runner, 'new-vm-' + kind, 120, 40)
+    terminal = Terminal(runner, 'new-vm-' + kind, 120, 36)
     report = {'case': kind, 'source': source.name}
     counted = []
     confirmations = 0

@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 299, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 295, in main
+    execute(a.root, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 232, in execute
+    case, vm_uuid = walkthrough(runner, kind, sources[kind], imports, deadline_seconds)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 105, in walkthrough
+    terminal = Terminal(runner, 'new-vm-' + kind, 120, 40)
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/tui_workspace_probe.py", line 366, in __init__
+    self.screen, self.transcript, self.steps = Screen(columns, rows), bytearray(), []
+                                               ~~~~~~^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/tui_workspace_probe.py", line 196, in __init__
+    self.resize(columns, rows)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/tui_workspace_probe.py", line 199, in resize
+    require((columns, rows) in ((80, 24), (120, 36)), 'unsupported probe size')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: unsupported probe size
