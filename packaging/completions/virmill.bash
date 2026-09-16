@@ -2741,6 +2741,48 @@ _virmill_operation_cancel()
     noun_aliases=()
 }
 
+_virmill_operation_dispose-disk-addition()
+{
+    last_command="virmill_operation_dispose-disk-addition"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--after=")
+    two_word_flags+=("--after")
+    local_nonpersistent_flags+=("--after")
+    local_nonpersistent_flags+=("--after=")
+    flags+=("--input=")
+    two_word_flags+=("--input")
+    local_nonpersistent_flags+=("--input")
+    local_nonpersistent_flags+=("--input=")
+    flags+=("--plan")
+    local_nonpersistent_flags+=("--plan")
+    flags+=("--config=")
+    two_word_flags+=("--config")
+    flags+=("--connection=")
+    two_word_flags+=("--connection")
+    flags+=("--no-color")
+    flags+=("--non-interactive")
+    flags+=("--output=")
+    two_word_flags+=("--output")
+    flags+=("--quiet")
+    flags+=("--timeout=")
+    two_word_flags+=("--timeout")
+    flags+=("--verbose")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
 _virmill_operation_list()
 {
     last_command="virmill_operation_list"
@@ -2911,6 +2953,7 @@ _virmill_operation()
 
     commands=()
     commands+=("cancel")
+    commands+=("dispose-disk-addition")
     commands+=("list")
     commands+=("reconcile")
     commands+=("show")
