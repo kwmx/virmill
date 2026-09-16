@@ -163,7 +163,13 @@ def main():
                 'the definition does not name the copy at ' + a.target)
         require(now.get('bus') == was.get('bus') and now.get('unit') == was.get('unit'),
                 'the moved disk changed its bus or drive port')
-        require(was['volume'] not in shown['persistentXML'], 'the definition still names the original')
+        # A bare volume name is not unique across pools: moving a disk back into
+        # a pool can give the copy a name another disk already uses elsewhere.
+        # The original is identified by its pool and volume together.
+        still = [d for d in (disk_declaration(shown['persistentXML'], t) for t in
+                             re.findall(r"<target dev='([^']+)'", shown['persistentXML']))
+                 if d.get('pool') == was['pool'] and d.get('volume') == was['volume']]
+        require(not still, 'the definition still names the original')
         remaining = volume_names(a.connection, was['pool'])
         if a.keep_old_copy:
             require(was['volume'] in remaining, 'the original was deleted although it was kept')

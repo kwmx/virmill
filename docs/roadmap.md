@@ -55,10 +55,18 @@ connections.
 - Done: removing the VMs Virmill creates and UEFI VMs while keeping the disks,
   the firmware settings file and an emulated TPM's state (ADR 0063), natively
   on both connections ([record](evidence/removal-created-run.md)).
-- Next: adding and moving disks; full clones; live CPU and memory changes and
-  boot edits while running; stale plans after external edits and unknown XML
-  kept after edits on adopted VMs; autostart across a host restart; console
-  access (SPICE and serial) on supported desktops.
+- Done: adding one empty disk to a stopped VM (ADR 0062), natively on the
+  session connection ([record](evidence/disk-add-run.md)), with a reviewed
+  disposition for an addition that stops before it finishes.
+- Done: moving a disk to another storage pool (ADR 0062), natively on the
+  session connection in both directions, with the VM booted from the moved disk
+  afterwards ([record](evidence/disk-move-run.md)).
+- Next: full clones; live CPU and memory changes and boot edits while running;
+  stale plans after external edits and unknown XML kept after edits on adopted
+  VMs; autostart across a host restart; console access (SPICE and serial) on
+  supported desktops; Add, Move and the addition disposition on the system
+  connection; and starting session VMs without a manual libvirt step on hosts
+  with no per-user socket unit.
 
 Scenarios: CORE-01…06, STO-01, STO-02, DEV-04 (console part), UX-02, UX-03.
 

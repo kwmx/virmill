@@ -1,8 +1,14 @@
 # ADR 0062: Grow, add and move a VM's disks
 
-Status: accepted for Grow, which is implemented, with native evidence
+Status: accepted and implemented. Grow has native evidence
 `disk-grow-session-native-002` and `disk-grow-system-native-002`
-([run record](../evidence/disk-grow-run.md)); Add and Move are proposed.
+([run record](../evidence/disk-grow-run.md)); Add has
+`disk-add-session-native-006` and `-007`
+([run record](../evidence/disk-add-run.md)); Move has
+`disk-move-session-native-005`
+([run record](../evidence/disk-move-run.md)). All three are qualified on the
+session connection only, and the disposition for an unresolved addition is not
+yet natively qualified.
 
 ## Context
 

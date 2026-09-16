@@ -201,7 +201,12 @@
         "disk-add-session-native-004",
         "disk-add-session-native-005",
         "disk-add-session-native-006",
-        "disk-add-session-native-007"
+        "disk-add-session-native-007",
+        "disk-move-session-native-001",
+        "disk-move-session-native-002",
+        "disk-move-session-native-003",
+        "disk-move-session-native-004",
+        "disk-move-session-native-005"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -2251,7 +2256,13 @@
         "schemas/vm-disk-add-input.schema.json",
         "internal/backend/libvirt/disk_add_dispose_linux.go",
         "internal/creating/disk_add_dispose_linux.go",
-        "schemas/vm-disk-add-dispose-input.schema.json"
+        "schemas/vm-disk-add-dispose-input.schema.json",
+        "internal/domain/disk_move.go",
+        "internal/app/disk_move.go",
+        "internal/backend/libvirt/disk_move_linux.go",
+        "internal/backend/xmlpatch/disk_move.go",
+        "schemas/vm-disk-move-input.schema.json",
+        "docs/evidence/disk-move-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -2291,7 +2302,10 @@
         "tests/fixtures/release/disk_add_native.py",
         "internal/creating/disk_add_dispose_test.go",
         "internal/ui/tui/guided_disk_add_dispose_test.go",
-        "internal/backend/xmlpatch/disk_add_stored_test.go"
+        "internal/backend/xmlpatch/disk_add_stored_test.go",
+        "internal/backend/xmlpatch/disk_move_test.go",
+        "internal/backend/libvirt/disk_move_state_linux_test.go",
+        "tests/fixtures/release/disk_move_native.py"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -2325,7 +2339,12 @@
         "disk-add-session-native-004",
         "disk-add-session-native-005",
         "disk-add-session-native-006",
-        "disk-add-session-native-007"
+        "disk-add-session-native-007",
+        "disk-move-session-native-001",
+        "disk-move-session-native-002",
+        "disk-move-session-native-003",
+        "disk-move-session-native-004",
+        "disk-move-session-native-005"
       ],
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill directory-pool creation (ADR 0056) has software regressions; its native run, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
@@ -2336,7 +2355,8 @@
         "ADR 0062 Add: vm disk add (vm.disk.add-v1) and the TUI Add VM disk give a stopped VM one new empty pool volume, built in a private workspace and uploaded through creation's verified path, with pool-overcommit when the disk's full size exceeds free space. Software tests pass. Native qualification is NOT complete: disk-add-session-native-001 created and verified the volume and defined the disk but failed its readback, because libvirt reformats the definition it stores and the readback compared a byte-exact digest (fixed in d350ef1 with the normalisation-tolerant hardware digest plus a check that the stored definition names the reviewed pool and volume). That job stayed recovery-required, which keeps its pool lock, so disk-add-session-native-002 and -003 were refused with RESOURCE_BUSY before doing anything. Pre-define failures now fail plainly and release the locks (790665e), but a failure at or after the define still has no user-facing disposition: it holds the VM and pool locks with no supported way to close it. That gap and native Add qualification remain open.",
         "disk-add-session-native-004 ran on the Ubuntu system VM, whose VM and pool no job held, so lock contention was ruled out: the volume was written and verified and the disk was defined with the reviewed target, pool, volume and drive port, yet DefineAddedDisk still refused its own readback. The cause is not yet identified, so f9b5dd6 splits that one message into separate power-state, saved-state, digest and secure-readback failures and reports the expected and stored digests. No further native attempt should run until the post-define disposition gap is closed, because each attempt leaves another VM and pool held by an unclosable job.",
         "ADR 0062 disposition: operation dispose-disk-addition (vm.disk.add.dispose-v1) closes an unresolved disk addition by inheriting its locks and recording one durable disposition. Accept keeps the reviewed disk and is offered only when the saved definition names it; delete removes the new volume only while no definition names it, under creation cleanup's generation and dependency guards. Software tests cover both dispositions, every mismatched choice, a second disposition, and that the parent becomes partial so a fresh addition applies. This closes the stranding gap recorded above; native qualification of both Add and its disposition is still open.",
-        "ADR 0062 Add readback: no digest of the whole definition can confirm a device insert, because libvirt files a new disk among the other disks while the hardware digest treats child ordering as significant; that is what refused disk-add-session-native-001 through -005. The stored definition is now confirmed by removing the disk at the reviewed target and finding the digest the review bound for the definition before the insert, which also proves no other device changed, plus the disk naming the reviewed pool, volume and qcow2 format and the VM still being stopped without saved state; the plan no longer stores a digest of the result. On 116e0e3 disk-add-session-native-006 wrote and verified the volume at exactly the reviewed size and the saved definition gained the reviewed disk beside the existing ones, so the addition itself passed natively for the first time. That run still ends failed, because the probe's next step, starting the VM, was refused by the host for an unrelated reason. A clean end-to-end native run, native qualification of the disposition, and Move remain open."
+        "ADR 0062 Add readback: no digest of the whole definition can confirm a device insert, because libvirt files a new disk among the other disks while the hardware digest treats child ordering as significant; that is what refused disk-add-session-native-001 through -005. The stored definition is now confirmed by removing the disk at the reviewed target and finding the digest the review bound for the definition before the insert, which also proves no other device changed, plus the disk naming the reviewed pool, volume and qcow2 format and the VM still being stopped without saved state; the plan no longer stores a digest of the result. On 116e0e3 disk-add-session-native-006 wrote and verified the volume at exactly the reviewed size and the saved definition gained the reviewed disk beside the existing ones, so the addition itself passed natively for the first time. That run still ends failed, because the probe's next step, starting the VM, was refused by the host for an unrelated reason. disk-add-session-native-007 then passed the addition again on 3439d5b, at sdd with its volume at the reviewed size, so native Add is qualified on the session connection; both runs ended failed only because the probe then started the VM and the host refused to execute QEMU, which is recorded in CORE-02 and is unrelated to disks. Native qualification of the disposition remains open.",
+        "ADR 0062 Move: vm disk move (vm.disk.move-v1) and the TUI Move VM disk copy one writable qcow2 pool disk of a stopped VM into another active file-based pool, verify the copy, point the disk at it in place, and delete the original unless the review kept it, asking data-loss-delete-old-copy when it will. Reviewing a move never reads the disk: the bytes are hashed as they are copied and the copy is read back against that digest before the definition changes. Native on 82ea6d8 and ae2a832: disk-move-session-native-005 passed end to end on qemu:///session, copying sdd between pools, naming the copy at the same target, bus and drive port, deleting the original with no other volume in its pool touched, and starting and forcing off the VM with the moved disk, with other VMs, jobs and media preserved. Runs 003 and 004 moved the disk correctly too, in both directions and including reclaiming a freed volume name, and failed only in the probe. Three defects were found and fixed on the way: a raw libvirt error flattened into one message with the cause discarded, a read-back that compared the whole destination volume against the bytes written and so would refuse a perfect copy, and a copy loop that treated the normal end of a stream (io.EOF) as a failure and would have spun on a would-block. Move on qemu:///system, moving a booted guest's own boot disk, and a full clone (STO-02) remain open."
       ],
       "hardwareVerified": false,
       "released": false
