@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-disk-add-dispose-input.schema.json",
+  "title": "Close an unresolved disk addition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["disposition"],
+  "properties": {
+    "disposition": {"enum": ["accept", "delete"]}
+  }
+}

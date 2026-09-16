@@ -68,6 +68,15 @@ func registerDiskAdd(service *app.Service, s *Service) {
 	service.Extensions["vm.disk.add"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) {
 		return h.Plan(ctx, uid, r)
 	}
+	// Every addition needs a reviewed way out: an unresolved job keeps this
+	// VM and its pool locked until it is closed (ADR 0062).
+	if disposal, ok := service.Provider.(domain.DiskAdditionDisposalBackend); ok {
+		d := &diskAddDisposeHandler{s: s, backend: disposal}
+		service.Engine.Handlers[diskAddDisposeOperation] = d
+		service.Extensions["vm.disk.add.dispose"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) {
+			return d.Plan(ctx, uid, r)
+		}
+	}
 }
 
 func diskFileBound(virtual int64) int64 { return virtual + virtual/4 + (16 << 20) }

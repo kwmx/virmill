@@ -346,6 +346,32 @@ func (m *Workspace) guided(kind string) {
 	m.Error = ""
 	m.Offset = 0
 }
+
+// guidedJob opens a form that acts on one durable job rather than a VM.
+func (m *Workspace) guidedJob(kind, job string) {
+	if !guidedUUID.MatchString(job) {
+		m.Error = "Select the unfinished job first."
+		return
+	}
+	m.guided(kind)
+	if m.Form != nil {
+		f := *m.Form
+		f.JobID = job
+		m.Form = &f
+	}
+}
+
+// selectedJobID is the job the Jobs page has open or highlighted.
+func (m Workspace) selectedJobID() string {
+	if id := resourceID(m.Detail); guidedUUID.MatchString(id) {
+		return id
+	}
+	rows := m.rows()
+	if m.Selected >= 0 && m.Selected < len(rows) {
+		return resourceID(rows[m.Selected])
+	}
+	return ""
+}
 func (m *Workspace) preview(action string) tea.Cmd {
 	m.Pending = maps.Clone(m.Pending)
 	delete(m.Pending, "detail")
@@ -489,6 +515,15 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		return nil
 	case "vm disk add":
 		m.guided("disk-add")
+		m.Advanced = false
+		return nil
+	case "vm disk add dispose":
+		// This acts on the selected unfinished job, not on a VM.
+		if m.Section != 8 || resourceID(m.Detail) == "" && m.Selected < 0 {
+			m.Error = "Open Jobs and select the unfinished disk addition first."
+			return nil
+		}
+		m.guidedJob("disk-add-dispose", m.selectedJobID())
 		m.Advanced = false
 		return nil
 	}

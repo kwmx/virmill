@@ -38,3 +38,25 @@ type DiskAdditionBackend interface {
 	CheckDiskAddition(context.Context, DiskAdditionPlan) (string, error)
 	DefineAddedDisk(context.Context, DiskAdditionPlan) error
 }
+
+// AddedDiskDisposal is what an unresolved disk addition looks like now: whether
+// the VM's saved definition names the reviewed disk, whether its volume exists,
+// and the dependency digest that deletion is bound to.
+type AddedDiskDisposal struct {
+	Referenced  bool     `json:"referenced"`
+	VolumeState string   `json:"volumeState"` // present, absent; unknown is an error
+	Disk        *Disk    `json:"disk,omitempty"`
+	GraphDigest string   `json:"graphDigest"`
+	ResourceIDs []string `json:"resourceIDs"`
+}
+
+// Disk is one observed volume identity, as selected-disk removal records it.
+type Disk = RemovalDisk
+
+// DiskAdditionDisposalBackend closes an unresolved disk addition. It never
+// uploads, never defines and never deletes a volume the definition still
+// names: a referenced disk can only be accepted, never removed here.
+type DiskAdditionDisposalBackend interface {
+	InspectAddedDiskDisposal(context.Context, DiskAdditionPlan) (AddedDiskDisposal, error)
+	DeleteUnreferencedDisk(context.Context, DiskAdditionPlan, AddedDiskDisposal) error
+}

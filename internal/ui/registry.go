@@ -91,6 +91,7 @@ var Actions = []Action{
 	{"vm remove", "vm.remove", "VMs", "Plan removal of a stopped VM; keep disks by default or explicitly select disks for deletion; backups are retained", "id", "remove"},
 	{"vm disk grow", "vm.plan", "VMs", "Plan growing one disk of a stopped VM; partitions inside the guest are not changed", "id", "grow-disk"},
 	{"vm disk add", "vm.disk.add", "VMs", "Plan one new empty disk for a stopped VM in its own storage pool", "id", "add-disk"},
+	{"vm disk add dispose", "vm.disk.add.dispose", "Jobs", "Close an unresolved disk addition by accepting the new disk or deleting its unused volume", "id", "dispose-disk-addition"},
 	{"vm autostart", "vm.plan", "VMs", "Plan autostart policy", "id", "autostart"},
 	{"vm set", "vm.plan", "VMs", "Plan next-boot CPU/RAM, boot order or retained-media ejection on a powered-off VM", "id", "set"},
 	{"import source describe", "import.source.describe", "VMs", "Detect supported appliance, disk or ISO metadata without importing", "path", ""},

@@ -30,8 +30,10 @@ type GuidedField struct {
 // GuidedForm only collects a preview request. The workspace owns service calls
 // and the separate immutable-plan approval flow.
 type GuidedForm struct {
-	Kind                          string
-	VM                            domain.VM
+	Kind string
+	VM   domain.VM
+	// JobID is set for forms that act on a durable job instead of a VM.
+	JobID                         string
 	Fields                        []GuidedField
 	Focus                         int
 	Error                         string
@@ -103,6 +105,10 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		f.Fields[0].Choices = disks
 		f.Fields[0].Value = disks[0]
 		field("sizeGiB", "New size (GiB)", "The disk's new total size, larger than now. Partitions inside the guest keep their size.", 5)
+	case "disk-add-dispose":
+		field("disposition", "Close by", "Left/Right chooses. Accept keeps the new disk; delete removes an unused volume.", 16)
+		f.Fields[0].Value = "accept"
+		f.Fields[0].Choices = []string{"accept", "delete"}
 	case "disk-add":
 		field("sizeGiB", "Size (GiB)", "The new empty disk's size, 1 to 512 GiB.", 5)
 		field("bus", "Connection", "Left/Right chooses how the disk attaches. Automatic follows this VM's disks.", 16)
@@ -148,6 +154,8 @@ func (f GuidedForm) Title() string {
 		return "Grow a VM disk"
 	case "disk-add":
 		return "Add a VM disk"
+	case "disk-add-dispose":
+		return "Close an unfinished disk addition"
 	case "capture":
 		return "Create a cold recovery point"
 	case "guest-tools":
@@ -183,6 +191,8 @@ func (f GuidedForm) note() string {
 		return "VM must be stopped. The disk gets larger; partitions inside the guest are not changed."
 	case "disk-add":
 		return "VM must be stopped. The new disk is empty; format it inside the guest."
+	case "disk-add-dispose":
+		return "Frees the VM this unfinished addition holds. Deleting is offered only for a volume no VM uses."
 	case "capture":
 		return "VM must be stopped. Save a private recovery point."
 	case "guest-tools":
@@ -444,6 +454,15 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		}
 		r.ID, r.Action, r.Input["enabled"] = f.VM.Key.UUID, "autostart", enabled
 		return "vm.plan", r, -1, nil
+	case "disk-add-dispose":
+		if !slices.Contains(f.Fields[0].Choices, values["disposition"]) {
+			return fail("disposition", "Choose whether to accept the new disk or delete its unused volume.")
+		}
+		r.ID, r.Input["disposition"] = f.JobID, values["disposition"]
+		if r.ID == "" {
+			return fail("disposition", "Open this from the unfinished disk addition in Jobs.")
+		}
+		return "vm.disk.add.dispose", r, -1, nil
 	case "disk-add":
 		n, ok := guidedNumber(values["sizeGiB"], 512)
 		if !ok {
