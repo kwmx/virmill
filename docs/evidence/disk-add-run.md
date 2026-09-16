@@ -22,15 +22,38 @@ definition gained exactly the reviewed disk, and starts and stops the VM.
 | --- | --- | --- |
 | `disk-add-session-native-006` | failed, but not in the addition | On build `116e0e3`, with the read-back comparing the definition minus the reviewed disk, **the addition succeeded**: its job reads `succeeded`, libvirt registered the new volume at exactly 1 GiB, and the saved definition gained `sdc` beside `sda` and `sdb` with the reviewed pool, volume, bus and port. The probe then failed at its next step, starting the VM, for an unrelated host reason. |
 
+| `disk-add-session-native-007` | failed, but not in the addition, and nothing was stranded | On build `3439d5b`, the addition passed again: the job reads `succeeded`, the volume `disk-003.qcow2` was written at exactly 1 GiB, and the definition gained `sdd` on drive port 3 beside `sda`, `sdb` and `sdc`. The host refused the start again, and this time the `vm.start` job read **`failed`** with no lock retained, so the VM stayed usable and no disposition was needed. |
+
 The start was refused by the host with `cannot execute binary
 /usr/bin/qemu-system-x86_64: Operation not permitted`, ten milliseconds into
 the attempt, before the guest ran. Nothing about the new disk is involved: the
-generated QEMU command line carried all three disks correctly, the binary is
-mode 0755 and labelled `qemu_exec_t` on a mount with no `noexec`, it runs when
-executed directly, SELinux logged no denial, and another untouched VM on the
-same connection started immediately afterwards. The refusal fell in the same
-minute as the RPM upgrade that installed this build, so a start racing the
-package transaction is the likely cause; that is plausible, not proven.
+generated QEMU command line carried every disk correctly, the binary is mode
+0755 and labelled `qemu_exec_t` on a mount with no `noexec`, it runs when
+executed directly, and other VMs on the same connection started immediately
+afterwards.
+
+Two earlier explanations recorded here were wrong and are withdrawn: the
+refusal did not race the RPM transaction, and it is not specific to one VM. It
+reproduces deterministically, and the cause is the coordinator's own service
+sandbox leaking into session libvirt. This host has no socket-activated session
+`virtqemud`, so the first client to use `qemu:///session` forks the daemon as
+its own child. When that client is `virmilld`, the daemon inherits
+`NoNewPrivileges=yes` from `virmilld.service`, which blocks the SELinux domain
+transition to `qemu_t` on exec, and every start fails with `EPERM` and no
+ordinary AVC:
+
+| `virtqemud` | Parent and cgroup | `NoNewPrivs` | Start through the coordinator |
+| --- | --- | --- | --- |
+| pid 70680 | `virmilld`, in `virmilld.service` | 1 | refused, `ee851e14` failed |
+| pid 70792 | login shell, in `session-269.scope` | 0 | succeeded |
+
+The reproduction is: stop the session `virtqemud`, restart `virmilld` so it is
+the first libvirt client, then start any VM through Virmill. Starts succeed
+again as soon as a `virtqemud` exists outside the service cgroup. `doctor`
+already advises enabling `virtqemud.socket`, but only checks the system paths,
+so it does not catch this session case. The fix is a separate decision, because
+the candidates either keep the hardening and refuse to fork the daemon, extend
+`doctor` to the session case, or weaken `NoNewPrivileges` in the shipped unit.
 
 That refused start then exposed a real defect, which is why this run is kept.
 `vm.start` classified the failure as uncertain and went `recovery-required`,
