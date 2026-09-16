@@ -103,10 +103,15 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		f.Fields[0].Choices = disks
 		f.Fields[0].Value = disks[0]
 		field("sizeGiB", "New size (GiB)", "The disk's new total size, larger than now. Partitions inside the guest keep their size.", 5)
+	case "disk-add":
+		field("sizeGiB", "Size (GiB)", "The new empty disk's size, 1 to 512 GiB.", 5)
+		field("bus", "Connection", "Left/Right chooses how the disk attaches. Automatic follows this VM's disks.", 16)
+		f.Fields[1].Value = "automatic"
+		f.Fields[1].Choices = []string{"automatic", "sata", "scsi", "virtio"}
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
-	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" {
+	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" || kind == "disk-add" {
 		if vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "select an exact local VM before opening this form")
 		}
@@ -125,6 +130,9 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	if kind == "disk-grow" && (vm.State != "stopped" || vm.HasManagedSave) {
 		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before growing its disk.")
 	}
+	if kind == "disk-add" && (vm.State != "stopped" || vm.HasManagedSave) {
+		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before adding a disk.")
+	}
 	return f, nil
 }
 
@@ -138,6 +146,8 @@ func (f GuidedForm) Title() string {
 		return "Edit CPU and memory for next boot"
 	case "disk-grow":
 		return "Grow a VM disk"
+	case "disk-add":
+		return "Add a VM disk"
 	case "capture":
 		return "Create a cold recovery point"
 	case "guest-tools":
@@ -171,6 +181,8 @@ func (f GuidedForm) note() string {
 		return "VM must be stopped and persistent. Changes apply next boot."
 	case "disk-grow":
 		return "VM must be stopped. The disk gets larger; partitions inside the guest are not changed."
+	case "disk-add":
+		return "VM must be stopped. The new disk is empty; format it inside the guest."
 	case "capture":
 		return "VM must be stopped. Save a private recovery point."
 	case "guest-tools":
@@ -432,6 +444,20 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		}
 		r.ID, r.Action, r.Input["enabled"] = f.VM.Key.UUID, "autostart", enabled
 		return "vm.plan", r, -1, nil
+	case "disk-add":
+		n, ok := guidedNumber(values["sizeGiB"], 512)
+		if !ok {
+			return fail("sizeGiB", "Size must be a whole number of GiB from 1 to 512.")
+		}
+		bus := values["bus"]
+		if !slices.Contains(f.Fields[1].Choices, bus) {
+			return fail("bus", "Choose how the disk attaches, or automatic.")
+		}
+		r.ID, r.Input["sizeGiB"] = f.VM.Key.UUID, float64(n)
+		if bus != "automatic" {
+			r.Input["bus"] = bus
+		}
+		return "vm.disk.add", r, -1, nil
 	case "disk-grow":
 		known := false
 		for _, choice := range f.Fields[0].Choices {

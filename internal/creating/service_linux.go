@@ -103,6 +103,7 @@ func Register(service *app.Service, seedCacheDirectory string) {
 	}
 	service.Extensions["vm.create"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.Plan(ctx, uid, r) }
 	service.Extensions["vm.creation.result"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.Result(ctx, uid, r.ID) }
+	registerDiskAdd(service, s)
 	service.Extensions["vm.creation.resume"] = func(ctx context.Context, uid uint32, r app.Request) (any, error) { return s.PlanResume(ctx, uid, r) }
 }
 func newMAC() (string, error) {

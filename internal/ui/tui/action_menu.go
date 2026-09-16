@@ -23,7 +23,7 @@ func actionGroup(a ui.Action) (int, string) {
 		return 10, "Power"
 	case strings.HasPrefix(c, "import ") || c == "vm create":
 		return 30, "Create and import"
-	case strings.HasPrefix(c, "vm guest-agent ") || c == "vm console show" || c == "vm set" || c == "vm boot set" || c == "vm autostart" || c == "vm disk grow" || strings.HasPrefix(c, "guest recipe ") || strings.HasPrefix(c, "guest tools "):
+	case strings.HasPrefix(c, "vm guest-agent ") || c == "vm console show" || c == "vm set" || c == "vm boot set" || c == "vm autostart" || c == "vm disk grow" || c == "vm disk add" || strings.HasPrefix(c, "guest recipe ") || strings.HasPrefix(c, "guest tools "):
 		return 20, "Configure and guest setup"
 	case strings.HasPrefix(c, "snapshot "):
 		return 10, "Capture and restore"

@@ -487,6 +487,10 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 		m.guided("disk-grow")
 		m.Advanced = false
 		return nil
+	case "vm disk add":
+		m.guided("disk-add")
+		m.Advanced = false
+		return nil
 	}
 	if a.Argument == "" {
 		m.Advanced = false

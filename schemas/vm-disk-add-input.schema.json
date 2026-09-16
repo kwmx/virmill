@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-disk-add-input.schema.json",
+  "title": "Add one new disk to a stopped VM",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sizeGiB"],
+  "properties": {
+    "sizeGiB": {"type": "integer", "minimum": 1, "maximum": 512},
+    "bus": {"enum": ["sata", "scsi", "virtio"]}
+  }
+}
