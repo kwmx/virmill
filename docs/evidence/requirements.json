@@ -204,7 +204,8 @@
         "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required.",
         "Force off is in the TUI (Advanced) and works on paused VMs; Save is offered only for running VMs, as the service requires. A shutdown the guest ignores now fails with WAIT_TIMEOUT and frees the VM for force off instead of leaving a recovery-required lock. Native a2f470b: power-session-native-001 (qemu:///session, no-OS guest: start, pause, resume, save, restore-saved, force off from paused and running, unanswered stop then force off) and power-system-native-002 (qemu:///system, Ubuntu 24.04 guest: the same plus graceful reboot and graceful stop) passed with definitions, other VMs, jobs and media preserved. power-system-native-001 failed before any change on a probe idempotency-key collision. Autostart across a host restart, delete on session and the TUI Force off path natively remain open.",
         "ADR 0063: removal accepts the pool-volume disks of the VMs Virmill creates and UEFI VMs, resolving each volume to its registered pool path for the definition, for selected-disk deletion and in the TUI disk list, and keeping a UEFI VM's NVRAM file and an emulated TPM's state through the KEEP flags while naming both in the review; passthrough TPM, device NVRAM, pstore and unknown firmware stay refused. Native 858e4c0: removal-created-native-001 (qemu:///session pool-volume VM) and removal-uefi-native-001 (qemu:///system UEFI VM with two pool-volume disks) removed the definitions with every volume still registered and other VMs, jobs and media preserved. NVRAM retention is not read back natively (root-only directory), keeping TPM state is software-tested only, and deleting pool-volume disks natively remains open.",
-        "A job left in recovery-required keeps its resource locks, and only Reconcile proving the effect or a child recovery plan can release them. Operations without a disposition path (disk addition today) can therefore strand a VM and its pool; a reviewed disposition is required before 1.0."
+        "A job left in recovery-required keeps its resource locks, and only Reconcile proving the effect or a child recovery plan can release them. Operations without a disposition path (disk addition today) can therefore strand a VM and its pool; a reviewed disposition is required before 1.0.",
+        "Disk addition now has the reviewed disposition CORE-02 required: an unresolved addition can be closed by accepting the disk or deleting its unreferenced volume, releasing the VM and pool locks. Operations added later must ship an equivalent path."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2238,7 +2239,10 @@
         "internal/backend/libvirt/disk_add_linux.go",
         "internal/creating/disk_add_linux.go",
         "internal/backend/xmlpatch/disk_add.go",
-        "schemas/vm-disk-add-input.schema.json"
+        "schemas/vm-disk-add-input.schema.json",
+        "internal/backend/libvirt/disk_add_dispose_linux.go",
+        "internal/creating/disk_add_dispose_linux.go",
+        "schemas/vm-disk-add-dispose-input.schema.json"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-01",
@@ -2275,7 +2279,9 @@
         "internal/backend/xmlpatch/disk_add_test.go",
         "internal/creating/disk_add_test.go",
         "internal/ui/tui/guided_disk_add_test.go",
-        "tests/fixtures/release/disk_add_native.py"
+        "tests/fixtures/release/disk_add_native.py",
+        "internal/creating/disk_add_dispose_test.go",
+        "internal/ui/tui/guided_disk_add_dispose_test.go"
       ],
       "evidence": [
         "resource-inventory-001",
@@ -2315,7 +2321,8 @@
         "ADR 0062 Grow: a stopped VM's writable raw/qcow2 file or pool-volume disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Native bdffe06: disk-grow-session-native-002 (qemu:///session, 1 to 3 GiB) and disk-grow-system-native-002 (qemu:///system Ubuntu guest, 5 to 7 GiB, booted afterwards) passed with capacities confirmed in the volume XML, stale plans refused and definitions unchanged. The -001 runs grew the disks but refused a stale plan with SOURCE_CHANGED (fixed in bdffe06). Guest partition growth, Add and Move remain open.",
         "Selected-disk deletion now resolves pool volumes to their registered paths (software tests); the native removal runs on 858e4c0 kept every disk, so native pool-volume disk deletion remains open.",
         "ADR 0062 Add: vm disk add (vm.disk.add-v1) and the TUI Add VM disk give a stopped VM one new empty pool volume, built in a private workspace and uploaded through creation's verified path, with pool-overcommit when the disk's full size exceeds free space. Software tests pass. Native qualification is NOT complete: disk-add-session-native-001 created and verified the volume and defined the disk but failed its readback, because libvirt reformats the definition it stores and the readback compared a byte-exact digest (fixed in d350ef1 with the normalisation-tolerant hardware digest plus a check that the stored definition names the reviewed pool and volume). That job stayed recovery-required, which keeps its pool lock, so disk-add-session-native-002 and -003 were refused with RESOURCE_BUSY before doing anything. Pre-define failures now fail plainly and release the locks (790665e), but a failure at or after the define still has no user-facing disposition: it holds the VM and pool locks with no supported way to close it. That gap and native Add qualification remain open.",
-        "disk-add-session-native-004 ran on the Ubuntu system VM, whose VM and pool no job held, so lock contention was ruled out: the volume was written and verified and the disk was defined with the reviewed target, pool, volume and drive port, yet DefineAddedDisk still refused its own readback. The cause is not yet identified, so f9b5dd6 splits that one message into separate power-state, saved-state, digest and secure-readback failures and reports the expected and stored digests. No further native attempt should run until the post-define disposition gap is closed, because each attempt leaves another VM and pool held by an unclosable job."
+        "disk-add-session-native-004 ran on the Ubuntu system VM, whose VM and pool no job held, so lock contention was ruled out: the volume was written and verified and the disk was defined with the reviewed target, pool, volume and drive port, yet DefineAddedDisk still refused its own readback. The cause is not yet identified, so f9b5dd6 splits that one message into separate power-state, saved-state, digest and secure-readback failures and reports the expected and stored digests. No further native attempt should run until the post-define disposition gap is closed, because each attempt leaves another VM and pool held by an unclosable job.",
+        "ADR 0062 disposition: vm disk add dispose (vm.disk.add.dispose-v1) closes an unresolved disk addition by inheriting its locks and recording one durable disposition. Accept keeps the reviewed disk and is offered only when the saved definition names it; delete removes the new volume only while no definition names it, under creation cleanup's generation and dependency guards. Software tests cover both dispositions, every mismatched choice, a second disposition, and that the parent becomes partial so a fresh addition applies. This closes the stranding gap recorded above; native qualification of both Add and its disposition is still open."
       ],
       "hardwareVerified": false,
       "released": false

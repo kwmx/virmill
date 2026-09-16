@@ -59,6 +59,14 @@ They are built in this order, smallest first.
   unused file so it can be deleted. Only a failure at or after the define
   leaves the job needing recovery, which then observes the volume and the
   definition instead of writing again.
+- Disposition: an addition left needing recovery is closed by
+  `vm.disk.add.dispose-v1`, which inherits its locks and records one durable
+  disposition. Accepting keeps the reviewed disk and is offered only when the
+  saved definition names it; deleting removes the new volume and only while no
+  definition names it, under the generation and dependency guards creation
+  cleanup uses. Neither uploads nor defines anything. Without this an addition
+  that failed after its define would hold the VM and its pool with no way out,
+  which happened twice on the test host before it existed.
 - The definition is compared with the digest that tolerates libvirt's own
   reformatting, as cold restore does, and the readback also confirms the stored
   definition names the reviewed target with the reviewed pool and volume. A
