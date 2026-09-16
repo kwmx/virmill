@@ -193,7 +193,8 @@
         "removal-uefi-native-001",
         "disk-add-session-native-001",
         "disk-add-session-native-002",
-        "disk-add-session-native-003"
+        "disk-add-session-native-003",
+        "disk-add-session-native-004"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -2304,7 +2305,8 @@
         "removal-uefi-native-001",
         "disk-add-session-native-001",
         "disk-add-session-native-002",
-        "disk-add-session-native-003"
+        "disk-add-session-native-003",
+        "disk-add-session-native-004"
       ],
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill directory-pool creation (ADR 0056) has software regressions; its native run, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
@@ -2312,7 +2314,8 @@
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
         "ADR 0062 Grow: a stopped VM's writable raw/qcow2 file or pool-volume disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Native bdffe06: disk-grow-session-native-002 (qemu:///session, 1 to 3 GiB) and disk-grow-system-native-002 (qemu:///system Ubuntu guest, 5 to 7 GiB, booted afterwards) passed with capacities confirmed in the volume XML, stale plans refused and definitions unchanged. The -001 runs grew the disks but refused a stale plan with SOURCE_CHANGED (fixed in bdffe06). Guest partition growth, Add and Move remain open.",
         "Selected-disk deletion now resolves pool volumes to their registered paths (software tests); the native removal runs on 858e4c0 kept every disk, so native pool-volume disk deletion remains open.",
-        "ADR 0062 Add: vm disk add (vm.disk.add-v1) and the TUI Add VM disk give a stopped VM one new empty pool volume, built in a private workspace and uploaded through creation's verified path, with pool-overcommit when the disk's full size exceeds free space. Software tests pass. Native qualification is NOT complete: disk-add-session-native-001 created and verified the volume and defined the disk but failed its readback, because libvirt reformats the definition it stores and the readback compared a byte-exact digest (fixed in d350ef1 with the normalisation-tolerant hardware digest plus a check that the stored definition names the reviewed pool and volume). That job stayed recovery-required, which keeps its pool lock, so disk-add-session-native-002 and -003 were refused with RESOURCE_BUSY before doing anything. Pre-define failures now fail plainly and release the locks (790665e), but a failure at or after the define still has no user-facing disposition: it holds the VM and pool locks with no supported way to close it. That gap and native Add qualification remain open."
+        "ADR 0062 Add: vm disk add (vm.disk.add-v1) and the TUI Add VM disk give a stopped VM one new empty pool volume, built in a private workspace and uploaded through creation's verified path, with pool-overcommit when the disk's full size exceeds free space. Software tests pass. Native qualification is NOT complete: disk-add-session-native-001 created and verified the volume and defined the disk but failed its readback, because libvirt reformats the definition it stores and the readback compared a byte-exact digest (fixed in d350ef1 with the normalisation-tolerant hardware digest plus a check that the stored definition names the reviewed pool and volume). That job stayed recovery-required, which keeps its pool lock, so disk-add-session-native-002 and -003 were refused with RESOURCE_BUSY before doing anything. Pre-define failures now fail plainly and release the locks (790665e), but a failure at or after the define still has no user-facing disposition: it holds the VM and pool locks with no supported way to close it. That gap and native Add qualification remain open.",
+        "disk-add-session-native-004 ran on the Ubuntu system VM, whose VM and pool no job held, so lock contention was ruled out: the volume was written and verified and the disk was defined with the reviewed target, pool, volume and drive port, yet DefineAddedDisk still refused its own readback. The cause is not yet identified, so f9b5dd6 splits that one message into separate power-state, saved-state, digest and secure-readback failures and reports the expected and stored digests. No further native attempt should run until the post-define disposition gap is closed, because each attempt leaves another VM and pool held by an unclosable job."
       ],
       "hardwareVerified": false,
       "released": false
