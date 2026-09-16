@@ -70,7 +70,9 @@ file contains. Driver availability still depends on the supported QEMU build.
 1. **Choose the file.** Virmill reads it by itself. Choose a system when an OVA
    contains several.
 2. **One settings page.** Name, CPU cores, memory and, for an installer, the size
-   of its new disk. Storage, network and display are shown with their defaults.
+   of its new disk. Storage, network and display are shown with their defaults:
+   libvirt's `default` pool, else the only pool, the one that starts with the
+   host, or the one with the most free space.
    **Start it and open its display** is on. Appliance values are labeled as
    detected; disks and ISO images use suggestions. **Advanced settings** opens
    firmware, storage pool, disk buses, networks, cloud-init and other hardware;
@@ -248,7 +250,7 @@ scenarios remain required; see the [requirements-to-evidence matrix](requirement
 
 ## Open a guest and protect it
 
-Select a running VM and choose **Display**, in the VM list or its details. A VM
+Select a running VM and press **v**, or choose **Display**, in the VM list or its details. A VM
 with one graphical display opens it straight away, in its own window on the
 host desktop, and Virmill stays usable while it is open. A VM created and
 started in one confirmation opens its display by itself. With several displays

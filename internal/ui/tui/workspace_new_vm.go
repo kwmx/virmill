@@ -172,13 +172,7 @@ func (m Workspace) newVMStorageLine() string {
 	if pool, ok := f.startablePool(); ok {
 		return "Storage: pool " + pool.Name + " is stopped; Virmill starts it first"
 	}
-	usable := 0
-	for _, p := range f.Pools {
-		if creationUsablePool(p) {
-			usable++
-		}
-	}
-	if usable > 1 {
+	if creationAnyUsable(f.Pools) {
 		return "Storage: choose a pool in Advanced settings"
 	}
 	return "Storage: Virmill sets up libvirt's standard pool first"

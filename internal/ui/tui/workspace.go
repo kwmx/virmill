@@ -1615,6 +1615,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "v":
 			if !m.Busy && m.Section == 6 {
 				m.guided("repository-check")
+			} else if !m.Busy && (m.Section == 0 || m.Section == 1) {
+				// v opens the selected VM's display from the list or its details.
+				return m, m.openConsole()
 			}
 		}
 	}
@@ -1723,6 +1726,8 @@ func (m Workspace) navLine() string {
 // screenHints lists the keys that matter on the current list or details page.
 func (m Workspace) screenHints() string {
 	switch {
+	case m.Detail != nil && m.selectedVM().State == "running":
+		return "v Display   x Technical details   PgUp/PgDn Scroll   Esc Back   ? Help"
 	case m.Detail != nil:
 		return "x Technical details   PgUp/PgDn Scroll   Esc Back   ? Help"
 	case m.Section == 10:
@@ -1733,6 +1738,9 @@ func (m Workspace) screenHints() string {
 	arrows := "↑/↓"
 	if m.ASCII {
 		arrows = "Up/Down"
+	}
+	if m.selectedVM().State == "running" {
+		return arrows + " Select   v Display   Enter Open   / Search   : All tools   ? Help"
 	}
 	return arrows + " Select   Enter Open   / Search   : All tools   ? Help"
 }

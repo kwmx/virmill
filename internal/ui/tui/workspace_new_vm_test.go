@@ -237,3 +237,36 @@ func TestNewVMSettingsShowRefusals(t *testing.T) {
 		t.Fatal(view)
 	}
 }
+
+func TestSeveralPoolsStillHaveADefault(t *testing.T) {
+	gib := func(n uint64) *uint64 { v := n << 30; return &v }
+	pool := func(id, name string, autostart bool, free *uint64) domain.StoragePool {
+		return domain.StoragePool{Key: domain.ResourceKey{UUID: id}, Name: name, Type: "dir", Active: true, Autostart: autostart, AvailableBytes: free}
+	}
+	if got := defaultCreationPool([]domain.StoragePool{pool("a", "lab", false, gib(9)), pool("b", "vms", true, gib(1))}); got != "b" {
+		t.Fatal("the pool that starts with the host should be preselected", got)
+	}
+	if got := defaultCreationPool([]domain.StoragePool{pool("a", "lab", true, gib(9)), pool("b", "vms", true, gib(20))}); got != "b" {
+		t.Fatal("the pool with the most free space should be preselected", got)
+	}
+	if got := defaultCreationPool([]domain.StoragePool{pool("a", "lab", false, nil), pool("b", "vms", false, gib(20))}); got != "" {
+		t.Fatal("unknown free space must not guess", got)
+	}
+}
+
+func TestDisplayIsOneKeyFromTheVMList(t *testing.T) {
+	m := fixtureWorkspace()
+	m.Width, m.Height = 110, 40
+	m.Section = 1
+	vms := []domain.VM{workspaceVM(workspaceVMID, "lab")}
+	vms[0].State = "running"
+	m.Data["vms"] = generic(vms)
+	m.Selected = 0
+	if !strings.Contains(m.View(), "v Display") {
+		t.Fatal("a running VM does not say how to open its display:\n" + m.View())
+	}
+	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'v'}})
+	if m = next.(Workspace); cmd == nil || !m.ConsoleLoading || m.ConsoleVM.Key.UUID != workspaceVMID {
+		t.Fatal("v did not open the display")
+	}
+}

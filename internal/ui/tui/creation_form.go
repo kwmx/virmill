@@ -997,8 +997,10 @@ func (f CreationForm) startablePool() (domain.StoragePool, bool) {
 	return found, ok
 }
 
-// defaultCreationPool preselects libvirt's "default" pool, or the only usable
-// pool. With several and no default, the user chooses.
+// defaultCreationPool preselects libvirt's "default" pool, the only usable
+// pool, the only one that starts with the host, or else the one with the most
+// free space. The settings page names it and Advanced settings change it, so a
+// host with several pools never stops VM setup for a choice (ADR 0065).
 func defaultCreationPool(pools []domain.StoragePool) string {
 	usable := []domain.StoragePool{}
 	for _, p := range pools {
@@ -1012,7 +1014,25 @@ func defaultCreationPool(pools []domain.StoragePool) string {
 	if len(usable) == 1 {
 		return usable[0].Key.UUID
 	}
-	return ""
+	autostart := []domain.StoragePool{}
+	for _, p := range usable {
+		if p.Autostart {
+			autostart = append(autostart, p)
+		}
+	}
+	if len(autostart) == 1 {
+		return autostart[0].Key.UUID
+	}
+	best, most := "", uint64(0)
+	for _, p := range usable {
+		if p.AvailableBytes == nil {
+			return ""
+		}
+		if *p.AvailableBytes > most {
+			best, most = p.Key.UUID, *p.AvailableBytes
+		}
+	}
+	return best
 }
 
 // defaultCreationFirmware follows firmware the source declares. Otherwise it
