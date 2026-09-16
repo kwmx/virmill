@@ -29,7 +29,7 @@ lists them all. Buttons wrap onto a second row when they do not fit.
 - **Enter** on a resource opens its details. **/** filters names, states and IDs;
   Enter keeps the filter, and Esc clears it. Search text is never a command.
 - Common VM buttons include state-appropriate power actions, CPU/RAM,
-  **Boot / installer**, **Guest tools** and Capture. Create VM and Import are
+  **Boot / installer**, **Guest tools** and Capture. **New VM** (`n`) is
   available from the workspace. Selecting a VM never starts it.
 - **a More** shows everyday tasks for the selected resource, with only the power
   actions its state allows. **Advanced tools...** (or **A**) lists the section's
