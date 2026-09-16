@@ -58,6 +58,7 @@ type Workspace struct {
 	ConsoleIndex          int
 	ConsoleLoading        bool
 	ConsoleVM             domain.VM
+	DisplayAutoVM         string // VM whose display opens once its console details arrive
 	Boot                  *BootForm
 	BootVM                domain.VM
 	BootLoading           bool
@@ -568,7 +569,7 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.Picker != nil {
 		switch msg.(type) {
-		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, creationPoolPulse, importPulse, importExportReply, consolePrepared, consoleClosed:
+		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, creationPoolPulse, importPulse, importExportReply, consolePrepared, consoleClosed, displayOpened, displayClosed:
 		default:
 			return m.updatePicker(msg)
 		}
@@ -576,6 +577,14 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case consolePrepared:
 		return m.receiveConsolePrepared(v)
+	case displayOpened:
+		return m.receiveDisplayOpened(v)
+	case displayClosed:
+		// Closing the window is ordinary; only a viewer failure is worth saying.
+		if v.Err != nil {
+			m.Notice = "The display window closed: " + validation.SafeText(v.Err.Error()) + ". The VM was not stopped."
+		}
+		return m, nil
 	case consoleClosed:
 		m.Busy = false
 		m.Notice = "Console closed. Virmill did not stop the VM."
@@ -724,6 +733,10 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if v.Kind == "console-load" {
 				m.ConsoleLoading = false
+			}
+			if v.Kind == "display-auto" {
+				m.DisplayAutoVM = ""
+				m.Notice = "The VM is running. Choose Display on the VM to open its screen."
 			}
 			if v.Kind == "boot-load" {
 				m.BootLoading = false
@@ -974,6 +987,13 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.receiveBackupReceipt(v.Response.Data)
 		case "console-load":
 			m.receiveConsole(v.Response.Data)
+			if cmd := m.consoleLoaded(); cmd != nil {
+				return m, cmd
+			}
+		case "display-auto":
+			if cmd := m.receiveDisplayAuto(v.Response.Data); cmd != nil {
+				return m, cmd
+			}
 		case "protection-pools":
 			m.receiveProtectionPools(v.Response.Data)
 		case "removal-load":
@@ -2119,7 +2139,7 @@ func (m Workspace) View() string {
 			title = "Guest tools"
 		}
 		if m.Console != nil || m.ConsoleLoading {
-			title = "Console"
+			title = "Display"
 		}
 	}
 	if m.Plan != nil {
@@ -2236,7 +2256,7 @@ func (m Workspace) buttons() []workspaceButton {
 		if vm.Key.UUID != "" {
 			switch vm.State {
 			case "running":
-				out = append(out, workspaceButton{"Shut down", "t"})
+				out = append(out, workspaceButton{"Display", "action:vm console show"}, workspaceButton{"Shut down", "t"})
 			case "paused":
 				out = append(out, workspaceButton{"Resume", "u"})
 			case "stopped", "shut off":
@@ -2244,7 +2264,7 @@ func (m Workspace) buttons() []workspaceButton {
 			}
 		}
 		if m.Detail != nil {
-			return append(out[1:], workspaceButton{"Console", "action:vm console show"}, workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
+			return append(out[1:], workspaceButton{"Display", "action:vm console show"}, workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
 		return m.withoutEmptyDetails(append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"}))
 	}

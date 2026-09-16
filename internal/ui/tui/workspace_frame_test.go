@@ -105,7 +105,7 @@ func TestWorkspaceButtonsWrapInsteadOfHiding(t *testing.T) {
 	if len(rows) != 2 || strings.Contains(joined, " >") || !strings.Contains(joined, "[ Esc Back ]") {
 		t.Fatalf("VM detail buttons %q", rows)
 	}
-	for _, label := range []string{"Console", "CPU / RAM", "Capture", "More"} {
+	for _, label := range []string{"Display", "CPU / RAM", "Capture", "More"} {
 		if !strings.Contains(joined, label) {
 			t.Fatalf("button %q hidden: %q", label, rows)
 		}

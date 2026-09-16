@@ -255,11 +255,14 @@ scenarios remain required; see the [requirements-to-evidence matrix](requirement
 
 ## Open a guest and protect it
 
-Select a VM, open its details, then choose **Console**. Start it first if the
-console choices are unavailable. A graphical display opens on the host desktop;
-a plain SSH terminal needs a configured serial console. **Ctrl+]** leaves serial
-access. A serial port does not guarantee a guest login. Closing the console does
-not ask Virmill to stop the VM.
+Select a running VM and choose **Display**, in the VM list or its details. A VM
+with one graphical display opens it straight away, in its own window on the
+host desktop, and Virmill stays usable while it is open. A VM created and
+started in one confirmation opens its display by itself. With several displays
+or a serial console, Display lets you choose; a plain SSH terminal needs a
+configured serial console, which takes over the terminal until **Ctrl+]**. A
+serial port does not guarantee a guest login. Closing the display does not stop
+the VM.
 
 New creation forms suggest **Local display (SPICE)** when the host supports it.
 The display choice and desktop requirement are shown before creation. Advanced

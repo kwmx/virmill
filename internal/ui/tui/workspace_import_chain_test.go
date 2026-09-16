@@ -179,7 +179,16 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 	if cmd = m.chainAfterStart(); cmd == nil {
 		t.Fatal("prepared copy removal not requested")
 	}
-	cmd()
+	// The started VM's display is requested alongside the removal (ADR 0065).
+	batch, ok := cmd().(tea.BatchMsg)
+	if !ok || len(batch) != 2 || m.DisplayAutoVM != workspaceVMID {
+		t.Fatal("start did not open the display and remove the prepared copy together")
+	}
+	batch[0]()
+	if last = c.requests[len(c.requests)-1]; c.calls[len(c.calls)-1] != "vm.console.show" || last.ID != workspaceVMID {
+		t.Fatal("display request", c.calls, last)
+	}
+	batch[1]()
 	if last = c.requests[len(c.requests)-1]; c.calls[len(c.calls)-1] != "import.discard" || last.ID != chainPrepJob || last.Action != "discard" || len(last.Input) != 0 {
 		t.Fatal("removal request", c.calls, last)
 	}

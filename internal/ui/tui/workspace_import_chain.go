@@ -337,11 +337,16 @@ func (m *Workspace) chainAfterStart() tea.Cmd {
 	if c == nil || c.StartJob == "" || c.Discarding || o == nil || o.JobID != c.StartJob || o.Loading {
 		return nil
 	}
-	if o.Error != "" || !c.Cleanup {
+	if o.Error != "" {
 		m.Chain = nil
 		return nil
 	}
-	return m.requestChainDiscard()
+	display := m.openDisplayAfterStart(c.VMID)
+	if !c.Cleanup {
+		m.Chain = nil
+		return display
+	}
+	return tea.Batch(display, m.requestChainDiscard())
 }
 
 // requestChainDiscard asks for the removal plan of the approved preparation.

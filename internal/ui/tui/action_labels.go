@@ -51,7 +51,7 @@ var actionText = map[string]struct{ label, description string }{
 	"snapshot list":                   {"Browse local captures", "See retained local recovery sets."},
 	"snapshot show":                   {"Verify local capture", "Inspect and verify every member of a retained recovery set."},
 	"snapshot restore":                {"Restore capture as new VM", "Create independent disks and a new disconnected VM from a capture."},
-	"vm console show":                 {"Open console", "Open the guest display or a configured serial console. Closing it keeps the VM running."},
+	"vm console show":                 {"Open display", "Open the VM's screen in its own window, or a configured serial console. Closing it keeps the VM running."},
 	"vm boot show":                    {"View VM boot order", "Compare active and next-boot disk and network device order."},
 	"vm guest-agent enable":           {"Enable guest integration", "Add the management channel before installing QEMU guest tools."},
 	"vm guest-agent show":             {"Guest integration status", "Check the guest-agent management channel."},

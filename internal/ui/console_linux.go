@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -21,8 +22,82 @@ import (
 // ConsoleSession owns temporary viewer preferences. Close must be called after
 // the process exits, or if it is never started. It never stops the guest.
 type ConsoleSession struct {
-	Command   *exec.Cmd
+	Command *exec.Cmd
+	// Graphical sessions open their own window and run beside the TUI; a
+	// serial console takes over the terminal.
+	Graphical bool
 	configDir string
+}
+
+// DisplayAvailable reports whether this process can open a desktop window.
+func DisplayAvailable() bool { return consoleHasDisplay(os.Environ()) }
+
+// displaySettle is how long a detached viewer must stay open before it counts
+// as opened; virt-viewer exits within it when it cannot attach.
+const displaySettle = 2 * time.Second
+
+// StartDetached opens a graphical session in its own window without taking
+// over the terminal. It returns once the viewer has stayed open for the settle
+// time, or with the viewer's own error when it closed before that. The channel
+// reports when the window closes; the session's settings are removed then.
+func (s *ConsoleSession) StartDetached() (<-chan error, error) {
+	if s == nil || s.Command == nil || !s.Graphical {
+		return nil, domain.Fail("INVALID_INPUT", "Only a graphical display opens in its own window.")
+	}
+	cmd := s.Command
+	out := &tailBuffer{}
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, out
+	// Its own process group: Ctrl-C in the TUI must not close the window.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	if err := cmd.Start(); err != nil {
+		_ = s.Close()
+		return nil, domain.Fail("OPERATION_FAILED", "Could not open the display window: "+err.Error())
+	}
+	done := make(chan error, 1)
+	go func() {
+		err := cmd.Wait()
+		if err != nil {
+			if detail := strings.TrimSpace(out.String()); detail != "" {
+				err = fmt.Errorf("%w: %s", err, detail)
+			}
+		}
+		if closeErr := s.Close(); err == nil {
+			err = closeErr
+		}
+		done <- err
+	}()
+	select {
+	case err := <-done:
+		reason := "the viewer exited"
+		if err != nil {
+			reason = err.Error()
+		}
+		return nil, domain.Fail("OPERATION_FAILED", "The display window closed right away ("+reason+"). Check that the VM is still running, then try again.")
+	case <-time.After(displaySettle):
+		return done, nil
+	}
+}
+
+// tailBuffer keeps the last lines a detached viewer printed, for its error.
+type tailBuffer struct {
+	mu   sync.Mutex
+	data []byte
+}
+
+func (b *tailBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.data = append(b.data, p...)
+	if len(b.data) > 2048 {
+		b.data = b.data[len(b.data)-2048:]
+	}
+	return len(p), nil
+}
+
+func (b *tailBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return string(b.data)
 }
 
 func (s *ConsoleSession) Close() error {
@@ -154,7 +229,7 @@ func prepareConsole(ctx context.Context, client Client, connection, id, choiceID
 		if err != nil {
 			return nil, fmt.Errorf("create private viewer settings: %w", err)
 		}
-		session.configDir = dir
+		session.configDir, session.Graphical = dir, true
 		if err = os.Mkdir(filepath.Join(dir, "virt-viewer"), 0700); err == nil {
 			err = os.WriteFile(filepath.Join(dir, "virt-viewer", "settings"), []byte("[virt-viewer]\nshare-clipboard=false\n"), 0600)
 		}

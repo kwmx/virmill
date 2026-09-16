@@ -58,8 +58,8 @@ that viewer safely. `none` requests no graphical display. Saved choices are neve
 silently converted. Serial devices are included; guest serial login or SSH access
 still needs guest configuration. A device definition does not prove reachability.
 
-After creation, select the VM, review **Start**, then choose **Console** to open
-the installer or guest desktop. Use Virmill from the host's desktop with the
+A VM started right after creation opens its display by itself. Otherwise select
+the running VM and choose **Display** to open the installer or guest desktop. Use Virmill from the host's desktop with the
 supported virt-viewer 11.0 installed; a plain SSH terminal cannot show a graphical
 display. Once the guest OS and verified SSH access are ready, **Guest tools**
 offers supported Linux installation. See [console and guest setup](tui-navigation.md#open-a-guest-and-protect-it).
