@@ -71,9 +71,11 @@ refused.
 
 **Space and time.** Both copies exist until the move finishes, so the
 destination needs room for the whole disk; the review says how much and asks
-for `pool-overcommit` when the pool reports less free space than that. The disk
-is read once when the plan is reviewed, to record the digest the copy is checked
-against, and again while copying, so a review takes as long as reading the disk.
+for `pool-overcommit` when the pool reports less free space than that.
+Reviewing a move is immediate: it reads the disk's identity, not its contents.
+The copy is checked as it is made — the disk is hashed while it is copied and
+the copy is read back against that digest before the VM is pointed at it — so a
+move takes about as long as reading the disk twice.
 
 **The original.** It is deleted once the VM uses the verified copy, which the
 review asks you to acknowledge. Add `"keepOldCopy":true` to keep both. If the

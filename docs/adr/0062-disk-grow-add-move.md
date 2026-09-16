@@ -92,11 +92,15 @@ They are built in this order, smallest first.
   different active file-based pool. Installer media, read-only and shareable
   disks, plain file disks, layered disks and a source carrying attributes this
   editor does not model are refused rather than reinterpreted.
-- The copy's digest is taken at review, by reading the whole disk once. That is
-  what lets the copy be verified by read-back against a reviewed intent, and it
-  makes a disk that changes between review and copy a refusal instead of a
-  silent difference. The cost is a review proportional to the disk's size, which
-  the review text states.
+- Reviewing a move never reads the disk. The plan binds the disk's identity,
+  its virtual size as the bound for the copy, and the destination name; there is
+  deliberately no content digest in it. The bytes are hashed as they are
+  copied, and the copy is read back against that same digest before the
+  definition changes, so the copy is still verified end to end while the disk is
+  read twice rather than three times. What this gives up is a plan that pins the
+  exact bytes in advance: a disk that changed since the review is caught when it
+  is copied, by the identity recheck immediately before the copy and by the
+  read-back, rather than refused at review.
 - The copy runs as one bounded read-then-write loop over a single connection: a
   chunk is received from the source stream, hashed, and sent to the destination
   stream before the next is read, so no whole disk is held in memory. Either

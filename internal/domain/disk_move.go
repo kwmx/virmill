@@ -12,19 +12,26 @@ import "context"
 // the same reference checks selected-disk removal uses, and the plan carries the
 // data-loss acknowledgement for it. Peak space is two copies either way.
 type DiskMove struct {
-	VM               ResourceKey  `json:"vm"`
-	VMFingerprint    string       `json:"vmFingerprint"`
-	DefinitionSHA256 string       `json:"definitionSHA256"`
-	Disk             RemovalDisk  `json:"disk"`
-	SourcePoolName   string       `json:"sourcePoolName"`
-	PoolID           string       `json:"poolID"`
-	PoolName         string       `json:"poolName"`
-	Volume           VolumeIntent `json:"volume"`
+	VM               ResourceKey `json:"vm"`
+	VMFingerprint    string      `json:"vmFingerprint"`
+	DefinitionSHA256 string      `json:"definitionSHA256"`
+	Disk             RemovalDisk `json:"disk"`
+	SourcePoolName   string      `json:"sourcePoolName"`
+	PoolID           string      `json:"poolID"`
+	PoolName         string      `json:"poolName"`
+	VolumeName       string      `json:"volumeName"`
 	// VolumePath is where the copy will be registered in the destination pool.
 	// It is bound at review because a definition names a disk either by pool
 	// volume or by file path, and asking whether a definition uses the copy
 	// needs the exact path: an empty one matches every pool-volume disk.
-	VolumePath                string   `json:"volumePath"`
+	VolumePath string `json:"volumePath"`
+	// CopyBytes is the most the copy can hold, which is the disk's own virtual
+	// size. There is deliberately no content digest here: reviewing a move
+	// never reads the disk. The bytes are hashed as they are copied and the
+	// copy is read back against that digest in the same operation, so a disk
+	// that changed since the review is caught when it is copied rather than
+	// making every review as slow as reading the whole disk.
+	CopyBytes                 uint64   `json:"copyBytes"`
 	DestinationAvailableBytes uint64   `json:"destinationAvailableBytes"`
 	KeepOldCopy               bool     `json:"keepOldCopy"`
 	ResourceIDs               []string `json:"resourceIDs"`

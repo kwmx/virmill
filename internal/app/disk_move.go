@@ -51,10 +51,10 @@ func validDiskMoveRecipe(m domain.DiskMove) bool {
 		return false
 	}
 	if !removalUUID.MatchString(m.PoolID) || m.PoolID == d.PoolID || m.PoolName == "" || m.SourcePoolName == "" ||
-		m.Volume.PoolID != m.PoolID || m.Volume.Name == "" || m.Volume.ContentType != "" ||
-		m.Volume.FileBytes == 0 || m.Volume.VirtualBytes != d.CapacityBytes || !removalDigest(m.Volume.SHA256) ||
+		m.VolumeName == "" || filepath.Base(m.VolumeName) != m.VolumeName ||
+		m.CopyBytes != d.CapacityBytes || m.CopyBytes == 0 ||
 		!filepath.IsAbs(m.VolumePath) || filepath.Clean(m.VolumePath) != m.VolumePath ||
-		validation.SafeText(m.VolumePath) != m.VolumePath || filepath.Base(m.VolumePath) != m.Volume.Name ||
+		validation.SafeText(m.VolumePath) != m.VolumePath || filepath.Base(m.VolumePath) != m.VolumeName ||
 		m.VolumePath == d.Path {
 		return false
 	}
@@ -93,14 +93,15 @@ func (s *Service) planDiskMove(ctx context.Context, uid uint32, req Request) (do
 	acks := []string{"host-mutation", "exclusive-storage-writer", "exclusive-configuration-writer"}
 	risks := []string{
 		"Copies this disk into another pool and points the VM at the copy; the guest sees the same disk in the same place.",
-		fmt.Sprintf("Both copies exist until the move finishes, so %s is needed in %s while it runs.", sizeText(m.Volume.FileBytes), m.PoolName),
+		fmt.Sprintf("Both copies exist until the move finishes, so up to %s is needed in %s while it runs.", sizeText(m.CopyBytes), m.PoolName),
+		"The copy is checked against the disk it was made from, by reading it back before the VM is pointed at it.",
 		"The VM must already be stopped; nothing inside the guest is changed.",
 	}
 	if !m.KeepOldCopy {
 		acks = append(acks, "data-loss-delete-old-copy")
 		risks = append(risks, "The original disk in "+m.SourcePoolName+" is deleted once the VM uses the copy. If it cannot be deleted, the move still completes and the original is reported as kept.")
 	}
-	if m.Volume.FileBytes > m.DestinationAvailableBytes {
+	if m.CopyBytes > m.DestinationAvailableBytes {
 		acks = append(acks, "pool-overcommit")
 		risks = append(risks, "The destination pool reports less free space than the copy needs; the copy can fail part way through.")
 	}
@@ -136,7 +137,7 @@ func (h *diskMoveHandler) provider() (domain.DiskMoveProvider, error) {
 
 func (h *diskMoveHandler) Estimate(_ context.Context, p domain.Plan, b []byte) (domain.Estimates, error) {
 	in, err := parseDiskMove(p, b)
-	return domain.Estimates{RequiresDowntime: true, AdditionalBytes: in.Move.Volume.FileBytes,
+	return domain.Estimates{RequiresDowntime: true, AdditionalBytes: in.Move.CopyBytes,
 		Notes: "The VM must already be stopped. The disk is copied into the destination pool, so both copies exist until the move finishes. Nothing inside the guest is changed."}, err
 }
 
@@ -147,8 +148,8 @@ func (h *diskMoveHandler) Review(_ context.Context, p domain.Plan, b []byte) (ma
 	}
 	m := in.Move
 	return map[string]any{"action": "move-disk", "resource": m.VM, "target": m.Disk.Target,
-		"fromPool": m.SourcePoolName, "fromVolume": m.Disk.VolumeName, "toPool": m.PoolName, "volume": m.Volume.Name,
-		"sizeBytes": m.Volume.FileBytes, "capacityBytes": m.Disk.CapacityBytes,
+		"fromPool": m.SourcePoolName, "fromVolume": m.Disk.VolumeName, "toPool": m.PoolName, "volume": m.VolumeName,
+		"sizeBytes": m.CopyBytes, "capacityBytes": m.Disk.CapacityBytes,
 		"destinationAvailableBytes": m.DestinationAvailableBytes, "keepOldCopy": m.KeepOldCopy,
 		"diskDeletion": !m.KeepOldCopy, "requiresStopped": true, "automaticStop": false}, nil
 }
@@ -194,7 +195,7 @@ func unreferencedCopy(m domain.DiskMove, err error) error {
 	}
 	failure := domain.Fail(refusal.Code, refusal.Message)
 	failure.Resource = "local-file|" + m.VolumePath
-	failure.SafeNextActions = []string{"Delete the unused copy " + m.Volume.Name + " in " + m.PoolName + " if it was created", "Review the move again"}
+	failure.SafeNextActions = []string{"Delete the unused copy " + m.VolumeName + " in " + m.PoolName + " if it was created", "Review the move again"}
 	return operations.NotDone(failure)
 }
 

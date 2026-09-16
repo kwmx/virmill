@@ -14,7 +14,6 @@ import (
 	"sort"
 
 	native "libvirt.org/go/libvirt"
-	"virmill.local/core/internal/backend/fileidentity"
 	"virmill.local/core/internal/backend/xmlpatch"
 	"virmill.local/core/internal/domain"
 )
@@ -36,12 +35,10 @@ func validDiskMove(m domain.DiskMove) error {
 		!diskRemovalName(d.VolumeName) || d.VolumeName != filepath.Base(d.Path) || d.VolumeKey == "" ||
 		!digestPattern.MatchString(d.Fingerprint) || d.Format != "qcow2" || d.CapacityBytes == 0 ||
 		m.SourcePoolName == "" || m.PoolName == "" || !uuidPattern.MatchString(m.PoolID) ||
-		m.PoolID == d.PoolID || m.Volume.PoolID != m.PoolID || m.Volume.ContentType != "" ||
-		coldPath(m.VolumePath) != nil || filepath.Base(m.VolumePath) != m.Volume.Name || m.VolumePath == d.Path {
+		m.PoolID == d.PoolID || !volumePattern.MatchString(m.VolumeName) ||
+		coldPath(m.VolumePath) != nil || filepath.Base(m.VolumePath) != m.VolumeName || m.VolumePath == d.Path ||
+		m.CopyBytes != d.CapacityBytes || m.CopyBytes < 1 || m.CopyBytes > 512<<30 {
 		return domain.Fail("INVALID_INPUT", "complete exact disk move observation required")
-	}
-	if err := validateVolume(m.Volume); err != nil {
-		return err
 	}
 	if len(m.ResourceIDs) != 4 || !slices.IsSorted(m.ResourceIDs) || !slices.Contains(m.ResourceIDs, m.VM.String()) {
 		return domain.Fail("INVALID_INPUT", "canonical resource lock set required")
@@ -201,17 +198,6 @@ func (p *Provider) InspectDiskMove(ctx context.Context, uri, id, target, pool st
 	if _, err = xmlpatch.RetargetDisk(vm.PersistentXML, target, pool, name); err != nil {
 		return out, err
 	}
-	// The copy must reproduce these exact bytes, so the reviewed intent carries
-	// the source's own digest. Reading the whole disk here is deliberate: it is
-	// what lets the copy be verified by read-back, and what makes a source that
-	// changes before the copy runs a refusal rather than a silent difference.
-	// The bound is the volume's capacity, not its allocation: libvirt streams a
-	// sparse file's whole length, so the smaller allocated size would refuse
-	// every ordinary qcow2 disk.
-	size, digest, err := hashVolumeBytes(ctx, c, held, disk.CapacityBytes)
-	if err != nil {
-		return out, err
-	}
 	definition, err := xmlpatch.HardwareDigest(vm.PersistentXML)
 	if err != nil {
 		return out, err
@@ -222,8 +208,7 @@ func (p *Provider) InspectDiskMove(ctx context.Context, uri, id, target, pool st
 	}
 	out = domain.DiskMove{VM: key, VMFingerprint: vm.Fingerprint, DefinitionSHA256: definition, Disk: disk,
 		SourcePoolName: sourceName, PoolID: observed.Key.UUID, PoolName: pool,
-		Volume:                    domain.VolumeIntent{PoolID: observed.Key.UUID, Name: name, VirtualBytes: disk.CapacityBytes, FileBytes: size, SHA256: digest},
-		VolumePath:                filepath.Join(directory, name),
+		VolumeName: name, VolumePath: filepath.Join(directory, name), CopyBytes: disk.CapacityBytes,
 		DestinationAvailableBytes: *observed.AvailableBytes, KeepOldCopy: keepOldCopy}
 	out.ResourceIDs = append([]string{key.String(), "local-file|" + out.VolumePath}, diskRemovalResources(uri, disk)...)
 	sort.Strings(out.ResourceIDs)
@@ -231,11 +216,6 @@ func (p *Provider) InspectDiskMove(ctx context.Context, uri, id, target, pool st
 		return domain.DiskMove{}, err
 	}
 	return out, nil
-}
-
-// movedCopy is the destination volume as the review bound it.
-func movedCopy(m domain.DiskMove, path, key, generation string) domain.CreatedVolume {
-	return domain.CreatedVolume{Intent: m.Volume, BackendKey: key, Path: path, Generation: generation}
 }
 
 // moveState reports what the host holds now, from the definition and the two
@@ -286,7 +266,7 @@ func checkDiskMove(ctx context.Context, c *native.Connect, m domain.DiskMove) (s
 	}
 	if vm.Fingerprint != m.VMFingerprint {
 		// The fingerprint covers the definition, which the retarget changes.
-		namesCopy, e := definitionUsesVolume(vm.PersistentXML, m.VolumePath, m.PoolName, m.Volume.Name)
+		namesCopy, e := definitionUsesVolume(vm.PersistentXML, m.VolumePath, m.PoolName, m.VolumeName)
 		if e != nil {
 			return "", e
 		}
@@ -294,7 +274,7 @@ func checkDiskMove(ctx context.Context, c *native.Connect, m domain.DiskMove) (s
 			return "", domain.Fail("STALE_PLAN", "the VM changed since the review; review again")
 		}
 	}
-	namesCopy, err := definitionUsesVolume(vm.PersistentXML, m.VolumePath, m.PoolName, m.Volume.Name)
+	namesCopy, err := definitionUsesVolume(vm.PersistentXML, m.VolumePath, m.PoolName, m.VolumeName)
 	if err != nil {
 		return "", err
 	}
@@ -309,7 +289,7 @@ func checkDiskMove(ctx context.Context, c *native.Connect, m domain.DiskMove) (s
 	if err != nil {
 		return "", err
 	}
-	copyPresent, err := volumePresent(c, m.PoolID, m.Volume.Name)
+	copyPresent, err := volumePresent(c, m.PoolID, m.VolumeName)
 	if err != nil {
 		return "", err
 	}
@@ -368,7 +348,7 @@ func (p *Provider) CopyDiskVolume(ctx context.Context, m domain.DiskMove) error 
 		return err
 	}
 	defer destination.Free()
-	if err = absentVolume(destination, m.Volume.Name); err != nil {
+	if err = absentVolume(destination, m.VolumeName); err != nil {
 		return err
 	}
 	sourcePool, err := c.LookupStoragePoolByUUIDString(m.Disk.PoolID)
@@ -389,46 +369,43 @@ func (p *Provider) CopyDiskVolume(ctx context.Context, m domain.DiskMove) error 
 		return domain.Fail("SOURCE_CHANGED", "the held disk differs immediately before the copy")
 	}
 	x := fmt.Sprintf(`<volume><name>%s</name><capacity unit="bytes">%d</capacity><allocation unit="bytes">0</allocation><target><format type="raw"/></target></volume>`,
-		xmlText(m.Volume.Name), m.Volume.FileBytes)
+		xmlText(m.VolumeName), m.CopyBytes)
 	created, err := destination.StorageVolCreateXML(x, 0)
 	if err != nil {
 		return err
 	}
 	defer created.Free()
-	path, err := created.GetPath()
+	written, digest, err := copyVolumeBytes(ctx, c, held, created, m.CopyBytes)
 	if err != nil {
 		return err
 	}
-	backendKey, err := created.GetKey()
+	// The copy is read back here and only here, against the digest taken while
+	// it was written. Nothing may verify it after the define: verification
+	// refuses a volume any definition names, so the retargeted disk would be
+	// refused as busy.
+	size, stored, err := hashVolumeBytes(ctx, c, created, m.CopyBytes)
 	if err != nil {
 		return err
 	}
-	if err = copyVolumeBytes(ctx, c, held, created, m.Volume.FileBytes, m.Volume.SHA256); err != nil {
-		return err
+	if size != written || stored != digest {
+		return domain.Fail("RECOVERY_REQUIRED", "the stored copy differs from the disk it was made from; inspect the operation without replaying it")
 	}
-	identity, err := fileidentity.Observe(path, false)
-	if err != nil {
-		return err
-	}
-	// The copy is verified here and only here. Verification refuses a volume any
-	// definition names, so once the disk has been retargeted the same read-back
-	// would be refused as busy: nothing may verify the copy after the define.
-	return p.VerifyCreatedVolume(ctx, m.VM.ConnectionID, movedCopy(m, path, backendKey, identity.Generation))
+	return nil
 }
 
 // copyVolumeBytes drives both streams on one connection: a bounded read from
 // the source, the same bytes written to the destination, and one digest over
-// what passed through. A mismatch leaves the new volume for the caller to
-// dispose of; nothing is retried here.
-func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.StorageVol, size uint64, digest string) error {
+// what passed through. It returns what it wrote so the caller can read the
+// copy back against the same digest. Nothing is retried here.
+func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.StorageVol, bound uint64) (uint64, string, error) {
 	reader, err := c.NewStream(0)
 	if err != nil {
-		return err
+		return 0, "", err
 	}
 	defer reader.Free()
 	writer, err := c.NewStream(0)
 	if err != nil {
-		return err
+		return 0, "", err
 	}
 	defer writer.Free()
 	joinReader, joinWriter := watchStream(ctx, reader), watchStream(ctx, writer)
@@ -442,56 +419,58 @@ func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.St
 		}
 	}()
 	if err = from.Download(reader, 0, 0, 0); err != nil {
-		return err
+		return 0, "", err
 	}
-	if err = to.Upload(writer, 0, size, 0); err != nil {
-		return err
+	// Length zero uploads whatever the stream carries, so the copy is exactly
+	// as long as the disk turns out to be, bounded below.
+	if err = to.Upload(writer, 0, 0, 0); err != nil {
+		return 0, "", err
 	}
 	h := sha256.New()
 	var copied uint64
 	buffer := make([]byte, moveChunkBytes)
 	for {
 		if err = ctx.Err(); err != nil {
-			return err
+			return 0, "", err
 		}
 		n, e := reader.Recv(buffer)
 		if n > 0 {
 			copied += uint64(n)
-			if copied > size {
-				return domain.Fail("SOURCE_CHANGED", "the disk grew while it was being copied")
+			if copied > bound {
+				return 0, "", domain.Fail("SOURCE_CHANGED", "the disk is larger than the reviewed copy allows")
 			}
 			if _, err = h.Write(buffer[:n]); err != nil {
-				return err
+				return 0, "", err
 			}
 			for written := 0; written < n; {
 				w, we := writer.Send(buffer[written:n])
 				if we != nil {
-					return we
+					return 0, "", we
 				}
 				if w <= 0 {
-					return domain.Fail("OPERATION_FAILED", "the destination stopped accepting the copy")
+					return 0, "", domain.Fail("OPERATION_FAILED", "the destination stopped accepting the copy")
 				}
 				written += w
 			}
 		}
 		if e != nil {
-			return e
+			return 0, "", e
 		}
 		if n == 0 {
 			break
 		}
 	}
-	if copied != size || hex.EncodeToString(h.Sum(nil)) != digest {
-		return domain.Fail("SOURCE_CHANGED", "the disk's bytes differ from the reviewed copy")
+	if copied == 0 {
+		return 0, "", domain.Fail("SOURCE_CHANGED", "the disk read as empty; nothing was copied")
 	}
 	if err = reader.Finish(); err != nil {
-		return err
+		return 0, "", err
 	}
 	if err = writer.Finish(); err != nil {
-		return err
+		return 0, "", err
 	}
 	done = true
-	return nil
+	return copied, hex.EncodeToString(h.Sum(nil)), nil
 }
 
 // DefineMovedDisk points the reviewed disk at the verified copy and reads the
@@ -533,7 +512,7 @@ func (p *Provider) DefineMovedDisk(ctx context.Context, m domain.DiskMove) error
 	if err = checkSecureConfiguration(vm.PersistentXML, secure); err != nil {
 		return err
 	}
-	after, err := xmlpatch.RetargetDisk(vm.PersistentXML, m.Disk.Target, m.PoolName, m.Volume.Name)
+	after, err := xmlpatch.RetargetDisk(vm.PersistentXML, m.Disk.Target, m.PoolName, m.VolumeName)
 	if err != nil {
 		return err
 	}
@@ -572,7 +551,7 @@ func (p *Provider) DefineMovedDisk(ctx context.Context, m domain.DiskMove) error
 	if securely != read.PersistentXML {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "the stored definition omits sensitive settings, so the moved disk cannot be confirmed; inspect the operation without replaying it")
 	}
-	namesCopy, err := definitionUsesVolume(read.PersistentXML, m.VolumePath, m.PoolName, m.Volume.Name)
+	namesCopy, err := definitionUsesVolume(read.PersistentXML, m.VolumePath, m.PoolName, m.VolumeName)
 	if err != nil {
 		return err
 	}
