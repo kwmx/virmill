@@ -28,6 +28,13 @@ guest, try again, or choose **Force off VM**. If the guest stopped or changed
 state in some other way meanwhile, the job is left for review under **Jobs**
 instead.
 
+**When the host refuses to start the VM.** A start can fail before the guest
+runs at all, for example when the host will not execute QEMU. Nothing started,
+so the job fails and the VM is free right away: try again, or read the refusal
+under **Jobs**. If the VM turns out to be running after all, or a resume no
+longer has its saved state, the job is left for review instead, because
+something did happen.
+
 **Plans are checked again before they run.** A plan records the VM as it was
 reviewed. If the VM changed since, for example because another plan paused it,
 applying the old plan is refused and nothing happens. Make a new plan.

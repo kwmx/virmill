@@ -677,6 +677,17 @@ func (h *vmHandler) Execute(ctx context.Context, p domain.Plan, b []byte, step d
 			}
 		}
 	}
+	// A boot that never reached the guest leaves nothing in flight either. The
+	// VM must still be stopped, and a restore must still have its saved state,
+	// or something did happen and the job keeps its uncertainty. Without this a
+	// refused boot holds the VM with no way out but to make its effect true by
+	// hand, which is how a transient failure stranded a test VM.
+	if err != nil && (h.action == "start" || h.action == "restore-saved") {
+		if v, e := h.s.GetVM(ctx, p.ConnectionID, id); e == nil && v.State == "stopped" &&
+			(h.action == "start" || v.HasManagedSave) {
+			return operations.NotDone(err)
+		}
+	}
 	return err
 }
 func (h *vmHandler) Reconcile(ctx context.Context, p domain.Plan, b []byte, step domain.Step) (bool, error) {

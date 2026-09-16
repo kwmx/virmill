@@ -16,6 +16,35 @@ definition gained exactly the reviewed disk, and starts and stops the VM.
 
 | `disk-add-session-native-005` | failed | With the locks free and the digest tolerant of formatting, the same read-back was refused, now reporting which check and both digests. The definition had gained `sdd` exactly as reviewed. |
 
+## The addition itself now passes
+
+| Run | Outcome | What happened |
+| --- | --- | --- |
+| `disk-add-session-native-006` | failed, but not in the addition | On build `116e0e3`, with the read-back comparing the definition minus the reviewed disk, **the addition succeeded**: its job reads `succeeded`, libvirt registered the new volume at exactly 1 GiB, and the saved definition gained `sdc` beside `sda` and `sdb` with the reviewed pool, volume, bus and port. The probe then failed at its next step, starting the VM, for an unrelated host reason. |
+
+The start was refused by the host with `cannot execute binary
+/usr/bin/qemu-system-x86_64: Operation not permitted`, ten milliseconds into
+the attempt, before the guest ran. Nothing about the new disk is involved: the
+generated QEMU command line carried all three disks correctly, the binary is
+mode 0755 and labelled `qemu_exec_t` on a mount with no `noexec`, it runs when
+executed directly, SELinux logged no denial, and another untouched VM on the
+same connection started immediately afterwards. The refusal fell in the same
+minute as the RPM upgrade that installed this build, so a start racing the
+package transaction is the likely cause; that is plausible, not proven.
+
+That refused start then exposed a real defect, which is why this run is kept.
+`vm.start` classified the failure as uncertain and went `recovery-required`,
+which keeps the VM's lock. Its reconciliation asks whether the VM is running,
+so it could not release the lock while the VM was stopped, and no disposition
+exists for a stranded boot. Forcing the VM off was refused `RESOURCE_BUSY` by
+the job's own lock. The only escape was to start the VM by hand outside Virmill
+and reconcile, which recorded a start that had failed as having succeeded.
+
+A boot that never reached the guest is now classified like an unanswered
+shutdown: if the effect fails and the VM is still stopped — and, for a restore,
+its saved state is still present — the job fails plainly and releases the VM,
+so Force off and a retry stay available. Anything else keeps its uncertainty.
+
 Between runs 002 and 005 the additions themselves were correct on the host: the
 volume existed and verified, and the definition named the disk. Only Virmill's
 own confirmation of that was wrong.
