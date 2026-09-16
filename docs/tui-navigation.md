@@ -59,47 +59,39 @@ replaced. Permission errors stay visible; links and special files are not offere
 
 Selecting a source reads metadata. It does not extract archives or start an import.
 
-## Import an image
+## Create a VM
 
-Choose **Import** or press **i** from Overview or VMs. One explorer accepts OVA,
-ISO, QCOW2, raw/IMG, VMDK, VDI, VHD and VHDX files, or a directory containing disk
-images and their dependencies. Virmill detects the actual supported format;
-extensions alone do not establish what a file contains. Driver availability
-still depends on the supported QEMU build.
+Choose **New VM** or press **n** (or **i**) from Overview or VMs, then choose a
+file. One explorer accepts OVA, ISO, QCOW2, raw/IMG, VMDK, VDI, VHD and VHDX
+files, or a directory containing disk images and their dependencies. Virmill
+detects the actual supported format; extensions alone do not establish what a
+file contains. Driver availability still depends on the supported QEMU build.
 
-1. **Review the source.** Selecting a file inspects it automatically and opens
-   **Review appliance** or **Review source**. Choose a system when an OVA contains
-   several. Edit the VM name, CPU cores and memory directly. Appliance values are
-   labeled as detected; disks and ISO images use labeled suggestions where they
-   do not provide hardware settings. A disk does not reliably identify its OS,
-   firmware or installed drivers. **Advanced settings** opens optional hardware
-   choices before any copying. Done or Esc returns to the summary.
-2. **Where to save.** Prepared copies go in a new private folder under
-   `~/.local/share/virmill/imports` (or `$XDG_DATA_HOME/virmill/imports`), named
-   after the VM and the time, so this step is skipped; **Saved in** shows it.
-   **Back: Destination** chooses an existing parent with **Save in** and a **New
-   folder name** instead. The reviewed preparation job creates that destination.
-   Existing output folders and the original media remain untouched.
-3. **Review the disks.** Switch disks with Left/Right. Detected source formats and
-   sizes fill the controls. The maximum virtual size is a safety limit, not a
-   resize operation; lowering it cannot shrink an existing disk. ISO imports
-   offer blank disks for installation. For disk sets, include all required
-   backing and extent files; dependencies do not become extra guest disks.
-4. **Preview image preparation.** Review the source, destination, disk conversion
-   and required storage. Space errors name the shortfall in readable units;
-   **Back: Destination** returns to the location choice. Preview first opens VM
-   settings if you have not set them. One confirmation then covers preparing the
-   images, creating the VM and, with **After creation: Start the VM**, starting
-   it: it lists everything you agree to, including the later steps, and Enter
-   confirms once. Creation and start run by themselves while this TUI stays open, but only
-   if they ask for nothing beyond what you checked; otherwise their own review
-   opens. If you close the TUI, Create VM continues from the prepared images.
-   With **Prepared copy: Remove after creation** (the default), the last step
-   removes the preparation's work folder and prepared images to free disk space;
-   the VM keeps its own disks. Choose **Keep** to create more VMs from them.
+1. **Choose the file.** Virmill reads it by itself. Choose a system when an OVA
+   contains several.
+2. **One settings page.** Name, CPU cores, memory and, for an installer, the size
+   of its new disk. Storage, network and display are shown with their defaults.
+   **Start it and open its display** is on. Appliance values are labeled as
+   detected; disks and ISO images use suggestions. **Advanced settings** opens
+   firmware, storage pool, disk buses, networks, cloud-init and other hardware;
+   Esc returns with every change kept. Esc on the settings page asks once more
+   before discarding them.
+3. **Create VM, then Confirm.** One confirmation lists what happens and every
+   consequence you agree to: setting up libvirt's standard storage pool when
+   there is no usable pool (or starting a stopped one), copying and checking the
+   images, creating the VM, starting it and removing the prepared copy. Nothing
+   changes before Enter. `d` shows the technical plan.
+4. **Progress on the same screen.** One line per step. When the VM is running its
+   display opens in its own window; **Open display** opens it again. Esc hides
+   the progress, and the steps continue; follow them in Jobs.
 
-For ISO and existing disks, stop programs or VMs using the selected images and
-check **Source images are not in use**. The backend repeats source identity,
+If a step needs anything the confirmation did not list, Virmill stops and shows
+that step's own confirmation. Prepared copies go in a new private folder under
+`~/.local/share/virmill/imports` (or `$XDG_DATA_HOME/virmill/imports`). The
+original file is never changed.
+
+For ISO and existing disks, close programs or VMs using the selected images
+before confirming; the confirmation says so. The backend repeats source identity,
 dependency, format and free-space checks. A quick metadata summary is not a
 checksum verification or proof that the guest will boot.
 
@@ -118,7 +110,8 @@ assume that every recognized container or guest configuration is supported.
 
 Preparation creates independent images. It does not define or start a VM.
 When preparation completes while its job is still open, VM setup opens
-automatically. Otherwise choose **Create VM** and select the prepared images.
+automatically. Otherwise choose **More**, then **Create VM**, and select the
+prepared images.
 The CPU/RAM choices from the source summary carry into this setup.
 
 The ordinary **VM options** page contains name, CPU cores, memory, storage pool

@@ -1,6 +1,6 @@
 # Import a VM or installer
 
-Run `virmill`, choose **Import**, then select a file. Enter opens a folder;
+Run `virmill`, choose **New VM**, then select a file. Enter opens a folder;
 **Ctrl+S** selects a folder of disks. The browser also offers **Create folder**.
 It starts at your normal user location, not a development test directory.
 

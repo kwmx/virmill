@@ -249,6 +249,11 @@ func (m Workspace) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	next, cmd := m.updateWorkspace(msg)
 	w, ok := next.(Workspace)
+	if ok && w.NewVM != nil {
+		var extra tea.Cmd
+		w, extra = w.observeNewVM(m, msg)
+		next, cmd = w, tea.Batch(cmd, extra)
+	}
 	if !ok || w.draftWriter == nil || w.draftLoading || w.draftResume != nil || w.draftModal != "" {
 		return next, cmd
 	}

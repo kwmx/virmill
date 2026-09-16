@@ -134,9 +134,13 @@ func bulletLines(text string, width int) []string {
 func (m Workspace) confirmationLines(width, height int) []string {
 	lines := m.planIssueLines()
 	lines = append(lines, planConfirmation(*m.Plan, width)...)
+	pool, poolAcks := m.newVMPoolLines(width)
+	if len(pool) > 0 {
+		lines = append(append(lines, pool...), "")
+	}
 	lines = append(lines, m.chainOfferLines(width)...)
 	lines = append(lines, "By confirming, you agree that:")
-	agreed := append([]string{}, m.Plan.Acknowledgements...)
+	agreed := append(append([]string{}, poolAcks...), m.Plan.Acknowledgements...)
 	if m.ChainOffer != nil {
 		agreed = append(agreed, m.ChainOffer.Extras...)
 	}

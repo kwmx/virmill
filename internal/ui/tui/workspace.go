@@ -58,7 +58,8 @@ type Workspace struct {
 	ConsoleIndex          int
 	ConsoleLoading        bool
 	ConsoleVM             domain.VM
-	DisplayAutoVM         string // VM whose display opens once its console details arrive
+	NewVM                 *newVMFlow // New VM, from choosing a file until the VM runs (ADR 0065)
+	DisplayAutoVM         string     // VM whose display opens once its console details arrive
 	Boot                  *BootForm
 	BootVM                domain.VM
 	BootLoading           bool
@@ -567,6 +568,11 @@ func (m *Workspace) openAction(a ui.Action) tea.Cmd {
 }
 
 func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
+	next, cmd, handled := m.interceptNewVM(msg)
+	if handled {
+		return next, cmd
+	}
+	m = next.(Workspace)
 	if m.Picker != nil {
 		switch msg.(type) {
 		case workspaceReply, workspaceTick, jobRefreshPulse, creationPulse, creationPoolPulse, importPulse, importExportReply, consolePrepared, consoleClosed, displayOpened, displayClosed:
@@ -1505,7 +1511,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.CatalogMode = "all"
 		case "i":
 			if m.Section == 0 || m.Section == 1 {
-				return m, m.openImport("auto")
+				return m, m.openNewVM()
 			}
 		case "a":
 			m.advanced()
@@ -1599,7 +1605,9 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.openGuestTools()
 			}
 		case "n":
-			if !m.Busy && m.Section == 6 {
+			if m.Section == 0 || m.Section == 1 {
+				return m, m.openNewVM()
+			} else if !m.Busy && m.Section == 6 {
 				m.guided("repository-init")
 			} else if !m.Busy && m.Section == 3 {
 				m.guided("pool-create")
@@ -1768,7 +1776,7 @@ var sectionPlaceholders = map[int][]string{
 func emptyState(section int) []string {
 	switch section {
 	case 0, 1:
-		return []string{"No VMs yet.", "", "Create VM builds one from an installer ISO or prepared disks.", "Import brings in an existing disk image or appliance (OVA)."}
+		return []string{"No VMs yet.", "", "New VM (n) makes one from an installer ISO, a disk image or an appliance (OVA)."}
 	case 2:
 		return []string{"No networks yet.", "", "Create network sets up a private or NAT network for your VMs."}
 	case 3:
@@ -1803,6 +1811,18 @@ func (m Workspace) withoutEmptyDetails(buttons []workspaceButton) []workspaceBut
 func (m Workspace) hints() string {
 	if m.Help {
 		return "? or Esc Close help"
+	}
+	if m.newVMProgressActive() {
+		if m.NewVM.Failure == "" && m.newVMFinished() {
+			return "Left/Right Choose   Enter Select   Esc Done"
+		}
+		return "Esc Hide"
+	}
+	if m.newVMSettingsActive() {
+		if m.Busy {
+			return "Esc Cancel"
+		}
+		return "Type to edit   Tab Next   Enter Select   Esc Discard"
 	}
 	if m.Activity != nil {
 		return "PgUp/PgDn Read   Tab Actions   Enter Choose   Esc Back to job"
@@ -1934,6 +1954,12 @@ func (m Workspace) hints() string {
 	return m.screenHints()
 }
 func (m Workspace) content(width, height int) []string {
+	if m.draftModal == "" && m.newVMProgressActive() {
+		return m.newVMProgressView(width, height)
+	}
+	if m.draftModal == "" && m.newVMSettingsActive() {
+		return m.newVMView(width, height)
+	}
 	if m.RemovalTarget != nil {
 		return pageLines([]string{"Remove VM, keep disks", "Reading the selected VM...", "", "Esc Back"}, width, height, 0)
 	}
@@ -2145,6 +2171,10 @@ func (m Workspace) View() string {
 	if m.Plan != nil {
 		title = "Confirm"
 	}
+	if m.newVMSettingsActive() || m.newVMProgressActive() {
+		title = "New VM"
+		importModal = true
+	}
 	header := m.header(title, width, importModal)
 	lines := []string{ansi.Truncate(header, width, ""), m.color(strings.Repeat(rule, width), "2")}
 	sidebar := 0
@@ -2266,7 +2296,7 @@ func (m Workspace) buttons() []workspaceButton {
 		if m.Detail != nil {
 			return append(out[1:], workspaceButton{"Display", "action:vm console show"}, workspaceButton{"CPU / RAM", "e"}, workspaceButton{"Boot / installer", "action:vm boot set"}, workspaceButton{"Guest tools", "g"}, workspaceButton{"Capture", "c"}, workspaceButton{"More", "a"}, workspaceButton{"Back", "esc"})
 		}
-		return m.withoutEmptyDetails(append(out, workspaceButton{"Create VM", "action:vm create"}, workspaceButton{"Import", "i"}, workspaceButton{"More", "a"}))
+		return m.withoutEmptyDetails(append(out, workspaceButton{"New VM", "n"}, workspaceButton{"More", "a"}))
 	}
 	// Details pages offer actions on the open resource, not the list.
 	if m.Detail != nil {
@@ -2295,7 +2325,7 @@ func (m Workspace) buttons() []workspaceButton {
 
 // overlay reports a menu, form or modal that shows its own keys instead of buttons.
 func (m Workspace) overlay() bool {
-	return m.draftModal != "" || m.Activity != nil || m.RemovalTarget != nil || m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help
+	return m.newVMProgressActive() || m.draftModal != "" || m.Activity != nil || m.RemovalTarget != nil || m.AutostartTarget != nil || m.NetworkForm != nil || m.Resources != nil || m.Console != nil || m.ConsoleLoading || m.Protection != nil || m.BackupRecovery != nil || m.GuestAgent != nil || m.Boot != nil || m.BootLoading || m.Creation != nil || m.CreationPicking || m.Import != nil || m.ExportForm != nil || m.Picker != nil || m.Form != nil || m.ActionForm != nil || m.Advanced || m.Plan != nil || m.Searching || m.NavFocus || m.Help
 }
 
 func (m Workspace) footerButtons() []string {

@@ -97,7 +97,7 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 			return fail(fmt.Errorf("Storage pool result does not match its reviewed plan. Inspect the job."))
 		}
 		o.Title = "Storage pool ready"
-		o.Summary = "Pool " + validation.SafeText(d.Name) + " is active and keeps VM disks in " + validation.SafeText(d.Path) + ". Create VM and Import can use it now."
+		o.Summary = "Pool " + validation.SafeText(d.Name) + " is active and keeps VM disks in " + validation.SafeText(d.Path) + ". New VM can use it now."
 		o.VMID = ""
 		return o
 	case "storage.pool.start":
@@ -106,7 +106,7 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 			return fail(fmt.Errorf("Storage pool result does not match its reviewed plan. Inspect the job."))
 		}
 		o.Title = "Storage pool started"
-		o.Summary = "Pool " + validation.SafeText(fmt.Sprint(pool["name"])) + " is running. Create VM and Import can use it now."
+		o.Summary = "Pool " + validation.SafeText(fmt.Sprint(pool["name"])) + " is running. New VM can use it now."
 		o.VMID = ""
 		return o
 	case "vm.create", "vm.create.devices-v1":

@@ -240,10 +240,8 @@ func (m *Workspace) startChain(data any) {
 	case c != nil && creationOperation(m.Plan.Operation) && c.CreateJob == "":
 		c.CreateJob = job.ID
 	case c != nil && m.Plan.Operation == "vm.start":
+		// The chain ends once the start's result is read, so the display can open.
 		c.StartJob = job.ID
-		if !c.Cleanup {
-			m.Chain = nil
-		}
 	case c != nil && m.Plan.Operation == "import.discard":
 		m.Chain = nil
 	}
