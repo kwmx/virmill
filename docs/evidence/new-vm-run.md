@@ -35,6 +35,45 @@ Also observed:
 - The ISO settings page suggested a 24 GiB disk with a note, because the host
   had about 31 GiB free (below).
 
+## The system connection, and what the viewer shows
+
+`new-vm-system-native-002` walked the host's own `qemu:///system` on build
+`c5a5290`, through the installed user coordinator, with a virtual display.
+That host has several active storage pools, none named `default`, and libvirt's
+default NAT network.
+
+| Case | Keys after choosing the file | Confirmations | Raw identifiers | Storage | Network | VM | Viewer window |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| qcow2 disk image | 3 | 1 | none | the one pool that starts with the host | default NAT, connected | running | open, titled with the VM's name |
+| ISO installer | 3 | 1 | none | same | same | running | open |
+| OVA appliance | 3 | 1 | none | same | none (the appliance has no adapter) | running | open |
+
+The probe waited for each viewer's mapped window and saved a screenshot of the
+display. Each shows a Virt Viewer window titled with the VM's name, showing
+that VM's live firmware screen: SeaBIOS, then "Booting from DVD/CD" for the
+installer, and "No bootable device" because the generated images hold no
+operating system. So the display does not just start a process: it attaches
+and draws the guest.
+
+Run `001` of this probe stopped before starting, because listing volumes in a
+pool this user cannot read failed; the probe now records such a pool as
+unreadable.
+
+Build `c5a5290` made two changes for this host. New VM preselected no pool when
+several were usable and none was named `default`, which sent the user to
+Advanced settings. It now preselects the only pool that starts with the host, or
+else the one with the most free space, and names it on the page. And `v` opens
+the selected running VM's display from the VM list or its details, with the
+footer saying so.
+
+**Cleanup found a separate gap.** Removing each VM together with its disks was
+refused with `RECOVERY_REQUIRED: disk source outside reconciled storage pools`.
+Before deleting a volume, removal proves that no VM on the host refers to it,
+and other guests on this host use disk files that are not in any pool. The
+three VMs were removed through reviewed plans that keep disks. Their four
+volumes, and nothing else, were then deleted with `virsh vol-delete`, and the
+connection was back to its original 23 VMs.
+
 ## Runs that did not pass
 
 - `001`: the probe asked for a 120x40 terminal, which its terminal helper does
@@ -55,7 +94,9 @@ Also observed:
 - The private session has no virtual networks, so every case ran with no
   network. An appliance whose adapters need a network, on a host with no active
   network, still needs Advanced settings.
-- Only the session connection. The owner's system connection uses the same
-  flow and its own pool folder; it has not been walked natively yet.
-- The viewer ran under Xvfb; that proves the process started and stayed
-  attached, not what a person sees in the window.
+- A host with no storage pool on the system connection; that case ran on the
+  session connection only.
+- A real desktop session. The viewer ran on a virtual display; the screenshots
+  show the window and the guest's screen, not how a desktop places it.
+- Deleting a New VM's disks on a host where other guests use disk files outside
+  pools (above).

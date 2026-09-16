@@ -15,7 +15,11 @@
 - Every change now has one plain confirmation instead of a checkbox per
   acknowledgement. It lists everything you agree to in plain words, and `d`
   shows the technical plan. The CLI still takes each `--ack`.
-- **Display** replaces Console on running VMs. A VM's only graphical display
+- On a host with several storage pools and none named `default`, New VM
+  preselects the one that starts with the host, or the one with the most free
+  space, and names it.
+- **Display** replaces Console on running VMs, and `v` opens it from the VM
+  list. A VM's only graphical display
   opens straight away, in its own window, and Virmill stays usable while it is
   open. A viewer that cannot attach says why.
 - The installer disk defaults to a size whose preparation fits the free space,
