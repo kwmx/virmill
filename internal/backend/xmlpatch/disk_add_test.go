@@ -2,6 +2,7 @@ package xmlpatch
 
 import (
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 
@@ -103,6 +104,72 @@ func TestAddDiskRefusesStaleAndUnsupportedRequests(t *testing.T) {
 	}
 	if code(t, mustFail(t, strings.Replace(diskAdditionXML(""), `<controller type="sata" index="0"/>`, full, 1), "sata")) != "UNSUPPORTED_CAPABILITY" {
 		t.Fatal("an exhausted controller was accepted")
+	}
+}
+
+// A new disk cannot be confirmed by a digest of the whole definition: libvirt
+// files it among the other disks, and HardwareDigest treats child ordering as
+// significant. Removing the disk again must give back the definition from
+// before the insert, wherever libvirt filed it and however it reindented.
+func TestWithoutDiskConfirmsAnInsertWhereverItWasFiled(t *testing.T) {
+	raw := diskAdditionXML(sataDisk)
+	if targets, err := DiskTargets(raw); err != nil || !slices.Equal(targets, []string{"sda", "sdb"}) {
+		t.Fatal(targets, err)
+	}
+	add, err := InspectDiskAddition(raw, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	add.Pool, add.Volume = "images", "virmill-7e472a89-a207-4615-af5f-2a10a734943b-disk-002.qcow2"
+	after, err := AddDisk(raw, add)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inserted, err := WithoutDisk(after, "sdc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if inserted != raw {
+		t.Fatal("removing the appended disk did not give back the definition", inserted)
+	}
+	// What libvirt stores instead: the same disk filed among the disks, with
+	// its own indentation. AddDisk splices immediately before </devices>, so
+	// that is where the inserted element sits in the result.
+	idx := strings.Index(raw, "</devices>")
+	element := after[idx : len(after)-len(raw)+idx]
+	stored := strings.Replace(raw, `<disk type="volume" device="cdrom">`, "\n      "+element+"\n      "+`<disk type="volume" device="cdrom">`, 1)
+	if strings.Count(stored, "<disk ") != 3 {
+		t.Fatal("the stored definition was not built with three disks", stored)
+	}
+	without, err := WithoutDisk(stored, "sdc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wanted, err := HardwareDigest(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := HardwareDigest(without)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if wanted != got {
+		t.Fatal("a disk filed among the others could not be removed back to the reviewed definition")
+	}
+	// The replaced check refused exactly this correct addition.
+	reviewed, err := HardwareDigest(after)
+	if err != nil {
+		t.Fatal(err)
+	}
+	whole, err := HardwareDigest(stored)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reviewed == whole {
+		t.Fatal("the whole-definition digest no longer depends on where the disk is filed; this test proves nothing")
+	}
+	if _, err = WithoutDisk(raw, "sdz"); code(t, err) != "INVALID_INPUT" {
+		t.Fatal("removing a disk that is not there was accepted", err)
 	}
 }
 

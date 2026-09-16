@@ -67,11 +67,16 @@ They are built in this order, smallest first.
   cleanup uses. Neither uploads nor defines anything. Without this an addition
   that failed after its define would hold the VM and its pool with no way out,
   which happened twice on the test host before it existed.
-- The definition is compared with the digest that tolerates libvirt's own
-  reformatting, as cold restore does, and the readback also confirms the stored
-  definition names the reviewed target with the reviewed pool and volume. A
-  byte-exact comparison of Virmill's own XML cannot hold: libvirt reindents and
-  requotes what it stores.
+- The definition before the change is bound by the digest that tolerates
+  libvirt's own reformatting, as cold restore does; that document is unchanged,
+  so the comparison holds. The result is **not** confirmed by a digest: libvirt
+  files a new disk among the other disks rather than where Virmill inserted it,
+  and the digest treats child ordering as significant, so no full-definition
+  digest can confirm a device insert. Instead the stored definition must hold
+  exactly the disks it held before plus one new disk at the reviewed target,
+  with the reviewed pool, volume, bus and port, with no other device changed,
+  and the VM still stopped without saved state. A byte-exact comparison is
+  doubly impossible: libvirt also reindents and requotes what it stores.
 
 ### Move
 

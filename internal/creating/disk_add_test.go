@@ -34,7 +34,7 @@ type addFixtureBackend struct {
 func (f *addFixtureBackend) target() domain.DiskAdditionTarget {
 	key := domain.ResourceKey{ProviderID: "libvirt", ConnectionID: "qemu:///system", Kind: "vm", UUID: addVMID}
 	out := domain.DiskAdditionTarget{VM: key, VMFingerprint: strings.Repeat("a", 64), DefinitionSHA256: strings.Repeat("b", 64),
-		AfterXMLSHA256: strings.Repeat("c", 64), PoolID: poolID, PoolName: "fixture-pool",
+		PoolID: poolID, PoolName: "fixture-pool",
 		VolumeName: "virmill-" + addVMID + "-disk-001.qcow2", Bus: "sata", Target: "sdb", Unit: 1, PoolAvailableBytes: 1 << 30}
 	out.ResourceIDs = []string{key.String(), domain.ResourceKey{ProviderID: "libvirt", ConnectionID: "qemu:///system", Kind: "storage-pool", UUID: poolID}.String(), "local-file|/synthetic/" + out.VolumeName}
 	slices.Sort(out.ResourceIDs)

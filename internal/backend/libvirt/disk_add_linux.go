@@ -122,17 +122,16 @@ func (p *Provider) InspectDiskAddition(ctx context.Context, uri, id, bus string)
 		return out, err
 	}
 	add.Pool, add.Volume = poolName, name
-	after, err := xmlpatch.AddDisk(vm.PersistentXML, add)
-	if err != nil {
+	// The insert is built here only to refuse at review what could not be
+	// applied. Its result is not digested: libvirt files a new disk among the
+	// other disks, so no digest of the whole definition can confirm an insert.
+	if _, err = xmlpatch.AddDisk(vm.PersistentXML, add); err != nil {
 		return out, err
 	}
-	// Libvirt reformats the definition it stores, so both digests tolerate
-	// attribute order and indentation and nothing else, as cold restore does.
+	// Libvirt reformats the definition it stores, so the digest of the
+	// definition before the insert tolerates attribute order and indentation
+	// and nothing else, as cold restore does.
 	before, err := xmlpatch.HardwareDigest(vm.PersistentXML)
-	if err != nil {
-		return out, err
-	}
-	expected, err := xmlpatch.HardwareDigest(after)
 	if err != nil {
 		return out, err
 	}
@@ -141,7 +140,7 @@ func (p *Provider) InspectDiskAddition(ctx context.Context, uri, id, bus string)
 		return out, err
 	}
 	out = domain.DiskAdditionTarget{VM: key, VMFingerprint: vm.Fingerprint, DefinitionSHA256: before,
-		AfterXMLSHA256: expected, PoolID: observed.Key.UUID, PoolName: poolName, VolumeName: name,
+		PoolID: observed.Key.UUID, PoolName: poolName, VolumeName: name,
 		Bus: add.Bus, Target: add.Target, Unit: add.Unit, PoolAvailableBytes: *observed.AvailableBytes}
 	out.ResourceIDs = []string{key.String(), observed.Key.String(), "local-file|" + filepath.Join(directory, name)}
 	sort.Strings(out.ResourceIDs)
@@ -153,9 +152,9 @@ func validDiskAddition(in domain.DiskAdditionPlan) error {
 	if err := removalKey(t.VM); err != nil {
 		return err
 	}
-	if !digestPattern.MatchString(t.VMFingerprint) || !digestPattern.MatchString(t.DefinitionSHA256) || !digestPattern.MatchString(t.AfterXMLSHA256) ||
+	if !digestPattern.MatchString(t.VMFingerprint) || !digestPattern.MatchString(t.DefinitionSHA256) ||
 		!uuidPattern.MatchString(t.PoolID) || t.PoolName == "" || t.VolumeName != in.Volume.Name || t.PoolID != in.Volume.PoolID ||
-		in.Volume.ContentType != "" || t.DefinitionSHA256 == t.AfterXMLSHA256 {
+		in.Volume.ContentType != "" {
 		return domain.Fail("INVALID_INPUT", "complete exact disk addition required")
 	}
 	if err := validateVolume(in.Volume); err != nil {
@@ -168,33 +167,56 @@ func validDiskAddition(in domain.DiskAdditionPlan) error {
 }
 
 // addedDiskXML recomputes the reviewed definition from what is on the host now.
+// The caller has already bound the definition it read to the review, and the
+// result is confirmed afterwards by removing the disk again, so there is no
+// digest of the insert to compare here.
 func addedDiskXML(raw string, in domain.DiskAdditionPlan) (string, error) {
 	t := in.Target
-	after, err := xmlpatch.AddDisk(raw, xmlpatch.DiskAddition{Pool: t.PoolName, Volume: t.VolumeName, Bus: t.Bus, Target: t.Target, Unit: t.Unit})
-	if err != nil {
-		return "", err
-	}
-	digest, err := xmlpatch.HardwareDigest(after)
-	if err != nil {
-		return "", err
-	}
-	if digest != t.AfterXMLSHA256 {
-		return "", domain.Fail("STALE_PLAN", "the definition changed since the review; review again")
-	}
-	return after, nil
+	return xmlpatch.AddDisk(raw, xmlpatch.DiskAddition{Pool: t.PoolName, Volume: t.VolumeName, Bus: t.Bus, Target: t.Target, Unit: t.Unit})
 }
 
-// namesAddedDisk confirms the stored definition really declares the reviewed
-// disk, so correctness never rests on a digest alone.
-func namesAddedDisk(raw string, t domain.DiskAdditionTarget) error {
+// addedDiskState reports what the saved definition holds now: "before" while it
+// is still the reviewed definition, "added" once it is that definition plus
+// exactly the reviewed disk, and "" for anything else, with a reason the caller
+// can record. No digest of the whole definition can confirm the insert, because
+// libvirt files a new disk among the other disks while the hardware digest
+// treats child ordering as significant. Removing the disk at the reviewed target
+// must instead give back the definition the review bound, which also proves no
+// other device changed, and that disk must name the reviewed image.
+func addedDiskState(raw string, t domain.DiskAdditionTarget) (string, string, error) {
+	stored, err := xmlpatch.HardwareDigest(raw)
+	if err != nil {
+		return "", "", err
+	}
+	if stored == t.DefinitionSHA256 {
+		return "before", "the definition is still the reviewed one", nil
+	}
+	targets, err := xmlpatch.DiskTargets(raw)
+	if err != nil {
+		return "", "", err
+	}
+	if !slices.Contains(targets, t.Target) {
+		return "", "the definition is not the reviewed one and has no disk at " + t.Target, nil
+	}
+	without, err := xmlpatch.WithoutDisk(raw, t.Target)
+	if err != nil {
+		return "", "", err
+	}
+	digest, err := xmlpatch.HardwareDigest(without)
+	if err != nil {
+		return "", "", err
+	}
+	if digest != t.DefinitionSHA256 {
+		return "", "the definition differs from the reviewed one beyond the disk at " + t.Target, nil
+	}
 	source, err := growDiskSource(raw, t.Target)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	if source.pool != t.PoolName || source.volume != t.VolumeName || source.format != "qcow2" {
-		return domain.Fail("RECOVERY_REQUIRED", "the stored definition names another image at "+t.Target)
+		return "", "the disk at " + t.Target + " names another image", nil
 	}
-	return nil
+	return "added", "", nil
 }
 
 func (p *Provider) CheckDiskAddition(ctx context.Context, in domain.DiskAdditionPlan) (string, error) {
@@ -229,12 +251,12 @@ func (p *Provider) CheckDiskAddition(ctx context.Context, in domain.DiskAddition
 			return "", err
 		}
 	}
-	stored, err := xmlpatch.HardwareDigest(vm.PersistentXML)
+	state, detail, err := addedDiskState(vm.PersistentXML, in.Target)
 	if err != nil {
 		return "", err
 	}
-	switch stored {
-	case in.Target.DefinitionSHA256:
+	switch state {
+	case "before":
 		if _, err = addedDiskXML(vm.PersistentXML, in); err != nil {
 			return "", err
 		}
@@ -242,16 +264,15 @@ func (p *Provider) CheckDiskAddition(ctx context.Context, in domain.DiskAddition
 			return "volume-present", nil
 		}
 		return "before", nil
-	case in.Target.AfterXMLSHA256:
-		if err = namesAddedDisk(vm.PersistentXML, in.Target); err != nil {
-			return "", err
-		}
+	case "added":
 		if !present {
 			return "", domain.Fail("RECOVERY_REQUIRED", "the definition names the new disk but its volume is missing")
 		}
 		return "added", nil
 	}
-	return "", domain.Fail("STALE_PLAN", "the definition changed since the review; review again")
+	refusal := domain.Fail("STALE_PLAN", "the definition changed since the review; review again")
+	refusal.Details = map[string]string{"observed": detail}
+	return "", refusal
 }
 
 // DefineAddedDisk defines the reviewed definition once, then reads it back.
@@ -309,26 +330,27 @@ func (p *Provider) DefineAddedDisk(ctx context.Context, in domain.DiskAdditionPl
 	if err != nil {
 		return domain.Fail("RECOVERY_REQUIRED", "secure readback unavailable after adding the disk; do not replay")
 	}
-	// Libvirt reformats what it stores, so the readback is compared with the
-	// normalisation-tolerant digest and by naming the disk itself. Each check
-	// reports separately: one shared message cannot be diagnosed afterwards.
+	// Libvirt reformats what it stores and files a new disk among the other
+	// disks, so the readback removes the reviewed disk again and expects the
+	// definition the review bound. Each check reports separately: one shared
+	// message cannot be diagnosed afterwards.
 	if read.State != "stopped" {
 		return domain.Fail("RECOVERY_REQUIRED", "the VM is no longer stopped after adding the disk; inspect the operation without replaying it")
 	}
 	if read.HasManagedSave {
 		return domain.Fail("RECOVERY_REQUIRED", "the VM acquired saved state while adding the disk; inspect the operation without replaying it")
 	}
-	readback, err := xmlpatch.HardwareDigest(read.PersistentXML)
+	state, detail, err := addedDiskState(read.PersistentXML, in.Target)
 	if err != nil {
 		return err
 	}
-	if readback != in.Target.AfterXMLSHA256 {
-		failure := domain.Fail("RECOVERY_REQUIRED", "the stored definition differs from the reviewed result beyond libvirt's own formatting; inspect the operation without replaying it")
-		failure.Details = map[string]string{"expected": in.Target.AfterXMLSHA256, "stored": readback}
+	if state != "added" {
+		failure := domain.Fail("RECOVERY_REQUIRED", "the stored definition is not the reviewed definition plus the reviewed disk; inspect the operation without replaying it")
+		failure.Details = map[string]string{"observed": detail}
 		return failure
 	}
 	if securely != read.PersistentXML {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "the stored definition omits sensitive settings, so the added disk cannot be confirmed; inspect the operation without replaying it")
 	}
-	return namesAddedDisk(read.PersistentXML, in.Target)
+	return nil
 }

@@ -3,6 +3,7 @@ package xmlpatch
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 
 	"virmill.local/core/internal/domain"
@@ -34,54 +35,78 @@ func diskAdditionRefuse(message string) error {
 	return domain.Fail("UNSUPPORTED_CAPABILITY", message)
 }
 
-func modelDiskAddition(data string) (*diskAdditionModel, error) {
+// diskElement is one disk a definition declares, with the identity this editor
+// addresses disks by.
+type diskElement struct {
+	target, bus string
+	node        *positionedNode
+}
+
+// diskElements walks the devices once and returns the disk elements in document
+// order. Every disk must carry a stable target, because adding a disk and
+// confirming an added disk both address disks by target.
+func diskElements(data string) (*positionedNode, []diskElement, error) {
 	root, err := positionedXML(data)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	devices, err := onlyChild(root, "devices")
+	if err != nil {
+		return nil, nil, err
+	}
+	var out []diskElement
+	seen := map[string]bool{}
+	for _, part := range devices.parts {
+		n := part.child
+		if n == nil || n.name.Space != "" || n.name.Local != "disk" {
+			continue
+		}
+		if len(out) >= 64 {
+			return nil, nil, diskAdditionRefuse("this VM already has the maximum number of disks this editor supports")
+		}
+		target, err := onlyChild(n, "target")
+		if err != nil {
+			return nil, nil, err
+		}
+		dev, _ := target.attr("dev")
+		bus, _ := target.attr("bus")
+		if !targetID.MatchString(dev) {
+			return nil, nil, diskAdditionRefuse("a disk lacks a stable supported target name")
+		}
+		if seen[dev] {
+			return nil, nil, diskAdditionRefuse("this VM declares the same disk target twice")
+		}
+		seen[dev] = true
+		out = append(out, diskElement{target: dev, bus: bus, node: n})
+	}
+	return devices, out, nil
+}
+
+func modelDiskAddition(data string) (*diskAdditionModel, error) {
+	devices, disks, err := diskElements(data)
 	if err != nil {
 		return nil, err
 	}
 	m := &diskAdditionModel{devices: devices, targets: map[string]bool{}, units: map[string]map[int]bool{}, controllers: map[string]bool{}}
 	for _, part := range devices.parts {
 		n := part.child
-		if n == nil || n.name.Space != "" {
+		if n == nil || n.name.Space != "" || n.name.Local != "controller" {
 			continue
 		}
-		if n.name.Local == "controller" {
-			if kind, _ := n.attr("type"); kind != "" {
-				m.controllers[kind] = true
-			}
+		if kind, _ := n.attr("type"); kind != "" {
+			m.controllers[kind] = true
+		}
+	}
+	for _, disk := range disks {
+		m.targets[disk.target] = true
+		if disk.bus == "" {
 			continue
 		}
-		if n.name.Local != "disk" {
-			continue
+		if m.units[disk.bus] == nil {
+			m.units[disk.bus] = map[int]bool{}
+			m.buses = append(m.buses, disk.bus)
 		}
-		if len(m.targets) >= 64 {
-			return nil, diskAdditionRefuse("this VM already has the maximum number of disks this editor supports")
-		}
-		target, err := onlyChild(n, "target")
-		if err != nil {
-			return nil, err
-		}
-		dev, _ := target.attr("dev")
-		bus, _ := target.attr("bus")
-		if !targetID.MatchString(dev) {
-			return nil, diskAdditionRefuse("a disk lacks a stable supported target name")
-		}
-		if m.targets[dev] {
-			return nil, diskAdditionRefuse("this VM declares the same disk target twice")
-		}
-		m.targets[dev] = true
-		if bus == "" {
-			continue
-		}
-		if m.units[bus] == nil {
-			m.units[bus] = map[int]bool{}
-			m.buses = append(m.buses, bus)
-		}
-		for _, address := range n.children("address") {
+		for _, address := range disk.node.children("address") {
 			if kind, _ := address.attr("type"); kind != "drive" {
 				continue
 			}
@@ -93,10 +118,46 @@ func modelDiskAddition(data string) (*diskAdditionModel, error) {
 			if err != nil || unit < 0 || unit > 255 {
 				return nil, diskAdditionRefuse("a disk has an unsupported drive address")
 			}
-			m.units[bus][unit] = true
+			m.units[disk.bus][unit] = true
 		}
 	}
 	return m, nil
+}
+
+// DiskTargets lists the guest targets of every disk a definition declares,
+// sorted, so two definitions can be compared by the disks they hold.
+func DiskTargets(data string) ([]string, error) {
+	_, disks, err := diskElements(data)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(disks))
+	for _, disk := range disks {
+		out = append(out, disk.target)
+	}
+	sort.Strings(out)
+	return out, nil
+}
+
+// WithoutDisk removes exactly the disk at target and leaves the rest of the
+// definition byte for byte. Adding a disk cannot be confirmed by a digest of
+// the whole definition: libvirt files a new disk among the other disks, while
+// HardwareDigest treats child ordering as significant. Removing the reviewed
+// disk from what libvirt stored and digesting that instead compares two
+// documents that must be identical wherever the disk was filed, which also
+// proves no other device changed. The indentation left behind sits at
+// /domain/devices, where HardwareDigest ignores it.
+func WithoutDisk(data, target string) (string, error) {
+	_, disks, err := diskElements(data)
+	if err != nil {
+		return "", err
+	}
+	for _, disk := range disks {
+		if disk.target == target {
+			return replaceSpans(data, []spanReplacement{{disk.node.start, disk.node.end, ""}})
+		}
+	}
+	return "", domain.Fail("INVALID_INPUT", "this definition has no disk "+target)
 }
 
 // busLimit is the number of drive units this editor will use on a bus. SATA
