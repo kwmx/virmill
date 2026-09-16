@@ -310,13 +310,25 @@ func (p *Provider) DefineAddedDisk(ctx context.Context, in domain.DiskAdditionPl
 		return domain.Fail("RECOVERY_REQUIRED", "secure readback unavailable after adding the disk; do not replay")
 	}
 	// Libvirt reformats what it stores, so the readback is compared with the
-	// normalisation-tolerant digest and by naming the disk itself.
+	// normalisation-tolerant digest and by naming the disk itself. Each check
+	// reports separately: one shared message cannot be diagnosed afterwards.
+	if read.State != "stopped" {
+		return domain.Fail("RECOVERY_REQUIRED", "the VM is no longer stopped after adding the disk; inspect the operation without replaying it")
+	}
+	if read.HasManagedSave {
+		return domain.Fail("RECOVERY_REQUIRED", "the VM acquired saved state while adding the disk; inspect the operation without replaying it")
+	}
 	readback, err := xmlpatch.HardwareDigest(read.PersistentXML)
 	if err != nil {
 		return err
 	}
-	if read.State != "stopped" || read.HasManagedSave || readback != in.Target.AfterXMLSHA256 || securely != read.PersistentXML {
-		return domain.Fail("RECOVERY_REQUIRED", "the definition readback differs from the reviewed result; inspect the operation without replaying it")
+	if readback != in.Target.AfterXMLSHA256 {
+		failure := domain.Fail("RECOVERY_REQUIRED", "the stored definition differs from the reviewed result beyond libvirt's own formatting; inspect the operation without replaying it")
+		failure.Details = map[string]string{"expected": in.Target.AfterXMLSHA256, "stored": readback}
+		return failure
+	}
+	if securely != read.PersistentXML {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "the stored definition omits sensitive settings, so the added disk cannot be confirmed; inspect the operation without replaying it")
 	}
 	return namesAddedDisk(read.PersistentXML, in.Target)
 }
