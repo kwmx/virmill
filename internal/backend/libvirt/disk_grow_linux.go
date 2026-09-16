@@ -41,7 +41,7 @@ func (p *Provider) InspectDiskGrow(ctx context.Context, uri, id, target string, 
 		return out, err
 	}
 	defer d.Free()
-	vm, err := growableVM(d, uri)
+	vm, err := growableVM(c, d, uri)
 	if err != nil {
 		return out, err
 	}
@@ -99,9 +99,6 @@ func growDiskSource(raw, target string) (growSource, error) {
 	if err != nil {
 		return out, err
 	}
-	same := func(a, b domain.ColdStorageSource) bool {
-		return a.Type == "file" && b.Type == "file" && a.File != "" && a.File == b.File || a.Type == "volume" && b.Type == "volume" && a.Pool != "" && a.Pool == b.Pool && a.Volume == b.Volume
-	}
 	for _, disk := range source.Disks {
 		if disk.Target != target {
 			continue
@@ -120,11 +117,11 @@ func growDiskSource(raw, target string) (growSource, error) {
 			}
 		}
 		for _, other := range source.Disks {
-			if other.Target != disk.Target && same(other.Source, s) {
+			if other.Target != disk.Target && sameColdSource(other.Source, s) {
 				return out, domain.Fail("RESOURCE_BUSY", "another disk of this VM uses the same image")
 			}
 			for _, parent := range other.Backing {
-				if same(parent, s) {
+				if sameColdSource(parent, s) {
 					return out, domain.Fail("RESOURCE_BUSY", "this disk is a backing file of another disk")
 				}
 			}
@@ -148,7 +145,7 @@ func lookupGrowVolume(c *native.Connect, s growSource) (*native.StorageVol, erro
 
 // growableVM requires a stopped persistent VM without saved, snapshot or
 // checkpoint state; libvirt snapshots may hold internal qcow2 snapshots.
-func growableVM(d *native.Domain, uri string) (domain.VM, error) {
+func growableVM(c *native.Connect, d *native.Domain, uri string) (domain.VM, error) {
 	vm, err := observe(d, uri)
 	if err != nil {
 		return vm, err
@@ -156,7 +153,7 @@ func growableVM(d *native.Domain, uri string) (domain.VM, error) {
 	if vm.State != "stopped" || vm.PersistentXML == "" || vm.LiveXML != "" || vm.HasManagedSave {
 		return vm, domain.Fail("RESOURCE_BUSY", "shut down the VM before growing its disk; saved state must be resumed and shut down first")
 	}
-	h := nativeRemovalHandle{d}
+	h := nativeRemovalHandle{d, c}
 	snapshots, err := h.snapshotCount()
 	if err != nil {
 		return vm, err
@@ -366,7 +363,7 @@ func checkDiskGrow(ctx context.Context, c *native.Connect, g domain.DiskGrow) (s
 		return "", nil, err
 	}
 	defer d.Free()
-	vm, err := growableVM(d, g.VM.ConnectionID)
+	vm, err := growableVM(c, d, g.VM.ConnectionID)
 	if err != nil {
 		return "", nil, err
 	}

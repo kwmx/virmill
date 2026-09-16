@@ -14,9 +14,12 @@ configuration for restoration. To use retained disks again, create or restore a
 VM definition; disk files alone do not preserve all VM settings.
 
 The VM must be stopped with automatic startup off and no saved runtime state.
-This beta supports x86 BIOS VMs with file-backed disks. Firmware/TPM state,
-snapshots, checkpoints, protected settings or unsupported device/storage layouts
-block removal before any change. The issue explains the refusal; F1 opens its
+This beta supports x86 BIOS and UEFI VMs whose disks are files or storage-pool
+volumes, including the VMs Virmill creates ([ADR 0063](adr/0063-remove-created-and-uefi-vms.md)).
+A UEFI VM's firmware settings file (NVRAM) and an emulated TPM's state are kept
+and listed in the review beside the disks; nothing deletes them yet. Snapshots,
+checkpoints, protected settings, a passthrough TPM or unsupported
+device/storage layouts block removal before any change. The issue explains the refusal; F1 opens its
 full text. Resolve it through the relevant workflow or keep the VM defined.
 Do not delete auxiliary files manually to bypass the check.
 
@@ -42,7 +45,7 @@ acknowledgements; `--yes` alone is insufficient. The TUI offers the same exact
 review and explicit acknowledgements. Deletion cannot be undone. Unselected
 disks, installer media, backing parents and backups remain.
 
-Selected deletion requires registered raw/qcow2 file volumes and a complete,
+Selected deletion requires registered raw/qcow2 files or pool volumes and a complete,
 readable native storage graph. Every guest on the connection must be stopped
 until live graph inspection is qualified. Shared disks, referenced parents,
 source/preparation records, snapshot/backup references, unknown files in pool

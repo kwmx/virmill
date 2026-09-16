@@ -10,6 +10,11 @@ type DefinitionRemoval struct {
 	Fingerprint      string      `json:"fingerprint"`
 	DefinitionSHA256 string      `json:"definitionSHA256"`
 	RetainedSources  []string    `json:"retainedSources"`
+	// Firmware is a UEFI VM's NVRAM file, which removal keeps and lists among
+	// the retained sources. EmulatedTPM reports an emulated TPM whose state
+	// removal keeps (ADR 0063). Neither is ever deleted by removal.
+	Firmware    string `json:"firmware,omitempty"`
+	EmulatedTPM bool   `json:"emulatedTPM,omitempty"`
 }
 
 // DefinitionRemovalProvider checks saved-state and backend-metadata dependencies,

@@ -16,7 +16,7 @@ import (
 
 func TestRemovalDiskSourcesRefuseMediaSharedAndParents(t *testing.T) {
 	for _, targets := range [][]string{{"vda"}, {"vda", "sda"}, {"missing"}, {"vda", "vda"}, {"/disk"}, nil} {
-		got, e := removalDiskSources(removalFixtureXML, targets)
+		got, e := removalDiskSources(removalFixtureXML, targets, newRemovalFixture())
 		if reflect.DeepEqual(targets, []string{"vda"}) {
 			if e != nil || len(got) != 1 || got[0].path != "/var/lib/images/retained.qcow2" {
 				t.Fatal(got, e)
@@ -27,7 +27,7 @@ func TestRemovalDiskSourcesRefuseMediaSharedAndParents(t *testing.T) {
 	}
 	for _, addition := range []string{"<readonly/>", "<shareable/>", "<encryption format='luks'/>"} {
 		raw := strings.Replace(removalFixtureXML, "<target dev=\"vda\" bus=\"virtio\"/>", "<target dev=\"vda\" bus=\"virtio\"/>"+addition, 1)
-		if _, e := removalDiskSources(raw, []string{"vda"}); e == nil {
+		if _, e := removalDiskSources(raw, []string{"vda"}, newRemovalFixture()); e == nil {
 			t.Fatal("unsafe source accepted", addition)
 		}
 	}

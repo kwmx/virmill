@@ -7,7 +7,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 
@@ -17,9 +19,10 @@ import (
 
 var _ domain.DefinitionRemovalProvider = (*Provider)(nil)
 
-// This baseline deliberately uses no discard or KEEP flags: every auxiliary
-// state profile is refused before UndefineFlags(0). Retaining disk paths is not
-// a disk capture or a claim that their backing graph has been verified.
+// A UEFI VM's NVRAM file and an emulated TPM's state are kept through the KEEP
+// flags and listed in the review; every other auxiliary state profile is still
+// refused (ADR 0063). Retaining disk paths is not a disk capture or a claim
+// that their backing graph has been verified.
 type removalHandle interface {
 	observation(string) (domain.VM, error)
 	active() (bool, error)
@@ -27,9 +30,46 @@ type removalHandle interface {
 	snapshotCount() (int, error)
 	checkpointCount() (int, error)
 	secureXML() (string, error)
+	volumePath(pool, volume string) (string, error)
 	undefine(native.DomainUndefineFlagsValues) error
 }
-type nativeRemovalHandle struct{ d *native.Domain }
+type nativeRemovalHandle struct {
+	d *native.Domain
+	c *native.Connect
+}
+
+// volumePath resolves a disk declared as a pool volume, as the VMs Virmill
+// creates are, to its exact registered pool entry.
+func (h nativeRemovalHandle) volumePath(pool, volume string) (string, error) {
+	if h.c == nil {
+		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "pool-volume disks require a connected inspection")
+	}
+	if coldSourceIdentifier(pool, 255) != nil || !diskRemovalName(volume) {
+		return "", domain.Fail("INVALID_INPUT", "exact pool and volume names required")
+	}
+	p, err := h.c.LookupStoragePoolByName(pool)
+	if err != nil {
+		return "", err
+	}
+	defer p.Free()
+	v, err := p.LookupStorageVolByName(volume)
+	if err != nil {
+		return "", err
+	}
+	defer v.Free()
+	path, err := v.GetPath()
+	if err != nil {
+		return "", err
+	}
+	directory, err := cleanupPoolDirectory(p)
+	if err != nil {
+		return "", err
+	}
+	if coldPath(path) != nil || path != filepath.Join(directory, volume) {
+		return "", domain.Fail("SOURCE_CHANGED", "the volume is not the exact registered pool entry")
+	}
+	return path, nil
+}
 
 func (h nativeRemovalHandle) observation(uri string) (domain.VM, error) { return observe(h.d, uri) }
 func (h nativeRemovalHandle) active() (bool, error)                     { return h.d.IsActive() }
@@ -86,7 +126,7 @@ func (p *Provider) InspectDefinitionRemoval(ctx context.Context, uri, id string)
 		return domain.DefinitionRemoval{}, err
 	}
 	defer d.Free()
-	return inspectRemovalHandle(ctx, nativeRemovalHandle{d}, key)
+	return inspectRemovalHandle(ctx, nativeRemovalHandle{d, c}, key)
 }
 func inspectRemovalHandle(ctx context.Context, h removalHandle, key domain.ResourceKey) (domain.DefinitionRemoval, error) {
 	var out domain.DefinitionRemoval
@@ -132,12 +172,21 @@ func inspectRemovalHandle(ctx context.Context, h removalHandle, key domain.Resou
 	if secure != vm.PersistentXML {
 		return out, domain.Fail("UNSUPPORTED_CAPABILITY", "definition contains protected settings requiring a secret-preserving retention adapter")
 	}
-	sources, err := removalSources(vm.PersistentXML, key.UUID, vm.Name)
+	sources, err := removalSources(vm.PersistentXML, key.UUID, vm.Name, h)
 	if err != nil {
 		return out, err
 	}
+	firmware, tpm, err := removalAuxiliaryState(vm.PersistentXML)
+	if err != nil {
+		return out, err
+	}
+	if firmware != "" {
+		sources = append(sources, firmware)
+		sort.Strings(sources)
+		sources = slices.Compact(sources)
+	}
 	sum := sha256.Sum256([]byte(vm.PersistentXML))
-	out = domain.DefinitionRemoval{Resource: key, Name: vm.Name, Fingerprint: vm.Fingerprint, DefinitionSHA256: hex.EncodeToString(sum[:]), RetainedSources: sources}
+	out = domain.DefinitionRemoval{Resource: key, Name: vm.Name, Fingerprint: vm.Fingerprint, DefinitionSHA256: hex.EncodeToString(sum[:]), RetainedSources: sources, Firmware: firmware, EmulatedTPM: tpm}
 	// Metadata inventory and secure observation must not silently straddle a
 	// concurrent definition change. There is no cross-client atomic libvirt CAS.
 	again, err := h.observation(key.ConnectionID)
@@ -169,7 +218,7 @@ func (p *Provider) RemoveDefinition(ctx context.Context, expected domain.Definit
 		return err
 	}
 	defer d.Free()
-	return removeHeldDefinition(ctx, nativeRemovalHandle{d}, expected)
+	return removeHeldDefinition(ctx, nativeRemovalHandle{d, c}, expected)
 }
 func removeHeldDefinition(ctx context.Context, h removalHandle, expected domain.DefinitionRemoval) error {
 	current, err := inspectRemovalHandle(ctx, h, expected.Resource)
@@ -182,7 +231,65 @@ func removeHeldDefinition(ctx context.Context, h removalHandle, expected domain.
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	return h.undefine(0)
+	// Keep a UEFI VM's firmware settings file and an emulated TPM's state. Both
+	// are listed in the review; deleting them needs a separate request.
+	var flags native.DomainUndefineFlagsValues
+	if expected.Firmware != "" {
+		flags |= native.DOMAIN_UNDEFINE_KEEP_NVRAM
+	}
+	if expected.EmulatedTPM {
+		flags |= native.DOMAIN_UNDEFINE_KEEP_TPM
+	}
+	return h.undefine(flags)
+}
+
+// removalAuxiliaryState reports a VM's NVRAM file and whether it has an
+// emulated TPM. Removal keeps both; nothing here is deleted or rewritten.
+func removalAuxiliaryState(raw string) (string, bool, error) {
+	root, err := coldStateTree(raw)
+	if err != nil {
+		return "", false, err
+	}
+	system, err := coldChild(root, "os", true)
+	if err != nil {
+		return "", false, err
+	}
+	firmware := ""
+	nvram, err := coldChild(system, "nvram", false)
+	if err != nil {
+		return "", false, err
+	}
+	if nvram != nil {
+		if err = coldAttrs(nvram, nil, []string{"template", "templateFormat", "format", "type"}); err != nil {
+			return "", false, err
+		}
+		firmware = strings.TrimSpace(nvram.text)
+		if len(nvram.children) != 0 || attr(nvram, "type") != "" && attr(nvram, "type") != "file" || coldPath(firmware) != nil {
+			return "", false, domain.Fail("UNSUPPORTED_CAPABILITY", "this VM's firmware settings file needs a retention adapter; the definition was kept")
+		}
+	}
+	devices, err := coldChild(root, "devices", true)
+	if err != nil {
+		return "", false, err
+	}
+	tpm := false
+	for _, n := range devices.children {
+		if n.name.Local != "tpm" {
+			continue
+		}
+		if tpm {
+			return "", false, domain.Fail("UNSUPPORTED_CAPABILITY", "more than one TPM needs a retention adapter; the definition was kept")
+		}
+		backend, err := coldChild(n, "backend", true)
+		if err != nil {
+			return "", false, err
+		}
+		if attr(backend, "type") != "emulator" {
+			return "", false, domain.Fail("UNSUPPORTED_CAPABILITY", "only an emulated TPM's state is kept during removal; this TPM needs a retention adapter")
+		}
+		tpm = true
+	}
+	return firmware, tpm, nil
 }
 func (p *Provider) DefinitionAbsent(ctx context.Context, key domain.ResourceKey) (bool, error) {
 	if err := removalKey(key); err != nil {
@@ -211,7 +318,7 @@ func removalLookupAbsent(err error) (bool, error) {
 	return false, err
 }
 
-func removalSources(raw, id, name string) ([]string, error) {
+func removalSources(raw, id, name string, h removalHandle) ([]string, error) {
 	root, err := coldStateTree(raw)
 	if err != nil {
 		return nil, err
@@ -237,8 +344,9 @@ func removalSources(raw, id, name string) ([]string, error) {
 	if err := coldAttrs(os, nil, []string{"firmware"}); err != nil {
 		return nil, err
 	}
-	if attr(os, "firmware") != "" && attr(os, "firmware") != "bios" {
-		return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "firmware retention during removal is not yet supported; this definition was retained")
+	// UEFI is supported: its NVRAM file is kept and listed, never deleted.
+	if attr(os, "firmware") != "" && attr(os, "firmware") != "bios" && attr(os, "firmware") != "efi" {
+		return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "this firmware setting needs a retention adapter; the definition was kept")
 	}
 	ostype, err := coldChild(os, "type", true)
 	if err != nil {
@@ -248,7 +356,7 @@ func removalSources(raw, id, name string) ([]string, error) {
 		return nil, refuse()
 	}
 	for _, n := range os.children {
-		if n.name.Space != "" || !coldEnum(n.name.Local, "type", "boot", "bootmenu", "bios", "smbios") {
+		if n.name.Space != "" || !coldEnum(n.name.Local, "type", "boot", "bootmenu", "bios", "smbios", "firmware", "loader", "nvram") {
 			return nil, refuse()
 		}
 	}
@@ -272,10 +380,12 @@ func removalSources(raw, id, name string) ([]string, error) {
 			return nil, refuse()
 		}
 		if n.name.Local != "disk" {
-			if coldEnum(n.name.Local, "tpm", "nvram", "pstore") {
-				return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "TPM, NVRAM or pstore retention during removal requires a dedicated adapter; no state was discarded")
+			// An emulated TPM's state is kept; device NVRAM and pstore files
+			// still need their own retention adapter.
+			if coldEnum(n.name.Local, "nvram", "pstore") {
+				return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "NVRAM or pstore retention during removal requires a dedicated adapter; no state was discarded")
 			}
-			if !coldEnum(n.name.Local, "emulator", "controller", "interface", "serial", "parallel", "console", "channel", "input", "graphics", "video", "sound", "audio", "watchdog", "memballoon", "rng", "panic", "iommu", "hub", "redirdev", "redirfilter") {
+			if !coldEnum(n.name.Local, "tpm", "emulator", "controller", "interface", "serial", "parallel", "console", "channel", "input", "graphics", "video", "sound", "audio", "watchdog", "memballoon", "rng", "panic", "iommu", "hub", "redirdev", "redirfilter") {
 				return nil, refuse()
 			}
 			continue
@@ -297,10 +407,20 @@ func removalSources(raw, id, name string) ([]string, error) {
 			entries = append(entries, disk.Source)
 		}
 		for _, entry := range entries {
-			if entry.Type != "file" || entry.File == "" {
+			switch {
+			case entry.Type == "file" && entry.File != "":
+				sources[entry.File] = true
+			case entry.Type == "volume" && entry.Pool != "" && entry.Volume != "":
+				// The VMs Virmill creates declare pool volumes. Resolve each to
+				// its exact registered path so the review lists real files.
+				path, resolveErr := h.volumePath(entry.Pool, entry.Volume)
+				if resolveErr != nil {
+					return nil, resolveErr
+				}
+				sources[path] = true
+			default:
 				return nil, refuse()
 			}
-			sources[entry.File] = true
 		}
 	}
 	out := make([]string, 0, len(sources))

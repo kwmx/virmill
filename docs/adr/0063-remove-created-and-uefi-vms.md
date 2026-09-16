@@ -1,6 +1,7 @@
 # ADR 0063: Remove the VMs Virmill creates, including UEFI ones
 
-Status: proposed.
+Status: accepted for keeping firmware and TPM state, which is implemented;
+deleting them on request is proposed.
 
 ## Context
 

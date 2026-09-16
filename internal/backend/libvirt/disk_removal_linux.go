@@ -30,7 +30,14 @@ func cleanupGraphOwnerState(saved bool, snapshots, checkpoints int) error {
 
 type removalDiskSource struct{ target, path, format string }
 
-func removalDiskSources(raw string, targets []string) ([]removalDiskSource, error) {
+// sameColdSource compares declared storage identities: a file path, or a pool
+// volume as the VMs Virmill creates use.
+func sameColdSource(a, b domain.ColdStorageSource) bool {
+	return a.Type == "file" && b.Type == "file" && a.File != "" && a.File == b.File ||
+		a.Type == "volume" && b.Type == "volume" && a.Pool != "" && a.Pool == b.Pool && a.Volume == b.Volume
+}
+
+func removalDiskSources(raw string, targets []string, h removalHandle) ([]removalDiskSource, error) {
 	if len(targets) < 1 || len(targets) > 64 {
 		return nil, domain.Fail("INVALID_INPUT", "select 1–64 explicit writable disk targets; no implicit all-disks deletion")
 	}
@@ -50,8 +57,10 @@ func removalDiskSources(raw string, targets []string) ([]removalDiskSource, erro
 		if !selected[disk.Target] {
 			continue
 		}
-		if disk.Device != "disk" || disk.ReadOnly || disk.Empty || disk.Source.Type != "file" || disk.Source.File == "" || (disk.Source.Format != "raw" && disk.Source.Format != "qcow2") {
-			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "selected target must be a writable raw/qcow2 disk in a registered local file volume; media and read-only sources are retained")
+		s := disk.Source
+		declared := s.Type == "file" && s.File != "" || s.Type == "volume" && s.Pool != "" && s.Volume != ""
+		if disk.Device != "disk" || disk.ReadOnly || disk.Empty || !declared || (s.Format != "raw" && s.Format != "qcow2") {
+			return nil, domain.Fail("UNSUPPORTED_CAPABILITY", "selected target must be a writable raw/qcow2 disk in a registered local file or pool volume; media and read-only sources are retained")
 		}
 		for _, dep := range source.External {
 			if dep.Target == disk.Target || strings.HasPrefix(dep.Target, disk.Target+"/") {
@@ -59,16 +68,25 @@ func removalDiskSources(raw string, targets []string) ([]removalDiskSource, erro
 			}
 		}
 		for _, other := range source.Disks {
-			if other.Target != disk.Target && other.Source.File == disk.Source.File {
-				return nil, domain.Fail("RESOURCE_BUSY", "another disk or source medium references the selected file")
+			if other.Target != disk.Target && sameColdSource(other.Source, s) {
+				return nil, domain.Fail("RESOURCE_BUSY", "another disk or source medium references the selected image")
 			}
 			for _, parent := range other.Backing {
-				if parent.File == disk.Source.File {
+				if sameColdSource(parent, s) {
 					return nil, domain.Fail("RESOURCE_BUSY", "selected disk is a declared backing parent and must be retained")
 				}
 			}
 		}
-		result = append(result, removalDiskSource{disk.Target, disk.Source.File, disk.Source.Format})
+		path := s.File
+		if s.Type == "volume" {
+			// Deletion needs the exact registered path of the pool volume.
+			resolved, resolveErr := h.volumePath(s.Pool, s.Volume)
+			if resolveErr != nil {
+				return nil, resolveErr
+			}
+			path = resolved
+		}
+		result = append(result, removalDiskSource{disk.Target, path, s.Format})
 	}
 	if len(result) != len(selected) {
 		return nil, domain.Fail("INVALID_INPUT", "one or more selected disk targets are absent")
@@ -156,7 +174,7 @@ func (p *Provider) InspectDiskRemoval(ctx context.Context, uri, id string, targe
 		return out, err
 	}
 	defer d.Free()
-	out.Definition, err = inspectRemovalHandle(ctx, nativeRemovalHandle{d}, key)
+	out.Definition, err = inspectRemovalHandle(ctx, nativeRemovalHandle{d, c}, key)
 	if err != nil {
 		return out, err
 	}
@@ -167,7 +185,7 @@ func (p *Provider) InspectDiskRemoval(ctx context.Context, uri, id string, targe
 	if vm.Fingerprint != out.Definition.Fingerprint {
 		return out, domain.Fail("STALE_PLAN", "definition changed before selected disk inspection")
 	}
-	sources, err := removalDiskSources(vm.PersistentXML, targets)
+	sources, err := removalDiskSources(vm.PersistentXML, targets, nativeRemovalHandle{d, c})
 	if err != nil {
 		return out, err
 	}
@@ -362,7 +380,7 @@ func (s nativeDiskRemovalSession) definition(ctx context.Context, want domain.De
 	if absent {
 		return domain.Fail("RESOURCE_BUSY", "VM UUID is present; disk deletion requires confirmed definition absence")
 	}
-	actual, err := inspectRemovalHandle(ctx, nativeRemovalHandle{d}, want.Resource)
+	actual, err := inspectRemovalHandle(ctx, nativeRemovalHandle{d, s.c}, want.Resource)
 	if err != nil {
 		return err
 	}

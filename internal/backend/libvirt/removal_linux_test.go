@@ -138,11 +138,12 @@ func TestDefinitionRemovalRevalidatesAllBindingsAndDoesNotReplayFailure(t *testi
 }
 func TestDefinitionRemovalXMLRefusesAuxiliaryAndUnknownStorageProfiles(t *testing.T) {
 	cases := map[string]string{
-		"efi":                 strings.Replace(removalFixtureXML, "<os>", `<os firmware="efi">`, 1),
-		"loader":              strings.Replace(removalFixtureXML, "</os>", `<loader readonly="yes">/firmware/code.fd</loader></os>`, 1),
-		"nvram":               strings.Replace(removalFixtureXML, "</os>", `<nvram>/firmware/vars.fd</nvram></os>`, 1),
+		// ADR 0063 supports UEFI with its loader and NVRAM, pool-volume disks and
+		// an emulated TPM; those cases are covered in removal_uefi_linux_test.go.
+		"unknown firmware":    strings.Replace(removalFixtureXML, "<os>", `<os firmware="bogus">`, 1),
 		"varstore":            strings.Replace(removalFixtureXML, "</os>", `<varstore path="/firmware/vars.json"/></os>`, 1),
-		"TPM":                 strings.Replace(removalFixtureXML, "</devices>", `<tpm><backend type="emulator" version="2.0" persistent_state="no"/></tpm></devices>`, 1),
+		"device nvram":        strings.Replace(removalFixtureXML, "</devices>", `<nvram>/state/vars.fd</nvram></devices>`, 1),
+		"volume without pool": strings.Replace(removalFixtureXML, `<source file="/var/lib/images/retained.qcow2"/>`, `<source volume="retained.qcow2"/>`, 1),
 		"pstore":              strings.Replace(removalFixtureXML, "</devices>", `<pstore backend="acpi-erst"><path>/state/erst</path></pstore></devices>`, 1),
 		"unknown device":      strings.Replace(removalFixtureXML, "</devices>", `<future-state path="/state/unknown"/></devices>`, 1),
 		"runtime extension":   strings.Replace(removalFixtureXML, "</domain>", `<q:commandline xmlns:q="http://libvirt.org/schemas/domain/qemu/1.0"/></domain>`, 1),
@@ -157,7 +158,7 @@ func TestDefinitionRemovalXMLRefusesAuxiliaryAndUnknownStorageProfiles(t *testin
 	}
 	for name, raw := range cases {
 		t.Run(name, func(t *testing.T) {
-			if _, err := removalSources(raw, removalFixtureID, "retained"); err == nil {
+			if _, err := removalSources(raw, removalFixtureID, "retained", newRemovalFixture()); err == nil {
 				t.Fatal("unsafe XML accepted")
 			}
 		})

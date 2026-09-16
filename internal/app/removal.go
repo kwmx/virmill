@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -43,6 +44,10 @@ func validRemoval(d domain.DefinitionRemoval) bool {
 		if s == "" || len(s) > 4096 || !utf8.ValidString(s) || strings.ContainsRune(s, 0) || (i > 0 && d.RetainedSources[i-1] >= s) {
 			return false
 		}
+	}
+	// A kept firmware settings file must be one of the listed retained sources.
+	if d.Firmware != "" && (!strings.HasPrefix(d.Firmware, "/") || validation.SafeText(d.Firmware) != d.Firmware || !slices.Contains(d.RetainedSources, d.Firmware)) {
+		return false
 	}
 	return true
 }
@@ -102,7 +107,7 @@ func (h *removalHandler) Review(_ context.Context, p domain.Plan, raw []byte) (m
 		return nil, err
 	}
 	d := r.Definition
-	return map[string]any{"action": "remove", "resource": d.Resource, "vmName": d.Name, "definitionSHA256": d.DefinitionSHA256, "retainedSources": d.RetainedSources, "diskDeletion": false, "backupsDeleted": false, "configurationRemoved": true, "backupCreated": false, "requiresStopped": true, "automaticStop": false}, nil
+	return map[string]any{"action": "remove", "resource": d.Resource, "vmName": d.Name, "definitionSHA256": d.DefinitionSHA256, "retainedSources": d.RetainedSources, "keptFirmware": d.Firmware, "keptTPMState": d.EmulatedTPM, "diskDeletion": false, "backupsDeleted": false, "configurationRemoved": true, "backupCreated": false, "requiresStopped": true, "automaticStop": false}, nil
 }
 func (h *removalHandler) Validate(ctx context.Context, p domain.Plan, raw []byte) error {
 	r, err := parseRemoval(p, raw)

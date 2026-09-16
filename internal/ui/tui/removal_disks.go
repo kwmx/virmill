@@ -16,7 +16,9 @@ func removalDiskFields(raw string) []GuidedField {
 		return nil
 	}
 	type source struct {
-		File string `xml:"file,attr"`
+		File   string `xml:"file,attr"`
+		Pool   string `xml:"pool,attr"`
+		Volume string `xml:"volume,attr"`
 	}
 	type backing struct {
 		Source source   `xml:"source"`
@@ -40,23 +42,39 @@ func removalDiskFields(raw string) []GuidedField {
 	if xml.Unmarshal([]byte(raw), &doc) != nil || len(doc.Devices.Disks) > 64 {
 		return nil
 	}
-	parents, paths, targets := map[string]bool{}, map[string]int{}, map[string]int{}
+	// One key per declared image: a file path, or a pool volume as the VMs
+	// Virmill creates use.
+	key := func(s source) string {
+		if s.File != "" {
+			return "file:" + s.File
+		}
+		if s.Pool != "" && s.Volume != "" {
+			return "volume:" + s.Pool + "/" + s.Volume
+		}
+		return ""
+	}
+	parents, images, targets := map[string]bool{}, map[string]int{}, map[string]int{}
 	for _, d := range doc.Devices.Disks {
-		paths[d.Source.File]++
+		images[key(d.Source)]++
 		targets[d.Target.Dev]++
 		for b, n := d.Backing, 0; b != nil; b, n = b.Next, n+1 {
 			if n > 64 {
 				return nil
 			}
-			parents[b.Source.File] = true
+			parents[key(b.Source)] = true
 		}
 	}
 	out := []GuidedField{}
 	for _, d := range doc.Devices.Disks {
-		if d.Device != "disk" || d.Type != "file" || d.Source.File == "" || d.ReadOnly != nil || d.Shareable != nil || parents[d.Source.File] || paths[d.Source.File] != 1 || targets[d.Target.Dev] != 1 || !guidedRootID.MatchString(d.Target.Dev) || !guidedPrintable(d.Source.File) {
+		id := key(d.Source)
+		hint := d.Source.File
+		if d.Type == "volume" {
+			hint = d.Source.Pool + "/" + d.Source.Volume
+		}
+		if d.Device != "disk" || (d.Type != "file" && d.Type != "volume") || id == "" || d.ReadOnly != nil || d.Shareable != nil || parents[id] || images[id] != 1 || targets[d.Target.Dev] != 1 || !guidedRootID.MatchString(d.Target.Dev) || !guidedPrintable(hint) {
 			continue
 		}
-		out = append(out, GuidedField{Name: "delete:" + d.Target.Dev, Label: d.Target.Dev, Hint: d.Source.File, Value: "false", Limit: 5, Toggle: true})
+		out = append(out, GuidedField{Name: "delete:" + d.Target.Dev, Label: d.Target.Dev, Hint: hint, Value: "false", Limit: 5, Toggle: true})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
 	return out
