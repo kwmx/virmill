@@ -52,7 +52,7 @@ func validDiskMoveRecipe(m domain.DiskMove) bool {
 	}
 	if !removalUUID.MatchString(m.PoolID) || m.PoolID == d.PoolID || m.PoolName == "" || m.SourcePoolName == "" ||
 		m.VolumeName == "" || filepath.Base(m.VolumeName) != m.VolumeName ||
-		m.CopyBytes != d.CapacityBytes || m.CopyBytes == 0 ||
+		m.CopyBytes <= d.CapacityBytes || m.CopyBytes > d.CapacityBytes+d.CapacityBytes/4+(16<<20) ||
 		!filepath.IsAbs(m.VolumePath) || filepath.Clean(m.VolumePath) != m.VolumePath ||
 		validation.SafeText(m.VolumePath) != m.VolumePath || filepath.Base(m.VolumePath) != m.VolumeName ||
 		m.VolumePath == d.Path {
@@ -191,9 +191,12 @@ func (h *diskMoveHandler) saveReceipt(id string, previous *[]byte, r diskMoveRec
 func unreferencedCopy(m domain.DiskMove, err error) error {
 	var refusal *domain.Error
 	if !errors.As(err, &refusal) {
-		refusal = domain.Fail("OPERATION_FAILED", "the disk could not be copied")
+		// Never flatten a cause away: the first native move failed with only
+		// "the disk could not be copied" and nothing to act on.
+		refusal = domain.Fail("OPERATION_FAILED", "the disk could not be copied: "+err.Error())
 	}
 	failure := domain.Fail(refusal.Code, refusal.Message)
+	failure.Details = refusal.Details
 	failure.Resource = "local-file|" + m.VolumePath
 	failure.SafeNextActions = []string{"Delete the unused copy " + m.VolumeName + " in " + m.PoolName + " if it was created", "Review the move again"}
 	return operations.NotDone(failure)

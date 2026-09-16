@@ -37,7 +37,7 @@ func validDiskMove(m domain.DiskMove) error {
 		m.SourcePoolName == "" || m.PoolName == "" || !uuidPattern.MatchString(m.PoolID) ||
 		m.PoolID == d.PoolID || !volumePattern.MatchString(m.VolumeName) ||
 		coldPath(m.VolumePath) != nil || filepath.Base(m.VolumePath) != m.VolumeName || m.VolumePath == d.Path ||
-		m.CopyBytes != d.CapacityBytes || m.CopyBytes < 1 || m.CopyBytes > 512<<30 {
+		m.CopyBytes != moveBound(d.CapacityBytes) || d.CapacityBytes > 512<<30 {
 		return domain.Fail("INVALID_INPUT", "complete exact disk move observation required")
 	}
 	if len(m.ResourceIDs) != 4 || !slices.IsSorted(m.ResourceIDs) || !slices.Contains(m.ResourceIDs, m.VM.String()) {
@@ -46,13 +46,35 @@ func validDiskMove(m domain.DiskMove) error {
 	return nil
 }
 
-// hashVolumeBytes reads a volume through one libvirt stream and returns its
-// physical size and digest. Nothing is written and nothing is kept: the bytes
-// are hashed as they arrive, bounded by the size the caller already observed.
-func hashVolumeBytes(ctx context.Context, c *native.Connect, volume *native.StorageVol, bound uint64) (uint64, string, error) {
+// moveBound is the most a copy of a disk may take: its virtual size plus the
+// same overhead creation already allows between an image's virtual size and its
+// file, so a densely written qcow2 cannot overflow the volume made for it.
+func moveBound(capacity uint64) uint64 { return capacity + capacity/4 + (16 << 20) }
+
+// streamFailure names the call that failed and keeps what libvirt said about
+// it. A copy that fails must say which hop failed: one shared message cannot be
+// diagnosed afterwards, which is what made the first native move unreadable.
+func streamFailure(what string, err error) error {
+	var refusal *domain.Error
+	if errors.As(err, &refusal) {
+		return refusal
+	}
+	failure := domain.Fail("OPERATION_FAILED", "copying the disk failed: "+what)
+	if err != nil {
+		failure.Details = map[string]string{"native": err.Error()}
+	}
+	return failure
+}
+
+// hashVolumeBytes reads exactly length bytes of a volume through one libvirt
+// stream and returns what it read and their digest. Nothing is written and
+// nothing is kept: the bytes are hashed as they arrive. The length is explicit
+// because a copy is made in a volume sized for the whole disk, so reading to
+// the end of that volume would return far more than the copy wrote.
+func hashVolumeBytes(ctx context.Context, c *native.Connect, volume *native.StorageVol, length uint64) (uint64, string, error) {
 	stream, err := c.NewStream(0)
 	if err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("a stream to read the copy could not be opened", err)
 	}
 	defer stream.Free()
 	join := watchStream(ctx, stream)
@@ -63,8 +85,8 @@ func hashVolumeBytes(ctx context.Context, c *native.Connect, volume *native.Stor
 			_ = stream.Abort()
 		}
 	}()
-	if err = volume.Download(stream, 0, 0, 0); err != nil {
-		return 0, "", err
+	if err = volume.Download(stream, 0, length, 0); err != nil {
+		return 0, "", streamFailure("the copy could not be read back", err)
 	}
 	h := sha256.New()
 	var size uint64
@@ -76,22 +98,22 @@ func hashVolumeBytes(ctx context.Context, c *native.Connect, volume *native.Stor
 		n, e := stream.Recv(buffer)
 		if n > 0 {
 			size += uint64(n)
-			if size > bound {
-				return 0, "", domain.Fail("SOURCE_CHANGED", "the disk grew while it was being read")
+			if size > length {
+				return 0, "", domain.Fail("SOURCE_CHANGED", "the copy returned more bytes than were written to it")
 			}
 			if _, err = h.Write(buffer[:n]); err != nil {
 				return 0, "", err
 			}
 		}
 		if e != nil {
-			return 0, "", e
+			return 0, "", streamFailure("reading the copy back stopped early", e)
 		}
 		if n == 0 {
 			break
 		}
 	}
 	if err = stream.Finish(); err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("the read-back stream did not finish", err)
 	}
 	finished = true
 	return size, hex.EncodeToString(h.Sum(nil)), nil
@@ -208,7 +230,7 @@ func (p *Provider) InspectDiskMove(ctx context.Context, uri, id, target, pool st
 	}
 	out = domain.DiskMove{VM: key, VMFingerprint: vm.Fingerprint, DefinitionSHA256: definition, Disk: disk,
 		SourcePoolName: sourceName, PoolID: observed.Key.UUID, PoolName: pool,
-		VolumeName: name, VolumePath: filepath.Join(directory, name), CopyBytes: disk.CapacityBytes,
+		VolumeName: name, VolumePath: filepath.Join(directory, name), CopyBytes: moveBound(disk.CapacityBytes),
 		DestinationAvailableBytes: *observed.AvailableBytes, KeepOldCopy: keepOldCopy}
 	out.ResourceIDs = append([]string{key.String(), "local-file|" + out.VolumePath}, diskRemovalResources(uri, disk)...)
 	sort.Strings(out.ResourceIDs)
@@ -383,7 +405,7 @@ func (p *Provider) CopyDiskVolume(ctx context.Context, m domain.DiskMove) error 
 	// it was written. Nothing may verify it after the define: verification
 	// refuses a volume any definition names, so the retargeted disk would be
 	// refused as busy.
-	size, stored, err := hashVolumeBytes(ctx, c, created, m.CopyBytes)
+	size, stored, err := hashVolumeBytes(ctx, c, created, written)
 	if err != nil {
 		return err
 	}
@@ -400,12 +422,12 @@ func (p *Provider) CopyDiskVolume(ctx context.Context, m domain.DiskMove) error 
 func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.StorageVol, bound uint64) (uint64, string, error) {
 	reader, err := c.NewStream(0)
 	if err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("a stream to read the disk could not be opened", err)
 	}
 	defer reader.Free()
 	writer, err := c.NewStream(0)
 	if err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("a stream to write the copy could not be opened", err)
 	}
 	defer writer.Free()
 	joinReader, joinWriter := watchStream(ctx, reader), watchStream(ctx, writer)
@@ -419,12 +441,12 @@ func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.St
 		}
 	}()
 	if err = from.Download(reader, 0, 0, 0); err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("the disk could not be opened for reading", err)
 	}
 	// Length zero uploads whatever the stream carries, so the copy is exactly
 	// as long as the disk turns out to be, bounded below.
 	if err = to.Upload(writer, 0, 0, 0); err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("the copy could not be opened for writing", err)
 	}
 	h := sha256.New()
 	var copied uint64
@@ -445,7 +467,7 @@ func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.St
 			for written := 0; written < n; {
 				w, we := writer.Send(buffer[written:n])
 				if we != nil {
-					return 0, "", we
+					return 0, "", streamFailure("writing the copy stopped early", we)
 				}
 				if w <= 0 {
 					return 0, "", domain.Fail("OPERATION_FAILED", "the destination stopped accepting the copy")
@@ -454,7 +476,7 @@ func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.St
 			}
 		}
 		if e != nil {
-			return 0, "", e
+			return 0, "", streamFailure("reading the disk stopped early", e)
 		}
 		if n == 0 {
 			break
@@ -464,10 +486,10 @@ func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.St
 		return 0, "", domain.Fail("SOURCE_CHANGED", "the disk read as empty; nothing was copied")
 	}
 	if err = reader.Finish(); err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("the reading stream did not finish", err)
 	}
 	if err = writer.Finish(); err != nil {
-		return 0, "", err
+		return 0, "", streamFailure("the writing stream did not finish", err)
 	}
 	done = true
 	return copied, hex.EncodeToString(h.Sum(nil)), nil

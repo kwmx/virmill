@@ -22,7 +22,7 @@ func moveFixture() domain.DiskMove {
 	name := "virmill-7e472a89-a207-4615-af5f-2a10a734943b-disk-000.qcow2"
 	m := domain.DiskMove{VM: key, VMFingerprint: strings.Repeat("a", 64), DefinitionSHA256: strings.Repeat("b", 64),
 		Disk: disk, SourcePoolName: "source", PoolID: "11111111-2222-4333-8444-555555555555", PoolName: "archive",
-		VolumeName: name, VolumePath: filepath.Join("/pool/archive", name), CopyBytes: 1 << 30,
+		VolumeName: name, VolumePath: filepath.Join("/pool/archive", name), CopyBytes: moveBound(1 << 30),
 		DestinationAvailableBytes: 8 << 30}
 	m.ResourceIDs = append([]string{key.String(), "local-file|" + m.VolumePath}, diskRemovalResources(key.ConnectionID, disk)...)
 	sort.Strings(m.ResourceIDs)
@@ -74,10 +74,13 @@ func TestValidDiskMoveRequiresACompleteDistinctMove(t *testing.T) {
 		"copy path elsewhere": func(m *domain.DiskMove) { m.VolumePath = "/pool/archive/other.qcow2" },
 		"copy over original":  func(m *domain.DiskMove) { m.VolumePath = m.Disk.Path },
 		"relative copy path":  func(m *domain.DiskMove) { m.VolumePath = "archive/copy.qcow2" },
-		"bound below size":    func(m *domain.DiskMove) { m.CopyBytes = m.Disk.CapacityBytes - 1 },
-		"no bound":            func(m *domain.DiskMove) { m.CopyBytes = 0 },
-		"unsorted locks":      func(m *domain.DiskMove) { m.ResourceIDs = []string{"z", "a", "m", "b"} },
-		"missing lock":        func(m *domain.DiskMove) { m.ResourceIDs = m.ResourceIDs[:3] },
+		"bound below size":    func(m *domain.DiskMove) { m.CopyBytes = m.Disk.CapacityBytes },
+		"bound above overhead": func(m *domain.DiskMove) {
+			m.CopyBytes = moveBound(m.Disk.CapacityBytes) + 1
+		},
+		"no bound":       func(m *domain.DiskMove) { m.CopyBytes = 0 },
+		"unsorted locks": func(m *domain.DiskMove) { m.ResourceIDs = []string{"z", "a", "m", "b"} },
+		"missing lock":   func(m *domain.DiskMove) { m.ResourceIDs = m.ResourceIDs[:3] },
 	} {
 		m := moveFixture()
 		spoil(&m)
