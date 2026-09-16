@@ -13,6 +13,12 @@ Judge each phase by a real screen and a real host, not by software tests.
 Phase 2 is usable but uneven: storage edits are qualified on your own session
 connection only, and one host configuration still needs a manual step.
 
+Done first, ahead of the list: **New VM** (ADR 0065). The owner could not create
+or import a VM in beta.5. From a file to a running VM with its display open now
+takes one settings page and one confirmation, natively on a host with no pools
+([record](evidence/new-vm-run.md)). Walking it on `qemu:///system` and with
+networks is part of item 2.
+
 1. **Done: start session VMs with no manual libvirt step** (ADR 0064). The
    packages ship a per-user libvirt socket that the coordinator's service starts
    before itself, so the daemon is always started by the user's systemd and

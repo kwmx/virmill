@@ -1,6 +1,7 @@
 # ADR 0065: One New VM flow, one plain confirmation, and the display on start
 
-Status: accepted; being implemented.
+Status: accepted; implemented. The acceptance walkthrough passed natively on
+`9a2f6dd` ([record](../evidence/new-vm-run.md)).
 
 ## Context
 

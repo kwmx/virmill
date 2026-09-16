@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "case": "disk",
+      "confirmationSetsUpPool": true,
+      "confirmations": 1,
+      "finishedScreen": true,
+      "keypresses": 3,
+      "keys": [
+        "New VM",
+        "Create VM",
+        "Confirm"
+      ],
+      "passed": true,
+      "preparedCopyRemoved": true,
+      "progressOnSameScreen": true,
+      "rawIdentities": {},
+      "running": true,
+      "seconds": 11,
+      "settings": {
+        "display": "Display: Local display (SPICE)",
+        "network": "Network: none",
+        "startOn": true,
+        "storage": "Storage: Virmill sets up libvirt's standard pool first"
+      },
+      "source": "disk-1c60c6fc.qcow2",
+      "viewerStarted": true,
+      "vm": "disk-1c60c6fc"
+    },
+    {
+      "case": "iso",
+      "confirmationSetsUpPool": false,
+      "confirmations": 1,
+      "finishedScreen": true,
+      "keypresses": 3,
+      "keys": [
+        "New VM",
+        "Create VM",
+        "Confirm"
+      ],
+      "passed": true,
+      "preparedCopyRemoved": true,
+      "progressOnSameScreen": true,
+      "rawIdentities": {},
+      "running": true,
+      "seconds": 10,
+      "settings": {
+        "display": "Display: Local display (SPICE)",
+        "network": "Network: none",
+        "startOn": true,
+        "storage": "Storage: pool default"
+      },
+      "source": "installer-1c60c6fc.iso",
+      "viewerStarted": true,
+      "vm": "VIRMILL_WALK"
+    },
+    {
+      "case": "ova",
+      "confirmationSetsUpPool": false,
+      "confirmations": 1,
+      "finishedScreen": true,
+      "keypresses": 3,
+      "keys": [
+        "New VM",
+        "Create VM",
+        "Confirm"
+      ],
+      "passed": true,
+      "preparedCopyRemoved": true,
+      "progressOnSameScreen": true,
+      "rawIdentities": {},
+      "running": true,
+      "seconds": 10,
+      "settings": {
+        "display": "Display: Local display (SPICE)",
+        "network": "Network: none",
+        "startOn": true,
+        "storage": "Storage: pool default"
+      },
+      "source": "appliance-1c60c6fc.ova",
+      "viewerStarted": true,
+      "vm": "appliance-1c60c6fc"
+    }
+  ],
+  "firstCaseSetUpPool": true,
+  "hostInventoryUnchanged": true,
+  "jobs": {
+    "import.discard": 3,
+    "import.prepare": 1,
+    "import.prepare-disks": 1,
+    "import.prepare-install": 1,
+    "storage.pool.create": 1,
+    "vm.create.devices-v1": 3,
+    "vm.hard-stop": 3,
+    "vm.start": 3
+  },
+  "pool": {
+    "active": true,
+    "inPrivateDataFolder": true,
+    "names": [
+      "default"
+    ]
+  },
+  "privateSessionEmptyAtStart": true,
+  "result": "passed"
+}

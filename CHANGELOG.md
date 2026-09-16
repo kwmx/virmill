@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- **New VM** (press `n`) replaces Create VM and Import (ADR 0065). Choose an
+  ISO, disk image or OVA and Virmill reads it by itself. One settings page shows
+  name, CPU, memory, the installer's disk size and **Start it and open its
+  display**; **Advanced settings** keeps everything else. **Create VM** shows one
+  confirmation for everything that follows: setting up libvirt's standard
+  storage pool when there is none (or starting a stopped one), copying the
+  images, creating and starting the VM and removing the prepared copy. Progress
+  stays on the same screen and ends with the VM running and its display open.
+  From a host with no storage pool, a disk image now takes three keypresses
+  after choosing the file, down from 72.
+- Every change now has one plain confirmation instead of a checkbox per
+  acknowledgement. It lists everything you agree to in plain words, and `d`
+  shows the technical plan. The CLI still takes each `--ack`.
+- **Display** replaces Console on running VMs. A VM's only graphical display
+  opens straight away, in its own window, and Virmill stays usable while it is
+  open. A viewer that cannot attach says why.
+- The installer disk defaults to a size whose preparation fits the free space,
+  with a note, and a refused preview is shown on the New VM page.
 - Your own VMs start without a manual libvirt step (ADR 0064). The packages now
   ship a per-user libvirt socket, `virmill-virtqemud.socket`, which the
   coordinator's service starts before itself. The libvirt daemon is then started
