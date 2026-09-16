@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -96,20 +97,24 @@ func hashVolumeBytes(ctx context.Context, c *native.Connect, volume *native.Stor
 			return 0, "", err
 		}
 		n, e := stream.Recv(buffer)
-		if n > 0 {
-			size += uint64(n)
-			if size > length {
-				return 0, "", domain.Fail("SOURCE_CHANGED", "the copy returned more bytes than were written to it")
-			}
-			if _, err = h.Write(buffer[:n]); err != nil {
-				return 0, "", err
-			}
+		// The end of a stream arrives as io.EOF, and a stream with nothing
+		// ready yet answers -2, or -3 inside a sparse hole, with no error at
+		// all. Only a real error ends the read.
+		if errors.Is(e, io.EOF) {
+			break
 		}
 		if e != nil {
 			return 0, "", streamFailure("reading the copy back stopped early", e)
 		}
-		if n == 0 {
-			break
+		if n <= 0 {
+			continue
+		}
+		size += uint64(n)
+		if size > length {
+			return 0, "", domain.Fail("SOURCE_CHANGED", "the copy returned more bytes than were written to it")
+		}
+		if _, err = h.Write(buffer[:n]); err != nil {
+			return 0, "", err
 		}
 	}
 	if err = stream.Finish(); err != nil {
@@ -456,30 +461,36 @@ func copyVolumeBytes(ctx context.Context, c *native.Connect, from, to *native.St
 			return 0, "", err
 		}
 		n, e := reader.Recv(buffer)
-		if n > 0 {
-			copied += uint64(n)
-			if copied > bound {
-				return 0, "", domain.Fail("SOURCE_CHANGED", "the disk is larger than the reviewed copy allows")
-			}
-			if _, err = h.Write(buffer[:n]); err != nil {
-				return 0, "", err
-			}
-			for written := 0; written < n; {
-				w, we := writer.Send(buffer[written:n])
-				if we != nil {
-					return 0, "", streamFailure("writing the copy stopped early", we)
-				}
-				if w <= 0 {
-					return 0, "", domain.Fail("OPERATION_FAILED", "the destination stopped accepting the copy")
-				}
-				written += w
-			}
+		// The end of the disk arrives as io.EOF, and a stream with nothing
+		// ready yet answers -2, or -3 inside a sparse hole, with no error at
+		// all. Only a real error ends the copy.
+		if errors.Is(e, io.EOF) {
+			break
 		}
 		if e != nil {
 			return 0, "", streamFailure("reading the disk stopped early", e)
 		}
-		if n == 0 {
-			break
+		if n <= 0 {
+			continue
+		}
+		copied += uint64(n)
+		if copied > bound {
+			return 0, "", domain.Fail("SOURCE_CHANGED", "the disk is larger than the reviewed copy allows")
+		}
+		if _, err = h.Write(buffer[:n]); err != nil {
+			return 0, "", err
+		}
+		for written := 0; written < n; {
+			w, we := writer.Send(buffer[written:n])
+			if errors.Is(we, io.EOF) {
+				return 0, "", domain.Fail("OPERATION_FAILED", "the destination closed the copy before it was written")
+			}
+			if we != nil {
+				return 0, "", streamFailure("writing the copy stopped early", we)
+			}
+			if w > 0 {
+				written += w
+			}
 		}
 	}
 	if copied == 0 {
