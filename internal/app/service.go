@@ -45,6 +45,30 @@ type Service struct {
 	// BridgeZones asks firewalld which zone holds each network bridge; ok is
 	// false when it cannot tell.
 	BridgeZones func(context.Context, []string) (domain.FirewallZones, bool)
+	// SessionBoot reports whether this process may start a guest on the
+	// per-user connection, and what to advise when it may not. A nil hook
+	// allows the boot: a host this build cannot inspect is never refused.
+	SessionBoot func() (bool, string)
+}
+
+// bootableConnection refuses a boot that could not reach the guest anyway.
+// Nothing starts libvirt for a user session on some hosts, so the first program
+// to use the per-user connection forks the daemon as its own child. Started
+// from a hardened service, that daemon inherits no-new-privileges, cannot
+// transition SELinux domains on exec, and so can never execute QEMU: every
+// start then fails with a bare permission error from deep inside libvirt. It is
+// refused here instead, before a plan becomes a job, with the one command that
+// fixes it for good.
+func (s *Service) bootableConnection(connection string) error {
+	if connection != "qemu:///session" || s.SessionBoot == nil {
+		return nil
+	}
+	if ok, advice := s.SessionBoot(); !ok {
+		failure := domain.Fail("UNSUPPORTED_CAPABILITY", "nothing has started libvirt for your own user yet, so this VM cannot start; "+advice)
+		failure.SafeNextActions = []string{advice}
+		return failure
+	}
+	return nil
 }
 
 func New(p domain.ComputeProvider, e *operations.Engine) *Service {
@@ -643,6 +667,11 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 	}
 	if h.action == "restore-saved" && !v.HasManagedSave {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "VM has no managed save image to restore")
+	}
+	if h.action == "start" || h.action == "restore-saved" {
+		if err := h.s.bootableConnection(p.ConnectionID); err != nil {
+			return err
+		}
 	}
 	required := map[string]string{"start": "stopped", "restore-saved": "stopped", "stop": "running", "hard-stop": "running", "pause": "running", "resume": "paused", "save": "running", "set": "stopped"}
 	expected, ok := required[h.action]

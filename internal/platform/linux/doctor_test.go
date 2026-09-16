@@ -15,6 +15,7 @@ type fakeHost struct {
 	paths        map[string]bool
 	kvmUsable    bool
 	osRelease    string
+	runtime      string
 	group, inGrp bool
 }
 
@@ -27,6 +28,7 @@ func (f fakeHost) host() doctorHost {
 			return "", errors.New("not found")
 		},
 		exists:       func(path string) bool { return f.paths[path] },
+		runtimeDir:   func() string { return f.runtime },
 		usable:       func(string) bool { return f.kvmUsable },
 		osRelease:    func() string { return f.osRelease },
 		libvirtGroup: func() (bool, bool) { return f.group, f.inGrp },
@@ -130,6 +132,32 @@ func TestDoctorFindsMissingOrStoppedLibvirt(t *testing.T) {
 	running := byID(t, doctor(fakeHost{paths: map[string]bool{"/run/libvirt/libvirt-sock": true}}.host()), "libvirt")
 	if running.ReasonCode != "LIBVIRT_RUNNING" || len(running.Alternatives) != 0 {
 		t.Fatalf("running libvirt: %+v", running)
+	}
+}
+
+// Nothing starts libvirt for a user session on some hosts, and then the first
+// program to use the per-user connection forks the daemon itself. Started from
+// a hardened service that daemon can never execute QEMU, so the check asks for
+// socket activation while the system service alone looks healthy.
+func TestDoctorAsksForPerUserLibvirtActivation(t *testing.T) {
+	system := map[string]bool{"/run/libvirt/virtqemud-sock": true}
+	unactivated := byID(t, doctor(fakeHost{paths: system, runtime: "/run/user/1000"}.host()), "libvirt")
+	if unactivated.ReasonCode != "LIBVIRT_SESSION_UNACTIVATED" ||
+		!reflect.DeepEqual(unactivated.Alternatives, []string{"systemctl --user enable --now virtqemud.socket"}) {
+		t.Fatalf("per-user libvirt not started: %+v", unactivated)
+	}
+	// Once a per-user socket exists, the host is simply ready.
+	for _, name := range []string{"libvirt/virtqemud-sock", "libvirt/libvirt-sock"} {
+		paths := map[string]bool{"/run/libvirt/virtqemud-sock": true, "/run/user/1000/" + name: true}
+		ready := byID(t, doctor(fakeHost{paths: paths, runtime: "/run/user/1000"}.host()), "libvirt")
+		if ready.ReasonCode != "LIBVIRT_RUNNING" || len(ready.Alternatives) != 0 {
+			t.Fatalf("per-user libvirt started through %s: %+v", name, ready)
+		}
+	}
+	// A host that reports no runtime directory keeps the old verdict.
+	unknown := byID(t, doctor(fakeHost{paths: system}.host()), "libvirt")
+	if unknown.ReasonCode != "LIBVIRT_RUNNING" {
+		t.Fatalf("no runtime directory: %+v", unknown)
 	}
 }
 

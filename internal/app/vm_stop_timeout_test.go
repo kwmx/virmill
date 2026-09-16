@@ -40,6 +40,47 @@ func (p *refusedBoot) Execute(context.Context, string, string, string, map[strin
 	return domain.Fail("OPERATION_FAILED", "cannot execute binary qemu-system-x86_64: Operation not permitted")
 }
 
+// A boot that could not reach QEMU at all is refused while it is still a plan,
+// so no job is created and nothing has to be recovered. The hook stands in for
+// the host check, which the service itself never performs.
+func TestSessionBootIsRefusedBeforeAnyJob(t *testing.T) {
+	dir := t.TempDir()
+	os.Chmod(dir, 0700)
+	db, err := store.Open(filepath.Join(dir, "journal.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	engine := operations.New(db)
+	defer engine.Close()
+	const advice = "systemctl --user enable --now virtqemud.socket"
+	for _, test := range []struct {
+		connection string
+		hook       func() (bool, string)
+		refused    bool
+	}{
+		{"qemu:///session", func() (bool, string) { return false, advice }, true},
+		{"qemu:///session", func() (bool, string) { return true, "" }, false},
+		{"qemu:///session", nil, false},                                           // a host this build cannot inspect
+		{"qemu:///system", func() (bool, string) { return false, advice }, false}, // the system connection forks nothing
+	} {
+		p := &fixtureProvider{VM: domain.VM{Key: domain.ResourceKey{ProviderID: "fixture", ConnectionID: test.connection, Kind: "vm", UUID: "fixture-vm"}, State: "stopped", Fingerprint: "before"}}
+		s := New(p, engine)
+		s.SessionBoot = test.hook
+		err := s.bootableConnection(test.connection)
+		var de *domain.Error
+		if test.refused != (err != nil) {
+			t.Fatal(test.connection, err)
+		}
+		if test.refused && (!errors.As(err, &de) || de.Code != "UNSUPPORTED_CAPABILITY" || len(de.SafeNextActions) != 1 || de.SafeNextActions[0] != advice) {
+			t.Fatal("the refusal must name the one command that fixes it", err)
+		}
+		if p.calls != 0 {
+			t.Fatal("the provider was asked to boot a VM that cannot boot")
+		}
+	}
+}
+
 // A boot that never started the guest must fail plainly and free the VM. Until
 // it did, a refused start held its VM in recovery-required with no disposition,
 // so even forcing it off was refused RESOURCE_BUSY.

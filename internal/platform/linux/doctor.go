@@ -40,7 +40,10 @@ type doctorHost struct {
 	osRelease func() string
 	// libvirtGroup reports whether the group exists and this process is in it.
 	libvirtGroup func() (exists, member bool)
-	platform     string
+	// runtimeDir is this user's XDG_RUNTIME_DIR, or empty when unset. The
+	// per-user libvirt sockets live under it.
+	runtimeDir func() string
+	platform   string
 }
 
 // Doctor runs read-only host checks. It never installs or changes anything.
@@ -55,6 +58,7 @@ func Doctor() []domain.Capability {
 			const readWrite = 0x4 | 0x2 // R_OK | W_OK
 			return syscall.Access(path, readWrite) == nil
 		},
+		runtimeDir: func() string { return os.Getenv("XDG_RUNTIME_DIR") },
 		osRelease: func() string {
 			for _, path := range []string{"/etc/os-release", "/usr/lib/os-release"} {
 				if data, err := os.ReadFile(path); err == nil {
@@ -134,6 +138,17 @@ func libvirtCheck(h doctorHost, family string) domain.Capability {
 	c := check("libvirt", "Runs and manages VMs; Virmill talks to it")
 	switch {
 	case h.exists("/run/libvirt/virtqemud-sock") || h.exists("/run/libvirt/libvirt-sock"):
+		if session := h.runtimeDir(); session != "" && !h.exists(session+"/libvirt/virtqemud-sock") && !h.exists(session+"/libvirt/libvirt-sock") {
+			// Nothing has started libvirt for this user yet, so the first
+			// program to use qemu:///session forks the daemon as its own child.
+			// Started from a hardened service, that daemon inherits
+			// no-new-privileges and can never execute QEMU, so every VM start
+			// fails. Socket activation starts it outside any service instead.
+			c.Status, c.ReasonCode = "supported-with-prerequisites", "LIBVIRT_SESSION_UNACTIVATED"
+			c.Reason = "the system libvirt service is running, but nothing has started libvirt for your own user; your own VMs cannot start until it is"
+			c.Alternatives = []string{"systemctl --user enable --now virtqemud.socket"}
+			return c
+		}
 		ready(&c, "LIBVIRT_RUNNING", "the libvirt service is running")
 	case h.exists("/usr/sbin/virtqemud") || h.exists("/usr/sbin/libvirtd"):
 		c.Status, c.ReasonCode = "unsupported-on-this-configuration", "LIBVIRT_STOPPED"

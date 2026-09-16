@@ -46,6 +46,7 @@ func run() error {
 	defer engine.Close()
 	service := app.New(&backend.Provider{}, engine)
 	service.Inspector = platform.Doctor
+	service.SessionBoot = platform.SessionBootReady
 	service.BridgeZones = platform.BridgeFirewallZones
 	service.HostPrefixes = platform.ObserveHostNetworkPrefixes
 	service.NetworkAllocation = func(ctx context.Context) (network.AllocationConfig, error) {
