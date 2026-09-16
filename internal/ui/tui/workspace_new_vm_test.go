@@ -35,6 +35,9 @@ var rawIdentity = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-|[0-9a-f]{64}|libv
 // the same screen.
 func TestNewVMFromNothingNeedsOneConfirmation(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	free := newVMFreeBytes
+	newVMFreeBytes = func(string) (uint64, bool) { return 100 << 30, true }
+	defer func() { newVMFreeBytes = free }()
 	m := fixtureWorkspace()
 	m.Width, m.Height = 110, 44
 	m.Section = 1
@@ -200,6 +203,37 @@ func TestNewVMFinishesOnTheRunningVM(t *testing.T) {
 	failed.Width, failed.Height = 110, 44
 	failed.NewVM = &newVMFlow{Running: true, Name: "lab", Failure: "Not enough space in pool default.", Chain: importChain{PrepJob: chainPrepJob, CreateJob: chainCreateJob, Start: true}}
 	if view := failed.View(); !strings.Contains(view, "The new VM needs attention") || !strings.Contains(view, "Not enough space") || !strings.Contains(view, "[!] Create the VM") {
+		t.Fatal(view)
+	}
+}
+
+func TestInstallerDiskFitsTheFreeSpace(t *testing.T) {
+	const gib = uint64(1) << 30
+	cases := []struct {
+		free       uint64
+		mib, noted string
+	}{
+		{100 * gib, "32768", ""},
+		{31 * gib, "16384", "16 GiB"},
+		{12 * gib, "8192", "8 GiB"},
+		{1 * gib, "32768", ""},
+	}
+	for _, c := range cases {
+		mib, note := installerDiskMiB(c.free, 3<<30>>2)
+		if mib != c.mib || (c.noted == "") != (note == "") || !strings.Contains(note, c.noted) {
+			t.Fatalf("free %d GiB: %s %q", c.free/gib, mib, note)
+		}
+	}
+}
+
+func TestNewVMSettingsShowRefusals(t *testing.T) {
+	m := chainImportWorkspace(t)
+	m.Width, m.Height = 110, 44
+	m.Creation = nil
+	m.NewVM = &newVMFlow{RealPools: m.Import.VM.Pools}
+	m.Import.Error = "INSUFFICIENT_SPACE: Needs 40.02 GiB; 30.90 GiB available (9.12 GiB short). Choose another destination or free at least 9.12 GiB."
+	view := m.View()
+	if !strings.Contains(view, "Not enough free space. Needs 40.02 GiB") || !strings.Contains(view, "A smaller Disk size needs less.") {
 		t.Fatal(view)
 	}
 }

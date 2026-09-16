@@ -29,6 +29,7 @@ type newVMFlow struct {
 	LoadError bool // reading them failed; Esc leaves, and nothing retries by itself
 	Error     string
 	RealPools []domain.StoragePool
+	DiskNote  string // why the installer disk is smaller than usual
 
 	// A storage pool created or started in the same confirmation.
 	PoolPending bool
@@ -47,6 +48,27 @@ type newVMFlow struct {
 }
 
 const newVMGiB = 1024
+
+// newVMFreeBytes is replaced in tests.
+var newVMFreeBytes = freeBytes
+
+// installerDiskMiB is the usual 32 GiB installer disk, or the largest common
+// size whose preparation fits the free space. Preparation reserves the disk's
+// full size plus a margin (importing.installationBudget), so a size that does
+// not fit would only be refused after Create VM.
+func installerDiskMiB(free uint64, isoBytes int64) (string, string) {
+	for _, gib := range []uint64{32, 24, 16, 12, 8, 4} {
+		disk := gib << 30
+		need := uint64(64<<20) + uint64(max(0, isoBytes)) + disk + disk/4 + (16 << 20) + (512 << 20)
+		if need <= free {
+			if gib == 32 {
+				return "32768", ""
+			}
+			return strconv.FormatUint(gib*newVMGiB, 10), fmt.Sprintf("Suggested: %d GiB, so preparing the installer fits the free space here.", gib)
+		}
+	}
+	return "32768", ""
+}
 
 func (m *Workspace) openNewVM() tea.Cmd {
 	if m.Busy || m.Pending["apply"] != 0 {
@@ -99,7 +121,11 @@ func (m Workspace) newVMControls() []newVMControl {
 		{"memory", "Memory (MiB)", f.MemoryText, "1024 MiB is 1 GiB."},
 	}
 	if d.Kind == "iso" && len(d.Disks) > 0 {
-		c = append(c, newVMControl{"disk", "Disk size (GiB)", newVMDiskGiB(d.Disks[0].SizeMiB), "The new, empty disk the installer uses. Space is used only as the guest writes."})
+		help := "The new, empty disk the installer uses. Space is used only as the guest writes."
+		if m.NewVM.DiskNote != "" {
+			help = m.NewVM.DiskNote
+		}
+		c = append(c, newVMControl{"disk", "Disk size (GiB)", newVMDiskGiB(d.Disks[0].SizeMiB), help})
 	}
 	start := " "
 	if f.StartAfter {
@@ -204,17 +230,34 @@ func (m Workspace) newVMView(width, height int) []string {
 			lines = append(lines, "", "  "+m.newVMStorageLine(), "  "+m.newVMNetworkLine(), "  Display: "+creationFriendlyValue("graphics", m.Import.VM.Spec.Graphics), "")
 		}
 		lines = append(lines, mark+row)
+		if c.id == "disk" && flow.DiskNote != "" && i != focus {
+			lines = append(lines, "    "+flow.DiskNote)
+		}
 	}
 	lines = append(lines, "")
 	switch {
 	case flow.Error != "":
 		lines = append(lines, wrap(validation.SafeText(flow.Error), width)...)
+	case m.Import.Error != "":
+		lines = append(lines, wrap(newVMRefusal(m.Import.Error, m.Import.Draft.Kind), width)...)
 	case flow.Discard:
 		lines = append(lines, "Press Esc again to discard this new VM. Any other key keeps your settings.")
 	default:
 		lines = append(lines, wrap(controls[focus].help, width)...)
 	}
 	return pageLines(lines, width, height, 0)
+}
+
+// newVMRefusal words a refused preparation for the settings page.
+func newVMRefusal(text, kind string) string {
+	text = validation.SafeText(text)
+	if rest, ok := strings.CutPrefix(text, "INSUFFICIENT_SPACE:"); ok {
+		text = "Not enough free space. " + strings.TrimSpace(rest)
+		if kind == "iso" {
+			text += " A smaller Disk size needs less."
+		}
+	}
+	return text
 }
 
 func (m Workspace) updateNewVMSettings(key tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -312,6 +355,7 @@ func (m Workspace) updateNewVMSettings(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			draft.Draft.Disks[0].SizeMiB = value
 		}
 		m.Import = &draft
+		flow.DiskNote = ""
 	default:
 		return m, nil
 	}
@@ -326,6 +370,7 @@ func (m Workspace) updateNewVMSettings(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m *Workspace) createNewVM() tea.Cmd {
 	flow := m.NewVM
 	imp := *m.Import
+	imp.Error = ""
 	imp.Draft.Disks = append([]ImportDisk{}, imp.Draft.Disks...)
 	f := *m.Import.VM
 	f.Pools = append([]domain.StoragePool{}, flow.RealPools...)
@@ -568,6 +613,18 @@ func (m Workspace) observeNewVM(before Workspace, msg tea.Msg) (Workspace, tea.C
 				f.Page, f.Focus = 0, 0
 				flow.RealPools = append([]domain.StoragePool{}, f.Pools...)
 				m.saveImportHardware(f)
+				if d := m.Import.Draft; d.Kind == "iso" && len(d.Disks) == 1 && d.Disks[0].SizeMiB == "32768" && m.Import.StagingRoot != "" {
+					if free, ok := newVMFreeBytes(m.Import.StagingRoot); ok {
+						iso := int64(0)
+						if d.Description != nil {
+							iso = d.Description.PhysicalBytes
+						}
+						imp := *m.Import
+						imp.Draft.Disks = []ImportDisk{d.Disks[0]}
+						imp.Draft.Disks[0].SizeMiB, flow.DiskNote = installerDiskMiB(free, iso)
+						m.Import = &imp
+					}
+				}
 				flow.Focus = len(m.newVMControls()) - 1
 			}
 			return m, nil
