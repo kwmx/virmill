@@ -102,7 +102,7 @@ func (m *Workspace) acceptCreationPool(data any) (bool, tea.Cmd) {
 	}
 	m.CreationPool = &creationPoolJob{Connection: m.Connection, JobID: job.ID, PlanID: job.PlanID, Pool: pool}
 	m.Plan = nil
-	m.Reviewing = false
+	m.PlanDetails = false
 	m.Busy = false
 	m.Error = ""
 	m.Creation.Error = ""

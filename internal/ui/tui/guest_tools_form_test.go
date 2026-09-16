@@ -225,7 +225,7 @@ func TestGuestToolsFormWorkspacePlanCancelRestoresEdits(t *testing.T) {
 	}
 	next, follow := m.Update(cmd())
 	m = next.(Workspace)
-	if follow != nil || m.Plan == nil || m.Form != nil || m.SavedForm == nil || m.Busy || m.Reviewing || len(client.calls) != 2 || client.calls[1] != "guest.tools.install" || client.requests[1].Apply != nil {
+	if follow != nil || m.Plan == nil || m.Form != nil || m.SavedForm == nil || m.Busy || m.PlanDetails || len(client.calls) != 2 || client.calls[1] != "guest.tools.install" || client.requests[1].Apply != nil {
 		t.Fatal("preview failed or approved installation implicitly", m.Error)
 	}
 	m, cmd = wk(m, "esc")

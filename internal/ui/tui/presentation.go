@@ -40,7 +40,7 @@ func HumanDetails(value any, width int) []string {
 // that the plan has been applied or its completion predicates verified.
 func PlanDetails(p domain.Plan, width int) []string {
 	f := newDetails(width)
-	planSummary(f, p)
+	planSummary(f, p, false)
 	f.line("", 0)
 	f.line("Complete plan details", 0)
 	f.line("Exact identities, checks and recovery information follow.", 0)
@@ -59,6 +59,15 @@ func PlanDetails(p domain.Plan, width int) []string {
 	for _, field := range fields {
 		f.value(field.label, reflect.ValueOf(field.value), 0)
 	}
+	return f.lines
+}
+
+// planConfirmation is the plain part of a plan for the confirmation: what it
+// does, without identifiers, digests or resource keys (ADR 0065). PlanDetails
+// still holds every field.
+func planConfirmation(p domain.Plan, width int) []string {
+	f := newDetails(width)
+	planSummary(f, p, true)
 	return f.lines
 }
 
@@ -98,9 +107,19 @@ func operationCommand(op string) string {
 
 // The summary is an introduction, never a replacement for the frozen review.
 // It reads only named non-secret fields and does not execute custom formatters.
-func planSummary(f *details, p domain.Plan) {
+// confirmationTitles names what a confirmation does where the menu label
+// describes a form instead.
+var confirmationTitles = map[string]string{
+	"import.prepare-install": "Create a VM from an installer",
+	"import.prepare-disks":   "Create a VM from disk images",
+	"import.prepare":         "Create a VM from an appliance",
+}
+
+func planSummary(f *details, p domain.Plan, plain bool) {
 	command := operationCommand(p.Operation)
-	if p.Operation == "guest.recipe.run" {
+	if title, ok := confirmationTitles[p.Operation]; ok && plain {
+		f.line(title, 0)
+	} else if p.Operation == "guest.recipe.run" {
 		f.line("Run guest setup", 0)
 		f.line("Run the reviewed setup steps inside the selected VM over SSH.", 0)
 	} else if action, ok := actionText[command]; ok {
@@ -109,7 +128,11 @@ func planSummary(f *details, p domain.Plan) {
 	} else {
 		f.scalar("Review action", p.Operation, 0)
 	}
-	f.line("Nothing has been applied. Review the changes and warnings below.", 0)
+	if plain {
+		f.line("Nothing has changed yet.", 0)
+	} else {
+		f.line("Nothing has been applied. Review the changes and warnings below.", 0)
+	}
 	f.line("", 0)
 	if p.Operation == "vm.remove-definition-v1" {
 		f.scalar("VM", fmt.Sprint(p.Review["vmName"]), 0)
@@ -180,6 +203,10 @@ func planSummary(f *details, p domain.Plan) {
 		if len(field.path) == 2 && field.path[0] == "requested" && resourceChanges[field.path[1]] {
 			continue
 		}
+		// Where Virmill keeps working copies is a detail, not a decision.
+		if plain && field.label == "Save to" {
+			continue
+		}
 		if v, ok := planSummaryField(reflect.ValueOf(p.Review), field.path); ok {
 			f.value(field.label, v, 0)
 		}
@@ -187,21 +214,34 @@ func planSummary(f *details, p domain.Plan) {
 	if display, ok := planSummaryField(reflect.ValueOf(p.Review), []string{"target", "spec", "graphics"}); ok && display.Kind() == reflect.String {
 		f.scalar("Display", creationFriendlyValue("graphics", display.String()), 0)
 	}
-	f.value("Affected resources", reflect.ValueOf(p.ResourceIDs), 0)
+	if !plain {
+		f.value("Affected resources", reflect.ValueOf(p.ResourceIDs), 0)
+	}
 	if p.Estimates.AdditionalBytes > 0 {
-		f.scalar("Extra space estimate", planSpace(p.Estimates.AdditionalBytes), 0)
+		if plain {
+			f.scalar("Extra space needed", strings.SplitN(planSpace(p.Estimates.AdditionalBytes), " (", 2)[0], 0)
+		} else {
+			f.scalar("Extra space estimate", planSpace(p.Estimates.AdditionalBytes), 0)
+		}
 	}
 	shutdown, _ := planSummaryField(reflect.ValueOf(p.Review), []string{"requiresShutdown"})
 	if p.Estimates.RequiresDowntime || shutdown.IsValid() && shutdown.Kind() == reflect.Bool && shutdown.Bool() {
 		f.line("Downtime: required by this plan.", 0)
 	}
 	if p.Estimates.Notes != "" {
-		f.scalar("Estimate notes", p.Estimates.Notes, 0)
+		if plain {
+			f.line(p.Estimates.Notes, 0)
+		} else {
+			f.scalar("Estimate notes", p.Estimates.Notes, 0)
+		}
 	}
 	f.line("", 0)
-	if len(p.Risks) == 0 {
+	switch {
+	case plain:
+		// The confirmation lists risks after what the user agrees to.
+	case len(p.Risks) == 0:
 		f.line("Warnings: none supplied by the planner; this is not a safety guarantee.", 0)
-	} else {
+	default:
 		f.value("Warnings and effects to review", reflect.ValueOf(p.Risks), 0)
 	}
 }

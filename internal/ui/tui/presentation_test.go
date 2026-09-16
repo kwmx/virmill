@@ -171,7 +171,7 @@ func TestPlanDetailsWarningsKeepWordsAcross80ColumnPages(t *testing.T) {
 	}
 	seen := map[string]bool{}
 	m := NewWorkspace(nil, p.ConnectionID)
-	m.NoColor, m.Plan = true, &p
+	m.NoColor, m.Plan, m.PlanDetails = true, &p, true
 	m.Width, m.Height = 80, 24
 	// Read every rendered viewport, including the final clamped page. This
 	// checks actual review routing as well as the standalone detail formatter.

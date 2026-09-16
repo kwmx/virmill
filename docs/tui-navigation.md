@@ -87,12 +87,11 @@ still depends on the supported QEMU build.
    backing and extent files; dependencies do not become extra guest disks.
 4. **Preview image preparation.** Review the source, destination, disk conversion
    and required storage. Space errors name the shortfall in readable units;
-   **Back: Destination** returns to the location choice. Confirm the listed
-   consequences and choose **Apply reviewed plan** to start preparation. Preview
-   first opens VM settings if you have not set them. One review then covers
-   preparing the images, creating the VM and, with **After creation: Start the
-   VM**, starting it; check every item, including the next steps, and apply
-   once. Creation and start run by themselves while this TUI stays open, but only
+   **Back: Destination** returns to the location choice. Preview first opens VM
+   settings if you have not set them. One confirmation then covers preparing the
+   images, creating the VM and, with **After creation: Start the VM**, starting
+   it: it lists everything you agree to, including the later steps, and Enter
+   confirms once. Creation and start run by themselves while this TUI stays open, but only
    if they ask for nothing beyond what you checked; otherwise their own review
    opens. If you close the TUI, Create VM continues from the prepared images.
    With **Prepared copy: Remove after creation** (the default), the last step
@@ -198,11 +197,13 @@ shared service plan before any mutation. Some specialist catalog actions still
 use a **Settings file** for mappings described by the CLI `--input` contract;
 the TUI does not require a shell command or pasted request envelope.
 
-Plans show steps, affected resources, identifiers, risks, storage estimates and
-an immutable digest. Enter opens confirmation. Check every required
-acknowledgement, select **Apply reviewed plan**, then press Enter. The backend
-rechecks authorization and state. Esc returns to review; backing out of review
-restores the originating form and its values. Closing help or using an undersized
+Every change opens one plain confirmation (ADR 0065): what will happen, then
+"By confirming, you agree that:" with every acknowledgement the plan requires
+in plain words, then **Confirm**. Enter confirms and submits the exact plan with
+each acknowledgement named. `d` switches to the technical details: steps,
+affected resources, identifiers, storage estimates and the immutable digest.
+The backend rechecks authorization and state. Esc leaves the technical details,
+and from the confirmation returns to the originating form with its values. Closing help or using an undersized
 terminal cannot submit changes.
 
 Accepted operations open Job details. Jobs refresh automatically every three

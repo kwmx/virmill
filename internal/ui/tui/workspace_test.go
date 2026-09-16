@@ -132,29 +132,22 @@ func TestWorkspaceCanceledDetailCannotReopenAndRefreshRetainsIdentity(t *testing
 	}
 }
 func (m Workspace) showForTest() (Workspace, tea.Cmd) { cmd := m.showRow(); return m, cmd }
-func TestWorkspaceApprovalRequiresVisibleExplicitAcknowledgements(t *testing.T) {
+func TestWorkspaceConfirmationShowsEveryConsequenceAndAppliesOnce(t *testing.T) {
 	m := fixtureWorkspace()
 	p := testWorkspacePlan(t)
 	m.Plan = &p
-	m.Approved = make([]bool, len(p.Acknowledgements))
-	m, _ = wk(m, "enter")
-	if !m.Reviewing {
-		t.Fatal("missing review confirmation")
+	// Everything agreed to is on the confirmation itself (ADR 0065).
+	shown := strings.Join(strings.Fields(strings.Join(m.confirmationLines(200, 400), " ")), " ")
+	for _, ack := range p.Acknowledgements {
+		text, _ := plainAcknowledgement(ack)
+		if !strings.Contains(shown, strings.Join(strings.Fields(text), " ")) {
+			t.Fatalf("confirmation hides %s: %s", ack, shown)
+		}
 	}
-	m.AckIndex = len(m.Approved)
 	var cmd tea.Cmd
 	m, cmd = wk(m, "enter")
-	if cmd != nil {
-		t.Fatal("unchecked risks accepted")
-	}
-	m.AckIndex = 0
-	m, _ = wk(m, "space")
-	m, _ = wk(m, "down")
-	m, _ = wk(m, "space")
-	m, _ = wk(m, "down")
-	m, cmd = wk(m, "enter")
 	if cmd == nil {
-		t.Fatal("button did not submit")
+		t.Fatal("Confirm did not submit")
 	}
 	cmd()
 	c := m.Client.(*workspaceClient)
@@ -176,9 +169,6 @@ func TestWorkspaceHelpAndSmallTerminalNeverSubmitHiddenActions(t *testing.T) {
 			m := fixtureWorkspace()
 			p := testWorkspacePlan(t)
 			m.Plan = &p
-			m.Approved = []bool{true, true}
-			m.Reviewing = true
-			m.AckIndex = 2
 			if mode == "help" {
 				m.Help = true
 			} else {
@@ -273,8 +263,7 @@ func TestWorkspaceRenderingFitsAndSanitizes(t *testing.T) {
 				case "plan", "approval":
 					p := testWorkspacePlan(t)
 					n.Plan = &p
-					n.Approved = []bool{false, false}
-					n.Reviewing = mode == "approval"
+					n.PlanDetails = mode == "plan"
 				}
 				view := n.View()
 				if strings.Contains(view, "\x1b") || strings.ContainsRune(view, '\u202e') {

@@ -92,15 +92,17 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 			t.Fatalf("combined review lacks %s: %v", want, acks)
 		}
 	}
-	if len(m.Approved) != len(acks) {
-		t.Fatal("not every consequence needs a check")
+	confirmation := strings.Join(m.confirmationLines(160, 400), "\n")
+	for _, ack := range acks {
+		if text, _ := plainAcknowledgement(ack); !strings.Contains(confirmation, text) {
+			t.Fatalf("confirmation does not list %s", ack)
+		}
 	}
 	view := m.View()
 	if !strings.Contains(view, "creates VM keep-exact-vm-choices") || !strings.Contains(view, "starts the VM once it is created") {
 		t.Fatal("review does not describe the later steps", view)
 	}
-	m.Reviewing = true
-	if lines := strings.Join(m.confirmationLines(120, 60), "\n"); !strings.Contains(lines, "Start the VM as soon as it is created") || !strings.Contains(lines, "Next steps") {
+	if lines := strings.Join(m.confirmationLines(160, 400), "\n"); !strings.Contains(lines, "Start the VM as soon as it is created") || strings.Count(lines, "Start the VM as soon as it is created") != 1 {
 		t.Fatal("confirmation lacks later steps", lines)
 	}
 
@@ -131,7 +133,7 @@ func TestOneReviewPreparesCreatesAndStarts(t *testing.T) {
 	}
 	create := chainPlan(t, chainCreatePlan, "vm.create.devices-v1", m.Connection, expectedCreationAcks(prepared), map[string]any{"sourceOperationID": chainPrepJob}, nil)
 	m, cmd = deliver(t, m, "plan", create)
-	if cmd == nil || m.Reviewing || !strings.Contains(m.View(), "Continuing the approved setup") {
+	if cmd == nil || m.PlanDetails || !strings.Contains(m.View(), "Continuing the approved setup") {
 		t.Fatal("matching creation plan was not applied on the review page", m.Notice)
 	}
 	cmd()
@@ -257,7 +259,7 @@ func TestCreationWithoutStartHasNoLaterSteps(t *testing.T) {
 	m.Creation = &f
 	m.Pending = map[string]uint64{"plan": 5}
 	m, _ = deliver(t, m, "plan", chainPlan(t, chainCreatePlan, "vm.create.devices-v1", m.Connection, expectedCreationAcks(f), map[string]any{"sourceOperationID": creationFormOperation}, nil))
-	if m.ChainOffer != nil || len(m.Approved) != len(m.Plan.Acknowledgements) {
+	if m.ChainOffer != nil || strings.Contains(strings.Join(m.confirmationLines(160, 400), "\n"), "Start the VM as soon as it is created") {
 		t.Fatal("later steps offered without start")
 	}
 	f.StartAfter = true

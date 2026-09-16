@@ -453,7 +453,7 @@ func (s *Service) Plan(ctx context.Context, uid uint32, r app.Request) (domain.P
 		return empty, err
 	}
 	step := domain.Step{ID: "prepare", Action: "import.prepare", Preconditions: []string{"unchanged archive identity and SHA-256", "explicit complete disk mapping", "pinned qemu-img executable", "private staging, absent destination and sufficient space"}, Idempotency: "reconcile-before-retry", Compensation: "Keep original archive and uncommitted job staging; never resume partial conversion files", Reconciliation: "Verify the published artifact against the durable receipt without conversion replay", CompletionPredicate: "Every selected disk is independently converted, size-checked, compared and durably published with its descriptor"}
-	return s.Engine.Plan(ctx, uid, "local", "import.prepare", []string{"import-artifact:local:" + in.Destination}, map[string]string{"archive": report.SHA256}, in, []domain.Step{step}, []string{"write-import-artifacts"}, []string{"Creates independent qcow2 copies; originals are never modified", "This preparation does not define/start a VM or verify guest boot", "Interrupted conversion output is retained but never reused automatically"})
+	return s.Engine.Plan(ctx, uid, "local", "import.prepare", []string{"import-artifact:local:" + in.Destination}, map[string]string{"archive": report.SHA256}, in, []domain.Step{step}, []string{"write-import-artifacts"}, []string{"Makes independent copies of the appliance's disks; the original file is never changed", "No VM is created or started by this step alone, and booting is not checked", "If copying is interrupted, the partial copy is kept but never reused automatically"})
 }
 
 func (s *Service) Review(ctx context.Context, p domain.Plan, b []byte) (map[string]any, error) {

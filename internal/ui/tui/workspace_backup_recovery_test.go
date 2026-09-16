@@ -54,7 +54,7 @@ func TestWorkspaceBackupRecoveryReadsHistoryThenPreviewsExactSelectors(t *testin
 	}
 	next, follow := m.Update(cmd())
 	m = next.(Workspace)
-	if follow != nil || m.Plan == nil || m.BackupRecovery == nil || m.Reviewing || m.Busy || len(client.calls) != 2 || client.calls[1] != "backup.restore" {
+	if follow != nil || m.Plan == nil || m.BackupRecovery == nil || m.PlanDetails || m.Busy || len(client.calls) != 2 || client.calls[1] != "backup.restore" {
 		t.Fatal("plan did not retain recovery form", m.Error, client.calls)
 	}
 	request := client.requests[1]

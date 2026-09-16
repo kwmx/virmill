@@ -98,8 +98,8 @@ virmill plan apply PLAN_ID --digest REVIEWED_FULL_DIGEST \
 
 Repeat `--ack` for **every** required acknowledgement in that exact plan; omit
 the placeholder when none is required. Use a fresh request key for a new approved
-operation. In the TUI, open the plan confirmation, explicitly check its acknowledgements,
-select **Apply reviewed plan**, and press Enter. The interface submits the exact
+operation. In the TUI, read the confirmation, which lists every acknowledgement in plain
+words, and press Enter to confirm; `d` shows the exact plan. The interface submits the exact
 reviewed digest. Cancellation, stale state or missing authority must
 produce an error, not a reduced policy or successful result. A lost response
 does not authorize another apply.

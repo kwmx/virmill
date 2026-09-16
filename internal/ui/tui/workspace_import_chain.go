@@ -177,7 +177,7 @@ func chainSummary(f CreationForm, create bool) []string {
 	if f.RemovePrepared {
 		lines = append(lines, "- then removes the prepared copy to free disk space; the VM keeps its own disks")
 	}
-	return append(lines, "Each later step runs only if it asks for nothing beyond the items you check; otherwise it stops at its own review.")
+	return append(lines, "If a later step asks for anything not listed here, Virmill stops and asks you first.")
 }
 
 func (m Workspace) chainOfferLines(width int) []string {
@@ -293,13 +293,9 @@ func (m *Workspace) chainPlanArrived() (tea.Cmd, bool) {
 
 func (m *Workspace) autoApplyChain() tea.Cmd {
 	p := m.Plan
-	m.Approved = make([]bool, len(p.Acknowledgements))
-	for i := range m.Approved {
-		m.Approved[i] = true
-	}
-	// Stay on the review with a notice; a checkbox page the user never saw
-	// would suggest another decision is waiting.
-	m.Reviewing = false
+	// Stay on the confirmation with a notice; the technical plan would suggest
+	// another decision is waiting.
+	m.PlanDetails = false
 	m.Busy = true
 	m.Error = ""
 	m.ApplyKey = domain.ID()

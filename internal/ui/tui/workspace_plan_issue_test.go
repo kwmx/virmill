@@ -24,7 +24,7 @@ func TestWorkspaceApplyFailureShowsCompleteIssueAndPreservesReviewAndSetup(t *te
 				plan := testWorkspacePlan(t)
 				plan.Operation = "network.create"
 				m.Plan = &plan
-				m.Reviewing, m.Busy, m.Offset = true, true, 100
+				m.PlanDetails, m.Busy, m.Offset = true, true, 100
 				m.ApplyKey = "keep-exact-network-request"
 				m.Pending["apply"] = 410
 				text := "Coordinator could not confirm the submitted operation."
@@ -44,7 +44,7 @@ func TestWorkspaceApplyFailureShowsCompleteIssueAndPreservesReviewAndSetup(t *te
 				}
 				next, cmd := m.Update(reply)
 				m = next.(Workspace)
-				if cmd != nil || m.Offset != 0 || m.Reviewing || m.Busy || m.Pending["apply"] != 0 || m.ApplyKey != "keep-exact-network-request" || !reflect.DeepEqual(m.Plan, &plan) || m.CreationNetwork != handoff || !reflect.DeepEqual(m.setupDocument(), snapshot) {
+				if cmd != nil || m.Offset != 0 || m.PlanDetails || m.Busy || m.Pending["apply"] != 0 || m.ApplyKey != "keep-exact-network-request" || !reflect.DeepEqual(m.Plan, &plan) || m.CreationNetwork != handoff || !reflect.DeepEqual(m.setupDocument(), snapshot) {
 					t.Fatal("apply failure hid the issue or replaced review/request/source state")
 				}
 				first := m.View()
@@ -79,10 +79,15 @@ func TestWorkspaceApplyFailureShowsCompleteIssueAndPreservesReviewAndSetup(t *te
 						t.Fatalf("full error word %q was not reachable", word)
 					}
 				}
-				for _, want := range []string{"FULL-ISSUE-TAIL", "Check Jobs before trying again", "Plan ID:", plan.ID} {
+				for _, want := range []string{"FULL-ISSUE-TAIL", "Check Jobs before trying again", "By confirming, you agree that:"} {
 					if !strings.Contains(all, want) {
 						t.Fatalf("issue/plan lost %q", want)
 					}
+				}
+				// The exact plan identity stays one key away (ADR 0065).
+				details, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'d'}})
+				if d := details.(Workspace); !d.PlanDetails || !strings.Contains(d.View(), "Submission needs attention") {
+					t.Fatal("technical details hide the issue")
 				}
 				if kind == "helper-key" && !strings.Contains(all, "A host administrator must finish helper setup") {
 					t.Fatal("missing helper key has no administrator recovery guidance")

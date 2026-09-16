@@ -143,7 +143,7 @@ func (m *Workspace) returnCreationNetwork(refresh bool) tea.Cmd {
 	}
 	m.resetNetworkForm()
 	m.Plan = nil
-	m.Reviewing = false
+	m.PlanDetails = false
 	m.ActionForm = nil
 	m.SavedActionForm = nil
 	m.Form = nil
@@ -183,7 +183,7 @@ func (m *Workspace) acceptCreationNetwork(data any) (bool, tea.Cmd) {
 	m.resetNetworkForm()
 	m.resetJobOutcome()
 	m.Plan = nil
-	m.Reviewing = false
+	m.PlanDetails = false
 	m.Form = nil
 	m.ActionForm = nil
 	m.SavedForm = nil
@@ -202,7 +202,7 @@ func (m Workspace) creationNetworkJobMatches() bool {
 }
 func (m Workspace) canAutoReturnCreationNetwork() bool {
 	return m.creationNetworkJobMatches() && m.Activity == nil && !m.Busy && m.Pending["apply"] == 0 &&
-		m.Plan == nil && !m.Reviewing && !m.Advanced && !m.Help && m.draftModal == "" &&
+		m.Plan == nil && !m.PlanDetails && !m.Advanced && !m.Help && m.draftModal == "" &&
 		m.ActionForm == nil && m.Form == nil && m.Picker == nil && m.ExportForm == nil &&
 		m.NetworkForm == nil && m.Creation == nil && m.Import == nil && !m.CreationPicking &&
 		m.AutostartTarget == nil && m.RemovalTarget == nil && m.Resources == nil &&

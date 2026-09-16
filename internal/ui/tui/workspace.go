@@ -112,12 +112,11 @@ type Workspace struct {
 	Raw                                                       bool
 	Form                                                      *GuidedForm
 	Plan                                                      *domain.Plan
-	Approved                                                  []bool
-	AckIndex                                                  int
 	ApplyKey                                                  string
-	Reviewing                                                 bool
-	Busy                                                      bool
-	legacy                                                    Model
+	// PlanDetails shows the complete technical plan instead of the confirmation.
+	PlanDetails bool
+	Busy        bool
+	legacy      Model
 	// Updates is the last update check; updateCheck is set only by RunOptions.
 	Updates     *update.Result
 	updateCheck func(context.Context) update.Result
@@ -784,7 +783,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if v.Kind == "apply" {
 				// Preserve the exact review and request identity when the reply
 				// is uncertain. A deliberate retry cannot become a second job.
-				m.Reviewing = false
+				m.PlanDetails = false
 				m.Notice = "Submission was not confirmed. Check Jobs; retrying this review reuses the same request."
 
 			}
@@ -953,10 +952,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Plan = &p
 			m.ApplyKey = ""
 			m.ChainOffer = m.chainOfferFor(p)
-			m.Approved = make([]bool, len(m.reviewAcks()))
-			m.AckIndex = 0
 			m.Offset = 0
-			m.Reviewing = false
+			m.PlanDetails = false
 			m.SavedForm = m.Form
 			m.SavedActionForm = m.ActionForm
 			m.Form = nil
@@ -1043,7 +1040,7 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Import = nil
 			m.Busy = false
 			m.Plan = nil
-			m.Reviewing = false
+			m.PlanDetails = false
 			m.Form = nil
 			m.Section = 8
 			m.NavIndex = 8
@@ -1369,8 +1366,8 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Plan != nil {
 			switch key {
 			case "esc":
-				if m.Reviewing {
-					m.Reviewing = false
+				if m.PlanDetails {
+					m.PlanDetails = false
 				} else {
 					m.Plan = nil
 					m.ChainOffer = nil
@@ -1386,46 +1383,16 @@ func (m Workspace) updateWorkspace(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "pgup":
 				m.Offset = max(0, m.Offset-max(1, m.Height-11))
 			case "down", "j", "tab":
-				if m.Reviewing {
-					m.AckIndex = min(len(m.Approved), m.AckIndex+1)
-				} else {
-					m.Offset++
-				}
+				m.Offset++
 			case "up", "k", "shift+tab":
-				if m.Reviewing {
-					m.AckIndex = max(0, m.AckIndex-1)
-				} else {
-					m.Offset = max(0, m.Offset-1)
-				}
-			case "a":
-				m.Reviewing = true
-				m.AckIndex = 0
+				m.Offset = max(0, m.Offset-1)
+			case "d":
+				// The complete technical plan stays one key away.
+				m.PlanDetails = !m.PlanDetails
 				m.Offset = 0
-			case " ":
-				if m.Reviewing && m.AckIndex < len(m.Approved) {
-					m.Approved = append([]bool{}, m.Approved...)
-					m.Approved[m.AckIndex] = !m.Approved[m.AckIndex]
-				}
 			case "enter":
-				if !m.Reviewing {
-					m.Reviewing = true
-					m.Offset = 0
-					return m, nil
-				}
-				if m.AckIndex < len(m.Approved) {
-					m.Approved = append([]bool{}, m.Approved...)
-					m.Approved[m.AckIndex] = !m.Approved[m.AckIndex]
-					m.AckIndex++
-					return m, nil
-				}
-				all := true
-				for _, yes := range m.Approved {
-					all = all && yes
-				}
-				if !all {
-					m.Error = "Acknowledge each listed consequence before applying."
-					return m, nil
-				}
+				// One confirmation (ADR 0065): everything agreed to is listed on
+				// the screen, and applying still names each acknowledgement.
 				if !m.Busy && m.Pending["apply"] == 0 {
 					m.Busy = true
 					m.Error = ""
@@ -1930,10 +1897,10 @@ func (m Workspace) hints() string {
 		return m.formHints()
 	}
 	if m.Plan != nil {
-		if m.Reviewing {
-			return "Space Check   Tab Next   Enter Continue   Esc Review"
+		if m.PlanDetails {
+			return "Enter Confirm   d Back to summary   PgUp/PgDn Read   Esc Back to summary"
 		}
-		return "PgUp/PgDn Read plan   Enter Review & apply   Esc Cancel"
+		return "Enter Confirm   d Technical details   PgUp/PgDn Scroll   Esc Back"
 	}
 	if m.ButtonFocus {
 		return "Left/Right selects a button. Enter activates it; Tab moves focus."
@@ -2018,17 +1985,10 @@ func (m Workspace) content(width, height int) []string {
 		return append(target, strings.Split(m.Form.View(width, max(6, height-len(target))), "\n")...)
 	}
 	if m.Plan != nil {
-		if m.Reviewing {
+		if !m.PlanDetails {
 			return m.confirmationLines(width, height)
 		}
-		lines := []string{}
-		if m.Error != "" {
-			lines = append(lines, "Submission needs attention", "", validation.SafeText(m.Error), "")
-			if strings.Contains(m.Error, "helper-key.pem") {
-				lines = append(lines, "A host administrator must finish helper setup before this action can run.", "See the installed network-helper.md and managed-volume-access.md guides.")
-			}
-			lines = append(lines, "Your settings and reviewed plan are kept. Check Jobs before trying again; an accepted job may still be running.", "PgUp/PgDn reads the complete issue and plan. Esc returns to your settings.", "")
-		}
+		lines := m.planIssueLines()
 		lines = append(lines, m.chainOfferLines(width)...)
 		lines = append(lines, PlanDetails(*m.Plan, width)...)
 		return pageLines(lines, width, height, m.Offset)
@@ -2161,6 +2121,9 @@ func (m Workspace) View() string {
 		if m.Console != nil || m.ConsoleLoading {
 			title = "Console"
 		}
+	}
+	if m.Plan != nil {
+		title = "Confirm"
 	}
 	header := m.header(title, width, importModal)
 	lines := []string{ansi.Truncate(header, width, ""), m.color(strings.Repeat(rule, width), "2")}

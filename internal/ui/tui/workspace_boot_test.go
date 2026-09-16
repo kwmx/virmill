@@ -48,15 +48,11 @@ func TestApplyRetryRetainsIdempotencyKeyAfterLostResponse(t *testing.T) {
 	m := fixtureWorkspace()
 	p := testWorkspacePlan(t)
 	m.Plan = &p
-	m.Reviewing = true
-	m.Approved = []bool{true, true}
-	m.AckIndex = 2
 	client := &workspaceClient{err: errors.New("response lost after submission")}
 	m.Client = client
 	m, cmd := wk(m, "enter")
 	next, _ := m.Update(cmd())
 	m = next.(Workspace)
-	m, _ = wk(m, "enter") // Return to confirmation after the uncertain result.
 	m, cmd = wk(m, "enter")
 	next, _ = m.Update(cmd())
 	m = next.(Workspace)

@@ -295,12 +295,6 @@ func TestSetupApplyUpdateRetainsDurableBarrierState(t *testing.T) {
 	m.Creation = &f
 	p := testWorkspacePlan(t)
 	m.Plan = &p
-	m.Reviewing = true
-	m.Approved = make([]bool, len(p.Acknowledgements))
-	for i := range m.Approved {
-		m.Approved[i] = true
-	}
-	m.AckIndex = len(m.Approved)
 	next, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	m = next.(Workspace)
 	if cmd == nil || !m.draftSubmitted || m.draftSaved == nil || m.draftSaved.State != "submitting" {
