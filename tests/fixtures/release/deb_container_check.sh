@@ -39,9 +39,18 @@ apt-get install -y "./$core" "./$helper" > /tmp/install.log 2>&1 || { tail -20 /
 dpkg-query -W -f='  ${Package} ${Version} ${db:Status-Abbrev}\n' virmill virmill-host-helper
 dpkg --verify virmill virmill-host-helper && echo "dpkg --verify: ok" || fail "dpkg --verify"
 useradd -m tester && su - tester -c 'virmill version --output json' && echo || fail "virmill version as an ordinary user"
-systemd-analyze verify /usr/lib/systemd/system/virmill-host-helper.socket /usr/lib/systemd/system/virmill-host-helper.service \
+# The per-user libvirt units (ADR 0064) start a daemon Virmill does not ship,
+# and systemd-analyze refuses a unit whose command is missing. Where libvirt is
+# not installed their syntax and wiring are checked against a stand-in that is
+# removed again; on a real host without it the socket skips itself. Newer
+# systemd also runs `man` for each Documentation= page, and the only pages these
+# units name are libvirt's, which Virmill neither ships nor depends on.
+stub=""
+[ -x /usr/sbin/virtqemud ] || { stub=/usr/sbin/virtqemud; printf '#!/bin/sh\nexit 0\n' > "$stub"; chmod 0755 "$stub"; }
+systemd-analyze verify --man=no /usr/lib/systemd/system/virmill-host-helper.socket /usr/lib/systemd/system/virmill-host-helper.service \
   /usr/lib/systemd/user/virmilld.service /usr/lib/systemd/user/virmill-virtqemud.socket \
   /usr/lib/systemd/user/virmill-virtqemud.service && echo "systemd units: ok" || fail "systemd-analyze verify"
+[ -z "$stub" ] || rm -f "$stub"
 echo "owned directories: $(dpkg -L virmill virmill-host-helper | while read -r p; do [ -d "$p" ] && echo; done | wc -l)"
 apt-get remove -y virmill virmill-host-helper > /dev/null 2>&1 || fail "apt remove"
 dpkg --purge virmill virmill-host-helper > /dev/null 2>&1
