@@ -53,8 +53,17 @@ They are built in this order, smallest first.
 - Effect: a blank qcow2 made by the sandboxed tool, uploaded and read back as in
   creation, then one `<disk type="volume">` added to the saved definition.
 - Refused: a bus with no free port; no controller is inserted in this version.
-- Recovery: a verified volume with no definition yet is kept and offered for
-  cleanup through the creation cleanup flow.
+- Recovery: until the saved definition changes, a failure has written at most a
+  new, unreferenced volume. Nothing unsafe is in flight and nothing needs a
+  replay, so the job fails plainly, releases this VM's locks and names the
+  unused file so it can be deleted. Only a failure at or after the define
+  leaves the job needing recovery, which then observes the volume and the
+  definition instead of writing again.
+- The definition is compared with the digest that tolerates libvirt's own
+  reformatting, as cold restore does, and the readback also confirms the stored
+  definition names the reviewed target with the reviewed pool and volume. A
+  byte-exact comparison of Virmill's own XML cannot hold: libvirt reindents and
+  requotes what it stores.
 
 ### Move
 

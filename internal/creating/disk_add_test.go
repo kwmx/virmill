@@ -192,6 +192,40 @@ func TestDiskAddRefusesStaleReviewsAndFullPools(t *testing.T) {
 	}
 }
 
+// Until the definition changes, a failure must not strand this VM's locks.
+func TestDiskAddFailureBeforeTheDefinitionFreesTheLocks(t *testing.T) {
+	h, backend, _, request := addFixture(t)
+	plan, err := h.Plan(context.Background(), 1000, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, raw, err := h.s.Engine.Store.Plan(plan.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var in diskAddInput
+	if err = wire.Decode(raw, &in); err != nil {
+		t.Fatal(err)
+	}
+	// The prepared blank disk no longer matches its review, which is refused
+	// before any volume exists.
+	if err = os.WriteFile(filepath.Join(in.Cache, in.Workspace, "disk.qcow2"), []byte("different bytes"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	job := applyAdd(t, h, plan, "first")
+	if job.State != "failed" || job.Error == nil || job.Error.Code != "SOURCE_CHANGED" || backend.defines != 0 {
+		t.Fatal(job.State, job.Error, backend.defines)
+	}
+	// The released locks let a fresh review apply on the same VM.
+	plan, err = h.Plan(context.Background(), 1000, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if job = applyAdd(t, h, plan, "second"); job.State != "succeeded" || backend.defines != 1 {
+		t.Fatal("the failed addition kept this VM locked", job.State, job.Error)
+	}
+}
+
 func TestDiskAddRecoveryObservesInsteadOfWritingAgain(t *testing.T) {
 	h, backend, _, request := addFixture(t)
 	backend.defineAt = errors.New("synthetic define failure")

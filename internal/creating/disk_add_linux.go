@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -264,18 +265,34 @@ func (h *diskAddHandler) Execute(ctx context.Context, p domain.Plan, b []byte, s
 	if err = h.save(id, &previous, receipt); err != nil {
 		return err
 	}
+	// Until the definition changes, a failure has written at most a new,
+	// unreferenced volume: nothing unsafe is in flight and nothing needs a
+	// replay, so the job fails plainly and releases this VM's locks. The new
+	// file is named so it can be removed.
+	unreferenced := func(cause error, volume *domain.CreatedVolume) error {
+		var refusal *domain.Error
+		if !errors.As(cause, &refusal) {
+			refusal = domain.Fail("OPERATION_FAILED", cause.Error())
+		}
+		copied := *refusal
+		if volume != nil {
+			copied.Resource = "local-file|" + volume.Path
+			copied.SafeNextActions = []string{"delete the unused new disk file named in this error", "review the disk addition again"}
+		}
+		return operations.NotDone(&copied)
+	}
 	// The prepared blank disk must still be the reviewed bytes.
 	path := filepath.Join(in.Cache, in.Workspace, "disk.qcow2")
 	sealed, size, err := sealDiskFile(path)
 	if err != nil {
-		return err
+		return unreferenced(err, nil)
 	}
 	if sealed != in.Plan.Volume.SHA256 || uint64(size) != in.Plan.Volume.FileBytes {
-		return domain.Fail("SOURCE_CHANGED", "the prepared empty disk changed since the review")
+		return unreferenced(domain.Fail("SOURCE_CHANGED", "the prepared empty disk changed since the review"), nil)
 	}
 	created, err := h.s.Backend.AllocateVolume(ctx, p.ConnectionID, in.Plan.Volume)
 	if err != nil {
-		return err
+		return unreferenced(err, nil)
 	}
 	receipt.Allocated = &created
 	if err = h.save(id, &previous, receipt); err != nil {
@@ -283,15 +300,15 @@ func (h *diskAddHandler) Execute(ctx context.Context, p domain.Plan, b []byte, s
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return err
+		return unreferenced(err, &created)
 	}
 	err = h.s.Backend.PopulateVolume(ctx, p.ConnectionID, created, f)
 	f.Close()
 	if err != nil {
-		return err
+		return unreferenced(err, &created)
 	}
 	if err = h.s.Backend.VerifyCreatedVolume(ctx, p.ConnectionID, created); err != nil {
-		return err
+		return unreferenced(err, &created)
 	}
 	receipt.Verified = true
 	if err = h.save(id, &previous, receipt); err != nil {
