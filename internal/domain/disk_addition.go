@@ -4,7 +4,9 @@ import "context"
 
 // DiskAdditionTarget is what inspection found for adding one disk to a stopped
 // VM (ADR 0062): where the disk goes, the name its new volume must take, and
-// the VM's saved definition before and after the reviewed insert.
+// the VM's saved definition before and after the reviewed insert. Both digests
+// tolerate the reformatting libvirt applies to a definition it stores, and
+// nothing else.
 type DiskAdditionTarget struct {
 	VM                 ResourceKey `json:"vm"`
 	VMFingerprint      string      `json:"vmFingerprint"`

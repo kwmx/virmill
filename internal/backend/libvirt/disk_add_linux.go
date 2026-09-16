@@ -126,12 +126,22 @@ func (p *Provider) InspectDiskAddition(ctx context.Context, uri, id, bus string)
 	if err != nil {
 		return out, err
 	}
+	// Libvirt reformats the definition it stores, so both digests tolerate
+	// attribute order and indentation and nothing else, as cold restore does.
+	before, err := xmlpatch.HardwareDigest(vm.PersistentXML)
+	if err != nil {
+		return out, err
+	}
+	expected, err := xmlpatch.HardwareDigest(after)
+	if err != nil {
+		return out, err
+	}
 	directory, err := cleanupPoolDirectory(pool)
 	if err != nil {
 		return out, err
 	}
-	out = domain.DiskAdditionTarget{VM: key, VMFingerprint: vm.Fingerprint, DefinitionSHA256: xmlpatch.Digest(vm.PersistentXML),
-		AfterXMLSHA256: xmlpatch.Digest(after), PoolID: observed.Key.UUID, PoolName: poolName, VolumeName: name,
+	out = domain.DiskAdditionTarget{VM: key, VMFingerprint: vm.Fingerprint, DefinitionSHA256: before,
+		AfterXMLSHA256: expected, PoolID: observed.Key.UUID, PoolName: poolName, VolumeName: name,
 		Bus: add.Bus, Target: add.Target, Unit: add.Unit, PoolAvailableBytes: *observed.AvailableBytes}
 	out.ResourceIDs = []string{key.String(), observed.Key.String(), "local-file|" + filepath.Join(directory, name)}
 	sort.Strings(out.ResourceIDs)
@@ -164,10 +174,27 @@ func addedDiskXML(raw string, in domain.DiskAdditionPlan) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if xmlpatch.Digest(after) != t.AfterXMLSHA256 {
+	digest, err := xmlpatch.HardwareDigest(after)
+	if err != nil {
+		return "", err
+	}
+	if digest != t.AfterXMLSHA256 {
 		return "", domain.Fail("STALE_PLAN", "the definition changed since the review; review again")
 	}
 	return after, nil
+}
+
+// namesAddedDisk confirms the stored definition really declares the reviewed
+// disk, so correctness never rests on a digest alone.
+func namesAddedDisk(raw string, t domain.DiskAdditionTarget) error {
+	source, err := growDiskSource(raw, t.Target)
+	if err != nil {
+		return err
+	}
+	if source.pool != t.PoolName || source.volume != t.VolumeName || source.format != "qcow2" {
+		return domain.Fail("RECOVERY_REQUIRED", "the stored definition names another image at "+t.Target)
+	}
+	return nil
 }
 
 func (p *Provider) CheckDiskAddition(ctx context.Context, in domain.DiskAdditionPlan) (string, error) {
@@ -202,7 +229,11 @@ func (p *Provider) CheckDiskAddition(ctx context.Context, in domain.DiskAddition
 			return "", err
 		}
 	}
-	switch xmlpatch.Digest(vm.PersistentXML) {
+	stored, err := xmlpatch.HardwareDigest(vm.PersistentXML)
+	if err != nil {
+		return "", err
+	}
+	switch stored {
 	case in.Target.DefinitionSHA256:
 		if _, err = addedDiskXML(vm.PersistentXML, in); err != nil {
 			return "", err
@@ -212,6 +243,9 @@ func (p *Provider) CheckDiskAddition(ctx context.Context, in domain.DiskAddition
 		}
 		return "before", nil
 	case in.Target.AfterXMLSHA256:
+		if err = namesAddedDisk(vm.PersistentXML, in.Target); err != nil {
+			return "", err
+		}
 		if !present {
 			return "", domain.Fail("RECOVERY_REQUIRED", "the definition names the new disk but its volume is missing")
 		}
@@ -242,7 +276,11 @@ func (p *Provider) DefineAddedDisk(ctx context.Context, in domain.DiskAdditionPl
 	if err != nil {
 		return err
 	}
-	if xmlpatch.Digest(vm.PersistentXML) != in.Target.DefinitionSHA256 || vm.Fingerprint != in.Target.VMFingerprint {
+	stored, err := xmlpatch.HardwareDigest(vm.PersistentXML)
+	if err != nil {
+		return err
+	}
+	if stored != in.Target.DefinitionSHA256 || vm.Fingerprint != in.Target.VMFingerprint {
 		return domain.Fail("STALE_PLAN", "the VM changed since the review; review again")
 	}
 	secure, err := d.GetXMLDesc(native.DOMAIN_XML_INACTIVE | native.DOMAIN_XML_SECURE)
@@ -271,8 +309,14 @@ func (p *Provider) DefineAddedDisk(ctx context.Context, in domain.DiskAdditionPl
 	if err != nil {
 		return domain.Fail("RECOVERY_REQUIRED", "secure readback unavailable after adding the disk; do not replay")
 	}
-	if read.State != "stopped" || read.HasManagedSave || xmlpatch.Digest(read.PersistentXML) != in.Target.AfterXMLSHA256 || securely != read.PersistentXML {
+	// Libvirt reformats what it stores, so the readback is compared with the
+	// normalisation-tolerant digest and by naming the disk itself.
+	readback, err := xmlpatch.HardwareDigest(read.PersistentXML)
+	if err != nil {
+		return err
+	}
+	if read.State != "stopped" || read.HasManagedSave || readback != in.Target.AfterXMLSHA256 || securely != read.PersistentXML {
 		return domain.Fail("RECOVERY_REQUIRED", "the definition readback differs from the reviewed result; inspect the operation without replaying it")
 	}
-	return nil
+	return namesAddedDisk(read.PersistentXML, in.Target)
 }
