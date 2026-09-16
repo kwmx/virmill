@@ -100,7 +100,9 @@
         "internal/operations/cancellation.go",
         "internal/ui/tui/action_menu.go",
         "internal/ui/tui/approval_labels.go",
-        "docs/evidence/power-run.md"
+        "docs/evidence/power-run.md",
+        "docs/adr/0063-remove-created-and-uefi-vms.md",
+        "docs/evidence/removal-created-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -139,7 +141,11 @@
         "internal/app/vm_stop_timeout_test.go",
         "internal/ui/tui/action_menu_test.go",
         "internal/ui/tui/workspace_menus_test.go",
-        "tests/fixtures/release/power_native_cycle.py"
+        "tests/fixtures/release/power_native_cycle.py",
+        "internal/backend/libvirt/removal_uefi_linux_test.go",
+        "internal/backend/libvirt/disk_removal_volume_linux_test.go",
+        "internal/ui/tui/removal_disks_volume_test.go",
+        "tests/fixtures/release/removal_created_native.py"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -182,7 +188,9 @@
         "disk-removal-native-004",
         "power-session-native-001",
         "power-system-native-001",
-        "power-system-native-002"
+        "power-system-native-002",
+        "removal-created-native-001",
+        "removal-uefi-native-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -190,7 +198,8 @@
         "Graceful reboot now requires a selected-domain native event and a durable operation-bound receipt. Shared CLI/TUI, stale-plan, lost-ack and journal-reopen tests pass. Native 1c54175 start/reboot passed for a new independent Kali disk copy with original disk and nine prior definitions preserved; cleanup required force-stop of the copy after graceful timeout. Full lifecycle/state/OS coverage, removal and guest readiness remain required.",
         "Retain-disks VM definition removal is implemented for an unchanged stopped x86 BIOS/file-disk baseline with durable receipt and exact native absence. Selected-disk deletion, auxiliary-state/metadata retention and complete removal qualification remain open; scoped evidence does not complete this acceptance scenario. Native 5b743b6 TUI/CLI parity and one durable definition-only removal passed on a generated never-booted BIOS fixture; its full disk SHA and unrelated observations were preserved. This does not qualify remaining removal profiles.",
         "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required.",
-        "Force off is in the TUI (Advanced) and works on paused VMs; Save is offered only for running VMs, as the service requires. A shutdown the guest ignores now fails with WAIT_TIMEOUT and frees the VM for force off instead of leaving a recovery-required lock. Native a2f470b: power-session-native-001 (qemu:///session, no-OS guest: start, pause, resume, save, restore-saved, force off from paused and running, unanswered stop then force off) and power-system-native-002 (qemu:///system, Ubuntu 24.04 guest: the same plus graceful reboot and graceful stop) passed with definitions, other VMs, jobs and media preserved. power-system-native-001 failed before any change on a probe idempotency-key collision. Autostart across a host restart, delete on session and the TUI Force off path natively remain open."
+        "Force off is in the TUI (Advanced) and works on paused VMs; Save is offered only for running VMs, as the service requires. A shutdown the guest ignores now fails with WAIT_TIMEOUT and frees the VM for force off instead of leaving a recovery-required lock. Native a2f470b: power-session-native-001 (qemu:///session, no-OS guest: start, pause, resume, save, restore-saved, force off from paused and running, unanswered stop then force off) and power-system-native-002 (qemu:///system, Ubuntu 24.04 guest: the same plus graceful reboot and graceful stop) passed with definitions, other VMs, jobs and media preserved. power-system-native-001 failed before any change on a probe idempotency-key collision. Autostart across a host restart, delete on session and the TUI Force off path natively remain open.",
+        "ADR 0063: removal accepts the pool-volume disks of the VMs Virmill creates and UEFI VMs, resolving each volume to its registered pool path for the definition, for selected-disk deletion and in the TUI disk list, and keeping a UEFI VM's NVRAM file and an emulated TPM's state through the KEEP flags while naming both in the review; passthrough TPM, device NVRAM, pstore and unknown firmware stay refused. Native 858e4c0: removal-created-native-001 (qemu:///session pool-volume VM) and removal-uefi-native-001 (qemu:///system UEFI VM with two pool-volume disks) removed the definitions with every volume still registered and other VMs, jobs and media preserved. NVRAM retention is not read back natively (root-only directory), keeping TPM state is software-tested only, and deleting pool-volume disks natively remains open."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2277,13 +2286,16 @@
         "disk-grow-session-native-001",
         "disk-grow-system-native-001",
         "disk-grow-session-native-002",
-        "disk-grow-system-native-002"
+        "disk-grow-system-native-002",
+        "removal-created-native-001",
+        "removal-uefi-native-001"
       ],
       "outstanding": [
         "Actual qemu active-file-pool allocation, two-disk upload/readback, space preflight and one interrupted upload are recorded. Test pools were created externally. Virmill directory-pool creation (ADR 0056) has software regressions; its native run, growth/move, ENOSPC faults, labels/permissions, shared-storage races and complete guest-data qualification remain required.",
         "Clean b7fe053 packages passed two actual stopped managed-file grant/restoration cycles through CLI/TUI with exact original access and bytes preserved. Six clean root temporary-file recovery cases use synthetic native mapping, recorded separately. Complete permission/crash/distro/storage-type matrix remains required.",
         "Creation estimates expose the reviewed pool budget and separate payload/cache notes through CLI/TUI; canceled reads refuse success data. Synthetic regressions and installed CLI/actual TUI review of the same fresh plan digest passed. Capacity reservation, complete space/failure/profile qualification remain required.",
-        "ADR 0062 Grow: a stopped VM's writable raw/qcow2 file or pool-volume disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Native bdffe06: disk-grow-session-native-002 (qemu:///session, 1 to 3 GiB) and disk-grow-system-native-002 (qemu:///system Ubuntu guest, 5 to 7 GiB, booted afterwards) passed with capacities confirmed in the volume XML, stale plans refused and definitions unchanged. The -001 runs grew the disks but refused a stale plan with SOURCE_CHANGED (fixed in bdffe06). Guest partition growth, Add and Move remain open."
+        "ADR 0062 Grow: a stopped VM's writable raw/qcow2 file or pool-volume disk can be grown (never shrunk) through vm.plan grow-disk (vm.disk.grow-v1) in the CLI (vm disk grow) and TUI (Advanced > Grow VM disk), refusing snapshots, backing chains and volumes another VM or image uses, with pool-overcommit when the growth exceeds free space and no-replay recovery. Native bdffe06: disk-grow-session-native-002 (qemu:///session, 1 to 3 GiB) and disk-grow-system-native-002 (qemu:///system Ubuntu guest, 5 to 7 GiB, booted afterwards) passed with capacities confirmed in the volume XML, stale plans refused and definitions unchanged. The -001 runs grew the disks but refused a stale plan with SOURCE_CHANGED (fixed in bdffe06). Guest partition growth, Add and Move remain open.",
+        "Selected-disk deletion now resolves pool volumes to their registered paths (software tests); the native removal runs on 858e4c0 kept every disk, so native pool-volume disk deletion remains open."
       ],
       "hardwareVerified": false,
       "released": false

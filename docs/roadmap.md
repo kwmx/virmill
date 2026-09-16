@@ -52,11 +52,13 @@ connections.
   ([record](evidence/running-edits-run.md)).
 - Done: growing a stopped VM's disk (ADR 0062), natively on both connections
   ([record](evidence/disk-grow-run.md)).
-- Next: removing the VMs Virmill creates and UEFI VMs (ADR 0063, proposed);
-  adding and moving disks; full clones; live CPU and memory changes and boot
-  edits while running; stale plans after external edits and unknown XML kept
-  after edits on adopted VMs; autostart across a host restart; console access
-  (SPICE and serial) on supported desktops.
+- Done: removing the VMs Virmill creates and UEFI VMs while keeping the disks,
+  the firmware settings file and an emulated TPM's state (ADR 0063), natively
+  on both connections ([record](evidence/removal-created-run.md)).
+- Next: adding and moving disks; full clones; live CPU and memory changes and
+  boot edits while running; stale plans after external edits and unknown XML
+  kept after edits on adopted VMs; autostart across a host restart; console
+  access (SPICE and serial) on supported desktops.
 
 Scenarios: CORE-01…06, STO-01, STO-02, DEV-04 (console part), UX-02, UX-03.
 
