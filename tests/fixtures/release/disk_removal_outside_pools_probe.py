@@ -52,6 +52,7 @@ def guest(name, identity, disks, firmware=None):
     ET.SubElement(root, 'uuid').text = identity
     ET.SubElement(root, 'memory', unit='MiB').text = '128'
     ET.SubElement(root, 'vcpu').text = '1'
+    ET.SubElement(ET.SubElement(root, 'features'), 'acpi')  # UEFI on x86 requires it.
     os_node = ET.SubElement(root, 'os')
     ET.SubElement(os_node, 'type', arch='x86_64', machine='q35' if firmware else 'pc').text = 'hvm'
     if firmware:
