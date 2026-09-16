@@ -169,7 +169,9 @@ def walkthrough(runner, kind, source, imports, deadline_seconds):
             text = terminal.screen.text()
             head = text.split('\n')[0]
             job_page = job_page or bool(re.search(r'Virmill\s*/\s*Jobs\b', head)) or 'Job details' in text
-            require('By confirming, you agree that:' not in text, 'a second confirmation appeared: ' + text[-800:])
+            # The confirmation stays up until its jobs are accepted; one that
+            # appears after progress is a second confirmation.
+            require(not (progress_seen and 'By confirming, you agree that:' in text), 'a second confirmation appeared: ' + text[-800:])
             require('needs attention' not in text, 'a step failed: ' + text[-800:])
             if 'Creating ' in text and '[>]' in text and not progress_seen:
                 progress_seen = True

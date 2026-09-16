@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 300, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 296, in main
+    execute(a.root, a.deadline)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 233, in execute
+    case, vm_uuid = walkthrough(runner, kind, sources[kind], imports, deadline_seconds)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/new_vm_walkthrough_probe.py", line 172, in walkthrough
+    require('By confirming, you agree that:' not in text, 'a second confirmation appeared: ' + text[-800:])
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/newvm2-a3ffd6c/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: a second confirmation appeared: w VM its own identity
+                              │  - Release the prepared copy as its disks are copied, when it shares the pool's
+                              │    filesystem; if copying stops, import the original again
+                              │  - Use the reviewed controllers and device settings
+                              │  - Start the VM as soon as it is created
+                              │  - Delete the prepared copy and its work folder; the original source is kept
+                              │
+                              │Good to know:
+
+Working... Setting up storage pool default…
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Enter Confirm   d Technical details   PgUp/PgDn Scroll   Esc Back
+
