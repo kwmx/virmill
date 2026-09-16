@@ -2,6 +2,50 @@
 
 ## Unreleased
 
+## 1.0.0-beta.5 — owner-test pre-release
+
+Everyday VM lifecycle: the things you do to a VM after it exists.
+
+- Power actions on both your own session and the system connection: start,
+  graceful stop, force off, restart, pause, resume, save and restore.
+  **Force off** is in the TUI under Advanced and works on a paused VM too, which
+  is the way out of a VM that cannot resume. A shutdown the guest ignores now
+  fails after 60 seconds with `WAIT_TIMEOUT`, having forced nothing, and leaves
+  the VM free to force off or try again.
+- Change a running VM's CPU count and memory for its next boot
+  (ADR 0061). The running VM keeps what it has until you shut it down, and the
+  parts of its definition Virmill does not model are preserved.
+- Grow a stopped VM's disk: `virmill vm disk grow` and **Advanced → Grow VM
+  disk** (ADR 0062). Works on a file disk or a pool volume, never shrinks, and
+  refuses a disk with a backing file, snapshots, or one another VM uses. Only
+  the virtual disk grows — extend partitions and filesystems inside the guest.
+- Add an empty disk to a stopped VM: `virmill vm disk add` and **Advanced → Add
+  VM disk** (ADR 0062). It goes in the VM's own pool, on the bus its disks
+  already use, at the next free target. If an addition stops before it
+  finishes, `virmill operation dispose-disk-addition` and **Close disk
+  addition** finish it — keep the new disk, or delete the volume no VM uses —
+  so nothing is left holding the VM and its pool.
+- Move a disk to another storage pool: `virmill vm disk move` and **Advanced →
+  Move VM disk** (ADR 0062). The disk is copied through libvirt, hashed as it
+  is copied and read back against that digest, and only then does the VM start
+  using the copy; the original is deleted unless you pass `keepOldCopy`, which
+  the review asks you to acknowledge. The guest sees the same disk at the same
+  place. Both copies exist while it runs, so the review says how much room the
+  destination needs.
+- Remove a VM Virmill created, or a UEFI VM, while keeping every disk
+  (ADR 0063). A UEFI VM's firmware settings file and an emulated TPM's state
+  are kept too, and the review names both. Passthrough TPMs, device NVRAM and
+  firmware state Virmill does not recognise are still refused.
+- A boot that never reached the guest no longer strands the VM. It used to
+  leave a job that could not be resolved holding the VM's lock, so even forcing
+  it off was refused; a start or restore that provably did nothing now fails
+  plainly and frees the VM.
+- On a host where nothing has started libvirt for your own user, Virmill says so
+  before making a plan instead of failing inside libvirt. The coordinator would
+  otherwise start that daemon itself, and a daemon started that way can never
+  launch QEMU, so every VM start failed with a bare permission error. The
+  refusal and `virmill doctor` both name what to run.
+
 - Create storage pools in Virmill: `virmill storage pool create`, **Storage →
   Create pool**, and **Create storage pool** inside VM setup. With no options it
   plans libvirt's standard `default` pool at `/var/lib/libvirt/images`; `--name`,
