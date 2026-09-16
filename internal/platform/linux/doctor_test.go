@@ -142,8 +142,8 @@ func TestDoctorFindsMissingOrStoppedLibvirt(t *testing.T) {
 func TestDoctorAsksForPerUserLibvirtActivation(t *testing.T) {
 	system := map[string]bool{"/run/libvirt/virtqemud-sock": true}
 	unactivated := byID(t, doctor(fakeHost{paths: system, runtime: "/run/user/1000"}.host()), "libvirt")
-	if unactivated.ReasonCode != "LIBVIRT_SESSION_UNACTIVATED" ||
-		!reflect.DeepEqual(unactivated.Alternatives, []string{"systemctl --user enable --now virtqemud.socket"}) {
+	if unactivated.ReasonCode != "LIBVIRT_SESSION_UNACTIVATED" || len(unactivated.Alternatives) != 2 ||
+		unactivated.Alternatives[0] != "virsh -c qemu:///session list --all" {
 		t.Fatalf("per-user libvirt not started: %+v", unactivated)
 	}
 	// Once a per-user socket exists, the host is simply ready.

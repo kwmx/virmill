@@ -103,7 +103,9 @@
         "docs/evidence/power-run.md",
         "docs/adr/0063-remove-created-and-uefi-vms.md",
         "docs/evidence/removal-created-run.md",
-        "docs/evidence/disk-add-run.md"
+        "docs/evidence/disk-add-run.md",
+        "internal/platform/linux/paths.go",
+        "internal/platform/linux/doctor.go"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -146,7 +148,8 @@
         "internal/backend/libvirt/removal_uefi_linux_test.go",
         "internal/backend/libvirt/disk_removal_volume_linux_test.go",
         "internal/ui/tui/removal_disks_volume_test.go",
-        "tests/fixtures/release/removal_created_native.py"
+        "tests/fixtures/release/removal_created_native.py",
+        "internal/platform/linux/session_boot_test.go"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -210,7 +213,8 @@
         "ADR 0063: removal accepts the pool-volume disks of the VMs Virmill creates and UEFI VMs, resolving each volume to its registered pool path for the definition, for selected-disk deletion and in the TUI disk list, and keeping a UEFI VM's NVRAM file and an emulated TPM's state through the KEEP flags while naming both in the review; passthrough TPM, device NVRAM, pstore and unknown firmware stay refused. Native 858e4c0: removal-created-native-001 (qemu:///session pool-volume VM) and removal-uefi-native-001 (qemu:///system UEFI VM with two pool-volume disks) removed the definitions with every volume still registered and other VMs, jobs and media preserved. NVRAM retention is not read back natively (root-only directory), keeping TPM state is software-tested only, and deleting pool-volume disks natively remains open.",
         "A job left in recovery-required keeps its resource locks, and only Reconcile proving the effect or a child recovery plan can release them. Operations without a disposition path (disk addition today) can therefore strand a VM and its pool; a reviewed disposition is required before 1.0.",
         "Disk addition now has the reviewed disposition CORE-02 required: an unresolved addition can be closed by accepting the disk or deleting its unreferenced volume, releasing the VM and pool locks. Operations added later must ship an equivalent path.",
-        "A boot that never reached the guest used to strand its VM: a failed vm.start went recovery-required, which keeps the VM's lock, its reconciliation only proves the effect by observing the VM running, and no disposition exists for a stranded boot, so even Force off was refused RESOURCE_BUSY. disk-add-session-native-006 hit this when the host refused to execute QEMU ten milliseconds into the attempt, and the only escape was to start the VM by hand outside Virmill and reconcile, which records a failed start as succeeded. A failing start or restore-saved that leaves the VM stopped, with its saved state still present for a restore, now fails plainly and releases the VM; anything else keeps its uncertainty. On 3439d5b, disk-add-session-native-007 confirmed this natively: the host refused the same start, and the vm.start job read failed with no lock retained, where disk-add-session-native-006 had read recovery-required and could only be escaped by starting the VM by hand. The host's intermittent refusal to execute QEMU is a separate matter under investigation and is not caused by the added disk."
+        "A boot that never reached the guest used to strand its VM: a failed vm.start went recovery-required, which keeps the VM's lock, its reconciliation only proves the effect by observing the VM running, and no disposition exists for a stranded boot, so even Force off was refused RESOURCE_BUSY. disk-add-session-native-006 hit this when the host refused to execute QEMU ten milliseconds into the attempt, and the only escape was to start the VM by hand outside Virmill and reconcile, which records a failed start as succeeded. A failing start or restore-saved that leaves the VM stopped, with its saved state still present for a restore, now fails plainly and releases the VM; anything else keeps its uncertainty. On 3439d5b, disk-add-session-native-007 confirmed this natively: the host refused the same start, and the vm.start job read failed with no lock retained, where disk-add-session-native-006 had read recovery-required and could only be escaped by starting the VM by hand. The host's intermittent refusal to execute QEMU is a separate matter under investigation and is not caused by the added disk.",
+        "A boot on the per-user connection is refused while it is still a plan when this process would fork the libvirt daemon itself and could not execute QEMU: on a host with no socket-activated session libvirt, a daemon forked from virmilld.service inherits its no-new-privileges setting, cannot transition SELinux domains on exec, and so fails every start with a bare permission error from inside libvirt. The verdict is taken once in coordinator startup, before anything connects, because a later check sees the socket the unusable daemon just created and cannot tell that host from a healthy one; the first attempt at this check (cbfd91b) was inert for exactly that reason and a native run proved it. On 13f677b both branches were qualified natively: with no per-user socket at startup, vm start on qemu:///session was refused UNSUPPORTED_CAPABILITY with the remedy in both the message and safeNextActions, no vm.start job was created and vm list was unaffected; with a socket present at startup, the plan applied and the guest ran. Two defects in the check itself were found and fixed or recorded: the remedy first shipped, systemctl --user enable --now virtqemud.socket, fails on Fedora 44 because that unit exists for the system instance only, so the advice now names a plain libvirt client first and the socket unit second; and the host check still answers afresh, so it reports this configuration only while no per-user socket exists and should reason about a usable daemon instead. The hardening itself is unchanged and deliberate."
       ],
       "hardwareVerified": false,
       "released": false

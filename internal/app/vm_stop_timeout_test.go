@@ -53,7 +53,7 @@ func TestSessionBootIsRefusedBeforeAnyJob(t *testing.T) {
 	defer db.Close()
 	engine := operations.New(db)
 	defer engine.Close()
-	const advice = "systemctl --user enable --now virtqemud.socket"
+	const advice = "run a libvirt client once in a terminal"
 	for _, test := range []struct {
 		connection string
 		hook       func() (bool, string)

@@ -146,7 +146,7 @@ func libvirtCheck(h doctorHost, family string) domain.Capability {
 			// fails. Socket activation starts it outside any service instead.
 			c.Status, c.ReasonCode = "supported-with-prerequisites", "LIBVIRT_SESSION_UNACTIVATED"
 			c.Reason = "the system libvirt service is running, but nothing has started libvirt for your own user; your own VMs cannot start until it is"
-			c.Alternatives = []string{"systemctl --user enable --now virtqemud.socket"}
+			c.Alternatives = []string{"virsh -c qemu:///session list --all", "Or, if your system ships the unit: systemctl --user enable --now virtqemud.socket"}
 			return c
 		}
 		ready(&c, "LIBVIRT_RUNNING", "the libvirt service is running")

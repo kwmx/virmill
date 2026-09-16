@@ -57,6 +57,14 @@ func NoNewPrivileges() bool {
 	return false
 }
 
+// SessionLibvirtAdvice is the one action that starts libvirt for this user on
+// every distribution: any libvirt client run from an ordinary login shell forks
+// the daemon there, outside this service, and its socket then stays. Enabling a
+// per-user socket unit is tidier but not universal, because some distributions
+// ship virtqemud.socket only for the system instance, where enabling it as a
+// user unit fails outright.
+const SessionLibvirtAdvice = "run virsh -c qemu:///session list --all once in a terminal, or enable the per-user socket if your system has one: systemctl --user enable --now virtqemud.socket"
+
 // SessionBootProbe decides once whether guests started on the per-user
 // connection can reach QEMU, and returns that fixed verdict.
 //
@@ -87,7 +95,7 @@ func sessionBootProbe(runtime string, restricted bool) func() (bool, string) {
 		if ready {
 			return true, ""
 		}
-		return false, "systemctl --user enable --now virtqemud.socket"
+		return false, SessionLibvirtAdvice
 	}
 }
 func PrivateDir(path string) error {

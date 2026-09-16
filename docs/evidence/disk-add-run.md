@@ -49,11 +49,30 @@ ordinary AVC:
 
 The reproduction is: stop the session `virtqemud`, restart `virmilld` so it is
 the first libvirt client, then start any VM through Virmill. Starts succeed
-again as soon as a `virtqemud` exists outside the service cgroup. `doctor`
-already advises enabling `virtqemud.socket`, but only checks the system paths,
-so it does not catch this session case. The fix is a separate decision, because
-the candidates either keep the hardening and refuse to fork the daemon, extend
-`doctor` to the session case, or weaken `NoNewPrivileges` in the shipped unit.
+again as soon as a `virtqemud` exists outside the service cgroup.
+
+The hardening stays. A boot on the per-user connection is refused while it is
+still a plan when this process would have to fork the daemon itself, so no job
+is created and nothing needs recovery, and the host check reports the same
+configuration. Both were qualified natively on `13f677b`, with the verdict
+taken once at coordinator startup:
+
+| Per-user socket at coordinator startup | `vm start` on `qemu:///session` |
+| --- | --- |
+| absent | refused `UNSUPPORTED_CAPABILITY` with the remedy; no `vm.start` job created; `vm list` unaffected |
+| present | plan created, applied, guest ran |
+
+Deciding at startup is the whole point: asked later, the check sees the socket
+the unusable daemon has just created and cannot tell that host from a healthy
+one, which is why the first attempt (`cbfd91b`) never fired.
+
+Two defects were found in this check itself. The remedy it first gave,
+`systemctl --user enable --now virtqemud.socket`, fails on this host with "Unit
+virtqemud.socket does not exist": Fedora 44 ships that unit for the system
+instance only. It now names a plain libvirt client first, which works
+everywhere, and the socket unit second. And `doctor` still answers afresh, so it
+reports this configuration only while no per-user socket exists; it should
+reason about a *usable* daemon instead, which is recorded as outstanding.
 
 That refused start then exposed a real defect, which is why this run is kept.
 `vm.start` classified the failure as uncertain and went `recovery-required`,

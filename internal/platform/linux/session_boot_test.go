@@ -5,6 +5,7 @@ package linux
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -19,8 +20,13 @@ func TestSessionBootProbeKeepsItsVerdictWhenASocketAppearsLater(t *testing.T) {
 	}
 	probe := sessionBootProbe(runtime, true)
 	ok, advice := probe()
-	if ok || advice != "systemctl --user enable --now virtqemud.socket" {
+	if ok || advice != SessionLibvirtAdvice {
 		t.Fatal("a restricted process with no per-user socket must be refused", ok, advice)
+	}
+	// The advice has to work on a host that ships no per-user socket unit, so
+	// it must name a plain libvirt client first.
+	if !strings.Contains(advice, "virsh -c qemu:///session") {
+		t.Fatal("the advice must name an action that works everywhere", advice)
 	}
 	socket := filepath.Join(runtime, "libvirt/virtqemud-sock")
 	if err := os.WriteFile(socket, nil, 0600); err != nil {
