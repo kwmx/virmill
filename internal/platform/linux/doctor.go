@@ -139,14 +139,18 @@ func libvirtCheck(h doctorHost, family string) domain.Capability {
 	switch {
 	case h.exists("/run/libvirt/virtqemud-sock") || h.exists("/run/libvirt/libvirt-sock"):
 		if session := h.runtimeDir(); session != "" && !h.exists(session+"/libvirt/virtqemud-sock") && !h.exists(session+"/libvirt/libvirt-sock") {
-			// Nothing has started libvirt for this user yet, so the first
-			// program to use qemu:///session forks the daemon as its own child.
-			// Started from a hardened service, that daemon inherits
-			// no-new-privileges and can never execute QEMU, so every VM start
-			// fails. Socket activation starts it outside any service instead.
+			// No per-user libvirt socket, so the first program to use
+			// qemu:///session forks the daemon as its own child. Started from a
+			// hardened service, that daemon inherits no-new-privileges and can
+			// never execute QEMU. Virmill ships a socket unit its coordinator
+			// asks for (ADR 0064); where the distribution ships its own, that
+			// one is used instead and Virmill's skips itself.
 			c.Status, c.ReasonCode = "supported-with-prerequisites", "LIBVIRT_SESSION_UNACTIVATED"
-			c.Reason = "the system libvirt service is running, but nothing has started libvirt for your own user; your own VMs cannot start until it is"
-			c.Alternatives = []string{"virsh -c qemu:///session list --all", "Or, if your system ships the unit: systemctl --user enable --now virtqemud.socket"}
+			c.Reason = "the system libvirt service is running, but your own libvirt socket is not; your own VMs cannot start until it is"
+			c.Alternatives = []string{"systemctl --user restart virmilld.service"}
+			if h.exists("/usr/lib/systemd/user/virtqemud.socket") {
+				c.Alternatives = []string{"systemctl --user enable --now virtqemud.socket", "Then: systemctl --user restart virmilld.service"}
+			}
 			return c
 		}
 		ready(&c, "LIBVIRT_RUNNING", "the libvirt service is running")

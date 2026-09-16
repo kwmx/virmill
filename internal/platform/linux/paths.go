@@ -57,13 +57,12 @@ func NoNewPrivileges() bool {
 	return false
 }
 
-// SessionLibvirtAdvice is the one action that starts libvirt for this user on
-// every distribution: any libvirt client run from an ordinary login shell forks
-// the daemon there, outside this service, and its socket then stays. Enabling a
-// per-user socket unit is tidier but not universal, because some distributions
-// ship virtqemud.socket only for the system instance, where enabling it as a
-// user unit fails outright.
-const SessionLibvirtAdvice = "run virsh -c qemu:///session list --all once in a terminal, or enable the per-user socket if your system has one: systemctl --user enable --now virtqemud.socket"
+// SessionLibvirtAdvice is what to do when this coordinator started with no
+// per-user libvirt socket. Virmill ships that socket and its own service asks for
+// it (ADR 0064), so restarting the coordinator starts the socket first and lets
+// it decide again. Where the socket unit does not apply, the host check names
+// the command for that host.
+const SessionLibvirtAdvice = "restart Virmill's coordinator so it starts your own libvirt socket: systemctl --user restart virmilld.service (if that does not help, run virmill doctor)"
 
 // SessionBootProbe decides once whether guests started on the per-user
 // connection can reach QEMU, and returns that fixed verdict.

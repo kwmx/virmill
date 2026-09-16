@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Your own VMs start without a manual libvirt step (ADR 0064). The packages now
+  ship a per-user libvirt socket, `virmill-virtqemud.socket`, which the
+  coordinator's service starts before itself. The libvirt daemon is then started
+  by your systemd whenever something connects, instead of by the coordinator,
+  whose hardening stopped that daemon launching QEMU. It still exits when idle
+  and starts again on the next connection. Where your distribution ships its own
+  per-user libvirt socket, that one is used instead. If a VM start is still
+  refused, the refusal and `virmill doctor` now say to run
+  `systemctl --user restart virmilld.service`.
+
 ## 1.0.0-beta.5 — owner-test pre-release
 
 Everyday VM lifecycle: the things you do to a VM after it exists.

@@ -1,0 +1,14 @@
+[Unit]
+Description=libvirt daemon for your own VMs (Virmill)
+Documentation=man:virtqemud(8)
+Requires=virmill-virtqemud.socket
+After=virmill-virtqemud.socket
+
+[Service]
+# Started by your systemd when something connects, never by a client. A daemon
+# a client starts inherits that client's restrictions, and one started from
+# virmilld.service inherits no-new-privileges, which stops it launching QEMU.
+# It still exits when idle; the socket stays and starts it again on demand.
+Type=notify
+ExecStart=/usr/sbin/virtqemud --timeout 120
+Restart=on-failure

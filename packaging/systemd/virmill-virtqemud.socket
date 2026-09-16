@@ -1,0 +1,19 @@
+[Unit]
+Description=libvirt socket for your own VMs (Virmill)
+Documentation=man:virtqemud(8)
+# A distribution that ships its own per-user libvirt socket is used instead,
+# and there is nothing to listen for where the libvirt daemon is not installed.
+ConditionPathExists=!/usr/lib/systemd/user/virtqemud.socket
+ConditionFileIsExecutable=/usr/sbin/virtqemud
+
+[Socket]
+ListenStream=%t/libvirt/virtqemud-sock
+# libvirt recognises a socket it is handed by this name.
+FileDescriptorName=virtqemud.socket
+SocketMode=0600
+DirectoryMode=0700
+RemoveOnStop=yes
+Service=virmill-virtqemud.service
+
+[Install]
+WantedBy=sockets.target

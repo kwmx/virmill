@@ -40,6 +40,8 @@ class PackageInputs(unittest.TestCase):
             'LICENSE': b'Copyright (c) fixture author\n\noriginal fixture license\n',
             'internal/buildinfo/version.go': f'package buildinfo\n\nconst Version = "{packages.PRODUCT_VERSION}"\n'.encode(),
             'packaging/systemd/virmilld.service': b'fixture user unit\n',
+            'packaging/systemd/virmill-virtqemud.socket': b'fixture session libvirt socket\n',
+            'packaging/systemd/virmill-virtqemud.service': b'fixture session libvirt daemon\n',
             'packaging/systemd/virmill-host-helper.service': b'fixture helper unit\n',
             'packaging/systemd/virmill-host-helper.socket': b'fixture helper socket\n',
             'packaging/policy/helper-policy.example.json': b'{"fixture":true}\n',
@@ -125,6 +127,9 @@ class PackageInputs(unittest.TestCase):
         self.assertEqual(core['usr/share/doc/virmill/guide.md'], (b'# Regenerated tracked documentation\n', 0o644))
         self.assertEqual(core['usr/share/fish/vendor_completions.d/virmill.fish'], (self.files['packaging/completions/virmill.fish'], 0o644))
         self.assertEqual(core['usr/bin/virmill'][1], 0o755)
+        # The per-user libvirt socket ships beside the coordinator's own unit (ADR 0064).
+        for unit in ('virmill-virtqemud.socket', 'virmill-virtqemud.service'):
+            self.assertEqual(core['usr/lib/systemd/user/' + unit], (self.files['packaging/systemd/' + unit], 0o644))
         self.assertEqual(actual['virmill-host-helper']['usr/libexec/virmill-host-helper'][1], 0o755)
         expected_sources = {
             'usr/share/virmill/schemas/fixture.json', 'usr/share/virmill/sdk/go/sdk.go',
@@ -135,7 +140,8 @@ class PackageInputs(unittest.TestCase):
         all_paths = set(core) | set(actual['virmill-host-helper'])
         self.assertFalse(any('untracked' in path or 'credentials' in path or '.env' in path or 'unrelated' in path for path in all_paths))
         self.assertFalse(any('evidence/logs' in path or 'unsupported.txt' in path for path in all_paths))
-        self.assertEqual(len(core), 14)
+        # Two more than before: the per-user libvirt socket and its service (ADR 0064).
+        self.assertEqual(len(core), 16)
         self.assertEqual(len(actual['virmill-host-helper']), 5)
 
     def test_static_source_must_also_be_tracked(self):

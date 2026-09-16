@@ -23,10 +23,10 @@ func TestSessionBootProbeKeepsItsVerdictWhenASocketAppearsLater(t *testing.T) {
 	if ok || advice != SessionLibvirtAdvice {
 		t.Fatal("a restricted process with no per-user socket must be refused", ok, advice)
 	}
-	// The advice has to work on a host that ships no per-user socket unit, so
-	// it must name a plain libvirt client first.
-	if !strings.Contains(advice, "virsh -c qemu:///session") {
-		t.Fatal("the advice must name an action that works everywhere", advice)
+	// Virmill ships the socket and its coordinator asks for it, so restarting
+	// the coordinator is the fix, and the advice must say exactly that.
+	if !strings.Contains(advice, "systemctl --user restart virmilld.service") {
+		t.Fatal("the advice must name the command that starts the socket", advice)
 	}
 	socket := filepath.Join(runtime, "libvirt/virtqemud-sock")
 	if err := os.WriteFile(socket, nil, 0600); err != nil {

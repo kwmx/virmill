@@ -1,5 +1,10 @@
 [Unit]
 Description=Virmill local coordinator
+# Your own VMs need a libvirt daemon that this hardened service did not start
+# (ADR 0064). The socket is ready before the coordinator decides at startup
+# whether it can start VMs on qemu:///session.
+Wants=virmill-virtqemud.socket
+After=virmill-virtqemud.socket
 
 [Service]
 Type=simple

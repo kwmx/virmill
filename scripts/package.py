@@ -203,6 +203,8 @@ def collect_package_files(root):
     add_core('build/bin/virmill', 'usr/bin/virmill', 0o755)
     add_core('build/bin/virmilld', 'usr/bin/virmilld', 0o755)
     add_core('packaging/systemd/virmilld.service', 'usr/lib/systemd/user/virmilld.service')
+    add_core('packaging/systemd/virmill-virtqemud.socket', 'usr/lib/systemd/user/virmill-virtqemud.socket')
+    add_core('packaging/systemd/virmill-virtqemud.service', 'usr/lib/systemd/user/virmill-virtqemud.service')
     add_core('LICENSE', 'usr/share/licenses/virmill/LICENSE')
     add_core('packaging/completions/virmill.bash', 'usr/share/bash-completion/completions/virmill')
     add_core('packaging/completions/virmill.zsh', 'usr/share/zsh/site-functions/_virmill')
