@@ -1,0 +1,4 @@
+{"apiVersion":"virmill/v1","data":{"apiVersion":"virmill/v1","architecture":"amd64","buildTime":"0","go":"go1.27.1","os":"linux","pluginProtocol":"1.0","product":"Virmill","releaseQualified":false,"revision":"365721263e38ee1f97cf1dc0dbf90cea5ca1ed18","version":"1.0.0-beta.5"},"warnings":[],"error":null}
+
+{"apiVersion":"virmill/v1","data":{"acknowledgements":null,"actorUID":0,"apiVersion":"","beforeFingerprints":null,"connectionID":"","createdAt":"0001-01-01T00:00:00Z","estimates":{"additionalBytes":0,"requiresDowntime":false},"expiresAt":"0001-01-01T00:00:00Z","inputDigest":"","operation":"","planDigest":"","planID":"","requiredGrants":null,"resourceIDs":null,"risks":null,"steps":null},"warnings":[],"error":{"code":"OPERATION_FAILED","message":"permission denied","resource":"","operationID":"","retryable":false,"safeNextActions":[]}}
+OPERATION_FAILED: permission denied

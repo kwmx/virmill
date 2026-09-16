@@ -109,7 +109,10 @@
         "packaging/systemd/virmill-virtqemud.socket",
         "packaging/systemd/virmill-virtqemud.service",
         "docs/adr/0064-per-user-libvirt-socket.md",
-        "docs/evidence/session-socket-run.md"
+        "docs/evidence/session-socket-run.md",
+        "internal/backend/libvirt/cleanup_external_linux.go",
+        "internal/backend/fileidentity/file_linux.go",
+        "docs/evidence/disk-removal-outside-pools-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -156,7 +159,11 @@
         "internal/platform/linux/session_boot_test.go",
         "internal/platform/linux/session_units_test.go",
         "tests/fixtures/release/session_socket_native.py",
-        "tests/fixtures/release/deb_container_check.sh"
+        "tests/fixtures/release/deb_container_check.sh",
+        "internal/backend/libvirt/cleanup_external_linux_test.go",
+        "internal/backend/libvirt/creation_cleanup_linux_test.go",
+        "internal/backend/fileidentity/file_linux_test.go",
+        "tests/fixtures/release/disk_removal_outside_pools_probe.py"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -215,7 +222,13 @@
         "disk-move-session-native-004",
         "disk-move-session-native-005",
         "session-socket-native-001",
-        "session-socket-deb-container-001"
+        "session-socket-deb-container-001",
+        "disk-removal-outside-pools-unit-001",
+        "outside-pools-3657212-install-native-001",
+        "outside-pools-review-native-001",
+        "disk-removal-outside-pools-native-001",
+        "disk-removal-outside-pools-native-002",
+        "disk-removal-outside-pools-native-003"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -229,7 +242,8 @@
         "Disk addition now has the reviewed disposition CORE-02 required: an unresolved addition can be closed by accepting the disk or deleting its unreferenced volume, releasing the VM and pool locks. Operations added later must ship an equivalent path.",
         "A boot that never reached the guest used to strand its VM: a failed vm.start went recovery-required, which keeps the VM's lock, its reconciliation only proves the effect by observing the VM running, and no disposition exists for a stranded boot, so even Force off was refused RESOURCE_BUSY. disk-add-session-native-006 hit this when the host refused to execute QEMU ten milliseconds into the attempt, and the only escape was to start the VM by hand outside Virmill and reconcile, which records a failed start as succeeded. A failing start or restore-saved that leaves the VM stopped, with its saved state still present for a restore, now fails plainly and releases the VM; anything else keeps its uncertainty. On 3439d5b, disk-add-session-native-007 confirmed this natively: the host refused the same start, and the vm.start job read failed with no lock retained, where disk-add-session-native-006 had read recovery-required and could only be escaped by starting the VM by hand. The host's intermittent refusal to execute QEMU is a separate matter under investigation and is not caused by the added disk.",
         "A boot on the per-user connection is refused while it is still a plan when this process would fork the libvirt daemon itself and could not execute QEMU: on a host with no socket-activated session libvirt, a daemon forked from virmilld.service inherits its no-new-privileges setting, cannot transition SELinux domains on exec, and so fails every start with a bare permission error from inside libvirt. The verdict is taken once in coordinator startup, before anything connects, because a later check sees the socket the unusable daemon just created and cannot tell that host from a healthy one; the first attempt at this check (cbfd91b) was inert for exactly that reason and a native run proved it. On 13f677b both branches were qualified natively: with no per-user socket at startup, vm start on qemu:///session was refused UNSUPPORTED_CAPABILITY with the remedy in both the message and safeNextActions, no vm.start job was created and vm list was unaffected; with a socket present at startup, the plan applied and the guest ran. Two defects in the check itself were found and fixed or recorded: the remedy first shipped, systemctl --user enable --now virtqemud.socket, fails on Fedora 44 because that unit exists for the system instance only, so the advice now names a plain libvirt client first and the socket unit second; and the host check still answers afresh, so it reports this configuration only while no per-user socket exists and should reason about a usable daemon instead. The hardening itself is unchanged and deliberate.",
-        "ADR 0064: the packages ship a per-user libvirt socket, virmill-virtqemud.socket, that virmilld.service wants and starts after, so the session libvirt daemon is always started by the user's systemd and never inherits the coordinator's no-new-privileges; it still exits when idle and the socket starts it again. The socket skips itself where the distribution ships its own per-user unit or virtqemud is not installed. Native on ba6f7e6: session-socket-native-001 passed on Fedora 44, starting a qemu:///session VM through Virmill after the daemon's own idle exit, served by a daemon in virmill-virtqemud.service with NoNewPrivs 0 and none inside virmilld.service, with doctor reporting libvirt ready and other VMs, jobs and media unchanged. This removes the manual step the beta.5 refusal still needed; the refusal stays as a safety net. session-socket-deb-container-001 installed, verified and purged the DEBs with both new units in Debian 13 and Ubuntu 24.04 containers. A distribution's own per-user socket is software-tested only."
+        "ADR 0064: the packages ship a per-user libvirt socket, virmill-virtqemud.socket, that virmilld.service wants and starts after, so the session libvirt daemon is always started by the user's systemd and never inherits the coordinator's no-new-privileges; it still exits when idle and the socket starts it again. The socket skips itself where the distribution ships its own per-user unit or virtqemud is not installed. Native on ba6f7e6: session-socket-native-001 passed on Fedora 44, starting a qemu:///session VM through Virmill after the daemon's own idle exit, served by a daemon in virmill-virtqemud.service with NoNewPrivs 0 and none inside virmilld.service, with doctor reporting libvirt ready and other VMs, jobs and media unchanged. This removes the manual step the beta.5 refusal still needed; the refusal stays as a safety net. session-socket-deb-container-001 installed, verified and purged the DEBs with both new units in Debian 13 and Ubuntu 24.04 containers. A distribution's own per-user socket is software-tested only.",
+        "ADR 0054 amendment (2026-09-16): disk deletion no longer refuses because another guest, firmware file or snapshot names a plain file outside the pools. Each such path is resolved as QEMU opens it and refused only when it reaches a selected volume's device and inode, cannot be observed, or its qcow2 backing chain does. disk-removal-outside-pools-native-003 passed on 3657212 in a private qemu:///session: a symlink alias and a qcow2 image backed by the volume both refused RESOURCE_BUSY, and beside an unrelated UEFI guest with an outside qcow2 disk, a missing ISO and a never-created NVRAM the VM and its disk were removed with other files unchanged. On the test host's qemu:///system the review (outside-pools-review-native-001) no longer reports files outside pools but stops with permission denied: the graph reads root-only pool image headers as the ordinary user, and several guests there use files this user cannot search or read. Deleting disks on such a system connection needs a privileged read-only observation path, still undecided."
       ],
       "hardwareVerified": false,
       "released": false
@@ -892,7 +906,7 @@
         "Native boot/media run observed TUI/CLI configuration, ISO-menu and disk-login boots, stale-plan refusal and opaque metadata retention. Narrow observed results do not complete adoption, external-writer atomicity, all recovery modes or the full acceptance case.",
         "The retained 2 MiB probe reconciled on ad60807 without replay and released its three locks; its observed second boot failed TCG2 lookup. A distinct 4 MiB probe passed native SEEDED then PRESERVED across two boots. This is exact-tuple marker persistence, not guest-family, encryption, complete capture or restore qualification.",
         "Guided CPU/RAM/firmware/disk/network controls, pre-preparation hardware selection, durable-source continuation, readable space errors and explicit folder creation are implemented. Private resumable choices and native edit/restart/resume/Start new now passed (wizard-drafts-tui-final-001). Complete scenario qualification remains open; draft checks do not certify guest boot or all 71 scenarios.",
-        "New VM (ADR 0065): one entry, one settings page, one plain confirmation that includes setting up a storage pool when none is usable, progress on the same screen and the display opened on start. new-vm-walkthrough-native-005 passed on 9a2f6dd in a private qemu:///session with no pools: a qcow2 disk image, an ISO and an OVA each reached a running VM with its viewer started in 3 keypresses after choosing the file, one confirmation and no raw identifiers (baseline: 72 keypresses, two reviews). new-vm-system-native-002 passed on c5a5290 on qemu:///system (several pools, default NAT network): the same 3 keypresses and one confirmation per case, and each viewer window opened showing the VM's live firmware screen. Not covered: a system connection with no pool, a real desktop, and deleting disks where other guests use files outside pools (removal refuses: disk source outside reconciled storage pools)."
+        "New VM (ADR 0065): one entry, one settings page, one plain confirmation that includes setting up a storage pool when none is usable, progress on the same screen and the display opened on start. new-vm-walkthrough-native-005 passed on 9a2f6dd in a private qemu:///session with no pools: a qcow2 disk image, an ISO and an OVA each reached a running VM with its viewer started in 3 keypresses after choosing the file, one confirmation and no raw identifiers (baseline: 72 keypresses, two reviews). new-vm-system-native-002 passed on c5a5290 on qemu:///system (several pools, default NAT network): the same 3 keypresses and one confirmation per case, and each viewer window opened showing the VM's live firmware screen. Not covered: a system connection with no pool, a real desktop, and deleting disks on a system connection: files outside pools no longer block it (ADR 0054 amendment, 3657212), but the ordinary user cannot read root-only pool images, so removal with disks still stops there with permission denied."
       ],
       "hardwareVerified": false,
       "released": false
@@ -2451,7 +2465,9 @@
         "internal/backend/libvirt/disk_removal_linux.go",
         "internal/ui/tui/removal_disks.go",
         "docs/adr/0054-explicit-selected-disk-removal.md",
-        "docs/evidence/disk-removal-run.md"
+        "docs/evidence/disk-removal-run.md",
+        "internal/backend/libvirt/cleanup_external_linux.go",
+        "docs/evidence/disk-removal-outside-pools-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-03",
@@ -2469,7 +2485,9 @@
         "internal/backend/libvirt/disk_removal_linux_test.go",
         "internal/ui/tui/removal_disks_test.go",
         "internal/ui/cli/removal_disks_test.go",
-        "tests/fixtures/release/disk_removal_native_cycle.py"
+        "tests/fixtures/release/disk_removal_native_cycle.py",
+        "internal/backend/libvirt/cleanup_external_linux_test.go",
+        "tests/fixtures/release/disk_removal_outside_pools_probe.py"
       ],
       "evidence": [
         "core-tests-001",
@@ -2488,11 +2506,18 @@
         "disk-removal-native-002",
         "disk-removal-fixture-004",
         "disk-removal-native-003",
-        "disk-removal-native-004"
+        "disk-removal-native-004",
+        "disk-removal-outside-pools-unit-001",
+        "outside-pools-3657212-install-native-001",
+        "outside-pools-review-native-001",
+        "disk-removal-outside-pools-native-001",
+        "disk-removal-outside-pools-native-002",
+        "disk-removal-outside-pools-native-003"
       ],
       "outstanding": [
         "Generation-bound failed-creation cleanup reconciles native/safe image metadata, persisted references and all unresolved jobs. Generated-file/test-driver graphs and synthetic deletion recovery pass; live graphs, base/template GC, retained-pin release and actual native deletion remain unqualified/incomplete.",
-        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required."
+        "Explicit selected-disk removal is implemented in the shared service, CLI and TUI. Native CLI one-disk deletion (3e6a7db) and 80x24 TUI two-disk deletion (7005898) passed on generated stopped BIOS/raw-qcow2 file-volume fixtures, with shared-reference refusal, cancellation, plan parity and source/unrelated-resource preservation. Earlier selected-disk unavailability notes are superseded for this tested profile only. Firmware/TPM, other storage profiles and full scenario qualification remain required.",
+        "ADR 0054 amendment (2026-09-16): disk deletion no longer refuses because another guest, firmware file or snapshot names a plain file outside the pools. Each such path is resolved as QEMU opens it and refused only when it reaches a selected volume's device and inode, cannot be observed, or its qcow2 backing chain does. disk-removal-outside-pools-native-003 passed on 3657212 in a private qemu:///session: a symlink alias and a qcow2 image backed by the volume both refused RESOURCE_BUSY, and beside an unrelated UEFI guest with an outside qcow2 disk, a missing ISO and a never-created NVRAM the VM and its disk were removed with other files unchanged. On the test host's qemu:///system the review (outside-pools-review-native-001) no longer reports files outside pools but stops with permission denied: the graph reads root-only pool image headers as the ordinary user, and several guests there use files this user cannot search or read. Deleting disks on such a system connection needs a privileged read-only observation path, still undecided."
       ],
       "hardwareVerified": false,
       "released": false
@@ -4488,7 +4513,10 @@
         "internal/backend/libvirt/disk_removal_linux.go",
         "internal/ui/tui/removal_disks.go",
         "docs/adr/0054-explicit-selected-disk-removal.md",
-        "docs/evidence/disk-removal-run.md"
+        "docs/evidence/disk-removal-run.md",
+        "internal/backend/libvirt/cleanup_external_linux.go",
+        "internal/backend/fileidentity/file_linux.go",
+        "docs/evidence/disk-removal-outside-pools-run.md"
       ],
       "plannedImplementation": "internal/platform/linux",
       "plannedTest": "tests/security/SEC-01",
@@ -4547,7 +4575,11 @@
         "internal/backend/libvirt/disk_removal_linux_test.go",
         "internal/ui/tui/removal_disks_test.go",
         "internal/ui/cli/removal_disks_test.go",
-        "tests/fixtures/release/disk_removal_native_cycle.py"
+        "tests/fixtures/release/disk_removal_native_cycle.py",
+        "internal/backend/libvirt/cleanup_external_linux_test.go",
+        "internal/backend/libvirt/creation_cleanup_linux_test.go",
+        "internal/backend/fileidentity/file_linux_test.go",
+        "tests/fixtures/release/disk_removal_outside_pools_probe.py"
       ],
       "evidence": [
         "ipc-tests-001",
@@ -4597,7 +4629,13 @@
         "protected-network-native-002",
         "protected-network-native-003",
         "automatic-allocation-native-001",
-        "disk-removal-ui-service-001"
+        "disk-removal-ui-service-001",
+        "disk-removal-outside-pools-unit-001",
+        "outside-pools-3657212-install-native-001",
+        "outside-pools-review-native-001",
+        "disk-removal-outside-pools-native-001",
+        "disk-removal-outside-pools-native-002",
+        "disk-removal-outside-pools-native-003"
       ],
       "outstanding": [
         "Local peer/socket/grant checks and limited disposable managed-file helper grants are recorded; complete permission, crash and host-distribution qualification remains required.",

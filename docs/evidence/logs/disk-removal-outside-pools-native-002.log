@@ -1,0 +1,27 @@
+{
+  "hostInventoryUnchanged": true,
+  "privateSessionEmptyAtEnd": true,
+  "privateSessionEmptyAtStart": true,
+  "result": "failed"
+}
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 206, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 202, in main
+    execute(a.root)
+    ~~~~~~~^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 130, in execute
+    define(run, 'other', guest('virmill-outside-other-' + ident, other,
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               [(other_disk, 'qcow2', 'disk'), (outside / 'removed-installer.iso', 'raw', 'cdrom')],
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               (FIRMWARE, str(outside / 'never-started_VARS.fd'))))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 84, in define
+    require(process.returncode == 0, 'virsh define ' + name + ' failed: ' + process.stderr.strip()[-400:])
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: virsh define other failed: error: Failed to define domain from <test-vm-home>/virmill-tests/outside-3657212/outside-81a61f74/other.xml
+error: unsupported configuration: UEFI requires ACPI on this architecture

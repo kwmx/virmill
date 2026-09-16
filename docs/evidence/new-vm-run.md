@@ -74,6 +74,12 @@ three VMs were removed through reviewed plans that keep disks. Their four
 volumes, and nothing else, were then deleted with `virsh vol-delete`, and the
 connection was back to its original 23 VMs.
 
+Build `3657212` compares those out-of-pool files by device and inode instead
+([disk removal beside files outside pools](disk-removal-outside-pools-run.md)).
+Removal with disks passed natively in a private session. On this host's system
+connection it still stops, now because the ordinary user cannot read root-only
+pool images.
+
 ## Runs that did not pass
 
 - `001`: the probe asked for a 120x40 terminal, which its terminal helper does
@@ -98,5 +104,5 @@ connection was back to its original 23 VMs.
   session connection only.
 - A real desktop session. The viewer ran on a virtual display; the screenshots
   show the window and the guest's screen, not how a desktop places it.
-- Deleting a New VM's disks on a host where other guests use disk files outside
-  pools (above).
+- Deleting a New VM's disks on a system connection whose pool images only root
+  can read (above).

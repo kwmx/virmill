@@ -1,0 +1,48 @@
+{
+  "after": {
+    "symlinkLeftInPlace": true,
+    "unrelatedAndAliasFilesUnchanged": true,
+    "unrelatedGuestDefined": true,
+    "vmRemoved": true,
+    "volumeFileAbsent": true,
+    "volumeUnlisted": true
+  },
+  "applied": "succeeded",
+  "hostInventoryUnchanged": true,
+  "plan": {
+    "acknowledgements": [
+      "data-loss-delete-disks",
+      "exclusive-lifecycle-writer",
+      "exclusive-storage-writer",
+      "host-mutation",
+      "remove-vm-definition"
+    ],
+    "operation": "vm.remove-disks-v1"
+  },
+  "privateSessionEmptyAtEnd": true,
+  "privateSessionEmptyAtStart": true,
+  "refusals": {
+    "backing file": {
+      "code": "RESOURCE_BUSY",
+      "message": "retained image references a cleanup volume: <test-vm-home>/virmill-tests/outside-3657212/outside-c79a9248/pool/created-disk-000.qcow2",
+      "operationID": "",
+      "resource": "",
+      "retryable": false,
+      "safeNextActions": []
+    },
+    "symlink": {
+      "code": "RESOURCE_BUSY",
+      "message": "a path outside storage pools reaches a cleanup volume: <test-vm-home>/virmill-tests/outside-3657212/outside-c79a9248/outside/alias.qcow2",
+      "operationID": "",
+      "resource": "",
+      "retryable": false,
+      "safeNextActions": []
+    }
+  },
+  "result": "passed",
+  "unrelatedGuest": {
+    "cdrom": "missing ISO",
+    "disk": "qcow2 outside pools with an outside backing file",
+    "firmware": "system loader, never-created NVRAM"
+  }
+}

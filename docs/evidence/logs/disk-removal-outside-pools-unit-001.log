@@ -1,0 +1,21 @@
+=== RUN   TestCleanupExternalAcceptsUnrelatedOutOfPoolFiles
+--- PASS: TestCleanupExternalAcceptsUnrelatedOutOfPoolFiles (0.00s)
+=== RUN   TestCleanupExternalRefusesAliasesOfSelectedVolume
+--- PASS: TestCleanupExternalRefusesAliasesOfSelectedVolume (0.00s)
+=== RUN   TestCleanupExternalRefusesWhatItCannotObserve
+--- PASS: TestCleanupExternalRefusesWhatItCannotObserve (0.00s)
+=== RUN   TestCleanupXMLProtectsAllReferencedStorage
+--- PASS: TestCleanupXMLProtectsAllReferencedStorage (0.00s)
+=== RUN   TestRealFileCleanupGraphWithNativeSimulatedInventory
+    creation_cleanup_linux_test.go:299: real statx/bubblewrap/QEMU metadata plus in-memory libvirt test inventory; no native host deletion, guest boot or hardware evidence
+--- PASS: TestRealFileCleanupGraphWithNativeSimulatedInventory (0.34s)
+PASS
+ok  	virmill.local/core/internal/backend/libvirt	0.363s
+=== RUN   TestIdentityDetectsPathReplacementAndPreservesOpenObject
+--- PASS: TestIdentityDetectsPathReplacementAndPreservesOpenObject (0.00s)
+=== RUN   TestIdentityRefusesSymlinkComponentsAndSpecialFiles
+--- PASS: TestIdentityRefusesSymlinkComponentsAndSpecialFiles (0.00s)
+=== RUN   TestObjectsMatchAcrossAliases
+--- PASS: TestObjectsMatchAcrossAliases (0.00s)
+PASS
+ok  	virmill.local/core/internal/backend/fileidentity	0.003s

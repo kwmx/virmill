@@ -1,0 +1,29 @@
+{
+  "hostInventoryUnchanged": true,
+  "privateSessionEmptyAtEnd": true,
+  "privateSessionEmptyAtStart": true,
+  "result": "failed"
+}
+Traceback (most recent call last):
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 205, in <module>
+    main()
+    ~~~~^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 201, in main
+    execute(a.root)
+    ~~~~~~~^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 129, in execute
+    define(run, 'other', guest('virmill-outside-other-' + ident, other,
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               [(other_disk, 'qcow2', 'disk'), (outside / 'removed-installer.iso', 'raw', 'cdrom')],
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               (FIRMWARE, str(outside / 'never-started_VARS.fd'))))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/disk_removal_outside_pools_probe.py", line 83, in define
+    virsh(URI, 'define', str(path))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/one_approval_import_probe.py", line 34, in virsh
+    require(process.returncode == 0, 'virsh ' + args[0] + ' failed')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<test-vm-home>/virmill-tests/outside-3657212/tui_workspace_probe.py", line 66, in require
+    raise RuntimeError(message)
+RuntimeError: virsh define failed
