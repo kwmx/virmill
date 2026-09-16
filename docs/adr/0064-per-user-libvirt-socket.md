@@ -1,6 +1,8 @@
 # ADR 0064: Ship a per-user libvirt socket so session VMs start without a manual step
 
-Status: accepted; native qualification pending.
+Status: accepted and implemented in `ba6f7e6`, with native evidence
+`session-socket-native-001` ([run record](../evidence/session-socket-run.md)) on
+Fedora 44.
 
 ## Context
 

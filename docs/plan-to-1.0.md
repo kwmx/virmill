@@ -13,13 +13,13 @@ Judge each phase by a real screen and a real host, not by software tests.
 Phase 2 is usable but uneven: storage edits are qualified on your own session
 connection only, and one host configuration still needs a manual step.
 
-1. **Start session VMs with no manual libvirt step.** On a host with no
-   per-user `virtqemud.socket` unit, the coordinator would start that daemon
-   itself and the copy it starts can never launch QEMU. Virmill refuses such a
-   boot clearly today, but the user still has to run a libvirt client by hand,
-   and the daemon exits two minutes later. Decide between starting the daemon
-   outside the service cgroup, shipping a user unit, or documenting it, then
-   qualify it natively. *Blocks nothing else, affects every session VM.*
+1. **Done: start session VMs with no manual libvirt step** (ADR 0064). The
+   packages ship a per-user libvirt socket that the coordinator's service starts
+   before itself, so the daemon is always started by the user's systemd and
+   never inherits the coordinator's hardening. Natively on Fedora 44, a VM
+   started through Virmill after the daemon's own idle exit
+   ([record](evidence/session-socket-run.md)). Distributions that ship their own
+   per-user socket are software-tested only.
 2. **Add, move and the addition disposition on `qemu:///system`.** The same
    operations, the other connection, including deleting a pool volume natively,
    which no run has yet done.

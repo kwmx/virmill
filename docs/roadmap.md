@@ -65,8 +65,9 @@ connections.
   stale plans after external edits and unknown XML kept after edits on adopted
   VMs; autostart across a host restart; console access (SPICE and serial) on
   supported desktops; Add, Move and the addition disposition on the system
-  connection; and starting session VMs without a manual libvirt step on hosts
-  with no per-user socket unit.
+  connection.
+- Done: starting your own VMs without a manual libvirt step (ADR 0064),
+  natively on Fedora 44 ([record](evidence/session-socket-run.md)).
 
 Scenarios: CORE-01…06, STO-01, STO-02, DEV-04 (console part), UX-02, UX-03.
 

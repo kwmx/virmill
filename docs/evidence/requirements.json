@@ -105,7 +105,11 @@
         "docs/evidence/removal-created-run.md",
         "docs/evidence/disk-add-run.md",
         "internal/platform/linux/paths.go",
-        "internal/platform/linux/doctor.go"
+        "internal/platform/linux/doctor.go",
+        "packaging/systemd/virmill-virtqemud.socket",
+        "packaging/systemd/virmill-virtqemud.service",
+        "docs/adr/0064-per-user-libvirt-socket.md",
+        "docs/evidence/session-socket-run.md"
       ],
       "plannedImplementation": "internal/app/vm",
       "plannedTest": "tests/integration/vm/CORE-02",
@@ -149,7 +153,10 @@
         "internal/backend/libvirt/disk_removal_volume_linux_test.go",
         "internal/ui/tui/removal_disks_volume_test.go",
         "tests/fixtures/release/removal_created_native.py",
-        "internal/platform/linux/session_boot_test.go"
+        "internal/platform/linux/session_boot_test.go",
+        "internal/platform/linux/session_units_test.go",
+        "tests/fixtures/release/session_socket_native.py",
+        "tests/fixtures/release/deb_container_check.sh"
       ],
       "evidence": [
         "device-policy-native-start-001",
@@ -206,7 +213,9 @@
         "disk-move-session-native-002",
         "disk-move-session-native-003",
         "disk-move-session-native-004",
-        "disk-move-session-native-005"
+        "disk-move-session-native-005",
+        "session-socket-native-001",
+        "session-socket-deb-container-001"
       ],
       "outstanding": [
         "Start/graceful shutdown passed for one Kali Q35/BIOS clone; reviewed hard-stop of the generated BIOS disk probe preserved both disk hashes. Full lifecycle/state coverage, autostart and safe removal remain incomplete.",
@@ -219,7 +228,8 @@
         "A job left in recovery-required keeps its resource locks, and only Reconcile proving the effect or a child recovery plan can release them. Operations without a disposition path (disk addition today) can therefore strand a VM and its pool; a reviewed disposition is required before 1.0.",
         "Disk addition now has the reviewed disposition CORE-02 required: an unresolved addition can be closed by accepting the disk or deleting its unreferenced volume, releasing the VM and pool locks. Operations added later must ship an equivalent path.",
         "A boot that never reached the guest used to strand its VM: a failed vm.start went recovery-required, which keeps the VM's lock, its reconciliation only proves the effect by observing the VM running, and no disposition exists for a stranded boot, so even Force off was refused RESOURCE_BUSY. disk-add-session-native-006 hit this when the host refused to execute QEMU ten milliseconds into the attempt, and the only escape was to start the VM by hand outside Virmill and reconcile, which records a failed start as succeeded. A failing start or restore-saved that leaves the VM stopped, with its saved state still present for a restore, now fails plainly and releases the VM; anything else keeps its uncertainty. On 3439d5b, disk-add-session-native-007 confirmed this natively: the host refused the same start, and the vm.start job read failed with no lock retained, where disk-add-session-native-006 had read recovery-required and could only be escaped by starting the VM by hand. The host's intermittent refusal to execute QEMU is a separate matter under investigation and is not caused by the added disk.",
-        "A boot on the per-user connection is refused while it is still a plan when this process would fork the libvirt daemon itself and could not execute QEMU: on a host with no socket-activated session libvirt, a daemon forked from virmilld.service inherits its no-new-privileges setting, cannot transition SELinux domains on exec, and so fails every start with a bare permission error from inside libvirt. The verdict is taken once in coordinator startup, before anything connects, because a later check sees the socket the unusable daemon just created and cannot tell that host from a healthy one; the first attempt at this check (cbfd91b) was inert for exactly that reason and a native run proved it. On 13f677b both branches were qualified natively: with no per-user socket at startup, vm start on qemu:///session was refused UNSUPPORTED_CAPABILITY with the remedy in both the message and safeNextActions, no vm.start job was created and vm list was unaffected; with a socket present at startup, the plan applied and the guest ran. Two defects in the check itself were found and fixed or recorded: the remedy first shipped, systemctl --user enable --now virtqemud.socket, fails on Fedora 44 because that unit exists for the system instance only, so the advice now names a plain libvirt client first and the socket unit second; and the host check still answers afresh, so it reports this configuration only while no per-user socket exists and should reason about a usable daemon instead. The hardening itself is unchanged and deliberate."
+        "A boot on the per-user connection is refused while it is still a plan when this process would fork the libvirt daemon itself and could not execute QEMU: on a host with no socket-activated session libvirt, a daemon forked from virmilld.service inherits its no-new-privileges setting, cannot transition SELinux domains on exec, and so fails every start with a bare permission error from inside libvirt. The verdict is taken once in coordinator startup, before anything connects, because a later check sees the socket the unusable daemon just created and cannot tell that host from a healthy one; the first attempt at this check (cbfd91b) was inert for exactly that reason and a native run proved it. On 13f677b both branches were qualified natively: with no per-user socket at startup, vm start on qemu:///session was refused UNSUPPORTED_CAPABILITY with the remedy in both the message and safeNextActions, no vm.start job was created and vm list was unaffected; with a socket present at startup, the plan applied and the guest ran. Two defects in the check itself were found and fixed or recorded: the remedy first shipped, systemctl --user enable --now virtqemud.socket, fails on Fedora 44 because that unit exists for the system instance only, so the advice now names a plain libvirt client first and the socket unit second; and the host check still answers afresh, so it reports this configuration only while no per-user socket exists and should reason about a usable daemon instead. The hardening itself is unchanged and deliberate.",
+        "ADR 0064: the packages ship a per-user libvirt socket, virmill-virtqemud.socket, that virmilld.service wants and starts after, so the session libvirt daemon is always started by the user's systemd and never inherits the coordinator's no-new-privileges; it still exits when idle and the socket starts it again. The socket skips itself where the distribution ships its own per-user unit or virtqemud is not installed. Native on ba6f7e6: session-socket-native-001 passed on Fedora 44, starting a qemu:///session VM through Virmill after the daemon's own idle exit, served by a daemon in virmill-virtqemud.service with NoNewPrivs 0 and none inside virmilld.service, with doctor reporting libvirt ready and other VMs, jobs and media unchanged. This removes the manual step the beta.5 refusal still needed; the refusal stays as a safety net. session-socket-deb-container-001 installed, verified and purged the DEBs with both new units in Debian 13 and Ubuntu 24.04 containers. A distribution's own per-user socket is software-tested only."
       ],
       "hardwareVerified": false,
       "released": false
@@ -6779,7 +6789,9 @@
         "beta3-reproducibility-001",
         "beta3-deb-install-container-001",
         "beta3-install-native-001",
-        "strip-deb-lintian-001"
+        "strip-deb-lintian-001",
+        "session-socket-native-001",
+        "session-socket-deb-container-001"
       ],
       "outstanding": [
         "Schemas 1 and 2 migrate to schema 3 with a private consistent backup and preserved uncertain jobs/locks. Development package/staged preservation fixtures exist; clean Fedora/Ubuntu/Debian installation, upgrade and host-backed recovery remain.",
