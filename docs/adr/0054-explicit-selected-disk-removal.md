@@ -1,6 +1,6 @@
 # ADR 0054: Explicit selected-disk removal
 
-Status: implemented; native evidence recorded separately.
+Status: implemented; amended 2026-09-16 (files outside storage pools); native evidence recorded separately.
 
 Specification 03 requires definition-only removal by default, with an explicit
 disk list and separate acknowledgement for deletion. Specification 07 requires
@@ -40,3 +40,43 @@ and generation observations precede each call; users must coordinate other VM
 and storage writers and acknowledge this explicitly. The complete v1 graph,
 firmware/TPM removal and recovery qualification remains mandatory. A conservative
 unsupported profile is not recorded as a passed support claim.
+
+## Amendment 2026-09-16: files outside storage pools
+
+Native run `new-vm-system-native-002` showed that the graph refused every disk
+deletion on a host where any other guest, firmware file or snapshot names a
+plain file outside the registered pools. Such hosts are common, so a person
+could not remove a VM they had just created together with its disks.
+
+The graph no longer refuses such a reference by itself. It collects each
+absolute file named outside the pools, with the format the XML declares for it,
+and decides by object identity:
+
+- A selected volume is a single-link regular file (filesystem identity refuses
+  hard-linked or special files), so its only directory entry is its pool path.
+  Any other name that reaches it goes through a symlink, `..`, repeated
+  separators, a magic link or a bind mount, and so resolves to the same device
+  and inode. Each outside path is resolved as QEMU opens it, following links,
+  and deletion refuses if it reaches a selected volume's device and inode.
+- A path that does not exist (`ENOENT`, `ENOTDIR`) reaches no object, as for a
+  UEFI VM that never started or a removed installer ISO.
+- Any other failure to observe a path refuses, including permission denied on
+  a directory: an unreadable directory could hold a symlink to the volume.
+- A source declared `raw` (or `iso`) is opened by QEMU without reading a
+  backing file, so its identity is enough. A `qcow2` source, and one with no
+  declared format whose header is a qcow2 header, is read under the existing
+  confined metadata inspector. Its backing file is resolved and checked the same
+  way, up to 16 levels, stopping at a reconciled pool volume, whose chain the
+  pool graph already inspects. An unreadable header, another image format, a
+  non-regular file without a raw declaration, a remote or protocol
+  backing name, or a cycle refuses.
+- The observed objects and chains enter the graph digest, so a change between
+  review and each deletion is `STALE_PLAN`, and every check repeats before each
+  file effect.
+
+Exact path references, pool-volume references, shared directories, block and
+network sources and active guests keep their earlier refusals. As before,
+libvirt has no atomic compare-and-delete: a link created after the last recheck
+is an external writer race that the acknowledgement already covers. A view of
+the volume through a different filesystem (FUSE, NFS re-export, overlay) has a
+different identity and is not detected; such setups need their own adapter.

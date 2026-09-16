@@ -338,6 +338,7 @@ func cleanupGraphExceptOwner(ctx context.Context, c *native.Connect, uri string,
 	if len(volumes) > 4096 {
 		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "cleanup graph exceeds 4096 volumes")
 	}
+	external := cleanupExternal{}
 	// Running image metadata is never inspected offline. Until live block-graph
 	// observation is qualified, any active guest makes this deletion proof fail.
 	domains, err := c.ListAllDomains(0)
@@ -423,7 +424,7 @@ func cleanupGraphExceptOwner(ctx context.Context, c *native.Connect, uri string,
 		}
 		sort.Strings(documents)
 		for j, x := range documents {
-			if e = checkCleanupXML(x, selected, volumes, byName); e != nil {
+			if e = checkCleanupXML(x, selected, volumes, byName, external); e != nil {
 				return "", e
 			}
 			graph[fmt.Sprintf("domain:%s:%06d", id, j)] = inventoryDigest(x)
@@ -506,6 +507,16 @@ func cleanupGraphExceptOwner(ctx context.Context, c *native.Connect, uri string,
 			}{path, identity, image}
 		}
 	}
+	outside, err := checkCleanupExternal(ctx, external, candidates, selected, volumes, func(ctx context.Context, f *os.File) (imageTool.Info, error) {
+		info, _, e := (imageTool.Tool{}).InspectFile(ctx, f, workspace, "qcow2")
+		return info, e
+	})
+	if err != nil {
+		return "", err
+	}
+	for path, observed := range outside {
+		graph["external:"+path] = observed
+	}
 	for start := range edges {
 		seen := map[string]bool{}
 		for at := start; at != ""; at = edges[at] {
@@ -530,13 +541,17 @@ func cleanupBackingPath(source, backing, format string) (string, error) {
 	}
 	return filepath.Clean(backing), nil
 }
-func checkCleanupXML(document string, selected map[string]bool, volumes map[string]cleanupGraphVolume, byName map[string]string) error {
+
+// checkCleanupXML refuses exact references to a cleanup volume and records every
+// absolute file reference outside the reconciled pools in external, with its
+// declared format, for checkCleanupExternal to compare by object identity.
+func checkCleanupXML(document string, selected map[string]bool, volumes map[string]cleanupGraphVolume, byName map[string]string, external cleanupExternal) error {
 	root, err := xmlTree(document)
 	if err != nil {
 		return err
 	}
-	var walk func(*xmlNode, bool) error
-	walk = func(n *xmlNode, disk bool) error {
+	var walk func(n, parent *xmlNode, disk bool) error
+	walk = func(n, parent *xmlNode, disk bool) error {
 		disk = disk || n.name.Local == "disk" || n.name.Local == "backingStore" || n.name.Local == "dataStore"
 		// Any exact path occurrence protects the target, including firmware,
 		// snapshot-memory and vendor extension attributes rather than only disks.
@@ -548,8 +563,11 @@ func checkCleanupXML(document string, selected map[string]bool, volumes map[stri
 				return domain.Fail("RESOURCE_BUSY", "domain or recovery XML references a cleanup volume")
 			}
 		}
-		if (n.name.Local == "nvram" || n.name.Local == "loader" || n.name.Local == "memory") && filepath.IsAbs(strings.TrimSpace(n.text)) && volumes[strings.TrimSpace(n.text)].path == "" {
-			return domain.Fail("RECOVERY_REQUIRED", "auxiliary storage outside reconciled pools requires its dependency adapter")
+		if (n.name.Local == "nvram" || n.name.Local == "loader") && filepath.IsAbs(strings.TrimSpace(n.text)) && volumes[strings.TrimSpace(n.text)].path == "" {
+			external.add(strings.TrimSpace(n.text), attr(n, "format"))
+		}
+		if n.name.Local == "memory" && filepath.IsAbs(strings.TrimSpace(n.text)) && volumes[strings.TrimSpace(n.text)].path == "" {
+			external.add(strings.TrimSpace(n.text), "")
 		}
 		if n.name.Local == "source" {
 			path := attr(n, "file")
@@ -575,18 +593,41 @@ func checkCleanupXML(document string, selected map[string]bool, volumes map[stri
 					return domain.Fail("RESOURCE_BUSY", "VM or snapshot references cleanup volume")
 				}
 				if volumes[path].path == "" {
-					return domain.Fail("RECOVERY_REQUIRED", "disk source outside reconciled storage pools")
+					if !filepath.IsAbs(path) {
+						return domain.Fail("RECOVERY_REQUIRED", "relative disk source outside reconciled storage pools")
+					}
+					external.add(path, cleanupDeclaredFormat(parent))
 				}
 			}
 		}
-		for _, child := range n.children {
-			if err := walk(child, disk); err != nil {
+		for _, c := range n.children {
+			if err := walk(c, n, disk); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-	return walk(root, false)
+	return walk(root, nil, false)
+}
+
+// cleanupDeclaredFormat is the format QEMU is told to open a source with: a
+// disk's driver type, or a backing or data store's format. Empty means none
+// was declared and the file's own header must be read.
+func cleanupDeclaredFormat(parent *xmlNode) string {
+	if parent == nil {
+		return ""
+	}
+	switch parent.name.Local {
+	case "disk":
+		if d := child(parent, "driver"); d != nil {
+			return attr(d, "type")
+		}
+	case "backingStore", "dataStore":
+		if f := child(parent, "format"); f != nil {
+			return attr(f, "type")
+		}
+	}
+	return ""
 }
 
 var _ domain.CreationCleanupBackend = (*Provider)(nil)

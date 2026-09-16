@@ -27,18 +27,34 @@ func TestCleanupXMLProtectsAllReferencedStorage(t *testing.T) {
 		`<domain><os><nvram>/pool/new.qcow2</nvram></os></domain>`,
 		`<domain><metadata><vendor path="/pool/new.qcow2"/></metadata></domain>`,
 		`<domain><devices><filesystem><source dir="/pool"/></filesystem></devices></domain>`,
-		`<domain><devices><disk><source file="/outside/unresolved.qcow2"/></disk></devices></domain>`,
 		`<domain><devices><disk><source protocol="rbd" name="unknown"/></disk></devices></domain>`,
 		`<domain><devices><disk><source dev="/dev/unapproved"/></disk></devices></domain>`,
-		`<domain><os><nvram>/outside/state.qcow2</nvram></os></domain>`,
 		`<domain><devices><disk><source pool="unknown" volume="unresolved"/></disk></devices></domain>`,
 	} {
-		if err := checkCleanupXML(x, selected, volumes, byName); err == nil {
+		if err := checkCleanupXML(x, selected, volumes, byName, cleanupExternal{}); err == nil {
 			t.Fatal("reference/unknown accepted", x)
 		}
 	}
-	if err := checkCleanupXML(`<domain><devices><disk><source pool="pool" volume="kept.qcow2"/></disk><interface><source bridge="br-fixture"/></interface></devices></domain>`, selected, volumes, byName); err != nil {
+	external := cleanupExternal{}
+	if err := checkCleanupXML(`<domain><devices><disk><source pool="pool" volume="kept.qcow2"/></disk><interface><source bridge="br-fixture"/></interface></devices></domain>`, selected, volumes, byName, external); err != nil || len(external) != 0 {
+		t.Fatal(err, external)
+	}
+	// Files outside the pools are collected with the format QEMU is told to use,
+	// for comparison by object identity, instead of refusing every such guest.
+	outside := `<domain><memory unit="KiB">4194304</memory><os><loader format="raw">/firmware/code.fd</loader><nvram format="qcow2">/outside/vars.qcow2</nvram></os><devices>` +
+		`<disk><driver type="qcow2"/><source file="/outside/guest.qcow2"/><backingStore><format type="raw"/><source file="/outside/base.raw"/></backingStore></disk>` +
+		`<disk device="cdrom"><driver type="raw"/><source file="/outside/media.iso"/></disk><disk><source file="/outside/undeclared.img"/></disk>` +
+		`<disk><driver type="qcow2"/><source file="/pool/kept.qcow2"/></disk></devices></domain>`
+	if err := checkCleanupXML(outside, selected, volumes, byName, external); err != nil {
 		t.Fatal(err)
+	}
+	want := cleanupExternal{"/firmware/code.fd": {"raw": true}, "/outside/vars.qcow2": {"qcow2": true}, "/outside/guest.qcow2": {"qcow2": true},
+		"/outside/base.raw": {"raw": true}, "/outside/media.iso": {"raw": true}, "/outside/undeclared.img": {"": true}}
+	if fmt.Sprint(external) != fmt.Sprint(want) {
+		t.Fatal("outside references not collected with their declared formats", external)
+	}
+	if err := checkCleanupXML(`<domain><devices><disk><source file="relative.qcow2"/></disk></devices></domain>`, selected, volumes, byName, cleanupExternal{}); err == nil {
+		t.Fatal("relative disk source accepted")
 	}
 	for _, reference := range []string{"https://host/image", "json:{bad}", `..\outside`} {
 		if _, err := cleanupBackingPath("/pool/child", reference, "raw"); err == nil {
@@ -167,6 +183,57 @@ func TestRealFileCleanupGraphWithNativeSimulatedInventory(t *testing.T) {
 	if proof.GraphDigest == "" || proof.Volumes[0].State != "present" || len(proof.ResourceIDs) != 1 {
 		t.Fatal("incomplete positive graph", proof)
 	}
+	// Another guest whose disks are plain files outside every pool must not block
+	// deletion, unless its file or backing chain reaches the selected volume.
+	outside := t.TempDir()
+	other := filepath.Join(outside, "other.qcow2")
+	qemu("create", "-f", "qcow2", other, "8M")
+	firmware := filepath.Join(outside, "code.fd")
+	if err = os.WriteFile(firmware, make([]byte, 4096), 0600); err != nil {
+		t.Fatal(err)
+	}
+	defineOutside := func(disk string) {
+		t.Helper()
+		x := fmt.Sprintf(`<domain type="test"><name>outside-guest</name><uuid>6f1f2a57-3c1b-4e59-9a47-5b0d8c1e2f30</uuid><memory>65536</memory><os><type>hvm</type><loader readonly="yes" type="pflash" format="raw">%s</loader><nvram format="raw">%s</nvram></os><devices>`+
+			`<disk type="file" device="disk"><driver name="qemu" type="qcow2"/><source file="%s"/><target dev="vda"/></disk>`+
+			`<disk type="file" device="cdrom"><driver name="qemu" type="raw"/><source file="%s"/><target dev="sda"/></disk></devices></domain>`,
+			xmlText(firmware), xmlText(filepath.Join(outside, "never-started_VARS.fd")), xmlText(disk), xmlText(filepath.Join(outside, "removed.iso")))
+		d, e := c.DomainDefineXML(x)
+		if e != nil {
+			t.Fatal(e)
+		}
+		d.Free()
+	}
+	undefineOutside := func() {
+		t.Helper()
+		d, e := c.LookupDomainByName("outside-guest")
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer d.Free()
+		if e = d.Undefine(); e != nil {
+			t.Fatal(e)
+		}
+	}
+	defineOutside(other)
+	if unrelated, e := inspectCreationCleanup(context.Background(), c, "test:///default", target.Spec, candidates, true); e != nil || unrelated.GraphDigest == "" {
+		t.Fatal("unrelated guest outside pools blocked deletion", e)
+	}
+	qemu("rebase", "-u", "-f", "qcow2", "-b", path, "-F", "raw", other)
+	if _, e := inspectCreationCleanup(context.Background(), c, "test:///default", target.Spec, candidates, true); e == nil || !strings.Contains(e.Error(), "RESOURCE_BUSY") {
+		t.Fatal("outside image backed by the selected volume was not protected", e)
+	}
+	qemu("rebase", "-u", "-f", "qcow2", "-b", "", other)
+	undefineOutside()
+	alias := filepath.Join(outside, "alias.img")
+	if err = os.Symlink(path, alias); err != nil {
+		t.Fatal(err)
+	}
+	defineOutside(alias)
+	if _, e := inspectCreationCleanup(context.Background(), c, "test:///default", target.Spec, candidates, true); e == nil || !strings.Contains(e.Error(), "RESOURCE_BUSY") {
+		t.Fatal("symlink outside pools to the selected volume was not protected", e)
+	}
+	undefineOutside()
 	qemu("rebase", "-u", "-f", "qcow2", "-b", path, "-F", "raw", keepPath)
 	keepIdentity, e := fileidentity.Observe(keepPath, false)
 	if e != nil {

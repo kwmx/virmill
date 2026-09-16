@@ -81,3 +81,52 @@ func Observe(path string, directory bool) (Identity, error) {
 	}
 	return identity, f.Close()
 }
+
+// Object names the inode a path resolves to. Unlike Generation it carries no
+// birth time: it answers only whether two names reach the same object now.
+type Object struct {
+	Major uint32 `json:"major"`
+	Minor uint32 `json:"minor"`
+	Inode uint64 `json:"inode"`
+}
+
+// GenerationObject extracts the device and inode from a Generation string.
+func GenerationObject(generation string) (Object, error) {
+	var out Object
+	var sec int64
+	var nsec uint32
+	n, err := fmt.Sscanf(generation, "linux-statx-v1:%d:%d:%d:%d:%d", &out.Major, &out.Minor, &out.Inode, &sec, &nsec)
+	if err != nil || n != 5 || fmt.Sprintf("linux-statx-v1:%d:%d:%d:%d:%09d", out.Major, out.Minor, out.Inode, sec, nsec) != generation {
+		return Object{}, domain.Fail("INVALID_INPUT", "unrecognized file generation")
+	}
+	return out, nil
+}
+
+// Resolve follows symlinks, "..", and bind mounts the way QEMU's open does, and
+// reports the object and file type found. Absence is returned as the raw errno
+// so callers can tell ENOENT from an unreadable path.
+func Resolve(path string) (Object, uint16, error) {
+	var st unix.Statx_t
+	if !filepath.IsAbs(path) {
+		return Object{}, 0, domain.Fail("INVALID_INPUT", "absolute filesystem path required")
+	}
+	if err := unix.Statx(unix.AT_FDCWD, path, unix.AT_STATX_FORCE_SYNC, unix.STATX_TYPE|unix.STATX_INO, &st); err != nil {
+		return Object{}, 0, err
+	}
+	if st.Mask&(unix.STATX_TYPE|unix.STATX_INO) != unix.STATX_TYPE|unix.STATX_INO {
+		return Object{}, 0, domain.Fail("UNSUPPORTED_CAPABILITY", "filesystem omitted the inode of a referenced path")
+	}
+	return Object{st.Dev_major, st.Dev_minor, st.Ino}, st.Mode & unix.S_IFMT, nil
+}
+
+// FileObject reports the object an already open file refers to.
+func FileObject(f *os.File) (Object, uint16, error) {
+	var st unix.Statx_t
+	if err := unix.Statx(int(f.Fd()), "", unix.AT_EMPTY_PATH|unix.AT_STATX_FORCE_SYNC, unix.STATX_TYPE|unix.STATX_INO, &st); err != nil {
+		return Object{}, 0, err
+	}
+	if st.Mask&(unix.STATX_TYPE|unix.STATX_INO) != unix.STATX_TYPE|unix.STATX_INO {
+		return Object{}, 0, domain.Fail("UNSUPPORTED_CAPABILITY", "filesystem omitted the inode of a referenced file")
+	}
+	return Object{st.Dev_major, st.Dev_minor, st.Ino}, st.Mode & unix.S_IFMT, nil
+}
