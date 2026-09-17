@@ -112,7 +112,10 @@ def main():
         r.save('clone-vm.json', clone)
         xml = clone['persistentXML']
         require(clone['name'] == a.clone_name and clone['state'] == 'stopped' and clone['key']['resourceUUID'] == review['uuid'], 'the clone is not the reviewed stopped VM')
-        require('virmill:creation' not in xml and a.vm not in xml, 'the clone carries the original identity or creation metadata')
+        # Shared read-only media keep their own names, which may mention the
+        # original; the clone's identity is its uuid element.
+        require('virmill:creation' not in xml and re.search(r'<uuid>' + re.escape(review['uuid']) + '</uuid>', xml) and '<uuid>' + a.vm + '</uuid>' not in xml,
+                'the clone carries the original identity or creation metadata')
         original_macs, clone_macs = macs(original['persistentXML']), macs(xml)
         require(len(clone_macs) == len(original_macs) and not set(clone_macs) & set(original_macs), 'the clone does not have its own MAC addresses')
         for d in review['disks']:
