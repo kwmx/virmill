@@ -2,8 +2,10 @@
 """Qualify live CPU and memory changes, and boot edits while running (ADR 0068).
 
 Run only on the owner-authorized disposable test host, with explicit
---execute-disposable, against a stopped VM whose saved definition carries a
-virtio memory balloon.
+--execute-disposable, against a stopped VM. Memory checks need a virtio memory
+balloon in its saved definition; CPU checks need `--cpu-slots` above its boot
+count; `--boot-order` needs a second boot device. Each part can be skipped, so
+one VM covers what it can and another covers the rest.
 
 1. Fixture, through libvirt's own API: give the saved definition spare CPU slots
    with `virsh setvcpus --config --maximum`, so a live CPU change has room. The
@@ -20,9 +22,9 @@ virtio memory balloon.
    out. Each is a reviewed plan applied as a detached job; afterwards the live
    definition must hold the reviewed value and the saved definition must be byte
    for byte what it was.
-5. While it still runs, change the boot order: the saved definition changes, the
-   running VM keeps its own order, and after a stop and start the running order
-   is the new one. The original order is then restored.
+5. With --boot-order, while it still runs, change the boot order: the saved
+   definition changes, the running VM keeps its own order, and after a stop and
+   start the running order is the new one. The original order is then restored.
 
 Other VMs, prior jobs and source media are compared before and after. Unknown
 job outcomes are kept for inspection and never replayed.
@@ -62,10 +64,10 @@ class Live(Cycle):
     def saved(self):
         return self.r.cli('vm', 'show', self.vm)['persistentXML']
 
-    def live_values(self, label):
+    def live_values(self, label, running=True):
         view = self.r.cli('vm', 'resources', 'show', self.vm)
         self.r.save(label + '-resources.json', view)
-        require(view['live'] is not None, label + ': no running values')
+        require(not running or view['live'] is not None, label + ': no running values')
         return view
 
     def refuse(self, label, request):
@@ -125,6 +127,27 @@ class Live(Cycle):
         return [{'kind': d['kind'], 'id': d['id']} for d in chosen], report
 
 
+def restore_fixture(a, live, restore_maximum, boot_cpus, original):
+    """Take the fixture's spare CPU slots back out of the saved definition."""
+    if restore_maximum:
+        virsh(a.connection, 'setvcpus', a.vm, str(restore_maximum), '--config', '--maximum')
+        virsh(a.connection, 'setvcpus', a.vm, str(boot_cpus), '--config')
+        require(cpu_element(live.saved()) == cpu_element(original['persistentXML']),
+                'the fixture CPU slots were not removed: ' + cpu_element(live.saved()))
+    return 0
+
+
+def finish(r, live, report, a, before, jobs, media, original):
+    """The VM must end exactly as it started, and nothing else may have moved."""
+    require(live.saved() == original['persistentXML'], 'the VM did not end as it started')
+    after = r.cli('vm', 'list')
+    r.save('after-vms.json', after)
+    require([v for v in after if v['key']['resourceUUID'] != a.vm] == [v for v in before if v['key']['resourceUUID'] != a.vm], 'other VMs changed')
+    require([j for j in r.cli('operation', 'list') if j['operationID'] not in set(live.jobs)] == jobs, 'prior job records changed')
+    require(media_listing(Path.home() / 'images') == media, 'source media changed')
+    report.update(status='passed', otherVMsJobsAndMediaPreserved=True, endedAsItStarted=True)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--root', required=True, type=Path)
@@ -132,9 +155,10 @@ def main():
     p.add_argument('--connection', required=True, choices=('qemu:///system', 'qemu:///session'))
     p.add_argument('--vm', required=True, help='UUID of a stopped VM with a virtio memory balloon')
     p.add_argument('--name', required=True, help="the same VM's name, as a second check")
-    p.add_argument('--cpu-slots', type=int, default=4, help='maximum CPUs the fixture gives the saved definition')
+    p.add_argument('--cpu-slots', type=int, default=4, help='maximum CPUs the fixture gives the saved definition; 0 skips CPU checks')
     p.add_argument('--boot-wait', type=int, default=120)
-    p.add_argument('--memory-step-mib', type=int, default=512)
+    p.add_argument('--memory-step-mib', type=int, default=512, help='how much memory to take from the running guest; 0 skips memory checks')
+    p.add_argument('--boot-order', action='store_true', help='also change the boot order while the VM runs; needs a second boot device')
     a = p.parse_args()
     require(authorized_test_host() and os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(a.root.absolute()))
@@ -163,97 +187,103 @@ def main():
         original = next(v for v in before if v['key']['resourceUUID'] == a.vm)
         require(original['name'] == a.name and original['state'] == 'stopped' and not original.get('hasManagedSave')
                 and original['autostart'] is False, 'target is not a stopped test VM with no saved state')
-        require("<memballoon model='virtio'" in original['persistentXML'], 'the target has no virtio memory balloon')
+        require(a.cpu_slots or a.memory_step_mib or a.boot_order, 'nothing to check')
+        require(not a.memory_step_mib or "<memballoon model='virtio'" in original['persistentXML'],
+                'the target has no virtio memory balloon')
         live = Live(r, stage, a.connection, original)
-        first = live.live_values('00-stopped')
+        first = live.live_values('00-stopped', running=False)
         boot_cpus = first['persistent']['vcpus']
         maximum_memory_mib = first['persistent']['memoryBytes'] >> 20
         require(first['canChangeLiveCPU'] is False and first['canChangeLiveMemory'] is False,
                 'a stopped VM was offered a live change')
-        require(a.cpu_slots > boot_cpus and maximum_memory_mib > 256 + a.memory_step_mib, 'the target is too small for this probe')
+        require(not a.cpu_slots or a.cpu_slots > boot_cpus, 'the fixture must add CPU slots above the boot count')
+        require(not a.memory_step_mib or maximum_memory_mib > 256 + a.memory_step_mib, 'the target is too small to give memory back')
 
-        # Fixture: libvirt writes the spare CPU slots itself, so the definition
-        # carries exactly what libvirt renders.
-        restore_maximum = first['persistent']['maximumVcpus']
-        virsh(a.connection, 'setvcpus', a.vm, str(a.cpu_slots), '--config', '--maximum')
-        virsh(a.connection, 'setvcpus', a.vm, str(boot_cpus), '--config')
-        with_slots = live.saved()
-        require(f"current='{boot_cpus}'" in cpu_element(with_slots) and f">{a.cpu_slots}<" in cpu_element(with_slots),
-                'the fixture did not give the definition spare CPU slots')
-        report['fixture'] = {'cpuElementBefore': cpu_element(original['persistentXML']), 'cpuElementWithSlots': cpu_element(with_slots)}
+        if a.cpu_slots:
+            # Fixture: libvirt writes the spare CPU slots itself, so the
+            # definition carries exactly what libvirt renders.
+            restore_maximum = first['persistent']['maximumVcpus']
+            virsh(a.connection, 'setvcpus', a.vm, str(a.cpu_slots), '--config', '--maximum')
+            virsh(a.connection, 'setvcpus', a.vm, str(boot_cpus), '--config')
+            with_slots = live.saved()
+            require(f"current='{boot_cpus}'" in cpu_element(with_slots) and f">{a.cpu_slots}<" in cpu_element(with_slots),
+                    'the fixture did not give the definition spare CPU slots')
+            report['fixture'] = {'cpuElementBefore': cpu_element(original['persistentXML']), 'cpuElementWithSlots': cpu_element(with_slots)}
 
-        # A next-boot CPU edit must keep the slots and match its reviewed bytes.
-        live.next_boot('next-boot-cpu', {'vcpus': boot_cpus + 1})
-        kept = cpu_element(live.saved())
-        require(f"current='{boot_cpus + 1}'" in kept and f">{a.cpu_slots}<" in kept, 'the next-boot edit dropped the spare CPU slots: ' + kept)
-        report['nextBootKeptSlots'] = kept
-        live.next_boot('next-boot-cpu-back', {'vcpus': boot_cpus})
+            # A next-boot CPU edit must keep the slots and match its reviewed bytes.
+            live.next_boot('next-boot-cpu', {'vcpus': boot_cpus + 1})
+            kept = cpu_element(live.saved())
+            require(f"current='{boot_cpus + 1}'" in kept and f">{a.cpu_slots}<" in kept, 'the next-boot edit dropped the spare CPU slots: ' + kept)
+            report['nextBootKeptSlots'] = kept
+            live.next_boot('next-boot-cpu-back', {'vcpus': boot_cpus})
 
         live.power('start', 'running')
         time.sleep(a.boot_wait)
         running = live.live_values('01-running')
-        require(running['live']['vcpus'] == boot_cpus and running['live']['maximumVcpus'] == a.cpu_slots,
-                'the VM is not running with spare CPU slots')
-        require(running['canChangeLiveCPU'] is True and running['canChangeLiveMemory'] is True and 'now' in running['applyModes'],
-                'the running VM was not offered a live change')
+        if a.cpu_slots:
+            require(running['live']['vcpus'] == boot_cpus and running['live']['maximumVcpus'] == a.cpu_slots,
+                    'the VM is not running with spare CPU slots')
+        require(running['canChangeLiveCPU'] is bool(a.cpu_slots) and running['canChangeLiveMemory'] is bool(a.memory_step_mib),
+                'the running VM was offered something other than what it can take')
+        require(('now' in running['applyModes']) == bool(a.cpu_slots or a.memory_step_mib), 'unexpected apply modes')
         report['runningBefore'] = {'vcpus': running['live']['vcpus'], 'maximumVcpus': running['live']['maximumVcpus'],
                                    'memoryBytes': running['live']['memoryBytes'], 'maximumMemoryBytes': running['live']['maximumMemoryBytes']}
 
-        refusals = {
-            'memory-above-maximum': {'applyMode': 'now', 'memoryMiB': maximum_memory_mib + 1024},
-            'memory-under-floor': {'applyMode': 'now', 'memoryMiB': 128},
-            'cpus-above-maximum': {'applyMode': 'now', 'vcpus': a.cpu_slots + 1},
-            'cpus-already-running': {'applyMode': 'now', 'vcpus': boot_cpus},
-        }
+        refusals = {'memory-above-maximum': {'applyMode': 'now', 'memoryMiB': maximum_memory_mib + 1024}}
+        if a.memory_step_mib:
+            refusals['memory-under-floor'] = {'applyMode': 'now', 'memoryMiB': 128}
+        if a.cpu_slots:
+            refusals['cpus-above-maximum'] = {'applyMode': 'now', 'vcpus': a.cpu_slots + 1}
+            refusals['cpus-already-running'] = {'applyMode': 'now', 'vcpus': boot_cpus}
+        else:
+            refusals['cpus-without-slots'] = {'applyMode': 'now', 'vcpus': boot_cpus + 1}
         report['refusals'] = {}
         for name, request in refusals.items():
             error = live.refuse(live.label('refuse-' + name), request)
             report['refusals'][name] = {'code': error['code'], 'message': error['message']}
         require(all(j['state'] in TERMINAL_STATES for j in r.cli('operation', 'list')), 'a refusal started a job')
 
-        lowered = maximum_memory_mib - a.memory_step_mib
-        live.live_change('memory-down', {'memoryMiB': lowered}, True)
-        live.live_change('memory-up', {'memoryMiB': maximum_memory_mib}, False)
-        live.live_change('cpu-in', {'vcpus': boot_cpus + 1}, False)
-        live.live_change('cpu-out', {'vcpus': boot_cpus}, True)
-        report['liveChangesApplied'] = True
+        if a.memory_step_mib:
+            live.live_change('memory-down', {'memoryMiB': maximum_memory_mib - a.memory_step_mib}, True)
+            live.live_change('memory-up', {'memoryMiB': maximum_memory_mib}, False)
+        if a.cpu_slots:
+            live.live_change('cpu-in', {'vcpus': boot_cpus + 1}, False)
+            live.live_change('cpu-out', {'vcpus': boot_cpus}, True)
+        report['liveChangesApplied'] = bool(a.memory_step_mib or a.cpu_slots)
 
-        # A boot edit while the VM runs changes the saved definition only.
-        saved_order, _ = live.boot_order('persistent')
-        running_order, _ = live.boot_order('live')
-        require(len(saved_order) >= 2, 'the target has too few boot devices for this check')
-        changed = saved_order[:-2] + [saved_order[-1], saved_order[-2]]
-        before_saved = live.saved()
-        plan = live.next_boot('boot-order-while-running', {'bootOrder': changed})
-        require('keeps its current boot order' in ' '.join(plan['risks']), 'the review does not say the running VM keeps its order')
-        require(live.saved() != before_saved, 'the saved boot order did not change')
-        require(live.boot_order('persistent')[0] == changed, 'the saved definition does not hold the new order')
-        require(live.boot_order('live')[0] == running_order, 'the running VM lost the order it started with')
-        require(r.cli('vm', 'show', a.vm)['state'] == 'running', 'the boot edit stopped the VM')
-        report['bootOrderWhileRunning'] = {'saved': changed, 'runningKept': running_order}
+        if a.boot_order:
+            # A boot edit while the VM runs changes the saved definition only. The
+            # first device keeps its place, so the guest still boots the same way.
+            saved_order, report_before = live.boot_order('persistent')
+            running_order, _ = live.boot_order('live')
+            if len(saved_order) >= 2:
+                changed = saved_order[:-2] + [saved_order[-1], saved_order[-2]]
+            else:
+                spare = next((d for d in report_before['persistent']['devices']
+                              if d['order'] == 0 and d['selectable'] and not (d['kind'] == 'disk' and d['device'] == 'cdrom' and not d['mediaPresent'])), None)
+                require(spare is not None, 'the target has no second boot device for this check')
+                changed = saved_order + [{'kind': spare['kind'], 'id': spare['id']}]
+            before_saved = live.saved()
+            plan = live.next_boot('boot-order-while-running', {'bootOrder': changed})
+            require('keeps its current boot order' in ' '.join(plan['risks']), 'the review does not say the running VM keeps its order')
+            require(live.saved() != before_saved, 'the saved boot order did not change')
+            require(live.boot_order('persistent')[0] == changed, 'the saved definition does not hold the new order')
+            require(live.boot_order('live')[0] == running_order, 'the running VM lost the order it started with')
+            require(r.cli('vm', 'show', a.vm)['state'] == 'running', 'the boot edit stopped the VM')
+            report['bootOrderWhileRunning'] = {'saved': changed, 'runningKept': running_order}
 
-        live.power('stop', 'stopped')
-        live.power('start', 'running')
-        time.sleep(a.boot_wait)
-        require(live.boot_order('live')[0] == changed, 'the new boot order did not take effect at the next start')
-        report['bootOrderAfterRestart'] = changed
-        live.next_boot('boot-order-restore', {'bootOrder': saved_order})
-        live.power('stop', 'stopped')
-        require(live.boot_order('persistent')[0] == saved_order, 'the original boot order was not restored')
-
-        virsh(a.connection, 'setvcpus', a.vm, str(restore_maximum), '--config', '--maximum')
-        virsh(a.connection, 'setvcpus', a.vm, str(boot_cpus), '--config')
-        restore_maximum = 0
-        final = live.saved()
-        require(cpu_element(final) == cpu_element(original['persistentXML']), 'the fixture CPU slots were not removed: ' + cpu_element(final))
-        require(final == original['persistentXML'], 'the VM did not end as it started')
-
-        after = r.cli('vm', 'list')
-        r.save('after-vms.json', after)
-        require([v for v in after if v['key']['resourceUUID'] != a.vm] == [v for v in before if v['key']['resourceUUID'] != a.vm], 'other VMs changed')
-        require([j for j in r.cli('operation', 'list') if j['operationID'] not in set(live.jobs)] == jobs, 'prior job records changed')
-        require(media_listing(Path.home() / 'images') == media, 'source media changed')
-        report.update(status='passed', otherVMsJobsAndMediaPreserved=True, endedAsItStarted=True)
+            live.power('stop', 'stopped')
+            live.power('start', 'running')
+            time.sleep(a.boot_wait)
+            require(live.boot_order('live')[0] == changed, 'the new boot order did not take effect at the next start')
+            report['bootOrderAfterRestart'] = changed
+            live.next_boot('boot-order-restore', {'bootOrder': saved_order})
+            live.power('stop', 'stopped')
+            require(live.boot_order('persistent')[0] == saved_order, 'the original boot order was not restored')
+        else:
+            live.power('stop', 'stopped')
+        restore_maximum = restore_fixture(a, live, restore_maximum, boot_cpus, original)
+        finish(r, live, report, a, before, jobs, media, original)
     except BaseException as e:
         report['error'] = repr(e)
         if restore_maximum:

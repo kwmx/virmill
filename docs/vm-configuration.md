@@ -181,9 +181,9 @@ change instead:
 | CPUs, on a VM running all of its CPUs | Refused: it was not started with spare CPU slots |
 | Anything, on a stopped or paused VM | Refused: change the next boot instead, or resume it first |
 
-Memory moves through the guest's balloon driver. Virmill asks for a size and
-reports what the running definition then holds; whether the guest has given the
-memory back, and how quickly, is the guest's own business. Taking CPUs or memory
+Memory moves through the guest's balloon driver. Virmill asks for the size, waits
+up to 20 seconds for the guest to answer, and asks for the earlier size back if
+it does not; the job then fails plainly, saying the guest did not answer. Taking CPUs or memory
 away asks for `guest-resource-pressure`, because it can slow a guest down or stop
 programs inside it. Removing a CPU works only for one that was added while the VM
 ran: QEMU cannot unplug a CPU the VM booted with.

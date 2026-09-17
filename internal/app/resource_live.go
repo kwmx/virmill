@@ -195,7 +195,7 @@ func (s *Service) planLiveResources(ctx context.Context, uid uint32, r Request, 
 		}
 	}
 	if want.MemoryMiB != nil {
-		risks = append(risks, "Memory moves through the guest's balloon driver: without that driver nothing changes inside the guest, and with it the change can take time")
+		risks = append(risks, "Memory moves through the guest's balloon driver: Virmill asks, waits up to 20 seconds for the guest to answer, and asks for the earlier size back if it does not")
 		if *want.MemoryMiB<<20 < now.MemoryBytes {
 			risks = append(risks, "Taking memory from a running guest can make it slow or stop programs inside it")
 		}

@@ -4,6 +4,7 @@ package libvirt
 
 import (
 	"context"
+	"time"
 
 	native "libvirt.org/go/libvirt"
 	"virmill.local/core/internal/backend/xmlpatch"
@@ -21,6 +22,45 @@ type liveChange struct {
 }
 
 func liveStale(message string) error { return domain.Fail("STALE_PLAN", message) }
+
+// liveSettle is how long a guest is given to answer a memory request. A balloon
+// change is a request: QEMU holds the new target and the guest returns or takes
+// the pages when its balloon driver gets to it, which takes a moment.
+const liveSettle = 20 * time.Second
+
+// liveMemoryBytes reads the memory the running domain reports, which is what the
+// guest has acknowledged, not the target QEMU is holding.
+func liveMemoryBytes(d *native.Domain, uri string) (uint64, error) {
+	v, err := observe(d, uri)
+	if err != nil {
+		return 0, err
+	}
+	values, err := xmlpatch.ReadResourceValues(v.LiveXML)
+	if err != nil {
+		return 0, err
+	}
+	if values.MemoryBytes == nil {
+		return 0, domain.Fail("UNSUPPORTED_CAPABILITY", "the running memory could not be read")
+	}
+	return *values.MemoryBytes, nil
+}
+
+// settledMemory waits for the guest to reach one size, and reports what it last
+// observed. It never changes anything.
+func settledMemory(ctx context.Context, d *native.Domain, uri string, wanted uint64) (uint64, error) {
+	deadline := time.Now().Add(liveSettle)
+	for {
+		observed, err := liveMemoryBytes(d, uri)
+		if err != nil || observed == wanted || !time.Now().Before(deadline) {
+			return observed, err
+		}
+		select {
+		case <-ctx.Done():
+			return observed, ctx.Err()
+		case <-time.After(250 * time.Millisecond):
+		}
+	}
+}
 
 // liveTarget reads what the VM is running with and checks the reviewed change
 // against it. It refuses before any effect: nothing here changes the VM.
@@ -106,6 +146,27 @@ func (p *Provider) SetLiveResources(ctx context.Context, uri, id string, input m
 				code = "RECOVERY_REQUIRED"
 			}
 			return domain.Fail(code, "this VM's memory could not be changed while it runs: "+validation.SafeText(err.Error()))
+		}
+		wanted := change.memoryKiB << 10
+		observed, err := settledMemory(ctx, d, uri, wanted)
+		if err != nil {
+			return domain.Fail("RECOVERY_REQUIRED", "the memory request was made but could not be read back: "+validation.SafeText(err.Error()))
+		}
+		if observed != wanted {
+			// The guest has not answered. Put the balloon back where it was, so
+			// the VM is left running what it was reviewed as running and the job
+			// can fail plainly instead of asking for a recovery decision.
+			before, ok := input["liveBeforeMemoryBytes"].(float64)
+			if !ok {
+				return domain.Fail("RECOVERY_REQUIRED", "the guest did not answer the memory request and the earlier size is unknown")
+			}
+			if err = d.SetMemoryFlags(uint64(before)>>10, native.DOMAIN_MEM_LIVE); err != nil {
+				return domain.Fail("RECOVERY_REQUIRED", "the guest did not answer the memory request and its earlier size could not be asked for again: "+validation.SafeText(err.Error()))
+			}
+			if back, err := settledMemory(ctx, d, uri, uint64(before)); err != nil || back != uint64(before) {
+				return domain.Fail("RECOVERY_REQUIRED", "the guest answered neither the memory request nor the return to its earlier size")
+			}
+			return domain.Fail("WAIT_TIMEOUT", "this guest did not answer the memory request, so it is still running the size it was; its balloon driver may not be running inside it")
 		}
 	}
 	return nil

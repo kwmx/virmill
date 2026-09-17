@@ -80,16 +80,19 @@ saved definition, so a VM's next boot is exactly what was last reviewed for it.
   `guest-resource-pressure` whenever CPUs or memory are taken away.
 - **Review.** The running values and the requested values, that the saved
   definition is unchanged and the next boot is unaffected, and, for memory, that
-  the guest returns memory only if its balloon driver is present and may take
-  time to do so.
-- **Effect and reconciliation.** One step: set the live value. A refusal before
-  the effect leaves the running VM exactly as it was, so the job ends failed and
-  releases its locks (`operations.NotDone`). An uncertain effect — a partially
-  plugged CPU set, a lost connection — leaves the job needing recovery;
-  reconciliation reads the live definition and reports whether the requested
-  value is in place. Nothing is replayed. The completion predicate is the live
-  definition's value, not guest behaviour: a balloon target that the guest has
-  not honoured yet is still the reviewed effect.
+  the change goes through the guest's balloon driver, which Virmill waits for.
+- **Effect and reconciliation.** One step: set the live value. The completion
+  predicate is what the running domain reports, because that is all libvirt
+  exposes: a balloon target is not readable, only the size the guest has
+  acknowledged. A memory change therefore asks, then waits up to 20 seconds for
+  the guest to answer. A guest that does not answer gets its earlier size asked
+  for again, and once it is running that again the job fails plainly, saying the
+  guest did not answer and its balloon driver may not be running. A refusal
+  before any effect also ends the job failed, releasing its locks
+  (`operations.NotDone`). An uncertain effect — a partially plugged CPU set, a
+  balloon that answers neither request, a lost connection — leaves the job
+  needing recovery; reconciliation reads the live definition and reports whether
+  the reviewed values are in place, and nothing is replayed.
 
 ## Consequences
 
@@ -99,8 +102,10 @@ saved definition, so a VM's next boot is exactly what was last reviewed for it.
   failing inside libvirt.
 - New VMs get a virtio balloon. A guest without the driver is unaffected; the
   device is one more thing on the PCI bus, and `none` remains available.
-- Memory is not claimed to be reclaimed inside the guest, only requested. CPU
-  and memory maximums of a *running* domain cannot be raised at all, and memory
+- A memory change is only reported as done once the running domain reports the
+  new size, which is the guest acknowledging it. What the guest then does with
+  that memory inside itself is its own business and is not claimed. CPU and
+  memory maximums of a *running* domain cannot be raised at all, and memory
   hotplug (`maxMemory`, DIMM devices) stays out of scope.
 - Live changes are not recorded in the saved definition, so a reboot returns the
   VM to its reviewed configuration. That is deliberate: one place decides what a
