@@ -130,6 +130,8 @@ def main():
         require(after_targets == targets + [review['target']] or sorted(after_targets) == sorted(targets + [review['target']]),
                 'the definition did not gain exactly the reviewed disk')
         require(shown['state'] == 'stopped' and review['volume'] in shown['persistentXML'], 'the new disk is not in the saved definition')
+        # Later power steps compare against the definition with the new disk.
+        adder.original = shown
         report.update(addedTarget=review['target'], volume=review['volume'], capacityBytes=capacity,
                       acknowledgements=sorted(plan['acknowledgements']), steps=adder.steps)
 
