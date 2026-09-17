@@ -13,7 +13,7 @@ func CreationChipset(machine string) string {
 }
 
 func DefaultCreationDevices(machine string) (*CreationDevicePolicy, error) {
-	p := &CreationDevicePolicy{Version: 1, Chipset: CreationChipset(machine), PCIPlacement: "libvirt-auto", USBController: "none", MemoryBalloon: "none", WatchdogAction: "none", Input: "ps2", Audio: "none", Serial: "isa-serial"}
+	p := &CreationDevicePolicy{Version: 1, Chipset: CreationChipset(machine), PCIPlacement: "libvirt-auto", USBController: "none", MemoryBalloon: "virtio", WatchdogAction: "none", Input: "ps2", Audio: "none", Serial: "isa-serial"}
 	return p, p.Validate(machine)
 }
 

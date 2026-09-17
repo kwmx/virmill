@@ -28,4 +28,11 @@ type VMResourceView struct {
 	MemoryReason     string          `json:"memoryReason,omitempty"`
 	RequiresShutdown bool            `json:"requiresShutdown"`
 	ApplyModes       []string        `json:"applyModes"`
+	// Live changes alter only what the VM is running with (ADR 0068). A reason
+	// says why one is not offered, in the words the user needs.
+	CanChangeLiveCPU    bool   `json:"canChangeLiveCPU"`
+	CanChangeLiveMemory bool   `json:"canChangeLiveMemory"`
+	LiveCPUReason       string `json:"liveCPUReason,omitempty"`
+	LiveMemoryReason    string `json:"liveMemoryReason,omitempty"`
+	MemoryBalloon       string `json:"memoryBalloon,omitempty"`
 }

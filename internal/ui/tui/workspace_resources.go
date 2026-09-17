@@ -152,6 +152,10 @@ func (g resourceSetup) rows() []int {
 	if r.CanEditCPU || r.CanEditMemory {
 		rows = append(rows, 2)
 	}
+	// Changing what the VM is running with is its own action (ADR 0068).
+	if r.CanChangeLiveCPU || r.CanChangeLiveMemory {
+		rows = append(rows, 7)
+	}
 	if r.RequiresShutdown && !r.HasManagedSave && r.State == "running" {
 		rows = append(rows, 3)
 	}
@@ -184,6 +188,35 @@ func (g resourceSetup) request(connection string) (app.Request, error) {
 		return app.Request{}, fmt.Errorf("No changes yet. Adjust CPU cores or RAM before previewing")
 	}
 	input["applyMode"] = "next-boot"
+	return app.Request{Connection: connection, ID: r.Resource.UUID, Action: "set", Input: input}, nil
+}
+
+// liveRequest asks for what the VM should be running with, comparing the typed
+// values with the running ones rather than the next-boot ones (ADR 0068).
+func (g resourceSetup) liveRequest(connection string) (app.Request, error) {
+	r := g.Report
+	if r == nil || r.Resource.ConnectionID != connection || r.Live == nil {
+		return app.Request{}, fmt.Errorf("Refresh resource settings for this connection first")
+	}
+	input := map[string]any{}
+	if r.CanChangeLiveCPU && g.Form.Fields[0].Value != resourceValue(r.Live.VCPUs) {
+		n, ok := guidedNumber(g.Form.Fields[0].Value, 512)
+		if !ok {
+			return app.Request{}, fmt.Errorf("CPU cores must be a whole number from 1 to 512; blank is not a value")
+		}
+		input["vcpus"] = float64(n)
+	}
+	if r.CanChangeLiveMemory && g.Form.Fields[1].Value != resourceMemoryInput(r.Live.MemoryBytes) {
+		n, ok := guidedNumber(g.Form.Fields[1].Value, 1048576)
+		if !ok {
+			return app.Request{}, fmt.Errorf("RAM must be a whole number from 1 to 1048576 MiB; blank is not a value")
+		}
+		input["memoryMiB"] = float64(n)
+	}
+	if len(input) == 0 {
+		return app.Request{}, fmt.Errorf("No change yet. Set CPU cores or RAM to something else than this VM is running with")
+	}
+	input["applyMode"] = "now"
 	return app.Request{Connection: connection, ID: r.Resource.UUID, Action: "set", Input: input}, nil
 }
 func (m Workspace) updateResources(key tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -236,6 +269,16 @@ func (m Workspace) updateResources(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			g.Focus = rows[(at+1)%len(rows)]
 		case 2:
 			req, err := g.request(m.Connection)
+			if err != nil {
+				g.Error = err.Error()
+				return m, nil
+			}
+			g.Error = ""
+			m.Busy = true
+			m.Error = ""
+			return m, m.request("plan", "vm.plan", req)
+		case 7:
+			req, err := g.liveRequest(m.Connection)
 			if err != nil {
 				g.Error = err.Error()
 				return m, nil
@@ -319,6 +362,16 @@ func (m Workspace) resourcesView(width, height int) []string {
 			}
 			lines = append(lines, prefix+"Requested "+label+": "+value)
 		}
+		if r.CanChangeLiveCPU || r.CanChangeLiveMemory {
+			what := "CPU cores and RAM"
+			switch {
+			case !r.CanChangeLiveCPU:
+				what = "RAM"
+			case !r.CanChangeLiveMemory:
+				what = "CPU cores"
+			}
+			lines = append(lines, "Change while it runs applies "+what+" to the running VM now and leaves the next boot as it is.")
+		}
 		if r.CanEditMemory && resourceMemoryInput(r.Persistent.MemoryBytes) == "Keep current" {
 			lines = append(lines, "Keep current preserves exact bytes. Type a number to replace it.")
 		}
@@ -330,7 +383,7 @@ func (m Workspace) resourcesView(width, height int) []string {
 			lines = append(lines, "Shut down first; then return here to change these values.")
 		}
 	}
-	labels := map[int]string{2: "Preview changes", 3: "Preview graceful shutdown", 4: "Refresh values", 5: "Back to VM", 6: "Advanced details"}
+	labels := map[int]string{2: "Preview changes", 3: "Preview graceful shutdown", 4: "Refresh values", 5: "Back to VM", 6: "Advanced details", 7: "Change while it runs"}
 	for _, row := range g.rows() {
 		if row < 2 {
 			continue
@@ -349,6 +402,12 @@ func (m Workspace) resourcesView(width, height int) []string {
 		}
 		if r.MemoryReason != "" {
 			reasons = append(reasons, "RAM: "+validation.SafeText(r.MemoryReason))
+		}
+		if r.State == "running" && r.LiveCPUReason != "" && !r.CanChangeLiveCPU {
+			reasons = append(reasons, "While running, CPU: "+validation.SafeText(r.LiveCPUReason))
+		}
+		if r.State == "running" && r.LiveMemoryReason != "" && !r.CanChangeLiveMemory {
+			reasons = append(reasons, "While running, RAM: "+validation.SafeText(r.LiveMemoryReason))
 		}
 		for _, reason := range reasons {
 			lines = append(lines, clipCell(reason, width-1))

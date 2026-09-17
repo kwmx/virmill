@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+- **Change CPU and memory while a VM runs.** `virmill vm set --input
+  '{"memoryMiB":3072,"applyMode":"now"}'` and, in the TUI, **CPU / RAM → Change
+  while it runs** change what a running VM is running with, leaving its saved
+  settings and its next boot exactly as they were. Memory moves through the
+  guest's virtio balloon; CPUs can be added and removed on a VM started with
+  spare CPU slots. What a VM cannot take is refused with what to change instead
+  (ADR 0068).
+- New VMs get a virtio memory balloon, libvirt's own default, so their memory can
+  change while they run. **Advanced** device settings still offer `none`.
+- **Boot order and installer media can be changed while a VM runs.** The change
+  applies the next time it starts, and the running VM keeps the order it started
+  with; both are shown in the review. The guest-agent channel still needs a
+  stopped VM.
+- A next-boot CPU edit now keeps the spare CPU slots a VM's definition already
+  carries instead of refusing to edit it.
+
 ## 1.0.0-beta.9 — owner-test pre-release
 
 - **Clone a VM.** `virmill vm clone` and **More → Advanced tools → Clone VM** make

@@ -72,7 +72,7 @@ func TestHardwareCombinedPlanReviewAndDurableExecution(t *testing.T) {
 	t.Log("synthetic shared coordinator: one reviewed CPU/RAM/boot/media definition, hashes only, no file or storage deletion")
 }
 func TestHardwareRefusalAndStalePlanDoNotExecute(t *testing.T) {
-	for _, test := range []string{"missing-boot-replacement", "empty-candidate", "duplicate", "live-mode", "saved", "running", "unknown-field"} {
+	for _, test := range []string{"missing-boot-replacement", "empty-candidate", "duplicate", "live-mode", "saved", "suspended", "unknown-field"} {
 		t.Run(test, func(t *testing.T) {
 			s, p, _ := hardwareFixture(t)
 			input := hardwareInput()
@@ -87,8 +87,8 @@ func TestHardwareRefusalAndStalePlanDoNotExecute(t *testing.T) {
 				input["applyMode"] = "both"
 			case "saved":
 				p.vm.HasManagedSave = true
-			case "running":
-				p.vm.State = "running"
+			case "suspended":
+				p.vm.State = "pmsuspended"
 			case "unknown-field":
 				input["password"] = "hardware-dummy-secret"
 			}

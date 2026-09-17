@@ -110,6 +110,10 @@ func TestObservedQ35DisabledDevicePolicyMatchesNativeDefinition(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// This replays the definition libvirt stored for a run made with every
+	// optional device off, which is the policy the captured XML carries. The
+	// default balloon is virtio since ADR 0068; its own native run covers that.
+	target.Spec.DevicePolicy.MemoryBalloon = "none"
 	volumes[0].Intent.PoolID = target.Spec.PoolID
 	volumes[0].Intent.Name = "virmill-a19bf9ee-cd7f-4921-baac-39ce1694eb35-disk-000.qcow2"
 	wanted, err := creationXML(target, volumes, "d0259f2030c6a956841b3e494fc3cbbbcf8e3fdf7778b4344e174a67a06133c8")

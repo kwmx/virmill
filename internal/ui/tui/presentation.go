@@ -81,7 +81,7 @@ func operationCommand(op string) string {
 		command = "vm create"
 	case "vm.configure-guest-agent":
 		command = "vm guest-agent enable"
-	case "vm.configure-resources", "vm.configure-hardware":
+	case "vm.configure-resources", "vm.configure-hardware", "vm.resources-live-v1":
 		command = "vm set"
 	case "vm.create.resume":
 		command = "vm creation resume"
@@ -110,6 +110,7 @@ func operationCommand(op string) string {
 // confirmationTitles names what a confirmation does where the menu label
 // describes a form instead.
 var confirmationTitles = map[string]string{
+	"vm.resources-live-v1":   "Change CPU and RAM while the VM runs",
 	"import.prepare-install": "Create a VM from an installer",
 	"import.prepare-disks":   "Create a VM from disk images",
 	"import.prepare":         "Create a VM from an appliance",
@@ -183,6 +184,9 @@ func planSummary(f *details, p domain.Plan, plain bool) {
 		}
 	}
 	resourceChanges := resourcePlanChanges(f, p)
+	for name := range liveResourcePlanChanges(f, p) {
+		resourceChanges[name] = true
+	}
 	for _, field := range []struct {
 		label string
 		path  []string

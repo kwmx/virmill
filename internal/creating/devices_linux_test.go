@@ -22,7 +22,9 @@ func TestDevicePolicyIsReviewedAndRequiresAcknowledgement(t *testing.T) {
 		t.Fatal("policy missing from authorization", p)
 	}
 	target := p.Review["target"].(domain.CreationTarget)
-	if target.Spec.DevicePolicy == nil || target.Spec.DevicePolicy.WatchdogAction != "none" || target.Spec.DevicePolicy.USBController != "none" || target.Spec.DevicePolicy.MemoryBalloon != "none" {
+	// The balloon is libvirt's own default and is what lets memory change while
+	// the VM runs (ADR 0068); the rest stays off unless it is asked for.
+	if target.Spec.DevicePolicy == nil || target.Spec.DevicePolicy.WatchdogAction != "none" || target.Spec.DevicePolicy.USBController != "none" || target.Spec.DevicePolicy.MemoryBalloon != "virtio" {
 		t.Fatal("implicit unsafe defaults", target)
 	}
 	acks := slices.DeleteFunc(slices.Clone(p.Acknowledgements), func(v string) bool { return v == "creation-device-policy" })

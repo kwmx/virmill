@@ -154,6 +154,8 @@ func readJobOutcome(ctx context.Context, client ui.Client, o jobOutcome) jobOutc
 		o.Title, o.Summary = "VM stopped", "Open the VM to change its settings or start it again."
 	case "vm.configure-resources", "vm.configure-hardware":
 		o.Title, o.Summary = "VM settings saved", "Open the VM to see its current and next-boot settings."
+	case "vm.resources-live-v1":
+		o.Title, o.Summary = "Running VM changed", "Open the VM to see what it is running with. Its next boot is unchanged, and a guest takes memory back through its balloon driver, which can take a moment."
 	case "vm.configure-guest-agent":
 		o.Title, o.Summary = "Guest-agent connection enabled", "Open the VM, start it, then choose Guest tools to install the guest software."
 	case "guest.recipe.run":

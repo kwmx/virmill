@@ -65,6 +65,7 @@ var acknowledgementText = map[string]string{
 	"plugin-installation-change":          "Change which plugins are installed for you",
 	"recovered-set-publication":           "Save the restored disks and settings on this host as a new recovery point; no VM is created",
 	"guest-execution":                     "Run the setup commands shown inside the guest",
+	"guest-resource-pressure":             "Take CPUs or memory away from the running guest, which can slow it down or stop programs inside it",
 	"guest-host-key-binding":              "Trust the guest's SSH host key recorded for this VM",
 	"non-root-guest-setup":                "Run the setup as the guest user, without administrator rights",
 	"non-idempotent-recipe":               "This setup may not be safe to run twice; running it again can change the guest again",

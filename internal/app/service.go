@@ -81,6 +81,7 @@ func New(p domain.ComputeProvider, e *operations.Engine) *Service {
 	e.Handlers["vm.configure-resources"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.configure-hardware"] = &vmHandler{s: s, action: "set"}
 	e.Handlers["vm.configure-guest-agent"] = &vmHandler{s: s, action: "set"}
+	e.Handlers[liveResourceOperation] = &liveResourceHandler{s: s}
 	e.Handlers["vm.reboot"] = &rebootHandler{s: s}
 	e.Handlers["vm.remove-definition-v1"] = &removalHandler{s: s}
 	e.Handlers["vm.remove-disks-v1"] = &diskRemovalHandler{s: s}
@@ -432,6 +433,11 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 	if r.Action == "autostart" && v.PersistentXML == "" {
 		return empty, domain.Fail("UNSUPPORTED_CAPABILITY", "Automatic startup requires a persistent VM; transient guests have no saved startup definition")
 	}
+	// A change to what a running VM runs with is its own reviewed operation with
+	// its own refusals (ADR 0068).
+	if r.Action == "set" && r.Input["applyMode"] == "now" && !hardwareRequest(r.Input) && !guestAgentRequest(r.Input) {
+		return s.planLiveResources(ctx, uid, r, v)
+	}
 	input := map[string]any{}
 	for field, value := range r.Input {
 		allowed := (r.Action == "set" && (field == "vcpus" || field == "memoryMiB" || field == "applyMode" || field == "bootOrder" || field == "ejectMedia" || field == "enableGuestAgent")) || (r.Action == "autostart" && field == "enabled")
@@ -452,8 +458,8 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 			input["applyMode"] = "next-boot"
 		}
 		check := editableVM
-		if !guestAgentRequest(input) && !hardwareRequest(input) {
-			check = resourcesEditable
+		if !guestAgentRequest(input) {
+			check = nextBootEditable
 		}
 		if e = check(v); e != nil {
 			return empty, e
@@ -500,6 +506,11 @@ func (s *Service) planVM(ctx context.Context, uid uint32, r Request) (domain.Pla
 				risks = append(risks, "Ejects the selected medium while retaining its volume/file and read-only drive; an empty block/volume drive is explicitly represented as type=file")
 			}
 			risks = append(risks, "Boot selection is persistent firmware intent, not proof of bootability, installer completion or provisioning readiness")
+			if v.State != "stopped" {
+				input["editPrecondition"] = persistentPrecondition
+				input["editBeforePersistentSHA256"] = xmlpatch.Digest(v.PersistentXML)
+				risks = append(risks, "The running VM keeps its current boot order and media; the change applies when it next starts, not after a restart inside the guest")
+			}
 		} else {
 			edit, err := resourceEdit(input)
 			if err != nil {
@@ -598,7 +609,7 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		if err != nil {
 			return nil, err
 		}
-		if v.Fingerprint != input["editBeforeFingerprint"] {
+		if !editBaseUnchanged(v, input) {
 			return nil, domain.Fail("STALE_PLAN", "domain changed during hardware review")
 		}
 		edit, err := xmlpatch.ParseHardwareInput(input)
@@ -619,6 +630,15 @@ func (h *vmHandler) Review(ctx context.Context, p domain.Plan, b []byte) (map[st
 		}
 		review["beforeBoot"] = beforeView
 		review["afterBoot"] = afterView
+		// A VM edited while it runs keeps the boot order it started with until it
+		// is next started (ADR 0068); the review shows both.
+		if v.LiveXML != "" {
+			liveView, err := xmlpatch.InspectBoot(v.LiveXML)
+			if err != nil {
+				return nil, err
+			}
+			review["runningBoot"] = liveView
+		}
 	}
 	return review, nil
 }
@@ -653,7 +673,7 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 		}
 		check := editableVM
 		if persistent {
-			check = resourcesEditable
+			check = nextBootEditable
 		}
 		if e = check(v); e != nil {
 			return e
@@ -687,7 +707,7 @@ func (h *vmHandler) Validate(ctx context.Context, p domain.Plan, b []byte) error
 		ok = false // force off is also the way out of a paused VM that cannot resume
 	}
 	if persistent {
-		ok = false // resourcesEditable checked the state above
+		ok = false // nextBootEditable checked the state above
 	}
 	if ok && v.State != expected {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", fmt.Sprintf("%s requires %s state, observed %s", h.action, expected, v.State))

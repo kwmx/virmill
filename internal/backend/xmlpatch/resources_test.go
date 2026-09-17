@@ -2,6 +2,7 @@ package xmlpatch
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -88,7 +89,7 @@ func TestResourceDependenciesFailClosed(t *testing.T) {
 			t.Fatal("dependent CPU policy accepted", extra)
 		}
 	}
-	for _, vcpu := range []string{`<vcpu current='1'>2</vcpu>`, `<vcpu cpuset='1'>2</vcpu>`, `<vcpu placement='auto'>2</vcpu>`, `<vcpu>2</vcpu><vcpu>2</vcpu>`, `<vcpu><future/></vcpu>`} {
+	for _, vcpu := range []string{`<vcpu current = '1'>2</vcpu>`, `<vcpu cpuset='1'>2</vcpu>`, `<vcpu placement='auto'>2</vcpu>`, `<vcpu>2</vcpu><vcpu>2</vcpu>`, `<vcpu><future/></vcpu>`} {
 		if _, err := EditResources(fixedXML(`<memory>262144</memory>`, "", vcpu, ""), ResourceEdit{VCPUs: ptr(4)}); err == nil {
 			t.Fatal("dependent CPU attribute accepted", vcpu)
 		}
@@ -110,5 +111,33 @@ func TestResourceNodeBudget(t *testing.T) {
 	x := `<domain><memory>262144</memory><metadata>` + strings.Repeat(`<x/>`, 65536) + `</metadata></domain>`
 	if _, err := EditResources(x, ResourceEdit{MemoryMiB: ptr(512)}); err == nil {
 		t.Fatal("unbounded node inventory accepted")
+	}
+}
+
+// ADR 0068: a VM defined with spare CPU slots keeps them when its boot count
+// changes, and the element takes only the two shapes libvirt itself writes.
+func TestCPUSlotsSurviveABootCountEdit(t *testing.T) {
+	for _, test := range []struct{ vcpu, requested, want string }{
+		{`<vcpu placement='static' current='2'>4</vcpu>`, "3", `<vcpu placement='static' current='3'>4</vcpu>`},
+		{`<vcpu placement='static' current='2'>4</vcpu>`, "1", `<vcpu placement='static' current='1'>4</vcpu>`},
+		{`<vcpu placement='static' current='2'>4</vcpu>`, "4", `<vcpu placement='static'>4</vcpu>`},
+		{`<vcpu placement='static' current='2'>4</vcpu>`, "6", `<vcpu placement='static'>6</vcpu>`},
+		{`<vcpu current='2'>4</vcpu>`, "8", `<vcpu>8</vcpu>`},
+		{`<vcpu placement='static'>4</vcpu>`, "2", `<vcpu placement='static'>2</vcpu>`},
+	} {
+		requested, err := strconv.ParseUint(test.requested, 10, 64)
+		if err != nil {
+			t.Fatal(err)
+		}
+		out, err := EditResources(fixedXML(`<memory unit='KiB'>262144</memory>`, "", test.vcpu, ""), ResourceEdit{VCPUs: &requested})
+		if err != nil {
+			t.Fatal(test.vcpu, test.requested, err)
+		}
+		if !strings.Contains(out, test.want) {
+			t.Fatal("unexpected CPU element for", test.vcpu, test.requested, out)
+		}
+		if strings.Count(out, "<vcpu") != 1 || !strings.Contains(out, "opaque &amp; retained") || !strings.Contains(out, "existing-expert-setting") {
+			t.Fatal("the edit disturbed the rest of the definition", out)
+		}
 	}
 }

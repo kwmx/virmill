@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"regexp"
+	"strconv"
 	"virmill.local/core/internal/backend/xmlpatch"
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/validation"
@@ -83,7 +84,7 @@ func (s *Service) resourceView(ctx context.Context, r Request) (domain.VMResourc
 	if out.CanEditCPU || out.CanEditMemory {
 		out.ApplyModes = []string{"next-boot"}
 	}
-	if err := resourcesEditable(v); err != nil {
+	if err := nextBootEditable(v); err != nil {
 		reason := "Wait until the VM is stopped, running or paused before changing next-boot settings"
 		if v.HasManagedSave {
 			reason = "Restore the saved VM, then shut it down before editing hardware"
@@ -101,5 +102,42 @@ func (s *Service) resourceView(ctx context.Context, r Request) (domain.VMResourc
 	}
 	// Edits to a VM that is not stopped apply only after it shuts down (ADR 0061).
 	out.RequiresShutdown = v.State != "stopped" && (out.CanEditCPU || out.CanEditMemory)
+	s.liveResourceOffer(&out, v)
 	return out, ctx.Err()
+}
+
+// liveResourceOffer reports what this VM can change while it runs, and says why
+// it cannot when it cannot (ADR 0068).
+func (s *Service) liveResourceOffer(out *domain.VMResourceView, v domain.VM) {
+	reason := func(text string) {
+		out.CanChangeLiveCPU, out.CanChangeLiveMemory = false, false
+		out.LiveCPUReason, out.LiveMemoryReason = text, text
+	}
+	if _, ok := s.Provider.(domain.LiveResourceWriter); !ok {
+		reason("This backend cannot change CPU or memory while a VM runs")
+		return
+	}
+	now, err := readLiveResources(v)
+	if err != nil {
+		reason(validation.SafeText(err.Error()))
+		return
+	}
+	out.MemoryBalloon = now.Balloon
+	if out.CanChangeLiveCPU = now.MaximumVCPUs > now.VCPUs; !out.CanChangeLiveCPU {
+		out.LiveCPUReason = "This VM is running all " + strconv.FormatUint(now.VCPUs, 10) +
+			" of its CPUs: it was not started with spare CPU slots. Change its CPUs for the next boot instead"
+	}
+	switch {
+	case now.Balloon != "virtio":
+		out.LiveMemoryReason = "This VM has no memory balloon, so its memory can only change at its next boot"
+	case now.MemoryBytes%(1<<20) != 0:
+		out.LiveMemoryReason = "This VM is running with a memory size Virmill cannot change safely while it runs"
+	case now.MaximumMemoryBytes>>20 <= liveMemoryFloorMiB:
+		out.LiveMemoryReason = "This VM is too small to give memory back while it runs"
+	default:
+		out.CanChangeLiveMemory = true
+	}
+	if out.CanChangeLiveCPU || out.CanChangeLiveMemory {
+		out.ApplyModes = append(out.ApplyModes, "now")
+	}
 }

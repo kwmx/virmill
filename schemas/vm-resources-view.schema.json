@@ -15,7 +15,9 @@
     "canEditCPU",
     "canEditMemory",
     "requiresShutdown",
-    "applyModes"
+    "applyModes",
+    "canChangeLiveCPU",
+    "canChangeLiveMemory"
   ],
   "properties": {
     "resource": {
@@ -90,8 +92,26 @@
       "type": "array",
       "uniqueItems": true,
       "items": {
-        "const": "next-boot"
+        "enum": [
+          "next-boot",
+          "now"
+        ]
       }
+    },
+    "canChangeLiveCPU": {
+      "type": "boolean"
+    },
+    "canChangeLiveMemory": {
+      "type": "boolean"
+    },
+    "liveCPUReason": {
+      "type": "string"
+    },
+    "liveMemoryReason": {
+      "type": "string"
+    },
+    "memoryBalloon": {
+      "type": "string"
     }
   },
   "$defs": {

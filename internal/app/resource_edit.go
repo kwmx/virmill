@@ -16,11 +16,14 @@ func editableVM(v domain.VM) error {
 }
 
 // ADR 0061: next-boot CPU and memory edits are also allowed while a VM runs or
-// is paused. They are checked against the saved definition alone, because the
-// live one changes as the guest runs.
+// is paused, and ADR 0068 extends that to boot order and media ejection. They
+// are checked against the saved definition alone, because the live one changes
+// as the guest runs.
 const persistentPrecondition = "persistent-xml-v1"
 
-func resourcesEditable(v domain.VM) error {
+// nextBootEditable reports whether a next-boot edit may be planned for this VM,
+// running or not. The guest-agent channel keeps the stopped-VM rule.
+func nextBootEditable(v domain.VM) error {
 	if v.PersistentXML == "" {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "this VM has no saved definition to edit")
 	}
@@ -28,7 +31,7 @@ func resourcesEditable(v domain.VM) error {
 		return domain.Fail("UNSUPPORTED_CAPABILITY", "managed-save state is bound to the old hardware; restore and shut down the guest before editing")
 	}
 	if v.State != "stopped" && v.State != "running" && v.State != "paused" {
-		return domain.Fail("UNSUPPORTED_CAPABILITY", "CPU and memory can be changed while the VM is stopped, running or paused; it is "+v.State)
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "next-boot settings can be changed while the VM is stopped, running or paused; it is "+v.State)
 	}
 	return nil
 }
@@ -37,7 +40,8 @@ func resourcesEditable(v domain.VM) error {
 // reviewed against.
 func editBaseUnchanged(v domain.VM, input map[string]any) bool {
 	if input["editPrecondition"] == persistentPrecondition {
-		return input["editVersion"] == float64(1) && !v.HasManagedSave && xmlpatch.Digest(v.PersistentXML) == input["editBeforePersistentSHA256"]
+		version := input["editVersion"] == float64(1) || input["editVersion"] == float64(2)
+		return version && !v.HasManagedSave && xmlpatch.Digest(v.PersistentXML) == input["editBeforePersistentSHA256"]
 	}
 	return input["editPrecondition"] == nil && v.Fingerprint == input["editBeforeFingerprint"]
 }

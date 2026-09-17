@@ -105,15 +105,15 @@ func TestBootFormLegacyEjectionRequiresReplacement(t *testing.T) {
 }
 
 func TestBootFormRefusesUnsafeObservation(t *testing.T) {
-	for _, kind := range []string{"wrong-vm", "running", "managed-save", "no-persistent", "direct-boot", "duplicate"} {
+	for _, kind := range []string{"wrong-vm", "suspended", "managed-save", "no-persistent", "direct-boot", "duplicate"} {
 		t.Run(kind, func(t *testing.T) {
 			f := bootFixture(t)
 			r := f.Report
 			switch kind {
 			case "wrong-vm":
 				r.Resource.UUID = "22345678-1234-4234-8234-123456789abc"
-			case "running":
-				r.State = "running"
+			case "suspended":
+				r.State = "pmsuspended"
 			case "managed-save":
 				r.HasManagedSave = true
 			case "no-persistent":

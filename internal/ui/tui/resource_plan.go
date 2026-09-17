@@ -36,3 +36,38 @@ func resourcePlanChanges(f *details, p domain.Plan) map[string]bool {
 	}
 	return shown
 }
+
+// liveResourcePlanChanges renders what a running VM will be running with, and
+// what stays as it is (ADR 0068).
+func liveResourcePlanChanges(f *details, p domain.Plan) map[string]bool {
+	shown := map[string]bool{}
+	if p.Operation != "vm.resources-live-v1" {
+		return shown
+	}
+	read := func(name, field string) (uint64, bool) {
+		values, ok := p.Review[name].(map[string]any)
+		if !ok {
+			return 0, false
+		}
+		number, ok := values[field].(float64)
+		return uint64(number), ok && number >= 0 && number == float64(uint64(number))
+	}
+	pair := func(field string) (uint64, uint64, bool) {
+		before, bok := read("running", field)
+		after, aok := read("afterChange", field)
+		return before, after, bok && aok && before != after
+	}
+	if before, after, changed := pair("vcpus"); changed {
+		f.scalar("CPU cores now running", resourceValue(&before)+" -> "+resourceValue(&after), 0)
+		shown["vcpus"] = true
+	}
+	if before, after, changed := pair("memoryBytes"); changed {
+		f.scalar("RAM now running", resourceMemory(&before)+" -> "+resourceMemory(&after), 0)
+		shown["memoryMiB"] = true
+	}
+	if len(shown) > 0 {
+		f.line("The saved settings and the next boot stay as they are.", 0)
+		shown["applyMode"] = true
+	}
+	return shown
+}

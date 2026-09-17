@@ -21,17 +21,22 @@ also checks the selected backend's reported maximum. `memoryMiB` accepts whole
 MiB from 1 through 1,048,576. These are parser/adapter limits, not a claim that the
 host can allocate that much RAM or that a guest can boot with the requested size.
 
-`applyMode` supports `next-boot` only in this adapter; an omitted mode is reported
-as `next-boot` for compatibility with the old count-only input. `now` and `both`
-are explicitly refused.
+`applyMode` chooses when the change applies: `next-boot` edits the saved
+definition, and `now` changes what a running VM is running with
+([ADR 0068](adr/0068-live-resources-and-running-boot-edits.md), below). An
+omitted mode is reported as `next-boot` for compatibility with the old
+count-only input. `both` is refused: one change, one reviewed effect.
 
 A running or paused VM keeps its current CPU and memory; the change applies after
 it is shut down and started again. A restart inside the guest keeps the old
 values. Such a plan is checked against the saved definition only, so it stays
 valid while the guest runs and after it stops; a change to the saved definition,
 or saved (managed-save) state, makes it stale. The TUI offers a reviewed graceful
-shutdown next to the edit. Boot order, media ejection and the guest-agent channel
-still require a stopped VM. Restoring saved state is a separate approved workflow.
+shutdown next to the edit. Boot order and media ejection follow the same rule
+(ADR 0068): they can be changed while the VM runs and apply at its next start.
+The guest-agent channel still requires a stopped VM, because it adds a device
+that cannot be used until the VM starts again. Restoring saved state is a
+separate approved workflow.
 
 In the TUI choose **VMs → vm set**, then enter:
 
@@ -150,3 +155,44 @@ unrecognized changes, unavailable secure readback or lost acknowledgement retain
 uncertainty. Inspect `operation show/watch` and explicitly reconcile by observation.
 Do not replay, erase locks or manually remove a medium to make a failed edit appear
 successful. See [ADR 0014](adr/0014-boot-order-and-retained-media-edits.md).
+
+## Changing CPU and memory while a VM runs
+
+`applyMode: "now"` plans `vm.resources-live-v1`, which changes what a running VM
+is running with and nothing else: the saved definition, and therefore the next
+boot, stay exactly as they were
+([ADR 0068](adr/0068-live-resources-and-running-boot-edits.md)).
+
+```sh
+virmill vm set VM_UUID --connection qemu:///system \
+  --input '{"memoryMiB":3072,"applyMode":"now"}' \
+  --plan --output json --non-interactive
+```
+
+What a VM can take depends on how it was started, and a refusal says what to
+change instead:
+
+| Asked for | Answer |
+| --- | --- |
+| Memory, on a VM with a virtio memory balloon | Between 256 MiB and the maximum it was started with |
+| Memory, on a VM without a balloon | Refused: memory can only change at its next boot |
+| Memory above the running maximum | Refused: change it for the next boot and start the VM again |
+| CPUs, on a VM started with spare CPU slots | Between one and the maximum it was started with |
+| CPUs, on a VM running all of its CPUs | Refused: it was not started with spare CPU slots |
+| Anything, on a stopped or paused VM | Refused: change the next boot instead, or resume it first |
+
+Memory moves through the guest's balloon driver. Virmill asks for a size and
+reports what the running definition then holds; whether the guest has given the
+memory back, and how quickly, is the guest's own business. Taking CPUs or memory
+away asks for `guest-resource-pressure`, because it can slow a guest down or stop
+programs inside it. Removing a CPU works only for one that was added while the VM
+ran: QEMU cannot unplug a CPU the VM booted with.
+
+New VMs get a virtio memory balloon, which is libvirt's own default; the
+**Advanced** device policy at creation still offers `none`. Spare CPU slots are
+not written by Virmill yet: a VM has them only if its definition already carries
+them (`<vcpu current="2">4</vcpu>`), and a next-boot CPU edit keeps them.
+
+In the TUI, open **CPU / RAM** on a running VM and choose **Change while it
+runs**. The confirmation shows the running values, what they become, and that
+the saved settings and the next boot stay as they are.

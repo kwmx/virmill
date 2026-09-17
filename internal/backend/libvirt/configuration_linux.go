@@ -5,6 +5,8 @@ package libvirt
 import (
 	"context"
 	"encoding/xml"
+	"reflect"
+
 	native "libvirt.org/go/libvirt"
 	"virmill.local/core/internal/backend/xmlpatch"
 	"virmill.local/core/internal/domain"
@@ -29,9 +31,10 @@ func (p *Provider) CheckConfiguration(ctx context.Context, uri, id string, input
 	return checkConfiguration(c, d, uri, input)
 }
 
-// persistentEdit marks a next-boot CPU/RAM edit reviewed while the VM ran or
-// was paused. It is checked against the saved definition alone, because the
-// live one changes as the guest runs (ADR 0061).
+// persistentEdit marks a next-boot edit reviewed while the VM ran or was
+// paused: CPU and memory (ADR 0061), boot order and media (ADR 0068). It is
+// checked against the saved definition alone, because the live one changes as
+// the guest runs.
 func persistentEdit(input map[string]any) bool {
 	return input["editPrecondition"] == "persistent-xml-v1"
 }
@@ -66,8 +69,19 @@ func liveResourcesKept(before, after domain.VM) bool {
 	return errA == nil && errB == nil && same(a.VCPUs, b.VCPUs) && same(a.MaximumMemoryBytes, b.MaximumMemoryBytes)
 }
 
+// liveBootKept reports whether defining the saved definition left a running
+// guest's boot order and media alone (ADR 0068).
+func liveBootKept(before, after domain.VM) bool {
+	if before.LiveXML == "" || after.LiveXML == "" {
+		return true
+	}
+	a, errA := xmlpatch.InspectBoot(before.LiveXML)
+	b, errB := xmlpatch.InspectBoot(after.LiveXML)
+	return errA == nil && errB == nil && reflect.DeepEqual(a, b)
+}
+
 func checkConfiguration(c *native.Connect, d *native.Domain, uri string, input map[string]any) error {
-	if (input["editVersion"] != float64(1) && input["editVersion"] != float64(2) && input["editVersion"] != float64(3)) || input["applyMode"] != "next-boot" || persistentEdit(input) && input["editVersion"] != float64(1) {
+	if (input["editVersion"] != float64(1) && input["editVersion"] != float64(2) && input["editVersion"] != float64(3)) || input["applyMode"] != "next-boot" || persistentEdit(input) && input["editVersion"] == float64(3) {
 		return domain.Fail("STALE_PLAN", "fresh preservation-aware next-boot edit preview required")
 	}
 	v, err := observe(d, uri)
@@ -155,7 +169,7 @@ func executeConfiguration(c *native.Connect, d *native.Domain, uri string, input
 	if err != nil {
 		return err
 	}
-	if !editableState(v, input) || v.HasManagedSave || !match || !liveResourcesKept(before, v) {
+	if !editableState(v, input) || v.HasManagedSave || !match || !liveResourcesKept(before, v) || !liveBootKept(before, v) {
 		return domain.Fail("RECOVERY_REQUIRED", "persistent configuration readback differs; inspect the operation without replaying it")
 	}
 	secure, err := defined.GetXMLDesc(native.DOMAIN_XML_INACTIVE | native.DOMAIN_XML_SECURE)

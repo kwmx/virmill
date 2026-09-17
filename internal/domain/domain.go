@@ -104,6 +104,16 @@ type ConfigurationValidator interface {
 	CheckConfiguration(context.Context, string, string, map[string]any) error
 	ObserveConfiguration(context.Context, string, string, map[string]any) (bool, error)
 }
+
+// LiveResourceWriter changes what a running VM is running with, and never its
+// saved definition (ADR 0068). SetLiveResources refuses before any effect
+// whenever it can, so a plan that cannot be carried out fails plainly.
+// ObserveLiveResources reports whether the live definition holds the reviewed
+// values; it never sets anything.
+type LiveResourceWriter interface {
+	SetLiveResources(context.Context, string, string, map[string]any) error
+	ObserveLiveResources(context.Context, string, string, map[string]any) (bool, error)
+}
 type Grant struct {
 	Operation  string `json:"operation"`
 	ResourceID string `json:"resourceID"`

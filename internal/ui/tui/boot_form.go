@@ -34,13 +34,19 @@ type BootForm struct {
 	changedOrder bool
 }
 
+func bootEditableState(state string) bool {
+	return state == "stopped" || state == "running" || state == "paused"
+}
+
 func NewBootForm(vm domain.VM, report BootReport) (BootForm, error) {
 	f := BootForm{VM: vm, Report: report}
 	if vm.Key != report.Resource || vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 		return f, fmt.Errorf("Choose the VM again; the boot report belongs to a different resource.")
 	}
-	if report.State != "stopped" || report.HasManagedSave || vm.State != "stopped" || vm.HasManagedSave || report.Persistent == nil {
-		return f, fmt.Errorf("Shut down this persistent VM and resolve saved state before changing boot options.")
+	// Boot options can be changed while the VM runs; they apply at its next
+	// start (ADR 0068). Saved state still belongs to the old configuration.
+	if !bootEditableState(report.State) || !bootEditableState(vm.State) || report.HasManagedSave || vm.HasManagedSave || report.Persistent == nil {
+		return f, fmt.Errorf("Resolve this persistent VM's saved state before changing boot options.")
 	}
 	if report.Persistent.Mode == "direct-boot" || report.Persistent.Mode == "conflicting" {
 		return f, fmt.Errorf("This VM uses a boot method that the boot-order editor cannot safely change.")
@@ -204,6 +210,9 @@ func (f BootForm) View(width, height int) string {
 		return strings.Join([]string{clean("Resize to edit boot options."), clean("Your choices are retained.")}[:min(2, height)], "\n")
 	}
 	lines := []string{"Boot order and installer media", "VM: " + f.VM.Name, "Changes apply next boot. Ejected files are kept.", ""}
+	if f.VM.State == "running" || f.VM.State == "paused" {
+		lines[2] = "This VM keeps its boot order until you shut it down and start it again. Ejected files are kept."
+	}
 	rows := []string{}
 	if f.Report.Persistent != nil {
 		for _, d := range f.Report.Persistent.Devices {

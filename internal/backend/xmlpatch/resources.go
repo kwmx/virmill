@@ -139,6 +139,78 @@ func memoryResource(f *resourceField) (uint64, uint64, error) {
 	return n * unit, unit, nil
 }
 
+// editVCPUCount rewrites the <vcpu> element for a new boot count, keeping the
+// spare CPU slots a definition already carries (ADR 0068). It writes only the
+// two shapes libvirt itself writes — a plain maximum, and a maximum with a
+// smaller current count — and reuses the element's own bytes for the attribute,
+// so a stored definition still matches the reviewed one byte for byte.
+func editVCPUCount(data string, requested uint64) (string, error) {
+	fail := func() error {
+		return domain.Fail("UNSUPPORTED_CAPABILITY", "domain/vcpu has dependent resource policy; a dedicated reviewed adapter is required")
+	}
+	root, err := positionedXML(data)
+	if err != nil {
+		return "", err
+	}
+	node, err := observedResourceNode(root, "vcpu", true)
+	if err != nil {
+		return "", fail()
+	}
+	maximum, err := observedResourceScalar(node, "current", "placement")
+	if err != nil {
+		return "", fail()
+	}
+	if placement, ok := node.attr("placement"); ok && placement != "static" {
+		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "automatic vCPU placement requires a dedicated edit adapter")
+	}
+	value, hasCurrent := node.attr("current")
+	if hasCurrent {
+		current, err := positiveResource(value)
+		if err != nil || current > maximum {
+			return "", fail()
+		}
+	}
+	// Without spare slots, or when the request reaches the maximum, the element
+	// carries one number, as it does today.
+	if !hasCurrent || requested >= maximum {
+		spans := []spanReplacement{{node.startEnd, node.endStart, strconv.FormatUint(requested, 10)}}
+		if hasCurrent {
+			removal, err := attributeRemoval(data, node, "current")
+			if err != nil {
+				return "", err
+			}
+			spans = append(spans, removal)
+		}
+		return replaceSpans(data, spans)
+	}
+	span, err := attributeSpan(data, node, "current", strconv.FormatUint(requested, 10))
+	if err != nil {
+		return "", err
+	}
+	return replaceSpans(data, []spanReplacement{span})
+}
+
+// attributeRemoval spans one attribute and the whitespace before it, so a start
+// tag loses it exactly as libvirt would have written the tag without it.
+func attributeRemoval(data string, n *positionedNode, name string) (spanReplacement, error) {
+	span, err := attributeSpan(data, n, name, "")
+	if err != nil {
+		return span, err
+	}
+	refuse := domain.Fail("UNSUPPORTED_CAPABILITY", "the "+name+" attribute is written in a form this editor does not model")
+	start := span.start - len(name) - 2
+	if start <= n.start || data[start:span.start-1] != name+"=" {
+		return spanReplacement{}, refuse
+	}
+	for start > n.start && (data[start-1] == ' ' || data[start-1] == '\t' || data[start-1] == '\n' || data[start-1] == '\r') {
+		start--
+	}
+	if start == span.start-len(name)-2 {
+		return spanReplacement{}, refuse
+	}
+	return spanReplacement{start, span.end + 1, ""}, nil
+}
+
 func EditResources(data string, edit ResourceEdit) (string, error) {
 	if edit.VCPUs == nil && edit.MemoryMiB == nil {
 		return "", domain.Fail("INVALID_INPUT", "no CPU/RAM edit requested")
@@ -167,17 +239,9 @@ func EditResources(data string, edit ResourceEdit) (string, error) {
 		if e != nil {
 			return "", e
 		}
-		attrs, e := resourceAttrs(field, "placement")
-		if e != nil {
-			return "", e
-		}
-		if placement, ok := attrs["placement"]; ok && placement != "static" {
-			return "", domain.Fail("UNSUPPORTED_CAPABILITY", "automatic vCPU placement requires a dedicated edit adapter")
-		}
 		if _, e = positiveResource(field.text.String()); e != nil {
 			return "", e
 		}
-		changes["domain/vcpu"] = strconv.FormatUint(*edit.VCPUs, 10)
 	}
 	if edit.MemoryMiB != nil {
 		if *edit.MemoryMiB < 1 || *edit.MemoryMiB > 1048576 {
@@ -217,9 +281,19 @@ func EditResources(data string, edit ResourceEdit) (string, error) {
 			changes["domain/currentMemory"] = strconv.FormatUint(desired/unit, 10)
 		}
 	}
-	out, err := Patch(data, changes)
-	if err != nil {
-		return "", domain.Fail("UNSUPPORTED_CAPABILITY", "resource edit would replace structured or ambiguous XML")
+	out := data
+	if len(changes) > 0 {
+		out, err = Patch(data, changes)
+		if err != nil {
+			return "", domain.Fail("UNSUPPORTED_CAPABILITY", "resource edit would replace structured or ambiguous XML")
+		}
+	}
+	// The CPU count is rewritten last, on the element's own bytes, so that spare
+	// CPU slots survive the edit (ADR 0068).
+	if edit.VCPUs != nil {
+		if out, err = editVCPUCount(out, *edit.VCPUs); err != nil {
+			return "", err
+		}
 	}
 	return out, nil
 }
