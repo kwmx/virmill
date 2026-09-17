@@ -106,9 +106,9 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		f.Fields[0].Value = disks[0]
 		field("sizeGiB", "New size (GiB)", "The disk's new total size, larger than now. Partitions inside the guest keep their size.", 5)
 	case "disk-add-dispose":
-		field("disposition", "Close by", "Left/Right chooses. Accept keeps the new disk; delete removes an unused volume, or closes an addition whose volume was never made.", 16)
+		field("disposition", "Close by", "Left/Right chooses. Accept keeps the new disk; keep frees the VM and leaves an unused volume in its pool; delete removes that volume, or closes an addition whose volume was never made.", 16)
 		f.Fields[0].Value = "accept"
-		f.Fields[0].Choices = []string{"accept", "delete"}
+		f.Fields[0].Choices = []string{"accept", "keep", "delete"}
 	case "disk-add":
 		field("sizeGiB", "Size (GiB)", "The new empty disk's size, 1 to 512 GiB.", 5)
 		field("bus", "Connection", "Left/Right chooses how the disk attaches. Automatic follows this VM's disks.", 16)
@@ -210,7 +210,7 @@ func (f GuidedForm) note() string {
 	case "disk-move":
 		return "VM must be stopped. Both copies exist until the move finishes, so the destination needs room for one more."
 	case "disk-add-dispose":
-		return "Frees the VM this unfinished addition holds. Deleting is offered only for a volume no VM uses."
+		return "Frees the VM this unfinished addition holds. Keep deletes nothing; deleting is offered only for a volume no VM uses."
 	case "capture":
 		return "VM must be stopped. Save a private recovery point."
 	case "guest-tools":
@@ -474,7 +474,7 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		return "vm.plan", r, -1, nil
 	case "disk-add-dispose":
 		if !slices.Contains(f.Fields[0].Choices, values["disposition"]) {
-			return fail("disposition", "Choose whether to accept the new disk or delete its unused volume.")
+			return fail("disposition", "Choose whether to accept the new disk, keep its unused volume, or delete it.")
 		}
 		r.ID, r.Input["disposition"] = f.JobID, values["disposition"]
 		if r.ID == "" {

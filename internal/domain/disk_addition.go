@@ -61,6 +61,8 @@ type Disk = RemovalDisk
 // uploads, never defines and never deletes a volume the definition still
 // names: a referenced disk can only be accepted, never removed here.
 type DiskAdditionDisposalBackend interface {
-	InspectAddedDiskDisposal(context.Context, DiskAdditionPlan) (AddedDiskDisposal, error)
+	// InspectAddedDiskDisposal builds the host-wide dependency graph only when
+	// deletion is asked for; keeping or accepting deletes nothing.
+	InspectAddedDiskDisposal(ctx context.Context, plan DiskAdditionPlan, forDeletion bool) (AddedDiskDisposal, error)
 	DeleteUnreferencedDisk(context.Context, DiskAdditionPlan, AddedDiskDisposal) error
 }

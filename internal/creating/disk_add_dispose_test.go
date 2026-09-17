@@ -21,14 +21,20 @@ type disposeFixtureBackend struct {
 	referenced bool
 	state      string
 	deletes    int
+	// graphDenied fails the deletion graph as root-only pool images do for an
+	// unprivileged coordinator.
+	graphDenied bool
 }
 
-func (f *disposeFixtureBackend) InspectAddedDiskDisposal(_ context.Context, in domain.DiskAdditionPlan) (domain.AddedDiskDisposal, error) {
+func (f *disposeFixtureBackend) InspectAddedDiskDisposal(_ context.Context, in domain.DiskAdditionPlan, forDeletion bool) (domain.AddedDiskDisposal, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	out := domain.AddedDiskDisposal{Referenced: f.referenced, VolumeState: f.state, ResourceIDs: in.Target.ResourceIDs}
-	// The deletion-grade graph exists only when deletion is possible.
-	if !f.referenced && f.state == "present" {
+	// The deletion-grade graph exists only when deletion is asked for and possible.
+	if forDeletion && !f.referenced && f.state == "present" {
+		if f.graphDenied {
+			return out, errors.New("permission denied")
+		}
 		out.GraphDigest = strings.Repeat("e", 64)
 	}
 	if f.state == "present" {
@@ -135,6 +141,40 @@ func TestDiskAddDispositionDeletesOnlyAnUnreferencedVolume(t *testing.T) {
 	}
 }
 
+// Keeping deletes nothing, so it needs no dependency proof: it frees the VM
+// where that proof cannot be read, and leaves the unused volume named.
+func TestDiskAddDispositionKeepsTheVolumeWhereDeletionCannotBeProven(t *testing.T) {
+	h, _, d, disposal, job, _ := stuckAddition(t, false)
+	disposal.mu.Lock()
+	disposal.graphDenied = true
+	disposal.mu.Unlock()
+	if _, err := d.Plan(context.Background(), 1000, disposeRequest(job, "delete")); err == nil || !strings.Contains(err.Error(), "permission denied") {
+		t.Fatal("deletion must still require its proof", err)
+	}
+	plan, err := d.Plan(context.Background(), 1000, disposeRequest(job, "keep"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	acks := strings.Join(plan.Acknowledgements, " ")
+	if strings.Contains(acks, "data-loss") || strings.Contains(acks, "host-mutation") || plan.Review["diskDeletion"] != false {
+		t.Fatal("keeping must not ask to delete anything", plan.Acknowledgements, plan.Review)
+	}
+	if !strings.Contains(strings.Join(plan.Risks, " "), "stays in pool") {
+		t.Fatal("the kept volume is not named", plan.Risks)
+	}
+	if closed := applyAdd(t, h, plan, "keep"); closed.State != "succeeded" || disposal.deletes != 0 || disposal.state != "present" {
+		t.Fatal(closed.State, closed.Error, disposal.deletes, disposal.state)
+	}
+	if parent, err := h.s.Engine.Store.Job(job.ID); err != nil || parent.State != "partial" {
+		t.Fatal("the closed addition is not recorded as partial", parent.State, err)
+	}
+	// A disk the definition names is accepted, not kept.
+	_, _, named, _, namedJob, _ := stuckAddition(t, true)
+	if _, err := named.Plan(context.Background(), 1000, disposeRequest(namedJob, "keep")); err == nil || !strings.Contains(err.Error(), "accept it instead") {
+		t.Fatal(err)
+	}
+}
+
 // An addition interrupted before its volume existed holds the VM and pool
 // until closed; delete then closes it without deleting anything.
 func TestDiskAddDispositionClosesAnAdditionWhoseVolumeNeverExisted(t *testing.T) {
@@ -192,7 +232,7 @@ func TestDiskAddDispositionRefusesMismatchedChoices(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = disposal
-	for _, bad := range []map[string]any{{}, {"disposition": "keep"}, {"disposition": "accept", "extra": true}} {
+	for _, bad := range []map[string]any{{}, {"disposition": "discard"}, {"disposition": "accept", "extra": true}} {
 		request := disposeRequest(orphan, "accept")
 		request.Input = bad
 		if _, err := unreferenced.Plan(context.Background(), 1000, request); err == nil {

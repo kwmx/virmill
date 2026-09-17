@@ -6,6 +6,6 @@
   "additionalProperties": false,
   "required": ["disposition"],
   "properties": {
-    "disposition": {"enum": ["accept", "delete"]}
+    "disposition": {"enum": ["accept", "delete", "keep"]}
   }
 }

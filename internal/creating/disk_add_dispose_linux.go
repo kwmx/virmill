@@ -111,12 +111,15 @@ func (h *diskAddDisposeHandler) Plan(ctx context.Context, uid uint32, r app.Requ
 	if err != nil {
 		return empty, err
 	}
-	observation, err := h.backend.InspectAddedDiskDisposal(ctx, addition.Plan)
+	observation, err := h.backend.InspectAddedDiskDisposal(ctx, addition.Plan, request.Disposition == "delete")
 	if err != nil {
 		return empty, err
 	}
 	if request.Disposition == "accept" && !observation.Referenced {
 		return empty, domain.Fail("INVALID_INPUT", "this VM's saved definition does not name the new disk, so there is nothing to accept; delete the unused volume instead")
+	}
+	if request.Disposition == "keep" && observation.Referenced {
+		return empty, domain.Fail("INVALID_INPUT", "this VM's saved definition names the new disk, so accept it instead")
 	}
 	if request.Disposition == "delete" && observation.Referenced {
 		return empty, domain.Fail("RESOURCE_BUSY", "this VM's saved definition names the new disk, so its volume cannot be deleted here; accept it, or remove the disk with VM disk removal first")
@@ -137,6 +140,10 @@ func (h *diskAddDisposeHandler) Plan(ctx context.Context, uid uint32, r app.Requ
 	switch {
 	case request.Disposition == "accept":
 		risks = append(risks, "The new disk stays in the saved definition with its verified volume; it is empty until the guest formats it.")
+	case request.Disposition == "keep":
+		// Keeping deletes nothing, so it needs no dependency proof. It is the way
+		// out where that proof cannot be read, such as root-only pool images.
+		risks = append(risks, "Nothing is deleted: the unused volume "+addition.Plan.Target.VolumeName+" stays in pool "+addition.Plan.Target.PoolName+" until you remove it.")
 	case observation.VolumeState != "present":
 		// Interrupted before its volume existed: nothing is left to delete, and
 		// without this the addition would hold the VM and pool with no way out.
@@ -166,7 +173,7 @@ func parseDiskAddDispose(p domain.Plan, b []byte) (diskAddDisposeInput, error) {
 	var in diskAddDisposeInput
 	if wire.Decode(b, &in) != nil || in.Version != 1 || p.Operation != diskAddDisposeOperation ||
 		in.ParentOperationID == "" || in.AdditionPlanID == "" ||
-		(in.Disposition != "accept" && in.Disposition != "delete") ||
+		(in.Disposition != "accept" && in.Disposition != "delete" && in.Disposition != "keep") ||
 		len(p.Before) != 1 || p.Before["disk-addition-plan"] != in.AdditionPlanID {
 		return in, domain.Fail("INVALID_INPUT", "Invalid disk addition disposition binding.")
 	}
@@ -186,14 +193,15 @@ func (h *diskAddDisposeHandler) Review(_ context.Context, p domain.Plan, b []byt
 	return map[string]any{"action": "dispose-disk-addition", "resource": t.VM, "parentOperationID": in.ParentOperationID,
 		"additionPlanID": in.AdditionPlanID, "disposition": in.Disposition, "target": t.Target, "pool": t.PoolName,
 		"volume": t.VolumeName, "referenced": in.Observation.Referenced, "volumeState": in.Observation.VolumeState,
-		"diskDeletion": in.Disposition == "delete" && in.Observation.VolumeState == "present", "changesDefinition": false, "uploadsVolumes": false}, nil
+		"diskDeletion": in.Disposition == "delete" && in.Observation.VolumeState == "present", "keepsUnusedVolume": in.Disposition == "keep" && in.Observation.VolumeState == "present",
+		"changesDefinition": false, "uploadsVolumes": false}, nil
 }
 
 func (h *diskAddDisposeHandler) validate(ctx context.Context, p domain.Plan, in diskAddDisposeInput) error {
 	if _, err := h.addition(p, in.AdditionPlanID); err != nil {
 		return err
 	}
-	observation, err := h.backend.InspectAddedDiskDisposal(ctx, in.Plan)
+	observation, err := h.backend.InspectAddedDiskDisposal(ctx, in.Plan, in.Disposition == "delete")
 	if err != nil {
 		return err
 	}
@@ -242,7 +250,7 @@ func (h *diskAddDisposeHandler) Execute(ctx context.Context, p domain.Plan, b []
 	if err = h.backend.DeleteUnreferencedDisk(ctx, in.Plan, in.Observation); err != nil {
 		return err
 	}
-	after, err := h.backend.InspectAddedDiskDisposal(ctx, in.Plan)
+	after, err := h.backend.InspectAddedDiskDisposal(ctx, in.Plan, false)
 	if err != nil {
 		return err
 	}
@@ -273,7 +281,7 @@ func (h *diskAddDisposeHandler) Reconcile(ctx context.Context, p domain.Plan, b 
 	if in.Disposition != "delete" {
 		return true, ctx.Err()
 	}
-	after, err := h.backend.InspectAddedDiskDisposal(ctx, in.Plan)
+	after, err := h.backend.InspectAddedDiskDisposal(ctx, in.Plan, false)
 	if err != nil {
 		return false, err
 	}

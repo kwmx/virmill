@@ -70,7 +70,11 @@ They are built in this order, smallest first.
   disposition. Accepting keeps the reviewed disk and is offered only when the
   saved definition names it; deleting removes the new volume and only while no
   definition names it, under the generation and dependency guards creation
-  cleanup uses. Neither uploads nor defines anything. Without this an addition
+  cleanup uses. Keeping closes it without deleting anything, leaving the unused
+  volume named in the review; it needs no dependency proof, so it frees the VM
+  where that proof cannot be read, such as root-only pool images on a system
+  connection. Deleting when the volume never existed closes it the same way.
+  None of them uploads or defines anything. Without this an addition
   that failed after its define would hold the VM and its pool with no way out,
   which happened twice on the test host before it existed.
 - The definition before the change is bound by the digest that tolerates

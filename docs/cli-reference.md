@@ -1034,7 +1034,7 @@ Global Flags:
 
 ## `virmill operation dispose-disk-addition`
 
-Close an unresolved disk addition by accepting the new disk or deleting its unused volume
+Close an unresolved disk addition by accepting the new disk, or keeping or deleting its unused volume
 
 ```text
 Usage:

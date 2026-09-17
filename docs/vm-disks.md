@@ -96,6 +96,10 @@ virmill operation dispose-disk-addition OPERATION_UUID \
 
 - **accept** keeps the new disk. It is offered only when the saved definition
   already names it, which means the disk and its verified volume are there.
+- **keep** frees the VM without deleting anything: the unused volume stays in its
+  pool, and the review names it so you can remove it later. Use it where
+  delete is refused because Virmill cannot read the images it must check, such
+  as a system connection whose pool images only root or qemu can read.
 - **delete** removes the new volume, and only while no definition names it. A
   disk the VM still uses is never deleted this way; remove the disk first if
   that is what you want. If the addition stopped before its volume existed,

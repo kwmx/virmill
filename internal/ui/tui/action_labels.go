@@ -81,7 +81,7 @@ var actionText = map[string]struct{ label, description string }{
 	"vm disk grow":                    {"Grow VM disk", "Make a stopped VM's disk larger; partitions inside the guest are not changed."},
 	"vm disk add":                     {"Add VM disk", "Give a stopped VM one more empty disk in its own storage pool."},
 	"vm disk move":                    {"Move VM disk", "Copy a stopped VM's disk to another storage pool and point the VM at the copy."},
-	"operation dispose-disk-addition": {"Close disk addition", "Accept the new disk, or delete its unused volume, and free the VM."},
+	"operation dispose-disk-addition": {"Close disk addition", "Accept the new disk, keep or delete its unused volume, and free the VM."},
 	"vm autostart":                    {"Change VM automatic startup", "Choose whether libvirt starts this VM automatically."},
 	"vm set":                          {"Edit VM hardware", "Review next-boot CPU and memory, boot order or media changes."},
 	"import source describe":          {"Inspect image or folder", "Detect the image format and settings before import."},

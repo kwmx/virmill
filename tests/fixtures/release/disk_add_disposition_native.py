@@ -9,9 +9,11 @@ installed user coordinator runs as virmilld.service.
    coordinator is killed with SIGKILL, as a crash would, and started again.
 2. The addition must then be unresolved, and the probe reads what the host holds:
    whether the saved definition names the reviewed disk and whether its volume
-   exists. It picks the one disposition that matches: accept a named disk, or
+   exists. It picks the disposition that matches: accept a named disk, or
    delete an unnamed one (which closes it with nothing to delete when the volume
-   never existed).
+   never existed). Where deleting a present volume is refused because its
+   dependency proof cannot be read, the refusal is recorded and the addition is
+   closed with keep, which deletes nothing.
 3. The disposition must succeed, the addition must read partial, a deleted or
    never-created volume must be absent, and the VM must be free: it starts and
    shuts down (or is forced off with --unanswered-stop).
@@ -37,7 +39,8 @@ from tui_workspace_probe import Runner, canonical_path, require, strict_json, me
 
 DISPOSE_ACKS = {'accept': ['close-disk-addition', 'inherit-recovery-resources'],
                 'delete': ['close-disk-addition', 'data-loss-delete-disks', 'host-mutation', 'inherit-recovery-resources'],
-                'close': ['close-disk-addition', 'inherit-recovery-resources']}
+                'close': ['close-disk-addition', 'inherit-recovery-resources'],
+                'keep': ['close-disk-addition', 'inherit-recovery-resources']}
 
 
 def volume_present(uri, pool, volume):
@@ -72,6 +75,7 @@ def main():
     p.add_argument('--name', required=True, help="the same VM's name, as a second check")
     p.add_argument('--kill-after-ms', type=int, default=0, help='delay between the accepted apply and the kill')
     p.add_argument('--bus', default='', help='optional explicit bus: sata, scsi or virtio')
+    p.add_argument('--existing', default='', help='close this already unresolved disk addition instead of interrupting a new one')
     p.add_argument('--unanswered-stop', action='store_true', help='the guest has no OS: force it off instead of shutting down')
     p.add_argument('--boot-wait', type=int, default=90)
     a = p.parse_args()
@@ -103,17 +107,26 @@ def main():
         others = [v for v in before if v['key']['resourceUUID'] != a.vm]
         adder = Adder(r, stage, a.connection, original)
 
-        plan = adder.plan_add(1, a.bus)
-        review = plan['review']
-        label = adder.label('add-disk')
-        r.save(label + '-plan.json', plan)
-        acks = [part for ack in plan['acknowledgements'] for part in ('--ack', ack)]
-        job = r.cli('plan', 'apply', plan['planID'], '--digest', plan['planDigest'], *acks,
-                    '--detach', '--idempotency-key', f'{adder.key}-{label}')
-        adder.jobs.append(job['operationID'])
-        time.sleep(a.kill_after_ms / 1000)
-        restart_coordinator(r)
-        job = r.cli('operation', 'show', job['operationID'])
+        if a.existing:
+            job = r.cli('operation', 'show', a.existing)
+            plan = r.cli('plan', 'show', job['planID'])
+            require(plan['operation'] == 'vm.disk.add-v1' and adder.resource in plan['resourceIDs'], 'the existing operation is not an addition to this VM')
+            review = plan['review']
+            label = adder.label('existing-addition')
+            report['existingAddition'] = a.existing
+            adder.jobs.append(a.existing)
+        else:
+            plan = adder.plan_add(1, a.bus)
+            review = plan['review']
+            label = adder.label('add-disk')
+            r.save(label + '-plan.json', plan)
+            acks = [part for ack in plan['acknowledgements'] for part in ('--ack', ack)]
+            job = r.cli('plan', 'apply', plan['planID'], '--digest', plan['planDigest'], *acks,
+                        '--detach', '--idempotency-key', f'{adder.key}-{label}')
+            adder.jobs.append(job['operationID'])
+            time.sleep(a.kill_after_ms / 1000)
+            restart_coordinator(r)
+            job = r.cli('operation', 'show', job['operationID'])
         r.save(label + '-after-crash.json', job)
         report['additionAfterCrash'] = job['state']
         referenced = review['volume'] in r.cli('vm', 'show', a.vm)['persistentXML']
@@ -125,9 +138,16 @@ def main():
         require(job['state'] in ('recovery-required', 'interrupted'), f'the interrupted addition reads {job["state"]}')
 
         choice = 'accept' if referenced else 'delete'
-        dispose = r.cli('operation', 'dispose-disk-addition', job['operationID'], '--input', json.dumps({'disposition': choice}))
+        try:
+            dispose = r.cli('operation', 'dispose-disk-addition', job['operationID'], '--input', json.dumps({'disposition': choice}))
+        except RuntimeError as refused:
+            require(choice == 'delete' and present, f'{choice}: plan refused')
+            code, envelope = adder.attempt('operation', 'dispose-disk-addition', job['operationID'], '--input', json.dumps({'disposition': 'delete'}))
+            report['deleteRefused'] = ((envelope or {}).get('error') or {}).get('message') or str(refused)
+            choice = 'keep'
+            dispose = r.cli('operation', 'dispose-disk-addition', job['operationID'], '--input', json.dumps({'disposition': 'keep'}))
         r.save('dispose-plan.json', dispose)
-        kind = choice if referenced or present else 'close'
+        kind = choice if referenced or present or choice == 'keep' else 'close'
         require(sorted(dispose['acknowledgements']) == DISPOSE_ACKS[kind], f'{kind}: unexpected acknowledgements {dispose["acknowledgements"]}')
         require(dispose['review']['diskDeletion'] is (kind == 'delete'), 'the review misstates deletion')
         dlabel = adder.label('dispose-' + kind)
@@ -138,6 +158,9 @@ def main():
         shown = r.cli('vm', 'show', a.vm)
         if kind == 'accept':
             require(review['volume'] in shown['persistentXML'] and volume_present(a.connection, review['pool'], review['volume']), 'the accepted disk is gone')
+        elif kind == 'keep':
+            require(review['volume'] not in shown['persistentXML'] and volume_present(a.connection, review['pool'], review['volume']), 'the kept volume is gone or named')
+            report['keptVolume'] = {'pool': review['pool'], 'volume': review['volume']}
         else:
             require(review['volume'] not in shown['persistentXML'] and not volume_present(a.connection, review['pool'], review['volume']), 'the unused volume remains')
         report.update(disposition=kind, acknowledgements=sorted(dispose['acknowledgements']), additionAfterDisposition=parent['state'],

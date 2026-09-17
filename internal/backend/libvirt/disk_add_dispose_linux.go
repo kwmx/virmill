@@ -18,7 +18,7 @@ var _ domain.DiskAdditionDisposalBackend = (*Provider)(nil)
 // ADR 0062: an unresolved disk addition is closed by observation. A disk the
 // saved definition still names can only be accepted; only an unreferenced
 // volume may be deleted, under the same guards as creation cleanup.
-func (p *Provider) InspectAddedDiskDisposal(ctx context.Context, in domain.DiskAdditionPlan) (domain.AddedDiskDisposal, error) {
+func (p *Provider) InspectAddedDiskDisposal(ctx context.Context, in domain.DiskAdditionPlan, forDeletion bool) (domain.AddedDiskDisposal, error) {
 	var out domain.AddedDiskDisposal
 	if err := validDiskAddition(in); err != nil {
 		return out, err
@@ -77,7 +77,7 @@ func (p *Provider) InspectAddedDiskDisposal(ctx context.Context, in domain.DiskA
 	// definition already names deletes nothing, and must not be blocked by
 	// unrelated firmware state elsewhere on the connection that the deletion
 	// graph cannot account for.
-	if !out.Referenced && out.Disk != nil {
+	if forDeletion && !out.Referenced && out.Disk != nil {
 		candidates := []domain.CleanupCandidate{{Intent: in.Volume,
 			Allocated: &domain.CreatedVolume{Intent: in.Volume, BackendKey: out.Disk.VolumeKey, Path: out.Disk.Path, Generation: out.Disk.Generation}}}
 		out.GraphDigest, err = cleanupGraphExceptOwner(ctx, c, in.Target.VM.ConnectionID, candidates, &resources, in.Target.VM.UUID)
@@ -102,7 +102,7 @@ func (p *Provider) DeleteUnreferencedDisk(ctx context.Context, in domain.DiskAdd
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	current, err := p.InspectAddedDiskDisposal(ctx, in)
+	current, err := p.InspectAddedDiskDisposal(ctx, in, true)
 	if err != nil {
 		return err
 	}

@@ -9,13 +9,13 @@ import (
 const disposeJobID = "7602cb7a-6686-429b-a033-437cd5dc6247"
 
 // ADR 0062: an unfinished disk addition is closed from Jobs, by accepting the
-// new disk or deleting a volume no VM uses.
+// new disk, keeping its unused volume, or deleting a volume no VM uses.
 func TestDiskAddDisposeFormPlansTheChosenDisposition(t *testing.T) {
 	f, err := NewGuidedForm("disk-add-dispose", domain.VM{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if f.Fields[0].Value != "accept" || len(f.Fields[0].Choices) != 2 {
+	if f.Fields[0].Value != "accept" || len(f.Fields[0].Choices) != 3 {
 		t.Fatal(f.Fields[0])
 	}
 	// Without a job the form cannot submit: it acts on an operation.
@@ -32,6 +32,10 @@ func TestDiskAddDisposeFormPlansTheChosenDisposition(t *testing.T) {
 		t.Fatal(r.Input, err)
 	}
 	f.Fields[0].Value = "keep"
+	if _, r, err = f.Request("qemu:///system"); err != nil || r.Input["disposition"] != "keep" {
+		t.Fatal(r.Input, err)
+	}
+	f.Fields[0].Value = "discard"
 	if _, _, err = f.Request("qemu:///system"); err == nil {
 		t.Fatal("an unknown disposition was accepted")
 	}
