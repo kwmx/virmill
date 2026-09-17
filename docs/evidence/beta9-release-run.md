@@ -39,6 +39,12 @@ builds differ from this one only in the version constant and records.
 
 ## Ships unfixed
 
+- The build commit's `packaging/completions/virmill.bash` predates `vm clone`,
+  so CI's generated-files check failed on the `v1.0.0-beta.9` tag and on the
+  record commit. The published RPM and DEB packages are not affected: packaging
+  reads the regenerated file, and the RPM's bash completion includes `clone`.
+  The source archive carries the older completion. `4d0fc98` commits the file
+  on `main`, where CI passes again; the tag is left as published.
 - Cloning a UEFI VM, cloning into one chosen pool and raw disks have software
   tests only.
 - On a `qemu:///system` host whose pool images are readable only by root or
