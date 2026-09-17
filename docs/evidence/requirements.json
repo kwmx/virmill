@@ -2445,21 +2445,39 @@
         "internal/domain/creation.go",
         "internal/backend/libvirt/creation_linux.go",
         "internal/backend/libvirt/creation_xml.go",
-        "docs/evidence/device-policy-run.md"
+        "docs/evidence/device-policy-run.md",
+        "docs/adr/0066-full-clones.md",
+        "internal/domain/vm_clone.go",
+        "internal/backend/xmlpatch/vm_clone.go",
+        "internal/backend/libvirt/vm_clone_linux.go",
+        "internal/app/vm_clone.go",
+        "schemas/vm-clone-input.schema.json",
+        "internal/ui/tui/guided_forms.go",
+        "docs/vm-clones.md",
+        "docs/evidence/vm-clone-run.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-02",
       "tests": [
         "internal/creating/service_linux_test.go",
         "internal/creating/recovery_linux_test.go",
-        "internal/backend/libvirt/creation_linux_test.go"
+        "internal/backend/libvirt/creation_linux_test.go",
+        "internal/backend/xmlpatch/vm_clone_test.go",
+        "internal/app/vm_clone_test.go",
+        "internal/ui/tui/guided_vm_clone_test.go",
+        "tests/fixtures/release/vm_clone_native.py"
       ],
       "evidence": [
         "creation-core-001",
-        "device-policy-native-creation-001"
+        "device-policy-native-creation-001",
+        "vm-clone-system-native-001",
+        "vm-clone-system-reconcile-native-001",
+        "vm-clone-system-native-002",
+        "vm-clone-system-native-003"
       ],
       "outstanding": [
-        "Prepared source bytes are copied into independent volume intents and verified before definition in coordinator fixtures; actual native independent clone and linked-base lifecycle remain unqualified."
+        "Prepared source bytes are copied into independent volume intents and verified before definition in coordinator fixtures; actual native independent clone and linked-base lifecycle remain unqualified.",
+        "ADR 0066 full clone: vm clone (vm.clone-v1) copies every writable pool disk of a stopped VM with Move's streaming digest and read-back, then defines an independent clone with a new UUID, name and MAC addresses, fresh UEFI variables from their template, and shared read-only media; the original is never changed. vm-clone-system-native-003 passed on 2389657 on qemu:///system: an Ubuntu guest with nine disks was cloned with its definition unchanged, and the clone booted from its copied sda (237,396,480 bytes read, 4,840,960 written) and shut down gracefully. Run 001 found an empty metadata element left behind (fixed in 2389657) and its recovery-required job was reconciled by observation without replay. Not natively covered: a UEFI clone, a clone into another pool, raw disks. Linked clones are not implemented; their place in the 1.0 scope is an open owner decision, so STO-02 stays in progress."
       ],
       "hardwareVerified": false,
       "released": false

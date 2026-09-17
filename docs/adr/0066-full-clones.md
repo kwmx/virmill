@@ -1,6 +1,8 @@
 # ADR 0066: Full clones
 
-Status: accepted; being implemented.
+Status: accepted and implemented. `vm-clone-system-native-003` cloned an Ubuntu
+guest with nine disks on the system connection and booted the clone
+([run record](../evidence/vm-clone-run.md)). Linked clones remain open.
 
 ## Context
 

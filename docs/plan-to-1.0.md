@@ -41,9 +41,13 @@ takes one settings page and one confirmation, natively on a host with no pools
    counted the guest's reads and writes on the moved disk
    ([record](evidence/disk-system-run.md)). Move needs a stopped VM; moving the
    disk of a running VM is not planned before 1.0.
-4. **Full clones (STO-02).** Reuse Move's verified copy: allocate, copy, verify,
-   then define an independent VM with a new identity. Decide linked clones out
-   of scope until after 1.0, as the roadmap already says.
+4. **Done: full clones** (ADR 0066). `vm clone` copies every writable disk with
+   Move's verified copy and defines an independent VM with a new UUID and MAC
+   addresses; the original is never changed. Natively on the system connection
+   an Ubuntu guest with nine disks was cloned and the clone booted from its
+   copies ([record](evidence/vm-clone-run.md)). **Open decision:** STO-02 also
+   names linked clones; whether they stay in the 1.0 scope or move after 1.0 is
+   the owner's call.
 5. **Live CPU and memory, and boot edits while running.** The next-boot path
    exists; the live path needs its own reviewed operation and refusals.
 6. **Console access (SPICE and serial)**, which DEV-04 needs and which makes

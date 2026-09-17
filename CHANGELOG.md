@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Clone a VM.** `virmill vm clone` and **More → Advanced tools → Clone VM** make
+  an independent copy of a stopped VM: every writable disk is copied and checked,
+  and the clone gets its own name, UUID and MAC addresses. The original is not
+  changed, and read-only media are shared. The guest's own identity inside the
+  disks (hostname, SSH keys) is copied as it is, and the review says so.
 - Moving a VM's own boot disk to another storage pool is qualified: an Ubuntu
   guest booted from its moved disk on the system connection. The guide now says
   the boot disk can be moved, with the VM stopped.
