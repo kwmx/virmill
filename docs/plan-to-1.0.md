@@ -45,9 +45,8 @@ takes one settings page and one confirmation, natively on a host with no pools
    Move's verified copy and defines an independent VM with a new UUID and MAC
    addresses; the original is never changed. Natively on the system connection
    an Ubuntu guest with nine disks was cloned and the clone booted from its
-   copies ([record](evidence/vm-clone-run.md)). **Open decision:** STO-02 also
-   names linked clones; whether they stay in the 1.0 scope or move after 1.0 is
-   the owner's call.
+   copies ([record](evidence/vm-clone-run.md)). The owner moved linked clones,
+   which STO-02 also names, to after 1.0 (ADR 0067).
 5. **Live CPU and memory, and boot edits while running.** The next-boot path
    exists; the live path needs its own reviewed operation and refusals.
 6. **Console access (SPICE and serial)**, which DEV-04 needs and which makes

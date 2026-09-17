@@ -44,4 +44,4 @@ seed ISO, one network adapter and no UEFI variables.
   Software tests cover the rewrite; no native UEFI clone has run.
 - A clone into a different pool with `"pool"`, and a raw disk.
 - Changing the guest's own identity inside the clone, which Virmill does not do.
-- Linked clones, which STO-02 also names and this work does not implement.
+- Linked clones, which STO-02 also names; the owner moved them after 1.0 (ADR 0067).

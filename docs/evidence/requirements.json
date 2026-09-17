@@ -2454,7 +2454,8 @@
         "schemas/vm-clone-input.schema.json",
         "internal/ui/tui/guided_forms.go",
         "docs/vm-clones.md",
-        "docs/evidence/vm-clone-run.md"
+        "docs/evidence/vm-clone-run.md",
+        "docs/adr/0067-linked-clones-after-1-0.md"
       ],
       "plannedImplementation": "internal/app/storage",
       "plannedTest": "tests/integration/storage/STO-02",
@@ -2477,7 +2478,8 @@
       ],
       "outstanding": [
         "Prepared source bytes are copied into independent volume intents and verified before definition in coordinator fixtures; actual native independent clone and linked-base lifecycle remain unqualified.",
-        "ADR 0066 full clone: vm clone (vm.clone-v1) copies every writable pool disk of a stopped VM with Move's streaming digest and read-back, then defines an independent clone with a new UUID, name and MAC addresses, fresh UEFI variables from their template, and shared read-only media; the original is never changed. vm-clone-system-native-003 passed on 2389657 on qemu:///system: an Ubuntu guest with nine disks was cloned with its definition unchanged, and the clone booted from its copied sda (237,396,480 bytes read, 4,840,960 written) and shut down gracefully. Run 001 found an empty metadata element left behind (fixed in 2389657) and its recovery-required job was reconciled by observation without replay. Not natively covered: a UEFI clone, a clone into another pool, raw disks. Linked clones are not implemented; their place in the 1.0 scope is an open owner decision, so STO-02 stays in progress."
+        "ADR 0066 full clone: vm clone (vm.clone-v1) copies every writable pool disk of a stopped VM with Move's streaming digest and read-back, then defines an independent clone with a new UUID, name and MAC addresses, fresh UEFI variables from their template, and shared read-only media; the original is never changed. vm-clone-system-native-003 passed on 2389657 on qemu:///system: an Ubuntu guest with nine disks was cloned with its definition unchanged, and the clone booted from its copied sda (237,396,480 bytes read, 4,840,960 written) and shut down gracefully. Run 001 found an empty metadata element left behind (fixed in 2389657) and its recovery-required job was reconciled by observation without replay. Not natively covered: a UEFI clone, a clone into another pool, raw disks. Linked clones are not implemented; their place in the 1.0 scope is an open owner decision, so STO-02 stays in progress.",
+        "Owner-approved scope amendment 2026-09-17 (ADR 0067): linked clones move after 1.0, so for 1.0 STO-02 is satisfied by full clones. The specification text and release gate are unchanged; acceptance on full clones alone must cite ADR 0067. Full-clone native coverage still lacks a UEFI clone, a clone into another pool and raw disks."
       ],
       "hardwareVerified": false,
       "released": false

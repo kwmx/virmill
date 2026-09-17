@@ -109,6 +109,7 @@ Scenarios: JOB-01…04, SEC-01…03, UX-01, REL-01, REL-03, REL-04.
 
 - Extensions: forms, tables, status cards, mutating actions and providers
   (EXT-01, EXT-03…05, SEC-04, SEC-05).
-- Repeatable labs, templates and linked clones (LAB-01…05).
+- Repeatable labs, templates and linked clones (LAB-01…05; linked clones moved
+  here from STO-02 by owner decision, ADR 0067).
 - Managed bridge creation with rollback (NET-08, NET-09).
 - Live snapshots and live backups with guest quiescing (SNAP-02, BAK-02, BAK-03).

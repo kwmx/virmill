@@ -2,7 +2,7 @@
 
 Status: accepted and implemented. `vm-clone-system-native-003` cloned an Ubuntu
 guest with nine disks on the system connection and booted the clone
-([run record](../evidence/vm-clone-run.md)). Linked clones remain open.
+([run record](../evidence/vm-clone-run.md)). Linked clones move after 1.0 (ADR 0067).
 
 ## Context
 
@@ -17,8 +17,8 @@ booting from its moved boot disk. A clone is the same copy for every writable
 disk, followed by defining a second VM instead of editing the first.
 
 STO-02's acceptance also names linked clones. Those share a base image and need a
-dependency model this ADR does not add; whether they stay in the 1.0 scope is the
-owner's decision and is not made here.
+dependency model this ADR does not add; the owner moved them after 1.0
+(ADR 0067).
 
 ## Decision
 
@@ -99,4 +99,4 @@ and the pool; the everyday More menu is kept to seven tasks.
 - Peak space is the sum of the copies; the review gives it per pool.
 - Cloning a running VM, and copying UEFI variables or TPM state, need privileged
   or live adapters and are out of scope.
-- Linked clones remain open pending the owner's scope decision on STO-02.
+- Linked clones move after 1.0 by owner decision (ADR 0067).
