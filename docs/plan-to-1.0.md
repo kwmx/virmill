@@ -16,8 +16,7 @@ connection only, and one host configuration still needs a manual step.
 Done first, ahead of the list: **New VM** (ADR 0065). The owner could not create
 or import a VM in beta.5. From a file to a running VM with its display open now
 takes one settings page and one confirmation, natively on a host with no pools
-([record](evidence/new-vm-run.md)). Walking it on `qemu:///system` and with
-networks is part of item 2.
+([record](evidence/new-vm-run.md)), on both connections.
 
 1. **Done: start session VMs with no manual libvirt step** (ADR 0064). The
    packages ship a per-user libvirt socket that the coordinator's service starts
@@ -26,9 +25,16 @@ networks is part of item 2.
    started through Virmill after the daemon's own idle exit
    ([record](evidence/session-socket-run.md)). Distributions that ship their own
    per-user socket are software-tested only.
-2. **Add, move and the addition disposition on `qemu:///system`.** The same
-   operations, the other connection, including deleting a pool volume natively,
-   which no run has yet done.
+2. **Done: add, move and the addition disposition on `qemu:///system`.**
+   Natively on Fedora 44 with an Ubuntu guest: an added disk and a moved disk
+   both booted, and Move deleted the original pool volume. Closing an addition
+   interrupted by a coordinator crash passed in all three states it can be left
+   in. Two ways to be left with a locked VM were found and fixed: an addition
+   whose volume never existed, and one whose unused volume Virmill cannot prove
+   safe to delete because root-only pool images cannot be read. The new **keep**
+   choice releases the VM without deleting anything
+   ([record](evidence/disk-system-run.md)). Deleting such a volume still needs a
+   privileged, read-only proof, a design decision shared with VM removal.
 3. **Move a booted guest's own boot disk**, then boot it, on a guest with a
    real operating system.
 4. **Full clones (STO-02).** Reuse Move's verified copy: allocate, copy, verify,

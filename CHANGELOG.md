@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- An unfinished disk addition can always be closed, so it never locks its VM
+  for good. **Close disk addition** gains **keep**, which frees the VM without
+  deleting anything and names the unused volume, for a system connection whose
+  pool images Virmill cannot read to prove deleting it is safe. **delete** now
+  also closes an addition that stopped before its volume existed. Accepting and
+  keeping no longer read any image files.
+- Disk add and move, including deleting the original volume after a move, and
+  closing an interrupted addition, are qualified on the system connection.
+
 ## 1.0.0-beta.7 — owner-test pre-release
 
 - Every VM button shows the key that presses it. **Display** is `v` and

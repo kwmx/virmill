@@ -6,9 +6,12 @@ Status: accepted and implemented. Grow has native evidence
 `disk-add-session-native-006` and `-007`
 ([run record](../evidence/disk-add-run.md)); Move has
 `disk-move-session-native-005`
-([run record](../evidence/disk-move-run.md)). All three are qualified on the
-session connection only, and the disposition for an unresolved addition is not
-yet natively qualified.
+([run record](../evidence/disk-move-run.md)). On the system connection, Add has
+`disk-add-system-native-002`, Move `disk-move-system-native-001` including
+deleting the original pool volume, and the disposition passed for accept, keep
+and an addition whose volume never existed
+([run record](../evidence/disk-system-run.md)). Deleting an unused volume through
+the disposition is refused where the user cannot read the connection's images.
 
 ## Context
 
