@@ -121,9 +121,6 @@ func (h *diskAddDisposeHandler) Plan(ctx context.Context, uid uint32, r app.Requ
 	if request.Disposition == "delete" && observation.Referenced {
 		return empty, domain.Fail("RESOURCE_BUSY", "this VM's saved definition names the new disk, so its volume cannot be deleted here; accept it, or remove the disk with VM disk removal first")
 	}
-	if request.Disposition == "delete" && observation.VolumeState != "present" {
-		return empty, domain.Fail("INVALID_INPUT", "the new volume is already absent; accept nothing and inspect the operation instead")
-	}
 	in := diskAddDisposeInput{Version: 1, ParentOperationID: parent.ID, AdditionPlanID: prior.ID, Plan: addition.Plan, Disposition: request.Disposition, Observation: observation}
 	resources := append([]string{}, prior.ResourceIDs...)
 	for _, resource := range observation.ResourceIDs {
@@ -137,9 +134,14 @@ func (h *diskAddDisposeHandler) Plan(ctx context.Context, uid uint32, r app.Requ
 		"Closes the unresolved disk addition and releases this VM's locks; the addition never becomes a successful operation.",
 		"Nothing is uploaded and no definition is changed by this disposition.",
 	}
-	if request.Disposition == "accept" {
+	switch {
+	case request.Disposition == "accept":
 		risks = append(risks, "The new disk stays in the saved definition with its verified volume; it is empty until the guest formats it.")
-	} else {
+	case observation.VolumeState != "present":
+		// Interrupted before its volume existed: nothing is left to delete, and
+		// without this the addition would hold the VM and pool with no way out.
+		risks = append(risks, "The new volume was never created, so nothing is deleted; if it appears before this runs, the plan is refused.")
+	default:
 		acks = append(acks, "host-mutation", "data-loss-delete-disks")
 		risks = append(risks, "Permanently deletes the new volume that no definition names; deletion cannot be undone.")
 	}
@@ -184,7 +186,7 @@ func (h *diskAddDisposeHandler) Review(_ context.Context, p domain.Plan, b []byt
 	return map[string]any{"action": "dispose-disk-addition", "resource": t.VM, "parentOperationID": in.ParentOperationID,
 		"additionPlanID": in.AdditionPlanID, "disposition": in.Disposition, "target": t.Target, "pool": t.PoolName,
 		"volume": t.VolumeName, "referenced": in.Observation.Referenced, "volumeState": in.Observation.VolumeState,
-		"diskDeletion": in.Disposition == "delete", "changesDefinition": false, "uploadsVolumes": false}, nil
+		"diskDeletion": in.Disposition == "delete" && in.Observation.VolumeState == "present", "changesDefinition": false, "uploadsVolumes": false}, nil
 }
 
 func (h *diskAddDisposeHandler) validate(ctx context.Context, p domain.Plan, in diskAddDisposeInput) error {
@@ -231,7 +233,7 @@ func (h *diskAddDisposeHandler) Execute(ctx context.Context, p domain.Plan, b []
 	if err = h.s.Store.ComparePut(diskAddDispositionKind, in.AdditionPlanID, nil, record); err != nil {
 		return err
 	}
-	if in.Disposition != "delete" {
+	if in.Disposition != "delete" || in.Observation.VolumeState != "present" {
 		return nil
 	}
 	if err = operations.Note(ctx, h.s.Store, "Intent persisted: delete the unreferenced new disk volume"); err != nil {

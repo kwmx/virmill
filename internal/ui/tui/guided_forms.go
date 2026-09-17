@@ -106,7 +106,7 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		f.Fields[0].Value = disks[0]
 		field("sizeGiB", "New size (GiB)", "The disk's new total size, larger than now. Partitions inside the guest keep their size.", 5)
 	case "disk-add-dispose":
-		field("disposition", "Close by", "Left/Right chooses. Accept keeps the new disk; delete removes an unused volume.", 16)
+		field("disposition", "Close by", "Left/Right chooses. Accept keeps the new disk; delete removes an unused volume, or closes an addition whose volume was never made.", 16)
 		f.Fields[0].Value = "accept"
 		f.Fields[0].Choices = []string{"accept", "delete"}
 	case "disk-add":

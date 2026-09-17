@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"virmill.local/core/internal/operations"
 
 	"virmill.local/core/internal/app"
 	"virmill.local/core/internal/domain"
@@ -134,6 +135,51 @@ func TestDiskAddDispositionDeletesOnlyAnUnreferencedVolume(t *testing.T) {
 	}
 }
 
+// An addition interrupted before its volume existed holds the VM and pool
+// until closed; delete then closes it without deleting anything.
+func TestDiskAddDispositionClosesAnAdditionWhoseVolumeNeverExisted(t *testing.T) {
+	h, _, d, disposal, job, _ := stuckAddition(t, false)
+	disposal.mu.Lock()
+	disposal.state = "absent"
+	disposal.mu.Unlock()
+	plan, err := d.Plan(context.Background(), 1000, disposeRequest(job, "delete"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	acks := strings.Join(plan.Acknowledgements, " ")
+	if strings.Contains(acks, "data-loss") || strings.Contains(acks, "host-mutation") || plan.Review["diskDeletion"] != false {
+		t.Fatal("nothing is deleted, so nothing destructive may be asked", plan.Acknowledgements, plan.Review)
+	}
+	if closed := applyAdd(t, h, plan, "delete"); closed.State != "succeeded" || disposal.deletes != 0 {
+		t.Fatal(closed.State, closed.Error, disposal.deletes)
+	}
+	if parent, err := h.s.Engine.Store.Job(job.ID); err != nil || parent.State != "partial" {
+		t.Fatal("the closed addition is not recorded as partial", parent.State, err)
+	}
+}
+
+// A volume that appears between review and apply refuses the close-only plan.
+func TestDiskAddDispositionRefusesAVolumeThatAppeared(t *testing.T) {
+	h, _, d, disposal, job, _ := stuckAddition(t, false)
+	disposal.mu.Lock()
+	disposal.state = "absent"
+	disposal.mu.Unlock()
+	plan, err := d.Plan(context.Background(), 1000, disposeRequest(job, "delete"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	disposal.mu.Lock()
+	disposal.state = "present"
+	disposal.mu.Unlock()
+	_, err = h.s.Engine.Apply(context.Background(), 1000, operations.ApplyRequest{PlanID: plan.ID, PlanDigest: plan.Digest, IdempotencyKey: "appeared", Acknowledgements: plan.Acknowledgements})
+	if err == nil || !strings.Contains(err.Error(), "STALE_PLAN") || disposal.deletes != 0 {
+		t.Fatal("a volume that appeared was closed over or deleted", err, disposal.deletes)
+	}
+	if parent, e := h.s.Engine.Store.Job(job.ID); e != nil || parent.State != "recovery-required" {
+		t.Fatal("the refused close changed the addition", parent.State, e)
+	}
+}
+
 func TestDiskAddDispositionRefusesMismatchedChoices(t *testing.T) {
 	// A disk the definition names cannot be deleted here.
 	_, _, d, _, job, _ := stuckAddition(t, true)
@@ -145,13 +191,7 @@ func TestDiskAddDispositionRefusesMismatchedChoices(t *testing.T) {
 	if _, err := unreferenced.Plan(context.Background(), 1000, disposeRequest(orphan, "accept")); err == nil || !strings.Contains(err.Error(), "nothing to accept") {
 		t.Fatal(err)
 	}
-	// An already absent volume has nothing to delete either.
-	disposal.mu.Lock()
-	disposal.state = "absent"
-	disposal.mu.Unlock()
-	if _, err := unreferenced.Plan(context.Background(), 1000, disposeRequest(orphan, "delete")); err == nil || !strings.Contains(err.Error(), "already absent") {
-		t.Fatal(err)
-	}
+	_ = disposal
 	for _, bad := range []map[string]any{{}, {"disposition": "keep"}, {"disposition": "accept", "extra": true}} {
 		request := disposeRequest(orphan, "accept")
 		request.Input = bad

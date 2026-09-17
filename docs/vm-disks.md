@@ -98,7 +98,9 @@ virmill operation dispose-disk-addition OPERATION_UUID \
   already names it, which means the disk and its verified volume are there.
 - **delete** removes the new volume, and only while no definition names it. A
   disk the VM still uses is never deleted this way; remove the disk first if
-  that is what you want.
+  that is what you want. If the addition stopped before its volume existed,
+  delete closes it with nothing to delete and asks for no deletion
+  acknowledgement; if the volume appears before the plan runs, it is refused.
 
 Either way the locks are released and the addition is closed for good: it never
 becomes a successful operation, and a new disk needs a new review.
