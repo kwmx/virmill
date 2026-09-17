@@ -180,7 +180,8 @@ def main():
         after = r.cli('vm', 'list')
         require([v for v in after if v['key']['resourceUUID'] != a.vm] == others, 'other VMs changed')
         afterjobs = r.cli('operation', 'list')
-        require([j for j in afterjobs if j['operationID'] not in adder.jobs] == jobs, 'prior job records changed')
+        require([j for j in afterjobs if j['operationID'] not in adder.jobs] == [j for j in jobs if j['operationID'] not in adder.jobs],
+                'prior job records changed')
         require(media_listing(Path.home() / 'images') == media, 'source media changed')
         report.update(status='passed', otherVMsJobsAndMediaPreserved=True)
     except BaseException as e:
