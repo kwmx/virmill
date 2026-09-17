@@ -323,7 +323,10 @@
         "internal/app/resource_edit_running_test.go",
         "internal/backend/libvirt/configuration_running_linux_test.go",
         "internal/ui/tui/workspace_resources_running_test.go",
-        "tests/fixtures/release/resources_running_native.py"
+        "tests/fixtures/release/resources_running_native.py",
+        "internal/app/resource_live_test.go",
+        "internal/app/hardware_edit_running_test.go",
+        "tests/fixtures/release/resources_live_native.py"
       ],
       "evidence": [
         "core-tests-001",
