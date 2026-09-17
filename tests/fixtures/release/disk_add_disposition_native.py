@@ -71,6 +71,7 @@ def main():
     p.add_argument('--vm', required=True, help='UUID of a stopped VM that Virmill created for tests')
     p.add_argument('--name', required=True, help="the same VM's name, as a second check")
     p.add_argument('--kill-after-ms', type=int, default=0, help='delay between the accepted apply and the kill')
+    p.add_argument('--bus', default='', help='optional explicit bus: sata, scsi or virtio')
     p.add_argument('--unanswered-stop', action='store_true', help='the guest has no OS: force it off instead of shutting down')
     p.add_argument('--boot-wait', type=int, default=90)
     a = p.parse_args()
@@ -102,7 +103,7 @@ def main():
         others = [v for v in before if v['key']['resourceUUID'] != a.vm]
         adder = Adder(r, stage, a.connection, original)
 
-        plan = adder.plan_add(1, '')
+        plan = adder.plan_add(1, a.bus)
         review = plan['review']
         label = adder.label('add-disk')
         r.save(label + '-plan.json', plan)
