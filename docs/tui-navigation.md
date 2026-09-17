@@ -33,7 +33,7 @@ lists them all. Buttons wrap onto a second row when they do not fit.
   available from the workspace. Selecting a VM never starts it.
 - **a More** shows everyday tasks for the selected resource, with only the power
   actions its state allows. **Advanced tools...** (or **A**) lists the section's
-  other tasks. Each action includes a short explanation.
+  other tasks, such as **Clone VM**, **Grow VM disk** and **Move VM disk**. Each action includes a short explanation.
 - **: All tools** lists every implemented action. Left/Right changes sections;
   **/** searches names and descriptions. Esc clears the search, then goes back.
 - **r** refreshes observations. **x** in details toggles technical data/native XML.

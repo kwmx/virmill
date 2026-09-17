@@ -89,7 +89,8 @@ reports less free space than its copies need.
 every copy's path.
 
 **Surfaces.** CLI `virmill vm clone VM --input '{"name":"…"}'`, and in the TUI
-**More → Clone VM** with the name (suggested from the original's) and the pool.
+**More → Advanced tools → Clone VM** with the name (suggested from the original's)
+and the pool; the everyday More menu is kept to seven tasks.
 
 ## Consequences
 
