@@ -64,8 +64,9 @@ virmill vm disk move VM_UUID --connection qemu:///system \
 The guest sees the same disk at the same place with the same contents: only
 where its image is stored changes.
 
-**What can be moved.** A writable qcow2 data disk that already lives in a
-storage pool, to a different active pool. Installer media, read-only and
+**What can be moved.** A writable qcow2 disk that already lives in a storage
+pool, including the disk the guest boots from, to a different active pool. The
+VM must be stopped; its boot order stays as it was. Installer media, read-only and
 shared disks, plain file disks and layered disks with a backing file are
 refused.
 

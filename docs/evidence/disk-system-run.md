@@ -69,9 +69,29 @@ After the runs the four volumes keep left were confirmed unnamed by any
 definition on the connection and deleted with `virsh vol-delete`. The accepted
 disks stay attached to the test VM.
 
+## Moving the guest's own boot disk
+
+The same Ubuntu guest boots from `sda`, a 3.5 GiB qcow2 volume at boot order 1.
+Move requires the VM to be stopped; these runs move the disk the operating system
+boots from, then boot it.
+
+| Evidence | Build | Move | Result |
+| --- | --- | --- | --- |
+| `disk-move-boot-system-native-001` | 1.0.0-beta.8 (`86171b5`) | `sda` to the other pool, original deleted | **passed**: copy verified, definition names the copy at `sda` with boot order 1, the VM started from it and, 90 seconds later, shut down gracefully in 2.2 s |
+| `disk-move-boot-system-native-002` | 1.0.0-beta.8 (`86171b5`) | `sda` back to its first pool, reusing the volume name the first move freed, original deleted | **passed**, and while the VM ran libvirt counted 236,462,592 bytes read and 4,959,744 bytes written on the moved disk |
+
+A graceful shutdown already shows an operating system was running: a guest
+without one ignores the request, and the stop fails after 60 seconds. The write
+counter in run 002 shows it directly, because firmware only reads a disk and a
+booted operating system also writes to its root filesystem. The probe reads the
+counter with `virsh domblkstat` while the guest runs and requires both to be
+non-zero (`--require-guest-writes`).
+
+Other VMs, prior jobs and source media were unchanged in both runs.
+
 ## Not covered
 
 - Deleting an unused volume on a connection whose images the user cannot read.
   That needs a privileged, read-only way to prove the volume is unused, which is
   a separate design decision shared with VM removal.
-- Moving a booted guest's own boot disk (plan item 3).
+- Moving a disk while its VM runs. Move requires a stopped VM.

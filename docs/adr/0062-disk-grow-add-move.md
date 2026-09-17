@@ -9,7 +9,8 @@ Status: accepted and implemented. Grow has native evidence
 ([run record](../evidence/disk-move-run.md)). On the system connection, Add has
 `disk-add-system-native-002`, Move `disk-move-system-native-001` including
 deleting the original pool volume, and the disposition passed for accept, keep
-and an addition whose volume never existed
+and an addition whose volume never existed, and moving the Ubuntu guest's own
+boot disk passed twice with the guest booting from it
 ([run record](../evidence/disk-system-run.md)). Deleting an unused volume through
 the disposition is refused where the user cannot read the connection's images.
 

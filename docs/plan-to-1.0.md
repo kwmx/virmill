@@ -35,8 +35,12 @@ takes one settings page and one confirmation, natively on a host with no pools
    choice releases the VM without deleting anything
    ([record](evidence/disk-system-run.md)). Deleting such a volume still needs a
    privileged, read-only proof, a design decision shared with VM removal.
-3. **Move a booted guest's own boot disk**, then boot it, on a guest with a
-   real operating system.
+3. **Done: move a guest's own boot disk, then boot it.** Natively on the system
+   connection, the Ubuntu 24.04 guest's `sda` moved to another pool and back,
+   and each time the guest booted from it and shut down gracefully; libvirt
+   counted the guest's reads and writes on the moved disk
+   ([record](evidence/disk-system-run.md)). Move needs a stopped VM; moving the
+   disk of a running VM is not planned before 1.0.
 4. **Full clones (STO-02).** Reuse Move's verified copy: allocate, copy, verify,
    then define an independent VM with a new identity. Decide linked clones out
    of scope until after 1.0, as the roadmap already says.

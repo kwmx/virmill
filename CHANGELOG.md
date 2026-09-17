@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Moving a VM's own boot disk to another storage pool is qualified: an Ubuntu
+  guest booted from its moved disk on the system connection. The guide now says
+  the boot disk can be moved, with the VM stopped.
+
 ## 1.0.0-beta.8 — owner-test pre-release
 
 - An unfinished disk addition can always be closed, so it never locks its VM
