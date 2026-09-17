@@ -1,0 +1,139 @@
+{
+  "cases": [
+    {
+      "case": "disk",
+      "confirmationSetsUpPool": true,
+      "confirmations": 1,
+      "finishedScreen": true,
+      "keypresses": 3,
+      "keys": [
+        "New VM",
+        "Create VM",
+        "Confirm"
+      ],
+      "passed": true,
+      "preparedCopyRemoved": true,
+      "progressOnSameScreen": true,
+      "rawIdentities": {},
+      "running": true,
+      "seconds": 11,
+      "settings": {
+        "display": "Display: Local display (SPICE)",
+        "network": "Network: none",
+        "startOn": true,
+        "storage": "Storage: Virmill sets up libvirt's standard pool first"
+      },
+      "source": "disk-7c8e4dd4.qcow2",
+      "viewerScreenshot": {
+        "distinctColours": 64,
+        "file": "viewer-disk.png"
+      },
+      "viewerStarted": true,
+      "viewerWindow": {
+        "size": [
+          730,
+          456
+        ],
+        "title": "disk-7c8e4dd4 (1)"
+      },
+      "vm": "disk-7c8e4dd4"
+    },
+    {
+      "case": "iso",
+      "confirmationSetsUpPool": false,
+      "confirmations": 1,
+      "finishedScreen": true,
+      "keypresses": 3,
+      "keys": [
+        "New VM",
+        "Create VM",
+        "Confirm"
+      ],
+      "passed": true,
+      "preparedCopyRemoved": true,
+      "progressOnSameScreen": true,
+      "rawIdentities": {},
+      "running": true,
+      "seconds": 10,
+      "settings": {
+        "display": "Display: Local display (SPICE)",
+        "network": "Network: none",
+        "startOn": true,
+        "storage": "Storage: pool default"
+      },
+      "source": "installer-7c8e4dd4.iso",
+      "viewerScreenshot": {
+        "distinctColours": 64,
+        "file": "viewer-iso.png"
+      },
+      "viewerStarted": true,
+      "viewerWindow": {
+        "size": [
+          730,
+          456
+        ],
+        "title": "VIRMILL_WALK (1)"
+      },
+      "vm": "VIRMILL_WALK"
+    },
+    {
+      "case": "ova",
+      "confirmationSetsUpPool": false,
+      "confirmations": 1,
+      "finishedScreen": true,
+      "keypresses": 3,
+      "keys": [
+        "New VM",
+        "Create VM",
+        "Confirm"
+      ],
+      "passed": true,
+      "preparedCopyRemoved": true,
+      "progressOnSameScreen": true,
+      "rawIdentities": {},
+      "running": true,
+      "seconds": 10,
+      "settings": {
+        "display": "Display: Local display (SPICE)",
+        "network": "Network: none",
+        "startOn": true,
+        "storage": "Storage: pool default"
+      },
+      "source": "appliance-7c8e4dd4.ova",
+      "viewerScreenshot": {
+        "distinctColours": 64,
+        "file": "viewer-ova.png"
+      },
+      "viewerStarted": true,
+      "viewerWindow": {
+        "size": [
+          730,
+          456
+        ],
+        "title": "appliance-7c8e4dd4 (1)"
+      },
+      "vm": "appliance-7c8e4dd4"
+    }
+  ],
+  "firstCaseSetUpPool": true,
+  "hostInventoryUnchanged": true,
+  "jobs": {
+    "import.discard": 3,
+    "import.prepare": 1,
+    "import.prepare-disks": 1,
+    "import.prepare-install": 1,
+    "storage.pool.create": 1,
+    "vm.create.devices-v1": 3,
+    "vm.hard-stop": 3,
+    "vm.start": 3
+  },
+  "pool": {
+    "active": true,
+    "inPrivateDataFolder": true,
+    "names": [
+      "default"
+    ]
+  },
+  "privateSessionEmptyAtStart": true,
+  "result": "passed"
+}
