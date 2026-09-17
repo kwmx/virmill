@@ -67,6 +67,18 @@ def volume_capacity(uri, pool, volume):
     return int(found.group(1))
 
 
+def block_stats(uri, vm, target):
+    """libvirt's I/O counters for one disk of a running VM; a read-only query."""
+    out = subprocess.run(['virsh', '-c', uri, 'domblkstat', vm, target], capture_output=True, text=True, timeout=60)
+    require(out.returncode == 0, 'block statistics unreadable')
+    stats = {}
+    for line in out.stdout.splitlines():
+        parts = line.split()
+        if len(parts) == 3 and parts[2].isdigit():
+            stats[parts[1]] = int(parts[2])
+    return stats
+
+
 def disk_declaration(xml, target):
     """The pool, volume, bus and drive unit a definition declares for one disk."""
     for block in re.findall(r'<disk .*?</disk>', xml, re.S):
@@ -112,6 +124,7 @@ def main():
     p.add_argument('--keep-old-copy', action='store_true', help='keep the original instead of deleting it')
     p.add_argument('--unanswered-stop', action='store_true', help='the guest has no OS: force it off instead of shutting down')
     p.add_argument('--boot-wait', type=int, default=90)
+    p.add_argument('--require-guest-writes', action='store_true', help='require the running guest to have read and written the moved disk')
     a = p.parse_args()
     require(authorized_test_host() and os.getuid() == os.geteuid() == 1000, 'wrong authorized host/actor')
     stage = canonical_path(str(a.root.absolute()))
@@ -190,6 +203,12 @@ def main():
             mover.run('hard-stop')
         else:
             time.sleep(a.boot_wait)
+            if a.require_guest_writes:
+                # Firmware only reads a disk; a booted operating system also
+                # writes to it. Both counters come from libvirt, read-only.
+                stats = block_stats(a.connection, a.vm, a.target)
+                report['movedDiskIOWhileRunning'] = stats
+                require(stats.get('rd_bytes', 0) > 0 and stats.get('wr_bytes', 0) > 0, 'the guest did not read and write the moved disk')
             mover.run('stop')
         report['bootedWithMovedDisk'] = True
 
