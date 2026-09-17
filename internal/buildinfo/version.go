@@ -3,7 +3,7 @@ package buildinfo
 import "runtime"
 
 // Version is the product version source used by the binaries and package builder.
-const Version = "1.0.0-beta.8"
+const Version = "1.0.0-beta.9"
 
 var Revision = "uncommitted"
 var BuildTime = "unknown"
