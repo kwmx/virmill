@@ -131,3 +131,30 @@ func TestCloneDefinitionRefusesWhatItCannotCopySafely(t *testing.T) {
 		}
 	}
 }
+
+// clone-system-native-001: a clone whose only metadata was Virmill's creation
+// record left an empty metadata element, which libvirt does not store, so the
+// read-back refused a correct clone. The element goes with its last child.
+func TestCloneDefinitionDropsMetadataLeftEmpty(t *testing.T) {
+	raw := strings.Replace(cloneSource, "\n    <other:note xmlns:other=\"urn:example\">kept</other:note>", "", 1)
+	out, err := CloneDefinition(raw, clonePatch())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(out, "metadata") {
+		t.Fatalf("empty metadata left behind:\n%s", out)
+	}
+	// What libvirt stores: the same document without the element at all.
+	stored := strings.Replace(raw, "  <metadata>\n    <virmill:creation xmlns:virmill=\"urn:virmill:v1\" apiVersion=\"virmill/v1\" binding=\"abc\"/>\n  </metadata>\n", "", 1)
+	stored, err = CloneDefinition(stored, clonePatch())
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, _ := CloneComparable(out)
+	b, _ := CloneComparable(stored)
+	da, _ := HardwareDigest(a)
+	db, _ := HardwareDigest(b)
+	if da != db {
+		t.Fatalf("clone differs from what libvirt stores:\n%s\n---\n%s", out, stored)
+	}
+}

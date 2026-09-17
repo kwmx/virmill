@@ -2,6 +2,7 @@ package xmlpatch
 
 import (
 	"encoding/xml"
+	"strings"
 
 	"virmill.local/core/internal/domain"
 	"virmill.local/core/internal/validation"
@@ -67,10 +68,23 @@ func CloneDefinition(raw string, change ClonePatch) (string, error) {
 	spans := []spanReplacement{{uid.startEnd, uid.endStart, change.UUID}, {name.startEnd, name.endStart, restoreEscape(change.Name)}}
 
 	for _, metadata := range root.children("metadata") {
+		creation, other := []*positionedNode{}, false
 		for _, part := range metadata.parts {
-			if c := part.child; c != nil && c.name == (xml.Name{Space: virmillNamespace, Local: "creation"}) {
-				spans = append(spans, spanReplacement{c.start, c.end, ""})
+			switch c := part.child; {
+			case c != nil && c.name == (xml.Name{Space: virmillNamespace, Local: "creation"}):
+				creation = append(creation, c)
+			case c != nil, part.kind == "comment", part.kind == "processing", part.kind == "text" && strings.TrimSpace(part.text) != "":
+				other = true
 			}
+		}
+		if len(creation) > 0 && !other {
+			// libvirt does not store an empty metadata element, so leaving one
+			// behind would make the stored clone differ from the reviewed one.
+			spans = append(spans, spanReplacement{metadata.start, metadata.end, ""})
+			continue
+		}
+		for _, c := range creation {
+			spans = append(spans, spanReplacement{c.start, c.end, ""})
 		}
 	}
 
