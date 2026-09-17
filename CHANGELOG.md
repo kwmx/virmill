@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-beta.8 — owner-test pre-release
 
 - An unfinished disk addition can always be closed, so it never locks its VM
   for good. **Close disk addition** gains **keep**, which frees the VM without
