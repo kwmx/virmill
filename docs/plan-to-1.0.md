@@ -47,8 +47,18 @@ takes one settings page and one confirmation, natively on a host with no pools
    an Ubuntu guest with nine disks was cloned and the clone booted from its
    copies ([record](evidence/vm-clone-run.md)). The owner moved linked clones,
    which STO-02 also names, to after 1.0 (ADR 0067).
-5. **Live CPU and memory, and boot edits while running.** The next-boot path
-   exists; the live path needs its own reviewed operation and refusals.
+5. **Done: live CPU and memory, and boot edits while running** (ADR 0068).
+   `vm set` with `applyMode: "now"` plans `vm.resources-live-v1`, which changes
+   what a running VM is running with and leaves its saved settings and next boot
+   alone; the TUI offers it as **Change while it runs**. Memory moves through the
+   guest's virtio balloon, which new VMs now get by default, and CPUs plug in and
+   out within the spare slots a definition carries. Boot order and media follow
+   ADR 0061's rule as well: changed while running, applied at the next start.
+   Natively on the system connection a Kali guest went 2048 → 1536 → 2048 MiB and
+   2 → 3 → 2 CPUs with its definition untouched, an Ubuntu guest's boot order
+   changed while it ran and took effect at its next start, and every refusal named
+   what to change instead ([record](evidence/live-resources-run.md)). Spare CPU
+   slots chosen at creation are not written yet, and the refusal says so.
 6. **Console access (SPICE and serial)**, which DEV-04 needs and which makes
    every other guest problem diagnosable.
 7. **Autostart across a host restart**, and stale plans after someone edits a

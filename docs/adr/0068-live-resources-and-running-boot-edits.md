@@ -1,6 +1,8 @@
 # ADR 0068: Change CPU and memory while a VM runs, and boot edits while running
 
-Status: proposed. Plan item 2b.5.
+Status: accepted and implemented. Native evidence: `resources-live-native-002`
+and `boot-edit-running-native-001`
+([run record](../evidence/live-resources-run.md)). Plan item 2b.5.
 
 ## Context
 

@@ -8,7 +8,7 @@ changes and another covers the boot edit.
 
 ## Live CPU and memory
 
-`resources-live-native-001` **passed** on build `b8daf1e`, against the stopped
+`resources-live-native-002` **passed** on build `b8daf1e`, against the stopped
 Virmill-created Kali guest `Virmill qualification Kali QCOW2` (2 CPUs,
 2048 MiB, a virtio memory balloon chosen at creation).
 
@@ -44,16 +44,26 @@ that VM earns.
 
 ## Runs that did not pass
 
-- `resources-live-native-001` on `17570bb` refused its own first memory change:
-  the guest reached 1536 MiB a moment after the check, so the job went
-  `recovery-required` as designed, holding its locks, and
-  `resources-live-reconcile-native-001` then reconciled it — recovery observed
-  the running size and the job succeeded without asking for anything again. That
+- `resources-live-native-001` on `17570bb`, run by hand before the recorder,
+  refused its own first memory change: the guest reached 1536 MiB a moment after
+  the check, so the job went
+  `recovery-required` as designed, holding its locks, and `operation reconcile`
+  then closed it: recovery observed the running size and the job succeeded
+  without asking for anything again. That
   is a bad answer for an ordinary change, and libvirt exposes no balloon target
   to check instead, only the size the guest has acknowledged. Build `b8daf1e`
   asks, then waits up to 20 seconds for the running domain to report the reviewed
   size, and asks for the earlier size back if the guest never answers, so such a
   guest gets a plain failure instead of a recovery decision.
+
+## The memory balloon new VMs now get
+
+`new-vm-walkthrough-native-006` **passed** on build `b8daf1e`: the New VM
+walkthrough created and started a VM from a disk image, an ISO and an OVA in a
+private empty session, each with one confirmation and three keypresses after the
+file was chosen. Creation binds the exact bytes of the definition it asks libvirt
+to store, so these runs are also the proof that libvirt stores the virtio memory
+balloon the default device policy now asks for.
 
 ## Not covered
 
