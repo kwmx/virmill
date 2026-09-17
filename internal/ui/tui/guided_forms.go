@@ -125,10 +125,15 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 		field("pool", "Destination pool", "The storage pool to copy the disk into. It must not be the disk's own pool.", 64)
 		field("keepOldCopy", "Keep the original", "Off deletes the original once the VM uses the copy. On keeps both.", 5)
 		f.Fields[2].Value, f.Fields[2].Toggle = "false", true
+	case "vm-clone":
+		field("name", "Clone name", "A name no other VM on this connection uses.", 255)
+		f.Fields[0].Value = cloneNameSuggestion(vm.Name)
+		f.Fields[0].Cursor = len([]rune(f.Fields[0].Value))
+		field("pool", "Storage pool", "Leave empty to keep each copy in its disk's own pool, or name one pool for every copy.", 255)
 	default:
 		return GuidedForm{}, domain.Fail("INVALID_INPUT", "unknown guided form")
 	}
-	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" || kind == "disk-add" || kind == "disk-move" {
+	if kind == "resources" || kind == "capture" || kind == "guest-recipe" || kind == "guest-tools" || kind == "autostart" || kind == "remove-definition" || kind == "disk-grow" || kind == "disk-add" || kind == "disk-move" || kind == "vm-clone" {
 		if vm.Key.ProviderID != "libvirt" || vm.Key.Kind != "vm" || !guidedUUID.MatchString(vm.Key.UUID) || vm.Key.UUID == "00000000-0000-0000-0000-000000000000" || !guidedLocal(vm.Key.ConnectionID) {
 			return GuidedForm{}, domain.Fail("INVALID_INPUT", "select an exact local VM before opening this form")
 		}
@@ -146,6 +151,9 @@ func NewGuidedForm(kind string, vm domain.VM) (GuidedForm, error) {
 	}
 	if kind == "disk-grow" && (vm.State != "stopped" || vm.HasManagedSave) {
 		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before growing its disk.")
+	}
+	if kind == "vm-clone" && (vm.State != "stopped" || vm.HasManagedSave) {
+		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before cloning it.")
 	}
 	if kind == "disk-move" && (vm.State != "stopped" || vm.HasManagedSave) {
 		return GuidedForm{}, domain.Fail("UNSUPPORTED_CAPABILITY", "Shut down the VM before moving its disk.")
@@ -170,6 +178,8 @@ func (f GuidedForm) Title() string {
 		return "Add a VM disk"
 	case "disk-move":
 		return "Move a VM disk"
+	case "vm-clone":
+		return "Clone a VM"
 	case "disk-add-dispose":
 		return "Close an unfinished disk addition"
 	case "capture":
@@ -209,6 +219,8 @@ func (f GuidedForm) note() string {
 		return "VM must be stopped. The new disk is empty; format it inside the guest."
 	case "disk-move":
 		return "VM must be stopped. Both copies exist until the move finishes, so the destination needs room for one more."
+	case "vm-clone":
+		return "VM must be stopped. Every writable disk is copied into a new VM; the original is not changed."
 	case "disk-add-dispose":
 		return "Frees the VM this unfinished addition holds. Keep deletes nothing; deleting is offered only for a volume no VM uses."
 	case "capture":
@@ -509,6 +521,20 @@ func (f GuidedForm) request(connection string) (string, app.Request, int, error)
 		}
 		r.ID, r.Action = f.VM.Key.UUID, "grow-disk"
 		r.Input["target"], r.Input["sizeGiB"] = values["target"], float64(n)
+		return "vm.plan", r, -1, nil
+	case "vm-clone":
+		name := values["name"]
+		if _, err := validation.DisplayName(name); err != nil || name == f.VM.Name {
+			return fail("name", "Give the clone a name different from this VM's.")
+		}
+		r.ID, r.Action = f.VM.Key.UUID, "clone"
+		r.Input["name"] = name
+		if pool := strings.TrimSpace(values["pool"]); pool != "" {
+			if len(pool) > 255 {
+				return fail("pool", "Name one storage pool, or leave it empty.")
+			}
+			r.Input["pool"] = pool
+		}
 		return "vm.plan", r, -1, nil
 	case "disk-move":
 		if !slices.Contains(f.Fields[0].Choices, values["target"]) {

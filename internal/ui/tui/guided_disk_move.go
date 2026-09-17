@@ -3,6 +3,7 @@ package tui
 import (
 	"encoding/xml"
 	"sort"
+	"unicode/utf8"
 )
 
 // movableDiskChoices lists the disks a move can take: writable data disks that
@@ -51,4 +52,15 @@ func movableDiskChoices(raw string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// cloneNameSuggestion is the original's name with "-clone", kept within the
+// display-name limit.
+func cloneNameSuggestion(name string) string {
+	const suffix = "-clone"
+	for utf8.RuneCountInString(name)+len(suffix) > 128 {
+		r := []rune(name)
+		name = string(r[:len(r)-1])
+	}
+	return name + suffix
 }

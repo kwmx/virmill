@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virmill.example/schemas/v1/vm-clone-input.schema.json",
+  "title": "Make a full clone of a stopped VM",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": {"type": "string", "minLength": 1, "maxLength": 255},
+    "pool": {"type": "string", "minLength": 1, "maxLength": 255}
+  }
+}
