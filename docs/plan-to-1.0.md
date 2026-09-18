@@ -8,6 +8,43 @@ stay mandatory for 1.0.
 
 Judge each phase by a real screen and a real host, not by software tests.
 
+## Release targets
+
+Every phase ships as an owner-test pre-release, so the work is usable before
+1.0. One release may hold one phase or half of one, never half a feature.
+
+| Release | Carries | State |
+| --- | --- | --- |
+| beta.10 | Live CPU and memory, boot edits while running, the virtio balloon default (phase 2b item 5) | ready, unreleased |
+| beta.11 | Console access: SPICE viewer and serial, on supported desktops (item 6) | next |
+| beta.12 | Autostart across a host restart; stale plans after outside edits with unknown XML kept on adopted VMs (item 7). Closes phase 2b | planned |
+| beta.13 | Phase 3a: NAT internet and DNS, lab/services-only/guest-only isolation, IPv6 policy, CIDR overlap, dual-homed warnings | planned |
+| beta.14 | Phase 3b: an existing LAN bridge, Wi-Fi guidance with NAT, port forwards | planned |
+| beta.15 | Phase 4: cold snapshots and revert; encrypted backups with restore, retention, pruning, schedules and test restores | planned |
+| beta.16 | Phase 5: cloud-init users and keys, guest-agent readiness, guest recipes, USB attach and detach, read-only PCI discovery | planned |
+| beta.17 | Phase 6a: jobs surviving client exits, crashes and reboots; idempotent retries; serialized concurrent clients | planned |
+| 1.0.0-rc.1 | Phase 6b: security boundaries, package install/upgrade/uninstall keeping user data, documentation matching the commands, the full suite on the frozen support matrix | planned |
+| 1.0.0 | Every one of the 71 scenarios accepted with evidence at its stated level, `make release-check` green | planned |
+
+The long pole is not the features: 57 of the 71 scenarios are in progress with
+work behind them, 12 are not implemented, and 2 are accepted. Acceptance needs
+evidence at each scenario's stated level, so phases 3 to 6 each carry the
+evidence for their own scenarios rather than leaving a pile of it for the rc.
+
+## Known gaps carried forward
+
+These are not phases; each blocks an acceptance promotion and is named where it
+belongs.
+
+- Deleting a disk or an unused volume on a system connection whose pool images
+  only root can read is refused with no way through. The design decision is
+  shared with VM removal ([note](evidence/removal-created-run.md)).
+- Full clones have no native UEFI run, no run into a chosen pool with `--pool`
+  and no raw-disk run (ADR 0066).
+- Live changes are qualified on the system connection only, spare CPU slots
+  cannot be chosen at creation, and a guest with no balloon driver is covered by
+  software tests alone (ADR 0068).
+
 ## Phase 2b — Finish everyday lifecycle (next)
 
 Phase 2 is usable but uneven: storage edits are qualified on your own session

@@ -61,11 +61,17 @@ connections.
 - Done: moving a disk to another storage pool (ADR 0062), natively on the
   session connection in both directions, with the VM booted from the moved disk
   afterwards ([record](evidence/disk-move-run.md)).
-- Next: full clones; live CPU and memory changes and boot edits while running;
-  stale plans after external edits and unknown XML kept after edits on adopted
-  VMs; autostart across a host restart; console access (SPICE and serial) on
-  supported desktops; Add, Move and the addition disposition on the system
-  connection.
+- Done: adding, moving and closing an interrupted addition on the system
+  connection, including moving a guest's own boot disk and deleting the original
+  volume afterwards ([record](evidence/disk-system-run.md)).
+- Done: full clones (ADR 0066), natively with a nine-disk Ubuntu guest whose
+  clone booted ([record](evidence/vm-clone-run.md)). Linked clones move after 1.0
+  (ADR 0067).
+- Done: live CPU and memory changes and boot edits while running (ADR 0068),
+  natively on the system connection ([record](evidence/live-resources-run.md)).
+- Next: console access (SPICE and serial) on supported desktops; autostart across
+  a host restart; stale plans after external edits with unknown XML kept on
+  adopted VMs.
 - Done: starting your own VMs without a manual libvirt step (ADR 0064),
   natively on Fedora 44 ([record](evidence/session-socket-run.md)).
 
